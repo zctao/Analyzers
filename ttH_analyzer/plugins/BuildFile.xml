@@ -1,0 +1,16 @@
+<use name="FWCore/Framework"/>
+<use name="FWCore/PluginManager"/>
+<use name="FWCore/ParameterSet"/>
+<use name="DataFormats/BeamSpot"/>
+<use name="DataFormats/Candidate"/>
+<use name="DataFormats/HepMCCandidate"/>
+<use name="DataFormats/PatCandidates"/>
+<use name="DataFormats/RecoCandidate"/>
+<use name="DataFormats/VertexReco"/>
+<use name="PhysicsTools/Utilities"/>
+<use name="SimDataFormats/PileupSummaryInfo"/>
+<use name="HLTrigger/HLTcore"/>
+<use name="MiniAOD/MiniAODHelper"/>
+<use name="BoostedTTH/BoostedObjects"/>
+<use name="BoostedTTH/BoostedAnalyzer"/>
+<flags EDM_PLUGIN="1"/>
