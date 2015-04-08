@@ -49,7 +49,7 @@ process.ttHsyncExercise = cms.EDAnalyzer('CU_ttH_EDA',
 )
 
 process.TFileService = cms.Service("TFileService",
-	fileName = cms.string('CU_ttH_EDA_output.root')
+	fileName = cms.string('Outputs/CU_ttH_EDA_output.root')
 )
 
 process.p = cms.Path(process.ttHsyncExercise)
