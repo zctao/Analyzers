@@ -181,12 +181,13 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	
 	/// Get Corrected MET, !!!not yet used!!!
 	//may need to be placed in CU_ttH_EDA_event_vars
-	//pat::MET MET_corrected = handle.METs->front();	//miniAODhelper.GetCorrectedMET( METs.at(0), pfJets_forMET, iSysType );
+	pat::MET MET_corrected = handle.METs->front();	//miniAODhelper.GetCorrectedMET( METs.at(0), pfJets_forMET, iSysType );
 	
 	
 	/// Check tags, fill hists, print events
 	Check_Fill_Print_ej(local);
 	Check_Fill_Print_muj(local);
+        Check_Fill_Print_dimuj(local);
 }
 
 
@@ -272,6 +273,14 @@ void CU_ttH_EDA::endRun(edm::Run const&, edm::EventSetup const&)
 		printf("%s\t %.0f\n",
 			h_tth_syncex1_ele->GetXaxis()->GetBinLabel(i + 1),
 			h_tth_syncex1_ele->GetBinContent(i + 1));
+	
+	std::cout << "***************************************************************" << std::endl;
+	std::cout << "\t Synchronization for di-mu" << std::endl;
+	std::cout << "Selection \t Number of events\n";
+	for (int i = 0; i < h_tth_syncex1_dimu->GetNbinsX(); ++i)
+		printf("%s\t %.0f\n",
+			h_tth_syncex1_dimu->GetXaxis()->GetBinLabel(i + 1),
+			h_tth_syncex1_dimu->GetBinContent(i + 1));
 	
 	std::cout << "***************************************************************" << std::endl;
 	

@@ -104,7 +104,7 @@ struct CU_ttH_EDA_event_vars {
 	/// Passing-trigger flags
 	bool pass_single_e;
 	bool pass_single_mu;
-	
+        bool pass_double_mu;	
 	
 	/// Particle container vectors
 	std::vector<pat::Electron> e_selected;
@@ -120,6 +120,10 @@ struct CU_ttH_EDA_event_vars {
 	std::vector<pat::Jet> jets_selected_sorted;
 	std::vector<pat::Jet> jets_selected_tag;
 	std::vector<pat::Jet> jets_selected_tag_sorted;
+
+        /// Other quantities
+        pat::MET MET_corrected;
+        double dilepton_mass;
 };
 
 
@@ -192,11 +196,14 @@ private:
 	/// Other functions
 	void Check_Fill_Print_ej(CU_ttH_EDA_event_vars&);
 	void Check_Fill_Print_muj(CU_ttH_EDA_event_vars&);
+        void Check_Fill_Print_dimuj(CU_ttH_EDA_event_vars&);
 	
 	template<class lepton>
 	int Print_event_in_file1(FILE*, lepton&, std::vector<pat::Jet>&,
 		CU_ttH_EDA_event_vars&);
-	
+	int Print_event_in_file1_dilepton(FILE*, std::vector<lepton>&, std::vector<lepton>&, std::vector<pat::Jet>&,
+		CU_ttH_EDA_event_vars&);
+		
 	
 	
 	/*
@@ -271,6 +278,9 @@ private:
 	
 	FILE *events_mu_cut1, *events_mu_cut2, *events_mu_cut3, *events_mu_cut4,
 		*events_mu_cut5, *events_mu_cut6, *events_mu_cut7;
+	
+	FILE *events_dimu_cut1, *events_dimu_cut2, *events_dimu_cut3, *events_dimu_cut4,
+		*events_dimu_cut5, *events_dimu_cut6, *events_dimu_cut7;
 	
 	
 	/// Technical variables

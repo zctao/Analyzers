@@ -24,6 +24,14 @@ void CU_ttH_EDA::Close_output_files()
 	fclose(events_mu_cut5);
 	fclose(events_mu_cut6);
 	fclose(events_mu_cut7);
+
+        fclose(events_dimu_cut1);
+	fclose(events_dimu_cut2);
+	fclose(events_dimu_cut3);
+	fclose(events_dimu_cut4);
+	fclose(events_dimu_cut5);
+	fclose(events_dimu_cut6);
+	fclose(events_dimu_cut7);
 }
 
 
@@ -78,6 +86,16 @@ void CU_ttH_EDA::Set_up_histograms()
 	h_tth_syncex1_mu->GetXaxis()->SetBinLabel(6, ">=2 b-tags");
 	h_tth_syncex1_mu->GetXaxis()->SetBinLabel(7, ">=1 top-tags");
 	h_tth_syncex1_mu->GetXaxis()->SetBinLabel(8, ">=1 Higgs-tags");
+
+	h_tth_syncex1_dimu = fs_->make<TH1D>("h_tth_syncex1_dimu", ";cut", 8, 0 , 8 );
+	h_tth_syncex1_dimu->GetXaxis()->SetBinLabel(1, "All events");
+	h_tth_syncex1_dimu->GetXaxis()->SetBinLabel(2, "Double mu trig");
+	h_tth_syncex1_dimu->GetXaxis()->SetBinLabel(3, ">=2 muons");
+	h_tth_syncex1_dimu->GetXaxis()->SetBinLabel(4, "Mll > 20");
+	h_tth_syncex1_dimu->GetXaxis()->SetBinLabel(5, "Z Veto");
+	h_tth_syncex1_dimu->GetXaxis()->SetBinLabel(6, ">=2 jets");
+	h_tth_syncex1_dimu->GetXaxis()->SetBinLabel(7, "MET > 40");
+	h_tth_syncex1_dimu->GetXaxis()->SetBinLabel(8, ">=1 b-tags");
 }
 
 
@@ -168,6 +186,14 @@ void CU_ttH_EDA::Set_up_output_files()
 	events_mu_cut5 = fopen("Outputs/CU_events_mu_cut5.dat", "w");
 	events_mu_cut6 = fopen("Outputs/CU_events_mu_cut6.dat", "w");
 	events_mu_cut7 = fopen("Outputs/CU_events_mu_cut7.dat", "w");
+
+        events_dimu_cut1 = fopen("Outputs/CU_events_dimu_cut1.dat", "w");
+	events_dimu_cut2 = fopen("Outputs/CU_events_dimu_cut2.dat", "w");
+	events_dimu_cut3 = fopen("Outputs/CU_events_dimu_cut3.dat", "w");
+	events_dimu_cut4 = fopen("Outputs/CU_events_dimu_cut4.dat", "w");
+	events_dimu_cut5 = fopen("Outputs/CU_events_dimu_cut5.dat", "w");
+	events_dimu_cut6 = fopen("Outputs/CU_events_dimu_cut6.dat", "w");
+	events_dimu_cut7 = fopen("Outputs/CU_events_dimu_cut7.dat", "w");
 }
 
 

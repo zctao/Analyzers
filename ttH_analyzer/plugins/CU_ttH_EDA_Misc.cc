@@ -101,6 +101,10 @@ int CU_ttH_EDA::Check_triggers(
 			
 			if (pathName == "HLT_IsoMu24_eta2p1_IterTrk02_v1")
 				local.pass_single_mu = true;
+                        if (pathName == "HLT_Mu30_TkMu11_v1"
+                                or pathName == "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v1"
+                                or pathName == "HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v1")
+                                local.pass_double_mu = true;
 		}
 		
 		if (verbose_ && dumpHLT_)
@@ -399,6 +403,87 @@ void CU_ttH_EDA::Check_Fill_Print_ej(CU_ttH_EDA_event_vars &local)
 
 
 
+void CU_ttH_EDA::Check_Fill_Print_dimuj(CU_ttH_EDA_event_vars &local)
+{
+        std::vector<lepton> lepton1, lepton2;
+        if (n_muons >=2) {
+                lepton1.push_back( local.mu_selected_sorted[0] );
+                lepton2.push_back( local.mu_selected_sorted[1] );
+
+                TLorentzVector mu1, mu2;
+                mu1.SetPtEtaPhiM( 
+                        local.mu_selected_sorted[0].pt(), local.mu_selected_sorted[0].eta(), 
+                        local.mu_selected_sorted[0].phi(), local.mu_selected_sorted[0].M() );
+                mu2.SetPtEtaPhiM( 
+                        local.mu_selected_sorted[1].pt(), local.mu_selected_sorted[1].eta(), 
+                        local.mu_selected_sorted[1].phi(), local.mu_selected_sorted[1].M() );
+                local.dilepton_mass = ( mu1 + mu2 ).M();
+        } else if (n_muons == 1 ) {
+                lepton1.push_back( local.mu_selected_sorted[0] );
+
+        int fill_itr = 0;
+	
+	h_tth_syncex1_dimu->Fill(0.5 + fill_itr++);	// fills 0.5 first
+	
+	if (local.pass_double_mu) {
+		h_tth_syncex1_dimu->Fill(0.5 + fill_itr++);
+		Print_event_in_file1_dilepton(events_dimu_cut1,
+			lepton1, lepton2, local.jets_selected_sorted, local);
+	} else
+		return;
+	
+	if (local.n_muons >= 2) {
+                if ( local.mu_selected_sorted[0].charge() != local.mu_selected_sorted[1].charge() ) {
+        		h_tth_syncex1_dimu->Fill(0.5 + fill_itr++);
+        		Print_event_in_file1_dilepton(events_dimu_cut2,
+        			lepton1, lepton2, local.jets_selected_sorted, local);
+                } else {
+                        std::cout << "Found event with two same-charge muons" << std::endl;
+                }
+                if (local.n_muons > 2) {
+                        std::cout << "Found event with more than 2 muons" << std::endl;
+                }
+	} else
+		return;
+	
+	if (local.dilepton_mass >= 20) {
+		h_tth_syncex1_dimu->Fill(0.5 + fill_itr++);
+		Print_event_in_file1_dilepton(events_dimu_cut3,
+			lepton1, lepton2, local.jets_selected_sorted, local);
+	} else
+		return;
+	
+	if (local.dilepton_mass <= 76 or local.dilepton_mass >= 106) {
+		h_tth_syncex1_dimu->Fill(0.5 + fill_itr++);
+		Print_event_in_file1_dilepton(events_dimu_cut4,
+			lepton1, lepton2, local.jets_selected_sorted, local);
+	} else
+		return;
+	
+	if (local.n_jets >= 2) {
+		h_tth_syncex1_dimu->Fill(0.5 + fill_itr++);
+		Print_event_in_file1_dilepton(events_dimu_cut5,
+			lepton1, lepton2, local.jets_selected_sorted, local);
+	} else
+		return;
+	
+	if (local.MET_corrected.pt() > 40) {
+		h_tth_syncex1_dimu->Fill(0.5 + fill_itr++);
+		Print_event_in_file1_dilepton(events_dimu_cut6,
+			lepton1, lepton2, local.jets_selected_sorted, local);
+	} else
+		return;
+	
+	if (local.n_btags >= 1) {
+		h_tth_syncex1_dimu->Fill(0.5 + fill_itr);
+		Print_event_in_file1_dilepton(events_dimu_cut7,
+			lepton1, lepton2, local.jets_selected_sorted, local);
+	} else
+		return;
+}
+
+
+
 template<class lepton>
 int CU_ttH_EDA::Print_event_in_file1(FILE *file,
 	lepton &lpt, std::vector<pat::Jet> &jets, CU_ttH_EDA_event_vars &local)
@@ -489,6 +574,124 @@ int CU_ttH_EDA::Print_event_in_file1(FILE *file,
 		local.n_btags,
 		local.n_ttags,
 		local.n_Htags);
+	
+	
+	return ferror(file);
+}
+
+
+
+template<class lepton>
+int CU_ttH_EDA::Print_event_in_file1_dilepton(FILE *file,
+        std::vector<lepton> &lepton1, std::vector<lepton> &lepton2, std::vector<pat::Jet> &jets, CU_ttH_EDA_event_vars &local)
+{
+        //std::vector<lepton> leptons;
+        //switch (dilepton_type) {
+        //        case 'dimuon':
+        //        leptons 
+    
+        // print generic event info
+	fprintf(file, "%6d %8d %10d   ",
+		local.run_nr,
+		local.lumisection_nr,
+		local.event_nr);
+	
+	// print lepton info
+	if (lepton1.size() = 1) {
+		fprintf(file, "%6.2f %+4.2f %+4.2f   ",
+			lepton1[0].pt(),
+			lepton1[0].eta(),
+			lepton1[0].phi());
+        } else {
+        		fprintf(file, "%6.2f %+4.2f %+4.2f   ",
+	        		-99.,
+		        	-99.,
+		        	-99.);
+        }
+
+	if (lepton2.size() = 1) {
+		fprintf(file, "%6.2f %+4.2f %+4.2f   ",
+			lepton2[0].pt(),
+			lepton2[0].eta(),
+			lepton2[0].phi());
+        } else {
+        		fprintf(file, "%6.2f %+4.2f %+4.2f   ",
+	        		-99.,
+		        	-99.,
+		        	-99.);
+        }
+
+        // print MET and dilepton mass
+        fprintf(file, "%6.2f  %6.2f   ",
+                MET_corrected.pt(),
+                dilepton_mass);
+
+	// print jet(s) info
+	if (jets.size() >= 4) {
+		fprintf(file, "%6.2f %6.2f %6.2f %6.2f   %+7.3f %+7.3f %+7.3f %+7.3f   ",
+			jets[0].pt(),
+			jets[1].pt(),
+			jets[2].pt(),
+			jets[3].pt(),
+			jets[0].bDiscriminator("combinedInclusiveSecondaryVertexV2BJetTags"),
+			jets[1].bDiscriminator("combinedInclusiveSecondaryVertexV2BJetTags"),
+			jets[2].bDiscriminator("combinedInclusiveSecondaryVertexV2BJetTags"),
+			jets[3].bDiscriminator("combinedInclusiveSecondaryVertexV2BJetTags"));
+	} else {
+		switch (jets.size()) {
+			case 3:
+			fprintf(file, "%6.2f %6.2f %6.2f %6.2f   %+7.3f %+7.3f %+7.3f %+7.3f   ",
+				jets[0].pt(),
+				jets[1].pt(),
+				jets[2].pt(),
+				-99.,
+				jets[0].bDiscriminator("combinedInclusiveSecondaryVertexV2BJetTags"),
+				jets[1].bDiscriminator("combinedInclusiveSecondaryVertexV2BJetTags"),
+				jets[2].bDiscriminator("combinedInclusiveSecondaryVertexV2BJetTags"),
+				-99.);
+			break;
+			
+			case 2:
+			fprintf(file, "%6.2f %6.2f %6.2f %6.2f   %+7.3f %+7.3f %+7.3f %+7.3f   ",
+				jets[0].pt(),
+				jets[1].pt(),
+				-99.,
+				-99.,
+				jets[0].bDiscriminator("combinedInclusiveSecondaryVertexV2BJetTags"),
+				jets[1].bDiscriminator("combinedInclusiveSecondaryVertexV2BJetTags"),
+				-99.,
+				-99.);
+			break;
+			
+			case 1:
+			fprintf(file, "%6.2f %6.2f %6.2f %6.2f   %+7.3f %+7.3f %+7.3f %+7.3f   ",
+				jets[0].pt(),
+				-99.,
+				-99.,
+				-99.,
+				jets[0].bDiscriminator("combinedInclusiveSecondaryVertexV2BJetTags"),
+				-99.,
+				-99.,
+				-99.);
+			break;
+			
+			default:
+				fprintf(file, "%6.2f %6.2f %6.2f %6.2f   %+7.3f %+7.3f %+7.3f %+7.3f   ",
+					-99.,
+					-99.,
+					-99.,
+					-99.,
+					-99.,
+					-99.,
+					-99.,
+					-99.);
+		}
+	}
+	
+	// print number of tags
+	fprintf(file, "%2d  %2d\n",
+		local.n_jets,
+		local.n_btags);
 	
 	
 	return ferror(file);
