@@ -40,23 +40,11 @@
 CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet& iConfig)
 {
 	/*
-	 * FIXME: an interface to a config reader is needed!!!
-	 * 
 	 * now do whatever initialization is needed
 	*/
-	verbose_ = false;
-	dumpHLT_ = false;
-	
-	hltTag = "HLT";
-	filterTag = "PAT";
-	
-	Set_up_tokens();
-	Set_up_histograms();
-	Set_up_output_files();
-	
 	
 	/// temporary mock-up parameters
-	std::string era = "2012_53x";
+	MAODHelper_era = "2012_53x";
 	MAODHelper_sample_nr = 2500;
 	
 	total_xs = 831.76;
@@ -65,15 +53,13 @@ CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet& iConfig)
 	weight_sample = int_lumi * total_xs / sample_n;
 	
 	
-	miniAODhelper.SetUp(era,
-		MAODHelper_sample_nr,
-		analysisType::LJ,	// LJ, DIL, TauLJ, TauDIL
-		false	// is data
-	);
+	Load_configuration(static_cast<string>(
+		"Configs/config_analyzer.yaml"));
 	
 	
-	/// Setting up cuts
-	min_tight_lepton_pT = 20;
+	Set_up_tokens();
+	Set_up_histograms();
+	Set_up_output_files();
 }
 
 
@@ -120,7 +106,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	
 	/// Get and set miniAODhelper's jet corrector from the event setup
 	miniAODhelper.SetJetCorrector(
-		JetCorrector::getJetCorrector("ak4PFchsL1L2L3", iSetup));
+		JetCorrector::getJetCorrector(jet_corrector, iSetup));
 	
 	
 	// 	weight_gen = event_gen_info.product()->weight();
