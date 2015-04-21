@@ -104,7 +104,9 @@ struct CU_ttH_EDA_event_vars {
 	/// Passing-trigger flags
 	bool pass_single_e;
 	bool pass_single_mu;
-        bool pass_double_mu;	
+        bool pass_double_mu;
+        bool pass_double_e;
+        bool pass_elemu;
 	
 	/// Particle container vectors
 	std::vector<pat::Electron> e_selected;
@@ -123,6 +125,8 @@ struct CU_ttH_EDA_event_vars {
 
         /// Other quantities
         pat::MET MET_corrected;
+        double dimuon_mass;
+        double dielectron_mass;
         double dilepton_mass;
 };
 
@@ -197,11 +201,14 @@ private:
 	void Check_Fill_Print_ej(CU_ttH_EDA_event_vars&);
 	void Check_Fill_Print_muj(CU_ttH_EDA_event_vars&);
         void Check_Fill_Print_dimuj(CU_ttH_EDA_event_vars&);
+        void Check_Fill_Print_dielej(CU_ttH_EDA_event_vars&);
+        void Check_Fill_Print_elemuj(CU_ttH_EDA_event_vars&);
 	
 	template<class lepton>
 	int Print_event_in_file1(FILE*, lepton&, std::vector<pat::Jet>&,
 		CU_ttH_EDA_event_vars&);
-	int Print_event_in_file1_dilepton(FILE*, std::vector<lepton>&, std::vector<lepton>&, std::vector<pat::Jet>&,
+        template<class lepton>
+	int Print_event_in_file1_dilepton(FILE*, lepton&, lepton&, double&, std::vector<pat::Jet>&,
 		CU_ttH_EDA_event_vars&);
 		
 	
@@ -264,6 +271,9 @@ private:
 	/// Histograms
 	TH1D *h_tth_syncex1_ele;
 	TH1D *h_tth_syncex1_mu;
+        TH1D *h_tth_syncex1_dimu;
+        TH1D *h_tth_syncex1_diele;
+        TH1D *h_tth_syncex1_elemu;
 	
 	TH1D *h_hlt;
 	TH1D *h_flt;
@@ -281,7 +291,13 @@ private:
 	
 	FILE *events_dimu_cut1, *events_dimu_cut2, *events_dimu_cut3, *events_dimu_cut4,
 		*events_dimu_cut5, *events_dimu_cut6, *events_dimu_cut7;
-	
+
+        FILE *events_diele_cut1, *events_diele_cut2, *events_diele_cut3, *events_diele_cut4,
+		*events_diele_cut5, *events_diele_cut6, *events_diele_cut7;
+
+        FILE *events_elemu_cut1, *events_elemu_cut2, *events_elemu_cut3, *events_elemu_cut4,
+		*events_elemu_cut5;
+			
 	
 	/// Technical variables
 	

@@ -103,6 +103,9 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	/// Triggers have not fired yet. Check_triggers, Check_filters will adjust
 	local.pass_single_e = false;
 	local.pass_single_mu = false;
+        local.pass_double_mu = false;
+        local.pass_double_e = false;
+        local.pass_elemu = false;
 	Update_common_vars(iEvent, local);
 	
 	
@@ -181,13 +184,15 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	
 	/// Get Corrected MET, !!!not yet used!!!
 	//may need to be placed in CU_ttH_EDA_event_vars
-	pat::MET MET_corrected = handle.METs->front();	//miniAODhelper.GetCorrectedMET( METs.at(0), pfJets_forMET, iSysType );
+	local.MET_corrected = handle.METs->front();	//miniAODhelper.GetCorrectedMET( METs.at(0), pfJets_forMET, iSysType );
 	
 	
 	/// Check tags, fill hists, print events
 	Check_Fill_Print_ej(local);
 	Check_Fill_Print_muj(local);
         Check_Fill_Print_dimuj(local);
+        Check_Fill_Print_dielej(local);
+        Check_Fill_Print_elemu(local);
 }
 
 
@@ -284,8 +289,26 @@ void CU_ttH_EDA::endRun(edm::Run const&, edm::EventSetup const&)
 	
 	std::cout << "***************************************************************" << std::endl;
 	
+	std::cout << "\t Synchronization for di-ele" << std::endl;
+	std::cout << "Selection \t Number of events\n";
+	for (int i = 0; i < h_tth_syncex1_diele->GetNbinsX(); ++i)
+		printf("%s\t %.0f\n",
+			h_tth_syncex1_diele->GetXaxis()->GetBinLabel(i + 1),
+			h_tth_syncex1_diele->GetBinContent(i + 1));
 	
-	End_Run_hist_fill();
+	std::cout << "***************************************************************" << std::endl;
+		
+	std::cout << "\t Synchronization for ele-mu" << std::endl;
+	std::cout << "Selection \t Number of events\n";
+	for (int i = 0; i < h_tth_syncex1_elemu->GetNbinsX(); ++i)
+		printf("%s\t %.0f\n",
+			h_tth_syncex1_elemu->GetXaxis()->GetBinLabel(i + 1),
+			h_tth_syncex1_elemu->GetBinContent(i + 1));
+	
+	std::cout << "***************************************************************" << std::endl;
+
+        
+        End_Run_hist_fill();
 	
 	
 	
