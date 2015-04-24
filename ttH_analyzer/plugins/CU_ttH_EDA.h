@@ -5,6 +5,7 @@
 /// Core libraries
 #include <memory>
 #include <cstdio>	// printf, fprintf
+#include <stdexcept>	// standard exceptions
 
 
 /// CMSSW user include files
@@ -74,6 +75,10 @@
 
 /// structs for holding multiple edm::Handle and EDGetTokenT
 #include "CU_ttH_EDA_Handles.h"
+
+
+/// Configuration reader
+#include "yaml-cpp/yaml.h"
 
 
 
@@ -161,12 +166,16 @@ private:
 	void beginRun(edm::Run const&, edm::EventSetup const&) override;
 	void endRun(edm::Run const&, edm::EventSetup const&) override;
 	
-	//virtual void beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override;
-	//virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override;
+// 	virtual void beginLuminosityBlock(edm::LuminosityBlock const&,
+// 		edm::EventSetup const&) override;
+// 	virtual void endLuminosityBlock(edm::LuminosityBlock const&,
+// 		edm::EventSetup const&) override;
 	
 	
 	/// One-time-run functions
 	void Close_output_files();	// at ~CU_ttH_EDA()
+	void Load_configuration(string);	// at CU_ttH_EDA(), runs _MAODH()
+	void Load_configuration_MAODH(const string&, bool);	// runs miniAODhelper.SetUp
 	void Set_up_histograms();	// at CU_ttH_EDA()
 	void Set_up_output_files();	// at CU_ttH_EDA()
 	void Set_up_tokens();	// at CU_ttH_EDA()
@@ -218,7 +227,7 @@ private:
 	* Variable section
 	*/
 	
-	/// debug flags, set in constructor
+	/// debug flags
 	bool verbose_;
 	bool dumpHLT_;
 	
@@ -244,6 +253,10 @@ private:
 	std::vector<std::string> filter_names;
 	std::vector<std::string> filter_names_no_ver;
 	
+	// triggers of interest
+	std::string trigger_on_HLT_electrons;	// upgradeable to a vector if needed
+	std::string trigger_on_HLT_muons;	// upgradeable to a vector if needed
+	
 	
 	/// Output file is opened/closed through CMS py config
 	edm::Service<TFileService> fs_;
@@ -258,6 +271,8 @@ private:
 	double weight_sample;	// int lumi * xs / sample_n
 // 	double weight_gen;
 	
+	std::string jet_corrector;
+	
 	
 	/// Cuts
 	double min_tight_lepton_pT;
@@ -267,6 +282,7 @@ private:
 	MiniAODHelper miniAODhelper;
 	
 	int MAODHelper_sample_nr;	// past insample_, in-development var. for MAODHelper?
+	std::string MAODHelper_era;
 	
 	
 	/// Histograms

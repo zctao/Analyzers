@@ -89,17 +89,17 @@ int CU_ttH_EDA::Check_triggers(
 		std::string pathName = trigger_names[i];
 		unsigned int hltIndex = hlt_config.triggerIndex(pathName);
 		
-		if (hltIndex >= triggerResults->size() )
+		if (hltIndex >= triggerResults->size())
 			continue;
 		
 		bool trigger_accept = triggerResults->accept(hltIndex);
 		int prescale = -1;	//hlt_config.prescaleValue(iEvent, iSetup, pathName);
 		
 		if (trigger_accept) {
-			if (pathName == "HLT_Ele27_eta2p1_WP85_Gsf_v1")
+			if (pathName == trigger_on_HLT_electrons)
 				local.pass_single_e = true;
 			
-			if (pathName == "HLT_IsoMu24_eta2p1_IterTrk02_v1")
+			if (pathName == trigger_on_HLT_muons)
 				local.pass_single_mu = true;
                         if (pathName == "HLT_Mu30_TkMu11_v1"
                                 or pathName == "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v1"
