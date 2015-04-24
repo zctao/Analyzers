@@ -192,7 +192,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	Check_Fill_Print_muj(local);
         Check_Fill_Print_dimuj(local);
         Check_Fill_Print_dielej(local);
-        Check_Fill_Print_elemu(local);
+        Check_Fill_Print_elemuj(local);
 }
 
 

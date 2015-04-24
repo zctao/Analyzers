@@ -207,8 +207,9 @@ private:
 	template<class lepton>
 	int Print_event_in_file1(FILE*, lepton&, std::vector<pat::Jet>&,
 		CU_ttH_EDA_event_vars&);
-        template<class lepton>
-	int Print_event_in_file1_dilepton(FILE*, lepton&, lepton&, double&, std::vector<pat::Jet>&,
+        template<class lep1, class lep2>
+        //template<class lepton2>
+	int Print_event_in_file1_dilepton(FILE*, lep1&, lep2&, double, std::vector<pat::Jet>&,
 		CU_ttH_EDA_event_vars&);
 		
 	

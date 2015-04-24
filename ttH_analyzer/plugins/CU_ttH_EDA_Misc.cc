@@ -104,7 +104,13 @@ int CU_ttH_EDA::Check_triggers(
                         if (pathName == "HLT_Mu30_TkMu11_v1"
                                 or pathName == "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v1"
                                 or pathName == "HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v1")
-                                local.pass_double_mu = true;
+                                        local.pass_double_mu = true;
+                        if (pathName == "HLT_Ele23_Ele12_CaloId_TrackId_Iso_v1")
+                                local.pass_double_e = true;
+                        if (pathName == "HLT_Mu23_TrkIsoVVL_Ele12_Gsf_CaloId_TrackId_Iso_MediumWP_v1"
+                                or pathName == "HLT_Mu8_TrkIsoVVL_Ele23_Gsf_CaloId_TrackId_Iso_MediumWP_v1")
+                                        local.pass_elemu = true;
+
 		}
 		
 		if (verbose_ && dumpHLT_)
@@ -594,7 +600,7 @@ void CU_ttH_EDA::Check_Fill_Print_elemuj(CU_ttH_EDA_event_vars &local)
 	if (local.pass_elemu) {
 		h_tth_syncex1_elemu->Fill(0.5 + fill_itr++);
 		Print_event_in_file1_dilepton(events_elemu_cut1,
-		        electron1, muon1, local.dilepton_mass, local.jets_selected_sorted, local);
+		        muon1, electron1, local.dilepton_mass, local.jets_selected_sorted, local);
 	} else
 		return;
 	
@@ -602,7 +608,7 @@ void CU_ttH_EDA::Check_Fill_Print_elemuj(CU_ttH_EDA_event_vars &local)
                 if ( local.e_selected_sorted[0].charge() != local.mu_selected_sorted[0].charge() ) {
         		h_tth_syncex1_elemu->Fill(0.5 + fill_itr++);
         		Print_event_in_file1_dilepton(events_elemu_cut2,
-        			electron1, muon1, local.dilepton_mass, local.jets_selected_sorted, local);
+        			muon1, electron1, local.dilepton_mass, local.jets_selected_sorted, local);
                 } else {
                         std::cout << "Found event with two same-charge leptons" << std::endl;
                 }
@@ -615,21 +621,21 @@ void CU_ttH_EDA::Check_Fill_Print_elemuj(CU_ttH_EDA_event_vars &local)
 	if (local.dilepton_mass >= 20) {
 		h_tth_syncex1_elemu->Fill(0.5 + fill_itr++);
 		Print_event_in_file1_dilepton(events_elemu_cut3,
-			electron1, muon1, local.dilepton_mass, local.jets_selected_sorted, local);
+			muon1, electron1, local.dilepton_mass, local.jets_selected_sorted, local);
 	} else
 		return;
 	
 	if (local.n_jets >= 2) {
 		h_tth_syncex1_elemu->Fill(0.5 + fill_itr++);
 		Print_event_in_file1_dilepton(events_elemu_cut4,
-			electron1, muon1, local.dilepton_mass, local.jets_selected_sorted, local);
+			muon1, electron1, local.dilepton_mass, local.jets_selected_sorted, local);
 	} else
 		return;
 	
 	if (local.n_btags >= 1) {
 		h_tth_syncex1_elemu->Fill(0.5 + fill_itr);
 		Print_event_in_file1_dilepton(events_elemu_cut5,
-			electron1, muon1, local.dilepton_mass, local.jets_selected_sorted, local);
+			muon1, electron1, local.dilepton_mass, local.jets_selected_sorted, local);
 	} else
 		return;
 }
@@ -733,9 +739,10 @@ int CU_ttH_EDA::Print_event_in_file1(FILE *file,
 
 
 
-template<class lepton>
+template<class lep1, class lep2>
+//template<class lepton2>
 int CU_ttH_EDA::Print_event_in_file1_dilepton(FILE *file,
-        lepton &lepton1, lepton &lepton2, double dilepton_mass, std::vector<pat::Jet> &jets, CU_ttH_EDA_event_vars &local)
+        lep1 &lepton1, lep2 &lepton2, double dilepton_mass, std::vector<pat::Jet> &jets, CU_ttH_EDA_event_vars &local)
 {
         //std::vector<lepton> leptons;
         //switch (dilepton_type) {

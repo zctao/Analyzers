@@ -121,7 +121,7 @@ void CU_ttH_EDA::Set_up_histograms()
 	h_tth_syncex1_diele->GetXaxis()->SetBinLabel(7, "MET > 40");
 	h_tth_syncex1_diele->GetXaxis()->SetBinLabel(8, ">=1 b-tags");
 
-	h_tth_syncex1_elemu = fs_->make<TH1D>("h_tth_syncex1_elemu", ";cut", 8, 0 , 8 );
+	h_tth_syncex1_elemu = fs_->make<TH1D>("h_tth_syncex1_elemu", ";cut", 6, 0 , 6 );
 	h_tth_syncex1_elemu->GetXaxis()->SetBinLabel(1, "All events");
 	h_tth_syncex1_elemu->GetXaxis()->SetBinLabel(2, "Ele-mu trig");
 	h_tth_syncex1_elemu->GetXaxis()->SetBinLabel(3, ">=2 leptons");
@@ -227,13 +227,13 @@ void CU_ttH_EDA::Set_up_output_files()
 	events_dimu_cut6 = fopen("Outputs/CU_events_dimu_cut6.dat", "w");
 	events_dimu_cut7 = fopen("Outputs/CU_events_dimu_cut7.dat", "w");
 
-        events_elemu_cut1 = fopen("Outputs/CU_events_diele_cut1.dat", "w");
-	events_elemu_cut2 = fopen("Outputs/CU_events_diele_cut2.dat", "w");
-	events_elemu_cut3 = fopen("Outputs/CU_events_diele_cut3.dat", "w");
-	events_elemu_cut4 = fopen("Outputs/CU_events_diele_cut4.dat", "w");
-	events_elemu_cut5 = fopen("Outputs/CU_events_diele_cut5.dat", "w");
-	events_elemu_cut6 = fopen("Outputs/CU_events_diele_cut6.dat", "w");
-	events_elemu_cut7 = fopen("Outputs/CU_events_diele_cut7.dat", "w");
+        events_diele_cut1 = fopen("Outputs/CU_events_diele_cut1.dat", "w");
+	events_diele_cut2 = fopen("Outputs/CU_events_diele_cut2.dat", "w");
+	events_diele_cut3 = fopen("Outputs/CU_events_diele_cut3.dat", "w");
+	events_diele_cut4 = fopen("Outputs/CU_events_diele_cut4.dat", "w");
+	events_diele_cut5 = fopen("Outputs/CU_events_diele_cut5.dat", "w");
+	events_diele_cut6 = fopen("Outputs/CU_events_diele_cut6.dat", "w");
+	events_diele_cut7 = fopen("Outputs/CU_events_diele_cut7.dat", "w");
 
         events_elemu_cut1 = fopen("Outputs/CU_events_elemu_cut1.dat", "w");
 	events_elemu_cut2 = fopen("Outputs/CU_events_elemu_cut2.dat", "w");
