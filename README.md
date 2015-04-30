@@ -13,7 +13,9 @@ https://www.kernel.org/doc/Documentation/CodingStyle
 clang-format. Use it! Run:
 
 	$ clang-format -style=file -i *.h
+
 	$ clang-format -style=file -i *.cc
+
 	$ clang-format -style=file -i *.cpp
 
 to update all files in a current directory.

@@ -4,7 +4,7 @@
 /// Includes
 #include "CU_ttH_EDA.h"
 
-int CU_ttH_EDA::End_Run_hist_fill()
+int CU_ttH_EDA::End_Run_hist_fill_triggers()
 {
 	TAxis *axis = h_hlt->GetXaxis();
 	if (!axis)
@@ -74,48 +74,63 @@ int CU_ttH_EDA::Check_triggers(edm::Handle<edm::TriggerResults> triggerResults,
 		return 1;
 	}
 
-	for (unsigned int i = 0; i < trigger_names.size(); ++i) {
-		std::string pathName = trigger_names[i];
-		unsigned int hltIndex = hlt_config.triggerIndex(pathName);
+	/// scan: trigger_on_HLT_<type>
+	local.pass_single_e =
+		Check_triggers_iterator(trigger_on_HLT_e, triggerResults);
+	local.pass_single_mu =
+		Check_triggers_iterator(trigger_on_HLT_mu, triggerResults);
+	local.pass_double_e =
+		Check_triggers_iterator(trigger_on_HLT_ee, triggerResults);
+	local.pass_elemu =
+		Check_triggers_iterator(trigger_on_HLT_emu, triggerResults);
+	local.pass_double_mu =
+		Check_triggers_iterator(trigger_on_HLT_mumu, triggerResults);
+
+	if (trigger_stats) {
+		for (std::vector<std::string>::const_iterator trigger =
+				 trigger_names.begin();
+			 trigger != trigger_names.end(); ++trigger) {
+			std::string pathName = *trigger;
+			unsigned int hltIndex = hlt_config.triggerIndex(pathName);
+
+			if (hltIndex >= triggerResults->size())
+				continue;
+
+			bool trigger_accept = triggerResults->accept(hltIndex);
+			int prescale = -1; // hlt_config.prescaleValue(iEvent, iSetup,
+							   // pathName);
+
+			if (verbose_ && dumpHLT_)
+				std::cout << " =====>  HLT: path name = " << pathName
+						  << ",\t prescale = " << prescale
+						  << ",\t pass = " << trigger_accept << std::endl;
+
+			std::string pathNameNoVer = hlt_config.removeVersion(pathName);
+
+			if (trigger_accept)
+				++n_trigger_fired[pathNameNoVer];
+		}
+	}
+
+	return 0;
+}
+
+bool CU_ttH_EDA::Check_triggers_iterator(
+	const vector<string> &triggers,
+	edm::Handle<edm::TriggerResults> triggerResults)
+{
+	for (std::vector<std::string>::const_iterator trigger = triggers.begin();
+		 trigger != triggers.end(); ++trigger) {
+		unsigned int hltIndex = hlt_config.triggerIndex(*trigger);
 
 		if (hltIndex >= triggerResults->size())
 			continue;
 
-		bool trigger_accept = triggerResults->accept(hltIndex);
-		int prescale = -1; // hlt_config.prescaleValue(iEvent, iSetup,
-						   // pathName);
-
-		if (trigger_accept) {
-			if (pathName == trigger_on_HLT_electrons)
-				local.pass_single_e = true;
-
-			if (pathName == trigger_on_HLT_muons)
-				local.pass_single_mu = true;
-			if (pathName == "HLT_Mu30_TkMu11_v1" or
-				pathName == "HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v1" or
-				pathName == "HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v1")
-				local.pass_double_mu = true;
-			if (pathName == "HLT_Ele23_Ele12_CaloId_TrackId_Iso_v1")
-				local.pass_double_e = true;
-			if (pathName == "HLT_Mu23_TrkIsoVVL_Ele12_Gsf_CaloId_TrackId_Iso_"
-							"MediumWP_v1" or
-				pathName == "HLT_Mu8_TrkIsoVVL_Ele23_Gsf_CaloId_TrackId_Iso_"
-							"MediumWP_v1")
-				local.pass_elemu = true;
-		}
-
-		if (verbose_ && dumpHLT_)
-			std::cout << " =====>  HLT: path name = " << pathName
-					  << ",\t prescale = " << prescale
-					  << ",\t pass = " << trigger_accept << std::endl;
-
-		std::string pathNameNoVer = hlt_config.removeVersion(pathName);
-
-		if (trigger_accept)
-			++n_trigger_fired[pathNameNoVer];
+		if (triggerResults->accept(hltIndex))
+			return true;
 	}
 
-	return 0;
+	return false;
 }
 
 int CU_ttH_EDA::Check_filters(edm::Handle<edm::TriggerResults> filterResults)
@@ -126,26 +141,30 @@ int CU_ttH_EDA::Check_filters(edm::Handle<edm::TriggerResults> filterResults)
 		return 1;
 	}
 
-	for (unsigned int i = 0; i < filter_names.size(); ++i) {
-		std::string pathName = filter_names[i];
-		unsigned int hltIndex = filter_config.triggerIndex(pathName);
+	if (trigger_stats) {
+		for (std::vector<std::string>::const_iterator trigger =
+				 filter_names.begin();
+			 trigger != filter_names.end(); ++trigger) {
+			std::string pathName = *trigger;
+			unsigned int hltIndex = filter_config.triggerIndex(pathName);
 
-		if (hltIndex >= filterResults->size())
-			continue;
+			if (hltIndex >= filterResults->size())
+				continue;
 
-		bool filter_accept = filterResults->accept(hltIndex);
-		int prescale =
-			-1; // filter_config.prescaleValue(iEvent, iSetup, pathName);
+			bool filter_accept = filterResults->accept(hltIndex);
+			int prescale = -1; // filter_config.prescaleValue(iEvent, iSetup,
+							   // pathName);
 
-		if (verbose_ && dumpHLT_)
-			std::cout << " =====>  Filter: path name = " << pathName
-					  << ",\t prescale = " << prescale
-					  << ",\t pass = " << filter_accept << std::endl;
+			if (verbose_ && dumpHLT_)
+				std::cout << " =====>  Filter: path name = " << pathName
+						  << ",\t prescale = " << prescale
+						  << ",\t pass = " << filter_accept << std::endl;
 
-		std::string pathNameNoVer = filter_config.removeVersion(pathName);
+			std::string pathNameNoVer = filter_config.removeVersion(pathName);
 
-		if (filter_accept)
-			++n_filter_fired[pathNameNoVer];
+			if (filter_accept)
+				++n_filter_fired[pathNameNoVer];
+		}
 	}
 
 	return 0;

@@ -12,6 +12,12 @@ void CU_ttH_EDA::Load_configuration(string config_filename)
 
 	YAML::Node config = YAML::LoadFile(config_filename);
 
+	/// Setting up analysis type
+	if (!config["Generic"]["analysis_type"])
+		throw std::runtime_error(error_message);
+	Load_configuration_set_type(
+		config["Generic"]["analysis_type"].as<string>());
+
 	/// Setting up generic parameters
 	if (!config["Generic"]["HLT_config_tag"])
 		throw std::runtime_error(error_message);
@@ -30,19 +36,47 @@ void CU_ttH_EDA::Load_configuration(string config_filename)
 	dumpHLT_ = config["Generic"]["print_HLT_event_path"].as<bool>();
 
 	/// Setting up HLT triggers
+	if (!config["Triggers"]["collect_trigger_stats"])
+		throw std::runtime_error(error_message);
+	trigger_stats = config["Triggers"]["collect_trigger_stats"].as<bool>();
+
 	if (!config["Triggers"]["HLT_electron_triggers"])
 		throw std::runtime_error(error_message);
-	trigger_on_HLT_electrons =
-		config["Triggers"]["HLT_electron_triggers"].as<string>();
+	trigger_on_HLT_e =
+		config["Triggers"]["HLT_electron_triggers"].as<vector<string>>();
 
 	if (!config["Triggers"]["HLT_muon_triggers"])
 		throw std::runtime_error(error_message);
-	trigger_on_HLT_muons = config["Triggers"]["HLT_muon_triggers"].as<string>();
+	trigger_on_HLT_mu =
+		config["Triggers"]["HLT_muon_triggers"].as<vector<string>>();
+
+	if (!config["Triggers"]["HLT_electron_electron_triggers"])
+		throw std::runtime_error(error_message);
+	trigger_on_HLT_ee = config["Triggers"]["HLT_electron_electron_triggers"]
+							.as<vector<string>>();
+
+	if (!config["Triggers"]["HLT_electron_muon_triggers"])
+		throw std::runtime_error(error_message);
+	trigger_on_HLT_emu =
+		config["Triggers"]["HLT_electron_muon_triggers"].as<vector<string>>();
+
+	if (!config["Triggers"]["HLT_muon_muon_triggers"])
+		throw std::runtime_error(error_message);
+	trigger_on_HLT_mumu =
+		config["Triggers"]["HLT_muon_muon_triggers"].as<vector<string>>();
 
 	/// Setting up cuts
 	if (!config["Cuts"]["min_tight_lepton_pT"])
 		throw std::runtime_error(error_message);
-	min_tight_lepton_pT = config["Cuts"]["min_tight_lepton_pT"].as<double>();
+	min_tight_lepton_pT = config["Cuts"]["min_tight_lepton_pT"].as<float>();
+
+	if (!config["Cuts"]["min_jet_pT"])
+		throw std::runtime_error(error_message);
+	min_jet_pT = config["Cuts"]["min_jet_pT"].as<float>();
+
+	if (!config["Cuts"]["max_jet_eta"])
+		throw std::runtime_error(error_message);
+	max_jet_eta = config["Cuts"]["max_jet_eta"].as<float>();
 
 	/// Setting up jets
 	if (!config["Jets"]["jet_corrector"])
@@ -50,18 +84,43 @@ void CU_ttH_EDA::Load_configuration(string config_filename)
 	jet_corrector = config["Jets"]["jet_corrector"].as<string>();
 
 	/// Setting up miniAODhelper
-	if (!config["miniAODhelper_parameters"]["analysis_type"] ||
-		!config["miniAODhelper_parameters"]["using_real_data"])
+	if (!config["miniAODhelper_parameters"]["using_real_data"])
 		throw std::runtime_error(error_message);
 	Load_configuration_MAODH(
-		config["miniAODhelper_parameters"]["analysis_type"].as<string>(),
 		config["miniAODhelper_parameters"]["using_real_data"].as<bool>());
+
+	if (!config["miniAODhelper_parameters"]["b_tag_strength"])
+		throw std::runtime_error(error_message);
+	MAODHelper_b_tag_strength =
+		config["miniAODhelper_parameters"]["b_tag_strength"].as<char>();
 }
 
-void CU_ttH_EDA::Load_configuration_MAODH(const string &analysis_type,
-										  bool data)
+void CU_ttH_EDA::Load_configuration_set_type(const string &conf_analysis_type)
 {
-	if (analysis_type == "lepton+jet") {
+	if (conf_analysis_type == "lepton+jet") {
+		analysis_type = Analyze_lepton_jet;
+		return;
+	}
+
+	if (conf_analysis_type == "dilepton") {
+		analysis_type = Analyze_dilepton;
+		return;
+	}
+
+	if (conf_analysis_type == "taus_lepton+jet") {
+		analysis_type = Analyze_taus_lepton_jet;
+		return;
+	}
+
+	if (conf_analysis_type == "taus_dilepton") {
+		analysis_type = Analyze_taus_dilepton;
+		return;
+	}
+}
+
+void CU_ttH_EDA::Load_configuration_MAODH(bool data)
+{
+	if (analysis_type == Analyze_lepton_jet) {
 		miniAODhelper.SetUp(MAODHelper_era, MAODHelper_sample_nr,
 							analysisType::LJ, // LJ, DIL, TauLJ, TauDIL
 							data			  // is data
@@ -69,7 +128,7 @@ void CU_ttH_EDA::Load_configuration_MAODH(const string &analysis_type,
 		return;
 	}
 
-	if (analysis_type == "dilepton") {
+	if (analysis_type == Analyze_dilepton) {
 		miniAODhelper.SetUp(MAODHelper_era, MAODHelper_sample_nr,
 							analysisType::DIL, // LJ, DIL, TauLJ, TauDIL
 							data			   // is data
@@ -77,7 +136,7 @@ void CU_ttH_EDA::Load_configuration_MAODH(const string &analysis_type,
 		return;
 	}
 
-	if (analysis_type == "taus_lepton+jet") {
+	if (analysis_type == Analyze_taus_lepton_jet) {
 		miniAODhelper.SetUp(MAODHelper_era, MAODHelper_sample_nr,
 							analysisType::TauLJ, // LJ, DIL, TauLJ, TauDIL
 							data				 // is data
@@ -85,7 +144,7 @@ void CU_ttH_EDA::Load_configuration_MAODH(const string &analysis_type,
 		return;
 	}
 
-	if (analysis_type == "taus_dilepton") {
+	if (analysis_type == Analyze_taus_dilepton) {
 		miniAODhelper.SetUp(MAODHelper_era, MAODHelper_sample_nr,
 							analysisType::TauDIL, // LJ, DIL, TauLJ, TauDIL
 							data				  // is data

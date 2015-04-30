@@ -76,6 +76,20 @@
 
 /*
  *
+ * enum for analysis type.
+ * Purpose: allows faster in-function comparisons
+ *
+ */
+
+enum analysis_types {
+	Analyze_lepton_jet,
+	Analyze_dilepton,
+	Analyze_taus_lepton_jet,
+	Analyze_taus_dilepton
+};
+
+/*
+ *
  * struct for per-event variables used in analyze(...)
  *
  */
@@ -151,8 +165,8 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	void beginJob() override;
 	void endJob() override;
 
-	void beginRun(edm::Run const &, edm::EventSetup const &) override;
-	void endRun(edm::Run const &, edm::EventSetup const &) override;
+	void beginRun(const edm::Run &, const edm::EventSetup &) override;
+	void endRun(const edm::Run &, const edm::EventSetup &) override;
 
 	// 	virtual void beginLuminosityBlock(edm::LuminosityBlock const&,
 	// 		edm::EventSetup const&) override;
@@ -162,17 +176,18 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	/// One-time-run functions
 	void Close_output_files();		 // at ~CU_ttH_EDA()
 	void Load_configuration(string); // at CU_ttH_EDA(), runs _MAODH()
-	void Load_configuration_MAODH(const string &,
-								  bool); // runs miniAODhelper.SetUp
+	void Load_configuration_set_type(const string &); // sets analysis_type
+	void Load_configuration_MAODH(bool); // runs miniAODhelper.SetUp
 	void Set_up_histograms();			 // at CU_ttH_EDA()
 	void Set_up_output_files();			 // at CU_ttH_EDA()
 	void Set_up_tokens();				 // at CU_ttH_EDA()
 
-	int Set_up_Run_histograms(); // at beginRun(), after Set_up_name_vectors()
+	int Set_up_Run_histograms_triggers(); // at beginRun(), after
+										  // Set_up_name_vectors()
 
-	void Set_up_name_vectors(); // at beginRun()
+	void Set_up_trigger_name_vectors(); // at beginRun()
 
-	int End_Run_hist_fill(); // fill histograms at endRun()
+	int End_Run_hist_fill_triggers(); // fill histograms at endRun()
 
 	/// Per-event functions
 	void Update_common_vars(const edm::Event &, CU_ttH_EDA_event_vars &);
@@ -183,6 +198,10 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 					   CU_ttH_EDA_event_vars &); // adjusts event variables
 	int Check_filters(edm::Handle<edm::TriggerResults>);
 	int Check_vertices_set_MAODhelper(edm::Handle<reco::VertexCollection>);
+
+	// trigger iterator, part of Check_triggers()
+	bool Check_triggers_iterator(const vector<string> &,
+								 edm::Handle<edm::TriggerResults>);
 
 	/// Taggers. Returns 1 in case of an error
 	int Higgs_tagger(Handle<boosted::SubFilterJetCollection>,
@@ -213,6 +232,9 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	/// debug flags
 	bool verbose_;
 	bool dumpHLT_;
+	bool trigger_stats;
+
+	analysis_types analysis_type;
 
 	edm_Tokens token; // common tokens for all events
 
@@ -220,11 +242,12 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	HLTConfigProvider hlt_config;
 	HLTConfigProvider filter_config;
 
-	/// Triggers, paths: variables filled via run
+	/// Triggers, paths.
+	// Used for trigger statistics, filled via run (trigger_stats = true)
 	std::string hltTag;
 	std::string filterTag;
 
-	// counters
+	// counters (trigger_stats = true)
 	std::map<std::string, unsigned long> n_trigger_fired; // HLT
 	std::map<std::string, unsigned long> n_filter_fired;
 
@@ -234,9 +257,12 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	std::vector<std::string> filter_names;
 	std::vector<std::string> filter_names_no_ver;
 
-	// triggers of interest
-	std::string trigger_on_HLT_electrons; // upgradeable to a vector if needed
-	std::string trigger_on_HLT_muons;	 // upgradeable to a vector if needed
+	// triggers of interest. Provided by config
+	std::vector<std::string> trigger_on_HLT_e;	// single electron trigger
+	std::vector<std::string> trigger_on_HLT_mu;   // single muon trigger
+	std::vector<std::string> trigger_on_HLT_ee;   // dielectron tigger
+	std::vector<std::string> trigger_on_HLT_emu;  // electron+muon trigger
+	std::vector<std::string> trigger_on_HLT_mumu; // dimuon trigger
 
 	/// Output file is opened/closed through CMS py config
 	edm::Service<TFileService> fs_;
@@ -248,15 +274,19 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	double int_lumi;	  // integrated luminosity
 	double sample_n;	  // total nr of events. Should be long if compatible
 	double weight_sample; // int lumi * xs / sample_n
-						  // 	double weight_gen;
+	// double weight_gen;
 
 	std::string jet_corrector;
 
 	/// Cuts
-	double min_tight_lepton_pT;
+	float min_tight_lepton_pT;
+	float min_jet_pT;
+	float max_jet_eta;
 
 	/// Selection helper
 	MiniAODHelper miniAODhelper;
+
+	char MAODHelper_b_tag_strength;
 
 	int MAODHelper_sample_nr; // past insample_, in-development var. for
 							  // MAODHelper?

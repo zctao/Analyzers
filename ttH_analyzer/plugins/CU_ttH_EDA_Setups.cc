@@ -6,43 +6,47 @@
 
 void CU_ttH_EDA::Close_output_files()
 {
-	fclose(events_e_cut1);
-	fclose(events_e_cut2);
-	fclose(events_e_cut3);
-	fclose(events_e_cut4);
-	fclose(events_e_cut5);
-	fclose(events_e_cut6);
-	fclose(events_e_cut7);
+	if (analysis_type == Analyze_lepton_jet) {
+		fclose(events_e_cut1);
+		fclose(events_e_cut2);
+		fclose(events_e_cut3);
+		fclose(events_e_cut4);
+		fclose(events_e_cut5);
+		fclose(events_e_cut6);
+		fclose(events_e_cut7);
 
-	fclose(events_mu_cut1);
-	fclose(events_mu_cut2);
-	fclose(events_mu_cut3);
-	fclose(events_mu_cut4);
-	fclose(events_mu_cut5);
-	fclose(events_mu_cut6);
-	fclose(events_mu_cut7);
+		fclose(events_mu_cut1);
+		fclose(events_mu_cut2);
+		fclose(events_mu_cut3);
+		fclose(events_mu_cut4);
+		fclose(events_mu_cut5);
+		fclose(events_mu_cut6);
+		fclose(events_mu_cut7);
+	}
 
-	fclose(events_dimu_cut1);
-	fclose(events_dimu_cut2);
-	fclose(events_dimu_cut3);
-	fclose(events_dimu_cut4);
-	fclose(events_dimu_cut5);
-	fclose(events_dimu_cut6);
-	fclose(events_dimu_cut7);
+	if (analysis_type == Analyze_dilepton) {
+		fclose(events_dimu_cut1);
+		fclose(events_dimu_cut2);
+		fclose(events_dimu_cut3);
+		fclose(events_dimu_cut4);
+		fclose(events_dimu_cut5);
+		fclose(events_dimu_cut6);
+		fclose(events_dimu_cut7);
 
-	fclose(events_diele_cut1);
-	fclose(events_diele_cut2);
-	fclose(events_diele_cut3);
-	fclose(events_diele_cut4);
-	fclose(events_diele_cut5);
-	fclose(events_diele_cut6);
-	fclose(events_diele_cut7);
+		fclose(events_diele_cut1);
+		fclose(events_diele_cut2);
+		fclose(events_diele_cut3);
+		fclose(events_diele_cut4);
+		fclose(events_diele_cut5);
+		fclose(events_diele_cut6);
+		fclose(events_diele_cut7);
 
-	fclose(events_elemu_cut1);
-	fclose(events_elemu_cut2);
-	fclose(events_elemu_cut3);
-	fclose(events_elemu_cut4);
-	fclose(events_elemu_cut5);
+		fclose(events_elemu_cut1);
+		fclose(events_elemu_cut2);
+		fclose(events_elemu_cut3);
+		fclose(events_elemu_cut4);
+		fclose(events_elemu_cut5);
+	}
 }
 
 void CU_ttH_EDA::Set_up_histograms()
@@ -83,59 +87,65 @@ void CU_ttH_EDA::Set_up_histograms()
 	// 	h_muon_selection->GetXaxis()->SetBinLabel(11, "dZ");
 	// 	h_muon_selection->GetXaxis()->SetBinLabel(12, "relIso < 0.1");
 
-	h_tth_syncex1_ele = fs_->make<TH1D>("h_tth_syncex1_ele", ";cut", 8, 0, 8);
-	h_tth_syncex1_ele->GetXaxis()->SetBinLabel(1, "All events");
-	h_tth_syncex1_ele->GetXaxis()->SetBinLabel(2, "Single ele trig");
-	h_tth_syncex1_ele->GetXaxis()->SetBinLabel(3, "==1 electron");
-	h_tth_syncex1_ele->GetXaxis()->SetBinLabel(4, "==0 muons");
-	h_tth_syncex1_ele->GetXaxis()->SetBinLabel(5, ">=4 jets");
-	h_tth_syncex1_ele->GetXaxis()->SetBinLabel(6, ">=2 b-tags");
-	h_tth_syncex1_ele->GetXaxis()->SetBinLabel(7, ">=1 top-tags");
-	h_tth_syncex1_ele->GetXaxis()->SetBinLabel(8, ">=1 Higgs-tags");
+	if (analysis_type == Analyze_lepton_jet) {
+		h_tth_syncex1_ele =
+			fs_->make<TH1D>("h_tth_syncex1_ele", ";cut", 8, 0, 8);
+		h_tth_syncex1_ele->GetXaxis()->SetBinLabel(1, "All events");
+		h_tth_syncex1_ele->GetXaxis()->SetBinLabel(2, "Single ele trig");
+		h_tth_syncex1_ele->GetXaxis()->SetBinLabel(3, "==1 electron");
+		h_tth_syncex1_ele->GetXaxis()->SetBinLabel(4, "==0 muons");
+		h_tth_syncex1_ele->GetXaxis()->SetBinLabel(5, ">=4 jets");
+		h_tth_syncex1_ele->GetXaxis()->SetBinLabel(6, ">=2 b-tags");
+		h_tth_syncex1_ele->GetXaxis()->SetBinLabel(7, ">=1 top-tags");
+		h_tth_syncex1_ele->GetXaxis()->SetBinLabel(8, ">=1 Higgs-tags");
 
-	h_tth_syncex1_mu = fs_->make<TH1D>("h_tth_syncex1_mu", ";cut", 8, 0, 8);
-	h_tth_syncex1_mu->GetXaxis()->SetBinLabel(1, "All events");
-	h_tth_syncex1_mu->GetXaxis()->SetBinLabel(2, "Single mu trig");
-	h_tth_syncex1_mu->GetXaxis()->SetBinLabel(3, "==1 muon");
-	h_tth_syncex1_mu->GetXaxis()->SetBinLabel(4, "==0 electrons");
-	h_tth_syncex1_mu->GetXaxis()->SetBinLabel(5, ">=4 jets");
-	h_tth_syncex1_mu->GetXaxis()->SetBinLabel(6, ">=2 b-tags");
-	h_tth_syncex1_mu->GetXaxis()->SetBinLabel(7, ">=1 top-tags");
-	h_tth_syncex1_mu->GetXaxis()->SetBinLabel(8, ">=1 Higgs-tags");
+		h_tth_syncex1_mu = fs_->make<TH1D>("h_tth_syncex1_mu", ";cut", 8, 0, 8);
+		h_tth_syncex1_mu->GetXaxis()->SetBinLabel(1, "All events");
+		h_tth_syncex1_mu->GetXaxis()->SetBinLabel(2, "Single mu trig");
+		h_tth_syncex1_mu->GetXaxis()->SetBinLabel(3, "==1 muon");
+		h_tth_syncex1_mu->GetXaxis()->SetBinLabel(4, "==0 electrons");
+		h_tth_syncex1_mu->GetXaxis()->SetBinLabel(5, ">=4 jets");
+		h_tth_syncex1_mu->GetXaxis()->SetBinLabel(6, ">=2 b-tags");
+		h_tth_syncex1_mu->GetXaxis()->SetBinLabel(7, ">=1 top-tags");
+		h_tth_syncex1_mu->GetXaxis()->SetBinLabel(8, ">=1 Higgs-tags");
+	}
 
-	h_tth_syncex1_dimu = fs_->make<TH1D>("h_tth_syncex1_dimu", ";cut", 8, 0, 8);
-	h_tth_syncex1_dimu->GetXaxis()->SetBinLabel(1, "All events");
-	h_tth_syncex1_dimu->GetXaxis()->SetBinLabel(2, "Double mu trig");
-	h_tth_syncex1_dimu->GetXaxis()->SetBinLabel(3, ">=2 muons");
-	h_tth_syncex1_dimu->GetXaxis()->SetBinLabel(4, "Mll > 20");
-	h_tth_syncex1_dimu->GetXaxis()->SetBinLabel(5, "Z Veto   ");
-	h_tth_syncex1_dimu->GetXaxis()->SetBinLabel(6, ">=2 jets");
-	h_tth_syncex1_dimu->GetXaxis()->SetBinLabel(7, "MET > 40");
-	h_tth_syncex1_dimu->GetXaxis()->SetBinLabel(8, ">=1 b-tags");
+	if (analysis_type == Analyze_dilepton) {
+		h_tth_syncex1_dimu =
+			fs_->make<TH1D>("h_tth_syncex1_dimu", ";cut", 8, 0, 8);
+		h_tth_syncex1_dimu->GetXaxis()->SetBinLabel(1, "All events");
+		h_tth_syncex1_dimu->GetXaxis()->SetBinLabel(2, "Double mu trig");
+		h_tth_syncex1_dimu->GetXaxis()->SetBinLabel(3, ">=2 muons");
+		h_tth_syncex1_dimu->GetXaxis()->SetBinLabel(4, "Mll > 20");
+		h_tth_syncex1_dimu->GetXaxis()->SetBinLabel(5, "Z Veto   ");
+		h_tth_syncex1_dimu->GetXaxis()->SetBinLabel(6, ">=2 jets");
+		h_tth_syncex1_dimu->GetXaxis()->SetBinLabel(7, "MET > 40");
+		h_tth_syncex1_dimu->GetXaxis()->SetBinLabel(8, ">=1 b-tags");
 
-	h_tth_syncex1_diele =
-		fs_->make<TH1D>("h_tth_syncex1_diele", ";cut", 8, 0, 8);
-	h_tth_syncex1_diele->GetXaxis()->SetBinLabel(1, "All events");
-	h_tth_syncex1_diele->GetXaxis()->SetBinLabel(2, "Double ele trig");
-	h_tth_syncex1_diele->GetXaxis()->SetBinLabel(3, ">=2 electrons");
-	h_tth_syncex1_diele->GetXaxis()->SetBinLabel(4, "Mll > 20");
-	h_tth_syncex1_diele->GetXaxis()->SetBinLabel(5, "Z Veto   ");
-	h_tth_syncex1_diele->GetXaxis()->SetBinLabel(6, ">=2 jets");
-	h_tth_syncex1_diele->GetXaxis()->SetBinLabel(7, "MET > 40");
-	h_tth_syncex1_diele->GetXaxis()->SetBinLabel(8, ">=1 b-tags");
+		h_tth_syncex1_diele =
+			fs_->make<TH1D>("h_tth_syncex1_diele", ";cut", 8, 0, 8);
+		h_tth_syncex1_diele->GetXaxis()->SetBinLabel(1, "All events");
+		h_tth_syncex1_diele->GetXaxis()->SetBinLabel(2, "Double ele trig");
+		h_tth_syncex1_diele->GetXaxis()->SetBinLabel(3, ">=2 electrons");
+		h_tth_syncex1_diele->GetXaxis()->SetBinLabel(4, "Mll > 20");
+		h_tth_syncex1_diele->GetXaxis()->SetBinLabel(5, "Z Veto   ");
+		h_tth_syncex1_diele->GetXaxis()->SetBinLabel(6, ">=2 jets");
+		h_tth_syncex1_diele->GetXaxis()->SetBinLabel(7, "MET > 40");
+		h_tth_syncex1_diele->GetXaxis()->SetBinLabel(8, ">=1 b-tags");
 
-	h_tth_syncex1_elemu =
-		fs_->make<TH1D>("h_tth_syncex1_elemu", ";cut", 6, 0, 6);
-	h_tth_syncex1_elemu->GetXaxis()->SetBinLabel(1, "All events");
-	h_tth_syncex1_elemu->GetXaxis()->SetBinLabel(2, "Ele-mu trig");
-	h_tth_syncex1_elemu->GetXaxis()->SetBinLabel(3, ">=2 leptons");
-	h_tth_syncex1_elemu->GetXaxis()->SetBinLabel(4, "Mll > 20");
-	h_tth_syncex1_elemu->GetXaxis()->SetBinLabel(5, ">=2 jets");
-	h_tth_syncex1_elemu->GetXaxis()->SetBinLabel(6, ">=1 b-tags");
+		h_tth_syncex1_elemu =
+			fs_->make<TH1D>("h_tth_syncex1_elemu", ";cut", 6, 0, 6);
+		h_tth_syncex1_elemu->GetXaxis()->SetBinLabel(1, "All events");
+		h_tth_syncex1_elemu->GetXaxis()->SetBinLabel(2, "Ele-mu trig");
+		h_tth_syncex1_elemu->GetXaxis()->SetBinLabel(3, ">=2 leptons");
+		h_tth_syncex1_elemu->GetXaxis()->SetBinLabel(4, "Mll > 20");
+		h_tth_syncex1_elemu->GetXaxis()->SetBinLabel(5, ">=2 jets");
+		h_tth_syncex1_elemu->GetXaxis()->SetBinLabel(6, ">=1 b-tags");
+	}
 }
 
 /// Prepare histograms for trigger/filter counts
-int CU_ttH_EDA::Set_up_Run_histograms()
+int CU_ttH_EDA::Set_up_Run_histograms_triggers()
 {
 	unsigned int numHLT = trigger_names_no_ver.size();
 	h_hlt = fs_->make<TH1D>("h_hlt", ";HLT path", numHLT, 0, numHLT);
@@ -164,7 +174,7 @@ int CU_ttH_EDA::Set_up_Run_histograms()
 	return 0;
 }
 
-void CU_ttH_EDA::Set_up_name_vectors()
+void CU_ttH_EDA::Set_up_trigger_name_vectors()
 {
 	/// Fill trigger name vectors and counters
 	trigger_names = hlt_config.triggerNames();
@@ -191,6 +201,7 @@ void CU_ttH_EDA::Set_up_name_vectors()
 			filter_config.removeVersion(filter_names[i]);
 
 		n_filter_fired[pathNameNoVer] = 0;
+
 		filter_names_no_ver.push_back(pathNameNoVer);
 	}
 }
@@ -198,43 +209,47 @@ void CU_ttH_EDA::Set_up_name_vectors()
 /// Make and open write-out files
 void CU_ttH_EDA::Set_up_output_files()
 {
-	events_e_cut1 = fopen("Outputs/CU_events_e_cut1.dat", "w");
-	events_e_cut2 = fopen("Outputs/CU_events_e_cut2.dat", "w");
-	events_e_cut3 = fopen("Outputs/CU_events_e_cut3.dat", "w");
-	events_e_cut4 = fopen("Outputs/CU_events_e_cut4.dat", "w");
-	events_e_cut5 = fopen("Outputs/CU_events_e_cut5.dat", "w");
-	events_e_cut6 = fopen("Outputs/CU_events_e_cut6.dat", "w");
-	events_e_cut7 = fopen("Outputs/CU_events_e_cut7.dat", "w");
+	if (analysis_type == Analyze_lepton_jet) {
+		events_e_cut1 = fopen("Outputs/CU_events_e_cut1.dat", "w");
+		events_e_cut2 = fopen("Outputs/CU_events_e_cut2.dat", "w");
+		events_e_cut3 = fopen("Outputs/CU_events_e_cut3.dat", "w");
+		events_e_cut4 = fopen("Outputs/CU_events_e_cut4.dat", "w");
+		events_e_cut5 = fopen("Outputs/CU_events_e_cut5.dat", "w");
+		events_e_cut6 = fopen("Outputs/CU_events_e_cut6.dat", "w");
+		events_e_cut7 = fopen("Outputs/CU_events_e_cut7.dat", "w");
 
-	events_mu_cut1 = fopen("Outputs/CU_events_mu_cut1.dat", "w");
-	events_mu_cut2 = fopen("Outputs/CU_events_mu_cut2.dat", "w");
-	events_mu_cut3 = fopen("Outputs/CU_events_mu_cut3.dat", "w");
-	events_mu_cut4 = fopen("Outputs/CU_events_mu_cut4.dat", "w");
-	events_mu_cut5 = fopen("Outputs/CU_events_mu_cut5.dat", "w");
-	events_mu_cut6 = fopen("Outputs/CU_events_mu_cut6.dat", "w");
-	events_mu_cut7 = fopen("Outputs/CU_events_mu_cut7.dat", "w");
+		events_mu_cut1 = fopen("Outputs/CU_events_mu_cut1.dat", "w");
+		events_mu_cut2 = fopen("Outputs/CU_events_mu_cut2.dat", "w");
+		events_mu_cut3 = fopen("Outputs/CU_events_mu_cut3.dat", "w");
+		events_mu_cut4 = fopen("Outputs/CU_events_mu_cut4.dat", "w");
+		events_mu_cut5 = fopen("Outputs/CU_events_mu_cut5.dat", "w");
+		events_mu_cut6 = fopen("Outputs/CU_events_mu_cut6.dat", "w");
+		events_mu_cut7 = fopen("Outputs/CU_events_mu_cut7.dat", "w");
+	}
 
-	events_dimu_cut1 = fopen("Outputs/CU_events_dimu_cut1.dat", "w");
-	events_dimu_cut2 = fopen("Outputs/CU_events_dimu_cut2.dat", "w");
-	events_dimu_cut3 = fopen("Outputs/CU_events_dimu_cut3.dat", "w");
-	events_dimu_cut4 = fopen("Outputs/CU_events_dimu_cut4.dat", "w");
-	events_dimu_cut5 = fopen("Outputs/CU_events_dimu_cut5.dat", "w");
-	events_dimu_cut6 = fopen("Outputs/CU_events_dimu_cut6.dat", "w");
-	events_dimu_cut7 = fopen("Outputs/CU_events_dimu_cut7.dat", "w");
+	if (analysis_type == Analyze_dilepton) {
+		events_dimu_cut1 = fopen("Outputs/CU_events_dimu_cut1.dat", "w");
+		events_dimu_cut2 = fopen("Outputs/CU_events_dimu_cut2.dat", "w");
+		events_dimu_cut3 = fopen("Outputs/CU_events_dimu_cut3.dat", "w");
+		events_dimu_cut4 = fopen("Outputs/CU_events_dimu_cut4.dat", "w");
+		events_dimu_cut5 = fopen("Outputs/CU_events_dimu_cut5.dat", "w");
+		events_dimu_cut6 = fopen("Outputs/CU_events_dimu_cut6.dat", "w");
+		events_dimu_cut7 = fopen("Outputs/CU_events_dimu_cut7.dat", "w");
 
-	events_diele_cut1 = fopen("Outputs/CU_events_diele_cut1.dat", "w");
-	events_diele_cut2 = fopen("Outputs/CU_events_diele_cut2.dat", "w");
-	events_diele_cut3 = fopen("Outputs/CU_events_diele_cut3.dat", "w");
-	events_diele_cut4 = fopen("Outputs/CU_events_diele_cut4.dat", "w");
-	events_diele_cut5 = fopen("Outputs/CU_events_diele_cut5.dat", "w");
-	events_diele_cut6 = fopen("Outputs/CU_events_diele_cut6.dat", "w");
-	events_diele_cut7 = fopen("Outputs/CU_events_diele_cut7.dat", "w");
+		events_diele_cut1 = fopen("Outputs/CU_events_diele_cut1.dat", "w");
+		events_diele_cut2 = fopen("Outputs/CU_events_diele_cut2.dat", "w");
+		events_diele_cut3 = fopen("Outputs/CU_events_diele_cut3.dat", "w");
+		events_diele_cut4 = fopen("Outputs/CU_events_diele_cut4.dat", "w");
+		events_diele_cut5 = fopen("Outputs/CU_events_diele_cut5.dat", "w");
+		events_diele_cut6 = fopen("Outputs/CU_events_diele_cut6.dat", "w");
+		events_diele_cut7 = fopen("Outputs/CU_events_diele_cut7.dat", "w");
 
-	events_elemu_cut1 = fopen("Outputs/CU_events_elemu_cut1.dat", "w");
-	events_elemu_cut2 = fopen("Outputs/CU_events_elemu_cut2.dat", "w");
-	events_elemu_cut3 = fopen("Outputs/CU_events_elemu_cut3.dat", "w");
-	events_elemu_cut4 = fopen("Outputs/CU_events_elemu_cut4.dat", "w");
-	events_elemu_cut5 = fopen("Outputs/CU_events_elemu_cut5.dat", "w");
+		events_elemu_cut1 = fopen("Outputs/CU_events_elemu_cut1.dat", "w");
+		events_elemu_cut2 = fopen("Outputs/CU_events_elemu_cut2.dat", "w");
+		events_elemu_cut3 = fopen("Outputs/CU_events_elemu_cut3.dat", "w");
+		events_elemu_cut4 = fopen("Outputs/CU_events_elemu_cut4.dat", "w");
+		events_elemu_cut5 = fopen("Outputs/CU_events_elemu_cut5.dat", "w");
+	}
 }
 
 void CU_ttH_EDA::Set_up_tokens()

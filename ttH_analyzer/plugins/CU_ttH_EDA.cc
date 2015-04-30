@@ -97,8 +97,10 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	// 	weight_gen = event_gen_info.product()->weight();
 	local.weight = weight_sample * (handle.event_gen_info.product()->weight());
 
-	h_hlt->Fill(0., 1);
-	h_flt->Fill(0., 1);
+	if (trigger_stats) {
+		h_hlt->Fill(0., 1);
+		h_flt->Fill(0., 1);
+	}
 
 	/// Lepton selection
 	local.e_selected = miniAODhelper.GetSelectedElectrons(
@@ -122,9 +124,10 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	local.jets_corrected =
 		miniAODhelper.GetCorrectedJets(local.jets_no_mu_e, iEvent, iSetup);
 	local.jets_selected = miniAODhelper.GetSelectedJets(
-		local.jets_corrected, 25., 2.4, jetID::jetLoose, '-');
+		local.jets_corrected, min_jet_pT, max_jet_eta, jetID::jetLoose, '-');
 	local.jets_selected_tag = miniAODhelper.GetSelectedJets(
-		local.jets_corrected, 25., 2.4, jetID::jetLoose, 'M');
+		local.jets_corrected, min_jet_pT, max_jet_eta, jetID::jetLoose,
+		MAODHelper_b_tag_strength);
 
 	local.n_jets = static_cast<int>(local.jets_selected.size());
 	local.n_btags = static_cast<int>(local.jets_selected_tag.size());
@@ -138,8 +141,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	/// Top and Higgs tagging using collections through handles. adjusts
 	/// local.<tag>
 	Top_tagger(handle.top_jets, local);
-	Higgs_tagger(handle.subfilter_jets,
-				 local); // has some weird memory features on Top_tagger
+	Higgs_tagger(handle.subfilter_jets, local);
 
 	/// Get Corrected MET, !!!not yet used!!!
 	// may need to be placed in CU_ttH_EDA_event_vars
@@ -148,11 +150,16 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 							  // pfJets_forMET, iSysType );
 
 	/// Check tags, fill hists, print events
-	Check_Fill_Print_ej(local);
-	Check_Fill_Print_muj(local);
-	Check_Fill_Print_dimuj(local);
-	Check_Fill_Print_dielej(local);
-	Check_Fill_Print_elemuj(local);
+	if (analysis_type == Analyze_lepton_jet) {
+		Check_Fill_Print_ej(local);
+		Check_Fill_Print_muj(local);
+	}
+
+	if (analysis_type == Analyze_dilepton) {
+		Check_Fill_Print_dimuj(local);
+		Check_Fill_Print_dielej(local);
+		Check_Fill_Print_elemuj(local);
+	}
 }
 
 // ------------ method called once each job just before starting event loop
@@ -169,7 +176,7 @@ void CU_ttH_EDA::beginJob()
 void CU_ttH_EDA::endJob() { return; }
 
 // ------------ method called when starting to processes a run  ------------
-void CU_ttH_EDA::beginRun(edm::Run const &iRun, edm::EventSetup const &iSetup)
+void CU_ttH_EDA::beginRun(const edm::Run &iRun, const edm::EventSetup &iSetup)
 {
 	/// Update HLTConfigProvider(s) for the new run
 	bool hlt_config_changed = true; // init() updates this one
@@ -195,79 +202,87 @@ void CU_ttH_EDA::beginRun(edm::Run const &iRun, edm::EventSetup const &iSetup)
 		std::cout << "New " << filterTag << " config has been loaded.\n";
 
 	/// Set up filter and trigger name vectors and maps
-	Set_up_name_vectors();
+	if (trigger_stats) {
+		Set_up_trigger_name_vectors();
 
-	if (Set_up_Run_histograms() != 0) {
-		std::cerr << "Setting up histograms for trigger/filter counts has "
-				  << "failed\n";
+		if (Set_up_Run_histograms_triggers() != 0) {
+			std::cerr << "Setting up histograms for trigger/filter counts has "
+					  << "failed\n";
 
-		return;
+			return;
+		}
 	}
 }
 
 // ------------ method called when ending the processing of a run  ------------
-
-void CU_ttH_EDA::endRun(edm::Run const &, edm::EventSetup const &)
+void CU_ttH_EDA::endRun(const edm::Run &, const edm::EventSetup &)
 {
 	// report results of sync exercises
-	std::cout
-		<< "***************************************************************"
-		<< std::endl;
-	std::cout << "\t Synchronization for mu" << std::endl;
-	std::cout << "Selection \t Number of events\n";
-	for (int i = 0; i < h_tth_syncex1_mu->GetNbinsX(); ++i)
-		printf("%s\t %.0f\n", h_tth_syncex1_mu->GetXaxis()->GetBinLabel(i + 1),
-			   h_tth_syncex1_mu->GetBinContent(i + 1));
+	if (analysis_type == Analyze_lepton_jet) {
+		std::cout
+			<< "***************************************************************"
+			<< std::endl;
+		std::cout << "\t Synchronization for mu" << std::endl;
+		std::cout << "Selection \t Number of events\n";
+		for (int i = 0; i < h_tth_syncex1_mu->GetNbinsX(); ++i)
+			printf("%s\t %.0f\n",
+				   h_tth_syncex1_mu->GetXaxis()->GetBinLabel(i + 1),
+				   h_tth_syncex1_mu->GetBinContent(i + 1));
 
-	std::cout
-		<< "***************************************************************"
-		<< std::endl;
-	std::cout << "\t Synchronization for e" << std::endl;
-	std::cout << "Selection \t Number of events\n";
-	for (int i = 0; i < h_tth_syncex1_ele->GetNbinsX(); ++i)
-		printf("%s\t %.0f\n", h_tth_syncex1_ele->GetXaxis()->GetBinLabel(i + 1),
-			   h_tth_syncex1_ele->GetBinContent(i + 1));
+		std::cout
+			<< "***************************************************************"
+			<< std::endl;
+		std::cout << "\t Synchronization for e" << std::endl;
+		std::cout << "Selection \t Number of events\n";
+		for (int i = 0; i < h_tth_syncex1_ele->GetNbinsX(); ++i)
+			printf("%s\t %.0f\n",
+				   h_tth_syncex1_ele->GetXaxis()->GetBinLabel(i + 1),
+				   h_tth_syncex1_ele->GetBinContent(i + 1));
+	}
 
-	std::cout
-		<< "***************************************************************"
-		<< std::endl;
-	std::cout << "\t Synchronization for di-mu" << std::endl;
-	std::cout << "Selection \t Number of events\n";
-	for (int i = 0; i < h_tth_syncex1_dimu->GetNbinsX(); ++i)
-		printf("%s\t %.0f\n",
-			   h_tth_syncex1_dimu->GetXaxis()->GetBinLabel(i + 1),
-			   h_tth_syncex1_dimu->GetBinContent(i + 1));
+	if (analysis_type == Analyze_dilepton) {
+		std::cout
+			<< "***************************************************************"
+			<< std::endl;
+		std::cout << "\t Synchronization for di-mu" << std::endl;
+		std::cout << "Selection \t Number of events\n";
+		for (int i = 0; i < h_tth_syncex1_dimu->GetNbinsX(); ++i)
+			printf("%s\t %.0f\n",
+				   h_tth_syncex1_dimu->GetXaxis()->GetBinLabel(i + 1),
+				   h_tth_syncex1_dimu->GetBinContent(i + 1));
 
-	std::cout
-		<< "***************************************************************"
-		<< std::endl;
+		std::cout
+			<< "***************************************************************"
+			<< std::endl;
 
-	std::cout << "\t Synchronization for di-ele" << std::endl;
-	std::cout << "Selection \t Number of events\n";
-	for (int i = 0; i < h_tth_syncex1_diele->GetNbinsX(); ++i)
-		printf("%s\t %.0f\n",
-			   h_tth_syncex1_diele->GetXaxis()->GetBinLabel(i + 1),
-			   h_tth_syncex1_diele->GetBinContent(i + 1));
+		std::cout << "\t Synchronization for di-ele" << std::endl;
+		std::cout << "Selection \t Number of events\n";
+		for (int i = 0; i < h_tth_syncex1_diele->GetNbinsX(); ++i)
+			printf("%s\t %.0f\n",
+				   h_tth_syncex1_diele->GetXaxis()->GetBinLabel(i + 1),
+				   h_tth_syncex1_diele->GetBinContent(i + 1));
 
-	std::cout
-		<< "***************************************************************"
-		<< std::endl;
+		std::cout
+			<< "***************************************************************"
+			<< std::endl;
 
-	std::cout << "\t Synchronization for ele-mu" << std::endl;
-	std::cout << "Selection \t Number of events\n";
-	for (int i = 0; i < h_tth_syncex1_elemu->GetNbinsX(); ++i)
-		printf("%s\t %.0f\n",
-			   h_tth_syncex1_elemu->GetXaxis()->GetBinLabel(i + 1),
-			   h_tth_syncex1_elemu->GetBinContent(i + 1));
+		std::cout << "\t Synchronization for ele-mu" << std::endl;
+		std::cout << "Selection \t Number of events\n";
+		for (int i = 0; i < h_tth_syncex1_elemu->GetNbinsX(); ++i)
+			printf("%s\t %.0f\n",
+				   h_tth_syncex1_elemu->GetXaxis()->GetBinLabel(i + 1),
+				   h_tth_syncex1_elemu->GetBinContent(i + 1));
 
-	std::cout
-		<< "***************************************************************"
-		<< std::endl;
+		std::cout
+			<< "***************************************************************"
+			<< std::endl;
+	}
 
-	End_Run_hist_fill();
+	if (trigger_stats)
+		End_Run_hist_fill_triggers();
 
 	// report on triggers fired
-	if (dumpHLT_) {
+	if (trigger_stats && dumpHLT_) {
 		std::cout
 			<< "***************************************************************"
 			<< std::endl;
