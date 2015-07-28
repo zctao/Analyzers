@@ -56,7 +56,7 @@
 #include "FWCore/ServiceRegistry/interface/Service.h"
 
 /// Higgs and top tagger
-#include "BoostedTTH/BoostedObjects/interface/HEPTopJet.h"
+#include "BoostedTTH/BoostedObjects/interface/HTTTopJet.h"
 #include "BoostedTTH/BoostedObjects/interface/SubFilterJet.h"
 #include "BoostedTTH/BoostedAnalyzer/interface/BoostedUtils.hpp"
 
@@ -89,7 +89,7 @@ struct edm_Handles
 
 	Handle<reco::BeamSpot> BS;
 
-	Handle<boosted::HEPTopJetCollection> top_jets;
+	Handle<boosted::HTTTopJetCollection> top_jets;
 	Handle<boosted::SubFilterJetCollection> subfilter_jets;
 };
 
@@ -114,7 +114,7 @@ struct edm_Tokens
 
 	EDGetTokenT<reco::BeamSpot> BS;
 
-	EDGetTokenT<boosted::HEPTopJetCollection> top_jets;
+	EDGetTokenT<boosted::HTTTopJetCollection> top_jets;
 	EDGetTokenT<boosted::SubFilterJetCollection> subfilter_jets;
 };
 
