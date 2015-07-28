@@ -286,8 +286,8 @@ void CU_ttH_EDA::Set_up_tokens()
 	token.BS =
 		consumes<reco::BeamSpot>(edm::InputTag(std::string("offlineBeamSpot")));
 
-	token.top_jets = consumes<boosted::HEPTopJetCollection>(
-		edm::InputTag("HEPTopJetsPFMatcher", "heptopjets", "p"));
+	token.top_jets = consumes<boosted::HTTTopJetCollection>(
+		edm::InputTag("HTTTopJetsPFMatcher", "heptopjets", "p"));
 	token.subfilter_jets = consumes<boosted::SubFilterJetCollection>(
 		edm::InputTag("CA12JetsCA3FilterjetsPFMatcher", "subfilterjets", "p"));
 }

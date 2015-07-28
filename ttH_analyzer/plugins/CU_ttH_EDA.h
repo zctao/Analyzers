@@ -64,7 +64,7 @@
 #include "TH1.h"
 
 /// Higgs and top tagger
-#include "BoostedTTH/BoostedObjects/interface/HEPTopJet.h"
+#include "BoostedTTH/BoostedObjects/interface/HTTTopJet.h"
 #include "BoostedTTH/BoostedObjects/interface/SubFilterJet.h"
 #include "BoostedTTH/BoostedAnalyzer/interface/BoostedUtils.hpp"
 
@@ -206,7 +206,7 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	/// Taggers. Returns 1 in case of an error
 	int Higgs_tagger(Handle<boosted::SubFilterJetCollection>,
 					 CU_ttH_EDA_event_vars &); // FIXME: uses b-tag medium WP
-	int Top_tagger(Handle<boosted::HEPTopJetCollection>,
+	int Top_tagger(Handle<boosted::HTTTopJetCollection>,
 				   CU_ttH_EDA_event_vars &);
 
 	/// Other functions

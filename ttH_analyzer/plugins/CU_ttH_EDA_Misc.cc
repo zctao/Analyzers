@@ -266,7 +266,7 @@ CU_ttH_EDA::Higgs_tagger(Handle<boosted::SubFilterJetCollection> subfilter_jets,
 	return 0;
 }
 
-int CU_ttH_EDA::Top_tagger(Handle<boosted::HEPTopJetCollection> top_jets,
+int CU_ttH_EDA::Top_tagger(Handle<boosted::HTTTopJetCollection> top_jets,
 						   CU_ttH_EDA_event_vars &local)
 {
 	local.n_ttags = 0;
@@ -274,10 +274,10 @@ int CU_ttH_EDA::Top_tagger(Handle<boosted::HEPTopJetCollection> top_jets,
 	if (!top_jets.isValid())
 		return 1;
 
-	boosted::HEPTopJetCollection heptopjets =
+	boosted::HTTTopJetCollection heptopjets =
 		BoostedUtils::GetSortedByPt(*top_jets);
 
-	for (boosted::HEPTopJetCollection::iterator topJet = heptopjets.begin();
+	for (boosted::HTTTopJetCollection::iterator topJet = heptopjets.begin();
 		 topJet != heptopjets.end(); ++topJet) {
 		// pt and eta requirements on top jet
 		if (topJet->fatjet.pt() <= 250. || abs(topJet->fatjet.eta()) >= 1.8)
