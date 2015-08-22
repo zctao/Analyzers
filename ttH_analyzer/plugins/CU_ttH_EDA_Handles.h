@@ -56,8 +56,8 @@
 #include "FWCore/ServiceRegistry/interface/Service.h"
 
 /// Higgs and top tagger
-#include "BoostedTTH/BoostedObjects/interface/HTTTopJet.h"
-#include "BoostedTTH/BoostedObjects/interface/SubFilterJet.h"
+#include "MiniAOD/BoostedObjects/interface/HTTTopJet.h"
+#include "MiniAOD/BoostedObjects/interface/SubFilterJet.h"
 #include "BoostedTTH/BoostedAnalyzer/interface/BoostedUtils.hpp"
 
 /*
