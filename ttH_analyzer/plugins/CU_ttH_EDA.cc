@@ -46,7 +46,7 @@ CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig)
 	int_lumi = 10000;
 	weight_sample = int_lumi * total_xs / sample_n;
 
-	Load_configuration(static_cast<string>("Configs/config_analyzer.yaml"));
+	Load_configuration(static_cast<string>("Configs/config_analyzer_tau.yaml"));
 
 	Set_up_tokens();
 	Set_up_histograms();
@@ -71,6 +71,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 
 	/// Declaring local struct for data readout and manipulations
 	CU_ttH_EDA_event_vars local;
+	CU_ttH_EDA_gen_vars gen;
 
 	/// Triggers have not fired yet. Check_triggers, Check_filters will adjust
 	local.pass_single_e = false;
@@ -107,13 +108,17 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		*(handle.electrons), min_tight_lepton_pT, electronID::electronPhys14M);
 	local.mu_selected = miniAODhelper.GetSelectedMuons(
 		*(handle.muons), min_tight_lepton_pT, muonID::muonTight);
+	local.tau_selected = miniAODhelper.GetSelectedTaus(
+		*(handle.taus),	min_tight_tau_pT, tau::tight);   // which tauID?
 
 	local.n_electrons = static_cast<int>(local.e_selected.size());
 	local.n_muons = static_cast<int>(local.mu_selected.size());
+	local.n_taus = static_cast<int>(local.tau_selected.size());
 
 	/// Sort leptons by pT
 	local.mu_selected_sorted = miniAODhelper.GetSortedByPt(local.mu_selected);
 	local.e_selected_sorted = miniAODhelper.GetSortedByPt(local.e_selected);
+	local.tau_selected_sorted = miniAODhelper.GetSortedByPt(local.tau_selected);
 
 	/// Jet selection
 	local.jets_raw = miniAODhelper.GetUncorrectedJets(handle.jets);
@@ -126,7 +131,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	local.jets_selected = miniAODhelper.GetSelectedJets(
 		local.jets_corrected, min_jet_pT, max_jet_eta, jetID::jetLoose, '-');
 	local.jets_selected_tag = miniAODhelper.GetSelectedJets(
-		local.jets_corrected, min_jet_pT, max_jet_eta, jetID::jetLoose,
+		local.jets_corrected, min_bjet_pT, max_bjet_eta, jetID::jetLoose,
 		MAODHelper_b_tag_strength);
 
 	local.n_jets = static_cast<int>(local.jets_selected.size());
@@ -160,6 +165,24 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		Check_Fill_Print_dielej(local);
 		Check_Fill_Print_elemuj(local);
 	}
+
+	if (analysis_type == Analyze_taus_dilepton) {
+		Check_Fill_Print_dimutauh(local);
+		Check_Fill_Print_dieletauh(local);
+		Check_Fill_Print_elemutauh(local);
+	}
+
+	if (analysis_type == Analyze_taus_lepton_jet) {
+		Check_Fill_Print_eleditauh(local);
+		Check_Fill_Print_muditauh(local);
+	}
+	
+	/// generator information
+	bool get_gen_info = true;
+	if (get_gen_info) {
+		Get_GenInfo(handle.MC_particles, handle.MC_packed, gen);
+		Write_to_Tree(gen, eventTree);
+	}
 }
 
 // ------------ method called once each job just before starting event loop
@@ -169,6 +192,8 @@ void CU_ttH_EDA::beginJob()
 	TH1::SetDefaultSumw2(true);
 
 	event_count = 0;
+
+	Set_up_Tree();
 }
 
 // ------------ method called once each job just after ending the event loop

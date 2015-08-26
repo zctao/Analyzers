@@ -70,14 +70,34 @@ void CU_ttH_EDA::Load_configuration(string config_filename)
 		throw std::runtime_error(error_message);
 	min_tight_lepton_pT = config["Cuts"]["min_tight_lepton_pT"].as<float>();
 
+	if (!config["Cuts"]["min_tight_tau_pT"])
+		throw std::runtime_error(error_message);
+	min_tight_tau_pT = config["Cuts"]["min_tight_tau_pT"].as<float>();
+	
 	if (!config["Cuts"]["min_jet_pT"])
 		throw std::runtime_error(error_message);
 	min_jet_pT = config["Cuts"]["min_jet_pT"].as<float>();
+
+	if (!config["Cuts"]["min_bjet_pT"])
+		throw std::runtime_error(error_message);
+	min_bjet_pT = config["Cuts"]["min_bjet_pT"].as<float>();
 
 	if (!config["Cuts"]["max_jet_eta"])
 		throw std::runtime_error(error_message);
 	max_jet_eta = config["Cuts"]["max_jet_eta"].as<float>();
 
+	if (!config["Cuts"]["max_bjet_eta"])
+		throw std::runtime_error(error_message);
+	max_bjet_eta = config["Cuts"]["max_bjet_eta"].as<float>();
+
+	if (!config["Cuts"]["min_njets"])
+		throw std::runtime_error(error_message);
+	min_njets = config["Cuts"]["min_njets"].as<int>();
+
+	if (!config["Cuts"]["min_nbtags"])
+		throw std::runtime_error(error_message);
+	min_nbtags = config["Cuts"]["min_nbtags"].as<int>();
+	
 	/// Setting up jets
 	if (!config["Jets"]["jet_corrector"])
 		throw std::runtime_error(error_message);
