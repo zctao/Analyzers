@@ -71,6 +71,8 @@
 #include "MiniAOD/BoostedObjects/interface/HTTTopJet.h"
 #include "MiniAOD/BoostedObjects/interface/SubFilterJet.h"
 #include "BoostedTTH/BoostedAnalyzer/interface/BoostedUtils.hpp"
+#include "MiniAOD/MiniAODHelper/interface/TopTagger.h"
+#include "MiniAOD/MiniAODHelper/interface/HiggsTagger.h"
 
 /// structs for holding multiple edm::Handle and EDGetTokenT
 #include "CU_ttH_EDA_Handles.h"
@@ -228,6 +230,7 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 					 CU_ttH_EDA_event_vars &); // FIXME: uses b-tag medium WP
 	int Top_tagger(Handle<boosted::HTTTopJetCollection>,
 				   CU_ttH_EDA_event_vars &);
+	TopTagger toptagger;
 
 	/// Other functions
 	void Check_Fill_Print_ej(CU_ttH_EDA_event_vars &);

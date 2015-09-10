@@ -290,7 +290,7 @@ int CU_ttH_EDA::Top_tagger(Handle<boosted::HTTTopJetCollection> top_jets,
 			continue;
 
 		// must be top-tagged
-		if (!BoostedUtils::GetTopTag(*topJet))
+		if (toptagger.GetTopTaggerOutput(*topJet)<=-1) 
 			continue;
 
 		++local.n_ttags;
@@ -1127,26 +1127,26 @@ void CU_ttH_EDA::Get_GenInfo(Handle<reco::GenParticleCollection> pruned,
 
 			// ---------------------------------------------------------------------
 			// print decay chain
-			bool printDetails = false;
-			if (p->pdgId() == 21 || p->pdgId() == 23) {
-				int tmp_index = 0;
-				cout <<"index"<< "\t"<< "id"<< "\t"<< "stat"<< "\t"<< "mother"
-					 << "\t"<< "nDaug";
-				if (printDetails)
-					cout << "\t"<< "pt"<< "\t"<< "eta"<< "\t"<< "phi" << endl;
-				else
-					cout << endl;
-			
-				cout << tmp_index <<"\t"<< p->pdgId() << "\t" << p->status()
-					 <<"\t"<< "n/a"<<"\t"<< p->numberOfDaughters();
-				if (printDetails)
-					cout << "\t" << p->pt() << "\t" << p->eta() << "\t"
-						 << p->phi() << endl;
-				else
-					cout << endl;
-			
-				printDecayChain(*p, tmp_index, 0, printDetails);
-			}
+			// bool printDetails = false;
+			// if (p->pdgId() == 21 || p->pdgId() == 23) {
+			//	int tmp_index = 0;
+			//	cout <<"index"<< "\t"<< "id"<< "\t"<< "stat"<< "\t"<< "mother"
+			//		 << "\t"<< "nDaug";
+			//	if (printDetails)
+			//		cout << "\t"<< "pt"<< "\t"<< "eta"<< "\t"<< "phi" << endl;
+			//	else
+			//		cout << endl;
+			//
+			//	cout << tmp_index <<"\t"<< p->pdgId() << "\t" << p->status()
+			//		 <<"\t"<< "n/a"<<"\t"<< p->numberOfDaughters();
+			//	if (printDetails)
+			//		cout << "\t" << p->pt() << "\t" << p->eta() << "\t"
+			//			 << p->phi() << endl;
+			//	else
+			//		cout << endl;
+			//
+			//	printDecayChain(*p, tmp_index, 0, printDetails);
+			//}
 			// ---------------------------------------------------------------------
 
 			gen.x.push_back(*p);
