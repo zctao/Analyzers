@@ -60,6 +60,9 @@
 #include "MiniAOD/BoostedObjects/interface/SubFilterJet.h"
 #include "BoostedTTH/BoostedAnalyzer/interface/BoostedUtils.hpp"
 
+#include "DataFormats/HepMCCandidate/interface/GenParticle.h"
+#include "DataFormats/PatCandidates/interface/PackedGenParticle.h"
+
 /*
  *
  * edm::Handle and edm::EDGetTokenT container structs.
@@ -68,8 +71,7 @@
 
 using namespace edm;
 
-struct edm_Handles
-{
+struct edm_Handles {
 	Handle<GenEventInfoProduct> event_gen_info;
 	Handle<edm::TriggerResults> triggerResults;
 	Handle<edm::TriggerResults> filterResults;
@@ -80,6 +82,7 @@ struct edm_Handles
 
 	Handle<pat::ElectronCollection> electrons;
 	Handle<pat::MuonCollection> muons;
+	Handle<pat::TauCollection> taus;
 
 	Handle<pat::JetCollection> jets;
 	Handle<pat::METCollection> METs;
@@ -91,10 +94,11 @@ struct edm_Handles
 
 	Handle<boosted::HTTTopJetCollection> top_jets;
 	Handle<boosted::SubFilterJetCollection> subfilter_jets;
+
+	Handle<pat::PackedGenParticleCollection> MC_packed;
 };
 
-struct edm_Tokens
-{
+struct edm_Tokens {
 	EDGetTokenT<GenEventInfoProduct> event_gen_info;
 	EDGetTokenT<edm::TriggerResults> triggerResults;
 	EDGetTokenT<edm::TriggerResults> filterResults;
@@ -105,6 +109,7 @@ struct edm_Tokens
 
 	EDGetTokenT<pat::ElectronCollection> electrons;
 	EDGetTokenT<pat::MuonCollection> muons;
+	EDGetTokenT<pat::TauCollection> taus;
 
 	EDGetTokenT<pat::JetCollection> jets;
 	EDGetTokenT<pat::METCollection> METs;
@@ -116,6 +121,8 @@ struct edm_Tokens
 
 	EDGetTokenT<boosted::HTTTopJetCollection> top_jets;
 	EDGetTokenT<boosted::SubFilterJetCollection> subfilter_jets;
+	
+	EDGetTokenT<pat::PackedGenParticleCollection> MC_packed;
 };
 
 /// Set up handles with getByToken from edm::Event

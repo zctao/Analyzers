@@ -45,6 +45,9 @@
 #include "DataFormats/HLTReco/interface/TriggerTypeDefs.h"
 #include "DataFormats/Candidate/interface/VertexCompositePtrCandidate.h"
 #include "DataFormats/Candidate/interface/VertexCompositePtrCandidateFwd.h"
+#include "DataFormats/HepMCCandidate/interface/GenParticle.h"
+#include "DataFormats/PatCandidates/interface/PackedGenParticle.h"
+#include "DataFormats/Candidate/interface/Candidate.h"
 
 #include "PhysicsTools/SelectorUtils/interface/JetIDSelectionFunctor.h"
 #include "PhysicsTools/SelectorUtils/interface/strbitset.h"
@@ -62,6 +65,7 @@
 
 /// ROOT includes
 #include "TH1.h"
+#include "TTree.h"
 
 /// Higgs and top tagger
 #include "MiniAOD/BoostedObjects/interface/HTTTopJet.h"
@@ -94,8 +98,7 @@ enum analysis_types {
  *
  */
 
-struct CU_ttH_EDA_event_vars
-{
+struct CU_ttH_EDA_event_vars {
 	double weight; // total event weight (there are partial weights)
 
 	/// Common, run parameters
@@ -106,6 +109,7 @@ struct CU_ttH_EDA_event_vars
 	/// Number of tags per event
 	int n_electrons;
 	int n_muons;
+	int n_taus;
 	int n_jets;
 	int n_btags;
 	int n_ttags;
@@ -123,7 +127,9 @@ struct CU_ttH_EDA_event_vars
 	std::vector<pat::Electron> e_selected_sorted;
 	std::vector<pat::Muon> mu_selected;
 	std::vector<pat::Muon> mu_selected_sorted;
-
+	std::vector<pat::Tau> tau_selected;
+	std::vector<pat::Tau> tau_selected_sorted;
+	
 	std::vector<pat::Jet> jets_raw;
 	std::vector<pat::Jet> jets_no_mu;
 	std::vector<pat::Jet> jets_no_mu_e;
@@ -140,7 +146,19 @@ struct CU_ttH_EDA_event_vars
 	double dilepton_mass;
 };
 
-/*
+struct CU_ttH_EDA_gen_vars {
+	/// Generated particle container vectors
+	std::vector<reco::GenParticle> x; // mediators
+	std::vector<reco::GenParticle> tops;
+	reco::CandidateCollection x_daughters; // or edm::OwnVector<reco::Candidate>
+	reco::CandidateCollection top_daughters;
+	reco::CandidateCollection w_daughters;
+
+	double ditop_mass;
+	double ditau_mass;
+};
+
+ /*
  *
  * Analyzer class
  *
@@ -182,6 +200,8 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	void Set_up_output_files();			 // at CU_ttH_EDA()
 	void Set_up_tokens();				 // at CU_ttH_EDA()
 
+	void Set_up_Tree();
+
 	int Set_up_Run_histograms_triggers(); // at beginRun(), after
 										  // Set_up_name_vectors()
 
@@ -215,6 +235,18 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	void Check_Fill_Print_dimuj(CU_ttH_EDA_event_vars &);
 	void Check_Fill_Print_dielej(CU_ttH_EDA_event_vars &);
 	void Check_Fill_Print_elemuj(CU_ttH_EDA_event_vars &);
+	void Check_Fill_Print_dimutauh(CU_ttH_EDA_event_vars &);
+	void Check_Fill_Print_dieletauh(CU_ttH_EDA_event_vars &);
+	void Check_Fill_Print_elemutauh(CU_ttH_EDA_event_vars &);
+	void Check_Fill_Print_eleditauh(CU_ttH_EDA_event_vars &);
+	void Check_Fill_Print_muditauh(CU_ttH_EDA_event_vars &);
+
+	void Get_GenInfo(Handle<reco::GenParticleCollection>,
+					 Handle<pat::PackedGenParticleCollection>,
+					 CU_ttH_EDA_gen_vars &);
+	void printDecayChain(const reco::Candidate &p, int &index, int mother_index,
+						 bool details);
+	void Write_to_Tree(CU_ttH_EDA_gen_vars &, TTree *);
 
 	template <class lepton>
 	int Print_event_in_file1(FILE *, lepton &, std::vector<pat::Jet> &,
@@ -280,8 +312,13 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 
 	/// Cuts
 	float min_tight_lepton_pT;
+	float min_tight_tau_pT;
 	float min_jet_pT;
+	float min_bjet_pT;
 	float max_jet_eta;
+	float max_bjet_eta;
+	int min_njets;
+	int min_nbtags;
 
 	/// Selection helper
 	MiniAODHelper miniAODhelper;
@@ -298,6 +335,13 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	TH1D *h_tth_syncex1_dimu;
 	TH1D *h_tth_syncex1_diele;
 	TH1D *h_tth_syncex1_elemu;
+
+	TH1D *h_tth_syncex_dimutauh;
+	TH1D *h_tth_syncex_dieletauh;
+	TH1D *h_tth_syncex_elemutauh;
+	
+	TH1D *h_tth_syncex_eleditauh;
+	TH1D *h_tth_syncex_muditauh;
 
 	TH1D *h_hlt;
 	TH1D *h_flt;
@@ -355,6 +399,44 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	//
 	// 	double jetptmax;
 	// 	int NjetptBins;
+
+	/// tree & branches for genParticles
+	TTree *eventTree;
+
+	std::vector<int> x_pdgId;
+	std::vector<int> x_status;
+	std::vector<float> x_pt;
+	std::vector<float> x_eta;
+	std::vector<float> x_phi;
+	std::vector<float> x_mass;
+
+	std::vector<int> top_pdgId;
+	std::vector<int> top_status;
+	std::vector<float> top_pt;
+	std::vector<float> top_eta;
+	std::vector<float> top_phi;
+	std::vector<float> top_mass;
+
+	std::vector<int> xDaug_pdgId;
+	std::vector<int> xDaug_status;
+	std::vector<float> xDaug_pt;
+	std::vector<float> xDaug_eta;
+	std::vector<float> xDaug_phi;
+	std::vector<float> xDaug_mass;
+
+	std::vector<int> topDaug_pdgId;
+	std::vector<int> topDaug_status;
+	std::vector<float> topDaug_pt;
+	std::vector<float> topDaug_eta;
+	std::vector<float> topDaug_phi;
+	std::vector<float> topDaug_mass;
+
+	std::vector<int> wDaug_pdgId;
+	std::vector<int> wDaug_status;
+	std::vector<float> wDaug_pt;
+	std::vector<float> wDaug_eta;
+	std::vector<float> wDaug_phi;
+	std::vector<float> wDaug_mass;
 };
 
 #endif
