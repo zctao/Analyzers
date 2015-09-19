@@ -91,6 +91,8 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	Check_vertices_set_MAODhelper(handle.vertices);
 	// 	Check_beam_spot(BS);	// dumb implementation
 
+	
+	
 	/// Get and set miniAODhelper's jet corrector from the event setup
 	miniAODhelper.SetJetCorrector(
 		JetCorrector::getJetCorrector(jet_corrector, iSetup));
@@ -109,7 +111,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	local.mu_selected = miniAODhelper.GetSelectedMuons(
 		*(handle.muons), min_tight_lepton_pT, muonID::muonTight);
 	local.tau_selected = miniAODhelper.GetSelectedTaus(
-		*(handle.taus),	min_tight_tau_pT, tau::tight);   // which tauID?
+		*(handle.taus),	min_tight_tau_pT, tau::loose);   // which tauID?
 
 	local.n_electrons = static_cast<int>(local.e_selected.size());
 	local.n_muons = static_cast<int>(local.mu_selected.size());
@@ -167,9 +169,10 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	}
 
 	if (analysis_type == Analyze_taus_dilepton) {
-		Check_Fill_Print_dimutauh(local);
-		Check_Fill_Print_dieletauh(local);
-		Check_Fill_Print_elemutauh(local);
+		Check_Fill_Print_dileptauh(local);
+		//Check_Fill_Print_dimutauh(local);
+		//Check_Fill_Print_dieletauh(local);
+		//Check_Fill_Print_elemutauh(local);
 	}
 
 	if (analysis_type == Analyze_taus_lepton_jet) {
@@ -178,11 +181,13 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	}
 	
 	/// generator information
-	bool get_gen_info = true;
-	if (get_gen_info) {
+	bool gen_info = true;
+	if (gen_info) {
 		Get_GenInfo(handle.MC_particles, handle.MC_packed, gen);
-		Write_to_Tree(gen, eventTree);
 	}
+
+	Write_to_Tree(gen, local, eventTree);
+
 }
 
 // ------------ method called once each job just before starting event loop
@@ -193,7 +198,7 @@ void CU_ttH_EDA::beginJob()
 
 	event_count = 0;
 
-	Set_up_Tree();
+	Setup_Tree();
 }
 
 // ------------ method called once each job just after ending the event loop

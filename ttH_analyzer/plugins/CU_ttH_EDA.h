@@ -202,7 +202,7 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	void Set_up_output_files();			 // at CU_ttH_EDA()
 	void Set_up_tokens();				 // at CU_ttH_EDA()
 
-	void Set_up_Tree();
+	void Setup_Tree();
 
 	int Set_up_Run_histograms_triggers(); // at beginRun(), after
 										  // Set_up_name_vectors()
@@ -238,9 +238,7 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	void Check_Fill_Print_dimuj(CU_ttH_EDA_event_vars &);
 	void Check_Fill_Print_dielej(CU_ttH_EDA_event_vars &);
 	void Check_Fill_Print_elemuj(CU_ttH_EDA_event_vars &);
-	void Check_Fill_Print_dimutauh(CU_ttH_EDA_event_vars &);
-	void Check_Fill_Print_dieletauh(CU_ttH_EDA_event_vars &);
-	void Check_Fill_Print_elemutauh(CU_ttH_EDA_event_vars &);
+	void Check_Fill_Print_dileptauh(CU_ttH_EDA_event_vars &);
 	void Check_Fill_Print_eleditauh(CU_ttH_EDA_event_vars &);
 	void Check_Fill_Print_muditauh(CU_ttH_EDA_event_vars &);
 
@@ -249,7 +247,7 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 					 CU_ttH_EDA_gen_vars &);
 	void printDecayChain(const reco::Candidate &p, int &index, int mother_index,
 						 bool details);
-	void Write_to_Tree(CU_ttH_EDA_gen_vars &, TTree *);
+	void Write_to_Tree(CU_ttH_EDA_gen_vars &, CU_ttH_EDA_event_vars &, TTree *);
 
 	template <class lepton>
 	int Print_event_in_file1(FILE *, lepton &, std::vector<pat::Jet> &,
@@ -339,9 +337,7 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	TH1D *h_tth_syncex1_diele;
 	TH1D *h_tth_syncex1_elemu;
 
-	TH1D *h_tth_syncex_dimutauh;
-	TH1D *h_tth_syncex_dieletauh;
-	TH1D *h_tth_syncex_elemutauh;
+	TH1D *h_tth_syncex_dileptauh;
 	
 	TH1D *h_tth_syncex_eleditauh;
 	TH1D *h_tth_syncex_muditauh;
@@ -406,40 +402,72 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	/// tree & branches for genParticles
 	TTree *eventTree;
 
-	std::vector<int> x_pdgId;
-	std::vector<int> x_status;
-	std::vector<float> x_pt;
-	std::vector<float> x_eta;
-	std::vector<float> x_phi;
-	std::vector<float> x_mass;
+	// All sorted by pt
+	int n_electrons;
+	int n_muons;
+	int n_taus;
+	int n_jets;
+	int n_btags;
 
-	std::vector<int> top_pdgId;
-	std::vector<int> top_status;
-	std::vector<float> top_pt;
-	std::vector<float> top_eta;
-	std::vector<float> top_phi;
-	std::vector<float> top_mass;
+	std::vector<float> e_pt;
+	std::vector<float> e_eta;
+	std::vector<float> e_phi;
+	std::vector<float> e_mass;
 
-	std::vector<int> xDaug_pdgId;
-	std::vector<int> xDaug_status;
-	std::vector<float> xDaug_pt;
-	std::vector<float> xDaug_eta;
-	std::vector<float> xDaug_phi;
-	std::vector<float> xDaug_mass;
+	std::vector<float> mu_pt;
+	std::vector<float> mu_eta;
+	std::vector<float> mu_phi;
+	std::vector<float> mu_mass;
 
-	std::vector<int> topDaug_pdgId;
-	std::vector<int> topDaug_status;
-	std::vector<float> topDaug_pt;
-	std::vector<float> topDaug_eta;
-	std::vector<float> topDaug_phi;
-	std::vector<float> topDaug_mass;
+	std::vector<float> tau_pt;
+	std::vector<float> tau_eta;
+	std::vector<float> tau_phi;
+	std::vector<float> tau_mass;
 
-	std::vector<int> wDaug_pdgId;
-	std::vector<int> wDaug_status;
-	std::vector<float> wDaug_pt;
-	std::vector<float> wDaug_eta;
-	std::vector<float> wDaug_phi;
-	std::vector<float> wDaug_mass;
+	std::vector<float> jet_pt;  // jets_selected_sorted
+	std::vector<float> jet_eta;
+	std::vector<float> jet_phi;
+	std::vector<float> jet_mass;
+
+	std::vector<float> bjet_pt;  // jets_selected_tag_sorted
+	std::vector<float> bjet_eta;
+	std::vector<float> bjet_phi;
+	std::vector<float> bjet_mass;
+	
+	std::vector<int> gen_x_pdgId;
+	std::vector<int> gen_x_status;
+	std::vector<float> gen_x_pt;
+	std::vector<float> gen_x_eta;
+	std::vector<float> gen_x_phi;
+	std::vector<float> gen_x_mass;
+
+	std::vector<int> gen_top_pdgId;
+	std::vector<int> gen_top_status;
+	std::vector<float> gen_top_pt;
+	std::vector<float> gen_top_eta;
+	std::vector<float> gen_top_phi;
+	std::vector<float> gen_top_mass;
+
+	std::vector<int> gen_xDaug_pdgId;
+	std::vector<int> gen_xDaug_status;
+	std::vector<float> gen_xDaug_pt;
+	std::vector<float> gen_xDaug_eta;
+	std::vector<float> gen_xDaug_phi;
+	std::vector<float> gen_xDaug_mass;
+
+	std::vector<int> gen_topDaug_pdgId;
+	std::vector<int> gen_topDaug_status;
+	std::vector<float> gen_topDaug_pt;
+	std::vector<float> gen_topDaug_eta;
+	std::vector<float> gen_topDaug_phi;
+	std::vector<float> gen_topDaug_mass;
+
+	std::vector<int> gen_wDaug_pdgId;
+	std::vector<int> gen_wDaug_status;
+	std::vector<float> gen_wDaug_pt;
+	std::vector<float> gen_wDaug_eta;
+	std::vector<float> gen_wDaug_phi;
+	std::vector<float> gen_wDaug_mass;
 };
 
 #endif

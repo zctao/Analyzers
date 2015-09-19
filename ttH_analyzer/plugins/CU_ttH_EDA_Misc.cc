@@ -673,109 +673,24 @@ void CU_ttH_EDA::Check_Fill_Print_elemuj(CU_ttH_EDA_event_vars &local)
 		return;
 }
 
-void CU_ttH_EDA::Check_Fill_Print_dimutauh(CU_ttH_EDA_event_vars &local)
+
+void CU_ttH_EDA::Check_Fill_Print_dileptauh(CU_ttH_EDA_event_vars &local)
 {
 	int fill_itr = 0;
 
-	h_tth_syncex_dimutauh->Fill(0.5 + fill_itr++); // fill 0.5 first
-
-	if (local.pass_double_mu)
-		h_tth_syncex_dimutauh->Fill(0.5 + fill_itr++);
-	else
-		return;
-
-	bool SameSignLeptons = false;
-	if (local.n_muons >= 2) {
-		
-		for (int i=0; i<local.n_muons; ++i) {
-			for (int j=i+1; j<local.n_muons; ++j) {
-				if (local.mu_selected_sorted[i].charge() ==
-					local.mu_selected_sorted[j].charge())
-					SameSignLeptons = true;
-			}
-		}
-
-		if (SameSignLeptons)
-			h_tth_syncex_dimutauh->Fill(0.5 + fill_itr++);
-		else
-			return;	
-	}	
-	else
-		return;
+	h_tth_syncex_dileptauh->Fill(0.5 + fill_itr++); // fill 0.5 first
 
 	if (local.n_taus >= 1)
-		h_tth_syncex_dimutauh->Fill(0.5 + fill_itr++);
+		h_tth_syncex_dileptauh->Fill(0.5 + fill_itr++);
 	else
 		return;
-	
-	if (local.n_jets >= min_njets)
-		h_tth_syncex_dimutauh->Fill(0.5 + fill_itr++);
-	else
-		return;
-
-	if (local.n_btags >= min_nbtags)
-		h_tth_syncex_dimutauh->Fill(0.5 + fill_itr++);
-	else
-		return;	
-}
-
-void CU_ttH_EDA::Check_Fill_Print_dieletauh(CU_ttH_EDA_event_vars &local)
-{
-	int fill_itr = 0;
-
-	h_tth_syncex_dieletauh->Fill(0.5 + fill_itr++); // fill 0.5 first
-
-	if (local.pass_double_e)
-		h_tth_syncex_dieletauh->Fill(0.5 + fill_itr++);
-	else
-		return;
-
-	bool SameSignLeptons = false;
-	if (local.n_electrons >= 2) {
 		
-		for (int i=0; i<local.n_electrons; ++i) {
-			for (int j=i+1; j<local.n_electrons; ++j) {
-				if (local.e_selected_sorted[i].charge() ==
-					local.e_selected_sorted[j].charge())
-					SameSignLeptons = true;
-			}
-		}
-
-		if (SameSignLeptons)
-			h_tth_syncex_dieletauh->Fill(0.5 + fill_itr++);
-		else
-			return;	
-	}	
+	if (local.pass_single_e or local.pass_single_mu)
+		h_tth_syncex_dileptauh->Fill(0.5 + fill_itr++);
 	else
 		return;
 
-	if (local.n_taus >= 1)
-		h_tth_syncex_dieletauh->Fill(0.5 + fill_itr++);
-	else
-		return;
-	
-	if (local.n_jets >= min_njets)
-		h_tth_syncex_dieletauh->Fill(0.5 + fill_itr++);
-	else
-		return;
-
-	if (local.n_btags >= min_nbtags)
-		h_tth_syncex_dieletauh->Fill(0.5 + fill_itr++);
-	else
-		return;	
-}
-
-void CU_ttH_EDA::Check_Fill_Print_elemutauh(CU_ttH_EDA_event_vars &local)
-{
-	int fill_itr = 0;
-
-	h_tth_syncex_elemutauh->Fill(0.5 + fill_itr++); // fill 0.5 first
-
-	if (local.pass_elemu)
-		h_tth_syncex_elemutauh->Fill(0.5 + fill_itr++);
-	else
-		return;
-
+	// fix needed
 	bool SameSignLeptons = false;
 	if (local.n_electrons >= 1 and local.n_muons >= 1) {
 
@@ -788,25 +703,21 @@ void CU_ttH_EDA::Check_Fill_Print_elemutauh(CU_ttH_EDA_event_vars &local)
 		}
 
 		if (SameSignLeptons)
-			h_tth_syncex_elemutauh->Fill(0.5 + fill_itr++);
+			h_tth_syncex_dileptauh->Fill(0.5 + fill_itr++);
 		else
 			return;
 	}
 	else
 		return;
-
-	if (local.n_taus >= 1)
-		h_tth_syncex_elemutauh->Fill(0.5 + fill_itr++);
-	else
-		return;
+	
 	
 	if (local.n_jets >= min_njets)
-		h_tth_syncex_elemutauh->Fill(0.5 + fill_itr++);
+		h_tth_syncex_dileptauh->Fill(0.5 + fill_itr++);
 	else
 		return;
 
 	if (local.n_btags >= min_nbtags)
-		h_tth_syncex_elemutauh->Fill(0.5 + fill_itr++);
+		h_tth_syncex_dileptauh->Fill(0.5 + fill_itr++);
 	else
 		return;
 }
@@ -1093,25 +1004,27 @@ void CU_ttH_EDA::Get_GenInfo(Handle<reco::GenParticleCollection> pruned,
 
 		if (ndaugs == 0)
 			continue;
-
+		
 		const reco::Candidate *d = p->daughter(0);
 		if (p->pdgId() == d->pdgId())
 			continue;
 
 		// -- top --
 		if (abs(p->pdgId()) == 6) {
-
+			
 			gen.tops.push_back(*p);
 
 			// -- top daughters --
 			for (size_t j = 0; j < (unsigned)ndaugs; ++j) {
 				const reco::Candidate *tdaug = p->daughter(j);
+				
 				gen.top_daughters.push_back(*tdaug);
 
 				// -- w daughters --
 				if (abs(tdaug->pdgId()) == 24) {
+					
 					int ndaugs_w = tdaug->numberOfDaughters();
-
+					// Fix needed! w->w-> ...
 					for (size_t k = 0; k < (unsigned)ndaugs_w; ++k) {
 						const reco::Candidate *wdaug = tdaug->daughter(k);
 						gen.w_daughters.push_back(*wdaug);
@@ -1122,8 +1035,7 @@ void CU_ttH_EDA::Get_GenInfo(Handle<reco::GenParticleCollection> pruned,
 
 		}
 		// -- mediator --
-		else if (p->pdgId() == 25 ||
-				 p->pdgId()== 21 || p->pdgId() == 22 || p->pdgId() == 23) {
+		else if (p->pdgId() == 25 /*|| p->pdgId()== 21 || p->pdgId() == 22 || p->pdgId() == 23*/) {
 
 			// ---------------------------------------------------------------------
 			// print decay chain
@@ -1163,92 +1075,171 @@ void CU_ttH_EDA::Get_GenInfo(Handle<reco::GenParticleCollection> pruned,
 	} // end of pruned loop
 }
 
-void CU_ttH_EDA::Write_to_Tree(CU_ttH_EDA_gen_vars &gen, TTree *eventTree)
+void CU_ttH_EDA::Write_to_Tree(CU_ttH_EDA_gen_vars &gen, CU_ttH_EDA_event_vars &local, TTree *eventTree)
 {
 	// clear variables
-	x_pdgId.clear();
-	x_status.clear();
-	x_pt.clear();
-	x_eta.clear();
-	x_phi.clear();
-	x_mass.clear();
+	n_electrons = -99;
+	n_muons = -99;
+	n_taus = -99;
+	n_jets = -99;
+	n_btags = -99;
 
-	top_pdgId.clear();
-	top_status.clear();
-	top_pt.clear();
-	top_eta.clear();
-	top_phi.clear();
-	top_mass.clear();
+	e_pt.clear();
+	e_eta.clear();
+	e_phi.clear();
+	e_mass.clear();
 
-	xDaug_pdgId.clear();
-	xDaug_status.clear();
-	xDaug_pt.clear();
-	xDaug_eta.clear();
-	xDaug_phi.clear();
-	xDaug_mass.clear();
+	mu_pt.clear();
+	mu_eta.clear();
+	mu_phi.clear();
+	mu_mass.clear();
 
-	topDaug_pdgId.clear();
-	topDaug_status.clear();
-	topDaug_pt.clear();
-	topDaug_eta.clear();
-	topDaug_phi.clear();
-	topDaug_mass.clear();
+	tau_pt.clear();
+	tau_eta.clear();
+	tau_phi.clear();
+	tau_mass.clear();
+	
+	jet_pt.clear();
+	jet_eta.clear();
+	jet_phi.clear();
+	jet_mass.clear();
 
-	wDaug_pdgId.clear();
-	wDaug_status.clear();
-	wDaug_pt.clear();
-	wDaug_eta.clear();
-	wDaug_phi.clear();
-	wDaug_mass.clear();
+	bjet_pt.clear();
+	bjet_eta.clear();
+	bjet_phi.clear();
+	bjet_mass.clear();
+	
+	gen_x_pdgId.clear();
+	gen_x_status.clear();
+	gen_x_pt.clear();
+	gen_x_eta.clear();
+	gen_x_phi.clear();
+	gen_x_mass.clear();
 
+	gen_top_pdgId.clear();
+	gen_top_status.clear();
+	gen_top_pt.clear();
+	gen_top_eta.clear();
+	gen_top_phi.clear();
+	gen_top_mass.clear();
+
+	gen_xDaug_pdgId.clear();
+	gen_xDaug_status.clear();
+	gen_xDaug_pt.clear();
+	gen_xDaug_eta.clear();
+	gen_xDaug_phi.clear();
+	gen_xDaug_mass.clear();
+
+	gen_topDaug_pdgId.clear();
+	gen_topDaug_status.clear();
+	gen_topDaug_pt.clear();
+	gen_topDaug_eta.clear();
+	gen_topDaug_phi.clear();
+	gen_topDaug_mass.clear();
+
+	gen_wDaug_pdgId.clear();
+	gen_wDaug_status.clear();
+	gen_wDaug_pt.clear();
+	gen_wDaug_eta.clear();
+	gen_wDaug_phi.clear();
+	gen_wDaug_mass.clear();
+
+	// Number of tags per event
+	n_electrons = local.n_electrons;
+	n_muons = local.n_muons;
+	n_taus = local.n_taus;
+	n_jets = local.n_jets;
+	n_btags = local.n_btags;
+
+	// electrons
+	for (size_t i = 0; i < local.e_selected_sorted.size(); ++i) {
+		e_pt.push_back(local.e_selected_sorted[i].pt());
+		e_eta.push_back(local.e_selected_sorted[i].eta());
+		e_phi.push_back(local.e_selected_sorted[i].phi());
+		e_mass.push_back(local.e_selected_sorted[i].mass());
+	}
+
+	// muons
+	for (size_t i = 0; i < local.mu_selected_sorted.size(); ++i) {
+		mu_pt.push_back(local.mu_selected_sorted[i].pt());
+		mu_eta.push_back(local.mu_selected_sorted[i].eta());
+		mu_phi.push_back(local.mu_selected_sorted[i].phi());
+		mu_mass.push_back(local.mu_selected_sorted[i].mass());
+	}
+
+	// taus
+	for (size_t i = 0; i < local.tau_selected_sorted.size(); ++i) {
+		tau_pt.push_back(local.tau_selected_sorted[i].pt());
+		tau_eta.push_back(local.tau_selected_sorted[i].eta());
+		tau_phi.push_back(local.tau_selected_sorted[i].phi());
+		tau_mass.push_back(local.tau_selected_sorted[i].mass());
+	}
+
+	// jets
+	for (size_t i = 0; i < local.jets_selected_sorted.size(); ++i) {
+		jet_pt.push_back(local.jets_selected_sorted[i].pt());
+		jet_eta.push_back(local.jets_selected_sorted[i].eta());
+		jet_phi.push_back(local.jets_selected_sorted[i].phi());
+		jet_mass.push_back(local.jets_selected_sorted[i].mass());
+	}
+
+	// b-jets
+	for (size_t i = 0; i < local.jets_selected_tag_sorted.size(); ++i) {
+		bjet_pt.push_back(local.jets_selected_tag_sorted[i].pt());
+		bjet_eta.push_back(local.jets_selected_tag_sorted[i].eta());
+		bjet_phi.push_back(local.jets_selected_tag_sorted[i].phi());
+		bjet_mass.push_back(local.jets_selected_tag_sorted[i].mass());
+	}
+	
+	// GenParticle Information
 	// mediators
 	for (size_t i = 0; i < gen.x.size(); ++i) {
-		x_pdgId.push_back(gen.x[i].pdgId());
-		x_status.push_back(gen.x[i].status());
-		x_pt.push_back(gen.x[i].pt());
-		x_eta.push_back(gen.x[i].eta());
-		x_phi.push_back(gen.x[i].phi());
-		x_mass.push_back(gen.x[i].mass());
+		gen_x_pdgId.push_back(gen.x[i].pdgId());
+		gen_x_status.push_back(gen.x[i].status());
+		gen_x_pt.push_back(gen.x[i].pt());
+		gen_x_eta.push_back(gen.x[i].eta());
+		gen_x_phi.push_back(gen.x[i].phi());
+		gen_x_mass.push_back(gen.x[i].mass());
 	}
 
 	// tops
 	for (size_t i = 0; i < gen.tops.size(); ++i) {
-		top_pdgId.push_back(gen.tops[i].pdgId());
-		top_status.push_back(gen.tops[i].status());
-		top_pt.push_back(gen.tops[i].pt());
-		top_eta.push_back(gen.tops[i].eta());
-		top_phi.push_back(gen.tops[i].phi());
-		top_mass.push_back(gen.tops[i].mass());
+		gen_top_pdgId.push_back(gen.tops[i].pdgId());
+		gen_top_status.push_back(gen.tops[i].status());
+		gen_top_pt.push_back(gen.tops[i].pt());
+		gen_top_eta.push_back(gen.tops[i].eta());
+		gen_top_phi.push_back(gen.tops[i].phi());
+		gen_top_mass.push_back(gen.tops[i].mass());
 	}
 
 	// mediator daughters
 	for (size_t i = 0; i < gen.x_daughters.size(); ++i) {
-		xDaug_pdgId.push_back(gen.x_daughters[i].pdgId());
-		xDaug_status.push_back(gen.x_daughters[i].status());
-		xDaug_pt.push_back(gen.x_daughters[i].pt());
-		xDaug_eta.push_back(gen.x_daughters[i].eta());
-		xDaug_phi.push_back(gen.x_daughters[i].phi());
-		xDaug_mass.push_back(gen.x_daughters[i].mass());
+		gen_xDaug_pdgId.push_back(gen.x_daughters[i].pdgId());
+		gen_xDaug_status.push_back(gen.x_daughters[i].status());
+		gen_xDaug_pt.push_back(gen.x_daughters[i].pt());
+		gen_xDaug_eta.push_back(gen.x_daughters[i].eta());
+		gen_xDaug_phi.push_back(gen.x_daughters[i].phi());
+		gen_xDaug_mass.push_back(gen.x_daughters[i].mass());
 	}
 
 	// top daughters
 	for (size_t i = 0; i < gen.top_daughters.size(); ++i) {
-		topDaug_pdgId.push_back(gen.top_daughters[i].pdgId());
-		topDaug_status.push_back(gen.top_daughters[i].status());
-		topDaug_pt.push_back(gen.top_daughters[i].pt());
-		topDaug_eta.push_back(gen.top_daughters[i].eta());
-		topDaug_phi.push_back(gen.top_daughters[i].phi());
-		topDaug_mass.push_back(gen.top_daughters[i].mass());
+		gen_topDaug_pdgId.push_back(gen.top_daughters[i].pdgId());
+		gen_topDaug_status.push_back(gen.top_daughters[i].status());
+		gen_topDaug_pt.push_back(gen.top_daughters[i].pt());
+		gen_topDaug_eta.push_back(gen.top_daughters[i].eta());
+		gen_topDaug_phi.push_back(gen.top_daughters[i].phi());
+		gen_topDaug_mass.push_back(gen.top_daughters[i].mass());
 	}
 
 	// w daughters
 	for (size_t i = 0; i < gen.w_daughters.size(); ++i) {
-		wDaug_pdgId.push_back(gen.w_daughters[i].pdgId());
-		wDaug_status.push_back(gen.w_daughters[i].status());
-		wDaug_pt.push_back(gen.w_daughters[i].pt());
-		wDaug_eta.push_back(gen.w_daughters[i].eta());
-		wDaug_phi.push_back(gen.w_daughters[i].phi());
-		wDaug_mass.push_back(gen.w_daughters[i].mass());
+		gen_wDaug_pdgId.push_back(gen.w_daughters[i].pdgId());
+		gen_wDaug_status.push_back(gen.w_daughters[i].status());
+		gen_wDaug_pt.push_back(gen.w_daughters[i].pt());
+		gen_wDaug_eta.push_back(gen.w_daughters[i].eta());
+		gen_wDaug_phi.push_back(gen.w_daughters[i].phi());
+		gen_wDaug_mass.push_back(gen.w_daughters[i].mass());
 	}
 
 	eventTree->Fill();

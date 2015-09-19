@@ -144,32 +144,14 @@ void CU_ttH_EDA::Set_up_histograms()
 	}
 
 	if (analysis_type == Analyze_taus_dilepton) {
-		h_tth_syncex_dimutauh =
+		h_tth_syncex_dileptauh =
 			fs_->make<TH1D>("h_tth_syncex_dimutauh", ";cut", 6, 0, 6);
-		h_tth_syncex_dimutauh->GetXaxis()->SetBinLabel(1, "All events");
-		h_tth_syncex_dimutauh->GetXaxis()->SetBinLabel(2, "Double mu trig");
-		h_tth_syncex_dimutauh->GetXaxis()->SetBinLabel(3, "Same sign leptons");
-		h_tth_syncex_dimutauh->GetXaxis()->SetBinLabel(4, ">=1 tau");
-		h_tth_syncex_dimutauh->GetXaxis()->SetBinLabel(5, "n_jets cut");
-		h_tth_syncex_dimutauh->GetXaxis()->SetBinLabel(6, "n_btags cut");
-
-		h_tth_syncex_dieletauh =
-			fs_->make<TH1D>("h_tth_syncex_dieletauh", ";cut", 6, 0, 6);
-		h_tth_syncex_dieletauh->GetXaxis()->SetBinLabel(1, "All events");
-		h_tth_syncex_dieletauh->GetXaxis()->SetBinLabel(2, "Double e trig");
-		h_tth_syncex_dieletauh->GetXaxis()->SetBinLabel(3, "Same sign leptons");
-		h_tth_syncex_dieletauh->GetXaxis()->SetBinLabel(4, ">=1 tau");
-		h_tth_syncex_dieletauh->GetXaxis()->SetBinLabel(5, "n_jets cut");
-		h_tth_syncex_dieletauh->GetXaxis()->SetBinLabel(6, "n_btags cut");
-		
-		h_tth_syncex_elemutauh =
-			fs_->make<TH1D>("h_tth_syncex_elemutauh", ";cut", 6, 0, 6);
-		h_tth_syncex_elemutauh->GetXaxis()->SetBinLabel(1, "All events");
-		h_tth_syncex_elemutauh->GetXaxis()->SetBinLabel(2, "e mu trig");
-		h_tth_syncex_elemutauh->GetXaxis()->SetBinLabel(3, "Same sign leptons");
-		h_tth_syncex_elemutauh->GetXaxis()->SetBinLabel(4, ">=1 tau");
-		h_tth_syncex_elemutauh->GetXaxis()->SetBinLabel(5, "n_jets cut");
-		h_tth_syncex_elemutauh->GetXaxis()->SetBinLabel(6, "n_btags cut");
+		h_tth_syncex_dileptauh->GetXaxis()->SetBinLabel(1, "All events");
+		h_tth_syncex_dileptauh->GetXaxis()->SetBinLabel(3, "Single lepton trig");
+		h_tth_syncex_dileptauh->GetXaxis()->SetBinLabel(2, ">=1 tau");
+		h_tth_syncex_dileptauh->GetXaxis()->SetBinLabel(4, "Same sign leptons");
+		h_tth_syncex_dileptauh->GetXaxis()->SetBinLabel(5, "n_jets cut");
+		h_tth_syncex_dileptauh->GetXaxis()->SetBinLabel(6, "n_btags cut");
 	}
 
 	if (analysis_type == Analyze_taus_lepton_jet) {
@@ -348,47 +330,78 @@ void CU_ttH_EDA::Set_up_tokens()
 		edm::InputTag(std::string("packedGenParticles")));
 }
 
-void CU_ttH_EDA::Set_up_Tree()
+void CU_ttH_EDA::Setup_Tree()
 {
 
 	edm::Service<TFileService> fs;
 
-	eventTree = fs->make<TTree>("GenParticlesTree", "Event tree");
+	eventTree = fs->make<TTree>("EventTree", "Event tree");
 
-	eventTree->Branch("x_pdgId", &x_pdgId);
-	eventTree->Branch("x_status", &x_status);
-	eventTree->Branch("x_pt", &x_pt);
-	eventTree->Branch("x_eta", &x_eta);
-	eventTree->Branch("x_phi", &x_phi);
-	eventTree->Branch("x_mass", &x_mass);
+	eventTree->Branch("n_electrons", &n_electrons);
+	eventTree->Branch("n_muons", &n_muons);
+	eventTree->Branch("n_taus", &n_taus);
+	eventTree->Branch("n_jets", &n_jets);
+	eventTree->Branch("n_btags", &n_btags);
 
-	eventTree->Branch("top_pdgId", &top_pdgId);
-	eventTree->Branch("top_status", &top_status);
-	eventTree->Branch("top_pt", &top_pt);
-	eventTree->Branch("top_eta", &top_eta);
-	eventTree->Branch("top_phi", &top_phi);
-	eventTree->Branch("top_mass", &top_mass);
+	eventTree->Branch("e_pt", &e_pt);
+	eventTree->Branch("e_eta", &e_eta);
+	eventTree->Branch("e_phi", &e_phi);
+	eventTree->Branch("e_mass", &e_mass);
+	
+	eventTree->Branch("mu_pt", &mu_pt);
+	eventTree->Branch("mu_eta", &mu_eta);
+	eventTree->Branch("mu_phi", &mu_phi);
+	eventTree->Branch("mu_mass", &e_mass);
+	
+	eventTree->Branch("tau_pt", &tau_pt);
+	eventTree->Branch("tau_eta", &tau_eta);
+	eventTree->Branch("tau_phi", &tau_phi);
+	eventTree->Branch("tau_mass", &e_mass);
+	
+	eventTree->Branch("jet_pt", &jet_pt);
+	eventTree->Branch("jet_eta", &jet_eta);
+	eventTree->Branch("jet_phi", &jet_phi);
+	eventTree->Branch("jet_mass", &e_mass);
+	
+	eventTree->Branch("bjet_pt", &bjet_pt);
+	eventTree->Branch("bjet_eta", &bjet_eta);
+	eventTree->Branch("bjet_phi", &bjet_phi);
+	eventTree->Branch("bjet_mass", &e_mass);
+	
+	eventTree->Branch("gen_x_pdgId", &gen_x_pdgId);
+	eventTree->Branch("gen_x_status", &gen_x_status);
+	eventTree->Branch("gen_x_pt", &gen_x_pt);
+	eventTree->Branch("gen_x_eta", &gen_x_eta);
+	eventTree->Branch("gen_x_phi", &gen_x_phi);
+	eventTree->Branch("gen_x_mass", &gen_x_mass);
 
-	eventTree->Branch("x_daughter_pdgId", &xDaug_pdgId);
-	eventTree->Branch("x_daughter_status", &xDaug_status);
-	eventTree->Branch("x_daughter_pt", &xDaug_pt);
-	eventTree->Branch("x_daughter_eta", &xDaug_eta);
-	eventTree->Branch("x_daughter_phi", &xDaug_phi);
-	eventTree->Branch("x_daughter_mass", &xDaug_mass);
+	eventTree->Branch("gen_top_pdgId", &gen_top_pdgId);
+	eventTree->Branch("gen_top_status", &gen_top_status);
+	eventTree->Branch("gen_top_pt", &gen_top_pt);
+	eventTree->Branch("gen_top_eta", &gen_top_eta);
+	eventTree->Branch("gen_top_phi", &gen_top_phi);
+	eventTree->Branch("gen_top_mass", &gen_top_mass);
 
-	eventTree->Branch("top_daughter_pdgId", &topDaug_pdgId);
-	eventTree->Branch("top_daughter_status", &topDaug_status);
-	eventTree->Branch("top_daughter_pt", &topDaug_pt);
-	eventTree->Branch("top_daughter_eta", &topDaug_eta);
-	eventTree->Branch("top_daughter_phi", &topDaug_phi);
-	eventTree->Branch("top_daughter_mass", &topDaug_mass);
+	eventTree->Branch("gen_x_daughter_pdgId", &gen_xDaug_pdgId);
+	eventTree->Branch("gen_x_daughter_status", &gen_xDaug_status);
+	eventTree->Branch("gen_x_daughter_pt", &gen_xDaug_pt);
+	eventTree->Branch("gen_x_daughter_eta", &gen_xDaug_eta);
+	eventTree->Branch("gen_x_daughter_phi", &gen_xDaug_phi);
+	eventTree->Branch("gen_x_daughter_mass", &gen_xDaug_mass);
 
-	eventTree->Branch("w_daughter_pdgId", &wDaug_pdgId);
-	eventTree->Branch("w_daughter_status", &wDaug_status);
-	eventTree->Branch("w_daughter_pt", &wDaug_pt);
-	eventTree->Branch("w_daughter_eta", &wDaug_eta);
-	eventTree->Branch("w_daughter_phi", &wDaug_phi);
-	eventTree->Branch("w_daughter_mass", &wDaug_mass);
+	eventTree->Branch("gen_top_daughter_pdgId", &gen_topDaug_pdgId);
+	eventTree->Branch("gen_top_daughter_status", &gen_topDaug_status);
+	eventTree->Branch("gen_top_daughter_pt", &gen_topDaug_pt);
+	eventTree->Branch("gen_top_daughter_eta", &gen_topDaug_eta);
+	eventTree->Branch("gen_top_daughter_phi", &gen_topDaug_phi);
+	eventTree->Branch("gen_top_daughter_mass", &gen_topDaug_mass);
+
+	eventTree->Branch("gen_w_daughter_pdgId", &gen_wDaug_pdgId);
+	eventTree->Branch("gen_w_daughter_status", &gen_wDaug_status);
+	eventTree->Branch("gen_w_daughter_pt", &gen_wDaug_pt);
+	eventTree->Branch("gen_w_daughter_eta", &gen_wDaug_eta);
+	eventTree->Branch("gen_w_daughter_phi", &gen_wDaug_phi);
+	eventTree->Branch("gen_w_daughter_mass", &gen_wDaug_mass);
 }
 
 #endif
