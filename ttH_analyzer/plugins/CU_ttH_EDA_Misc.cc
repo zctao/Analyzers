@@ -678,38 +678,53 @@ void CU_ttH_EDA::Check_Fill_Print_dileptauh(CU_ttH_EDA_event_vars &local)
 {
 	int fill_itr = 0;
 
+	// All events 
 	h_tth_syncex_dileptauh->Fill(0.5 + fill_itr++); // fill 0.5 first
+	// Weighed?
 
-	if (local.n_taus >= 1)
-		h_tth_syncex_dileptauh->Fill(0.5 + fill_itr++);
-	else
-		return;
-		
+	// Pass single lepton trigger
 	if (local.pass_single_e or local.pass_single_mu)
 		h_tth_syncex_dileptauh->Fill(0.5 + fill_itr++);
 	else
 		return;
 
-	// fix needed
-	bool SameSignLeptons = false;
-	if (local.n_electrons >= 1 and local.n_muons >= 1) {
+	// Cut on number of taus
+	if (local.n_taus >= 1)
+		h_tth_syncex_dileptauh->Fill(0.5 + fill_itr++);
+	else
+		return;		
 
-		for (int i=0; i<local.n_electrons; ++i) {
-			for (int j=0; j<local.n_muons; ++j) {
-				if (local.e_selected_sorted[i].charge() ==
-					local.mu_selected_sorted[j].charge())
-					SameSignLeptons = true;
-			}
-		}
-
-		if (SameSignLeptons)
-			h_tth_syncex_dileptauh->Fill(0.5 + fill_itr++);
-		else
-			return;
-	}
+	// At least two leptons
+	if (local.n_electrons + local.n_muons >= 2)
+		h_tth_syncex_dileptauh->Fill(0.5 + fill_itr++);
 	else
 		return;
-	
+		
+	// Same sign leptons
+	bool SameSignLeptons = false;
+	if (local.n_electrons + local.n_muons > 2)
+		SameSignLeptons = true;
+	else {
+		
+		if (local.n_electrons == 2) {
+			if (local.e_selected_sorted[0].charge() == local.e_selected_sorted[1].charge())
+				SameSignLeptons = true;
+		}
+		else if (local.n_muons == 2) {
+			if (local.mu_selected_sorted[0].charge() == local.mu_selected_sorted[1].charge())
+				SameSignLeptons = true;
+		}
+		else {
+			if (local.e_selected_sorted[0].charge() == local.mu_selected_sorted[0].charge())
+				SameSignLeptons = true;
+		}
+		
+	}
+
+	if (SameSignLeptons)
+		h_tth_syncex_dileptauh->Fill(0.5 + fill_itr++);
+	else
+		return;
 	
 	if (local.n_jets >= min_njets)
 		h_tth_syncex_dileptauh->Fill(0.5 + fill_itr++);
@@ -720,6 +735,7 @@ void CU_ttH_EDA::Check_Fill_Print_dileptauh(CU_ttH_EDA_event_vars &local)
 		h_tth_syncex_dileptauh->Fill(0.5 + fill_itr++);
 	else
 		return;
+	
 }
 
 void CU_ttH_EDA::Check_Fill_Print_eleditauh(CU_ttH_EDA_event_vars &local) {

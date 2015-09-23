@@ -121,7 +121,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	local.mu_selected_sorted = miniAODhelper.GetSortedByPt(local.mu_selected);
 	local.e_selected_sorted = miniAODhelper.GetSortedByPt(local.e_selected);
 	local.tau_selected_sorted = miniAODhelper.GetSortedByPt(local.tau_selected);
-
+	
 	/// Jet selection
 	local.jets_raw = miniAODhelper.GetUncorrectedJets(handle.jets);
 	local.jets_no_mu =

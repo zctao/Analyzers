@@ -145,13 +145,14 @@ void CU_ttH_EDA::Set_up_histograms()
 
 	if (analysis_type == Analyze_taus_dilepton) {
 		h_tth_syncex_dileptauh =
-			fs_->make<TH1D>("h_tth_syncex_dimutauh", ";cut", 6, 0, 6);
+			fs_->make<TH1D>("h_tth_syncex_dileptauh", ";cut", 7, 0, 7);
 		h_tth_syncex_dileptauh->GetXaxis()->SetBinLabel(1, "All events");
-		h_tth_syncex_dileptauh->GetXaxis()->SetBinLabel(3, "Single lepton trig");
-		h_tth_syncex_dileptauh->GetXaxis()->SetBinLabel(2, ">=1 tau");
-		h_tth_syncex_dileptauh->GetXaxis()->SetBinLabel(4, "Same sign leptons");
-		h_tth_syncex_dileptauh->GetXaxis()->SetBinLabel(5, "n_jets cut");
-		h_tth_syncex_dileptauh->GetXaxis()->SetBinLabel(6, "n_btags cut");
+		h_tth_syncex_dileptauh->GetXaxis()->SetBinLabel(2, "Single lepton trig");
+		h_tth_syncex_dileptauh->GetXaxis()->SetBinLabel(3, ">=1 tau");
+		h_tth_syncex_dileptauh->GetXaxis()->SetBinLabel(4, ">=2 mu or e");
+		h_tth_syncex_dileptauh->GetXaxis()->SetBinLabel(5, "Same sign leptons");
+		h_tth_syncex_dileptauh->GetXaxis()->SetBinLabel(6, "n_jets cut");
+		h_tth_syncex_dileptauh->GetXaxis()->SetBinLabel(7, "n_btags cut");
 	}
 
 	if (analysis_type == Analyze_taus_lepton_jet) {
