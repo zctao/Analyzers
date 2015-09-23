@@ -46,7 +46,7 @@ CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig)
 	int_lumi = 10000;
 	weight_sample = int_lumi * total_xs / sample_n;
 
-	Load_configuration(static_cast<string>("Configs/config_analyzer_tau.yaml"));
+	Load_configuration(static_cast<string>("Configs/config_analyzer_CMSSW74X.yaml"));
 
 	Set_up_tokens();
 	Set_up_histograms();

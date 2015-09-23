@@ -13,7 +13,7 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 
 process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
 process.ParticleListDrawer = cms.EDAnalyzer('ParticleListDrawer',
-                                            maxEventsToPrint = cms.untracked.int32(5),
+                                            maxEventsToPrint = cms.untracked.int32(15),
                                             src = cms.InputTag('genParticles'),
                                             printOnlyHardInteraction = cms.untracked.bool(False),
                                             useMessageLogger = cms.untracked.bool(False)

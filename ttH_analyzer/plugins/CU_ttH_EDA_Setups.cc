@@ -389,6 +389,8 @@ void CU_ttH_EDA::Setup_Tree()
 	eventTree->Branch("gen_x_daughter_phi", &gen_xDaug_phi);
 	eventTree->Branch("gen_x_daughter_mass", &gen_xDaug_mass);
 
+	eventTree->Branch("gen_tau_class", &gen_tau_class);
+
 	eventTree->Branch("gen_top_daughter_pdgId", &gen_topDaug_pdgId);
 	eventTree->Branch("gen_top_daughter_status", &gen_topDaug_status);
 	eventTree->Branch("gen_top_daughter_pt", &gen_topDaug_pt);

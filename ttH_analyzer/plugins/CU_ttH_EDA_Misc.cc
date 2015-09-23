@@ -1011,20 +1011,21 @@ void CU_ttH_EDA::Get_GenInfo(Handle<reco::GenParticleCollection> pruned,
 
 		// -- top --
 		if (abs(p->pdgId()) == 6) {
-			
+
 			gen.tops.push_back(*p);
 
 			// -- top daughters --
 			for (size_t j = 0; j < (unsigned)ndaugs; ++j) {
-				const reco::Candidate *tdaug = p->daughter(j);
-				
+				const reco::Candidate *immed_tdaug = p->daughter(j);
+				const reco::Candidate *tdaug = get_last_in_decay_chain(immed_tdaug);
+				// TO BE CHECKED: keep first or last b in the chain?		
 				gen.top_daughters.push_back(*tdaug);
 
 				// -- w daughters --
 				if (abs(tdaug->pdgId()) == 24) {
 					
 					int ndaugs_w = tdaug->numberOfDaughters();
-					// Fix needed! w->w-> ...
+					
 					for (size_t k = 0; k < (unsigned)ndaugs_w; ++k) {
 						const reco::Candidate *wdaug = tdaug->daughter(k);
 						gen.w_daughters.push_back(*wdaug);
@@ -1065,8 +1066,18 @@ void CU_ttH_EDA::Get_GenInfo(Handle<reco::GenParticleCollection> pruned,
 
 			// -- mediator daughters --
 			for (size_t j = 0; j < (unsigned)ndaugs; ++j) {
-				const reco::Candidate *xdaug = p->daughter(j);
+				const reco::Candidate *immed_xdaug = p->daughter(j);
+				const reco::Candidate *xdaug = get_last_in_decay_chain(immed_xdaug);
 				gen.x_daughters.push_back(*xdaug);
+
+				// -- tau daughers --
+				if (abs(xdaug->pdgId()) == 15) {
+					//int ndaugs_tau = xdaug->numberOfDaughters();
+					std::vector<const reco::Candidate*> stabledaughters;
+					get_stable_daughters(*xdaug,stabledaughters);
+					gen.tau_class.push_back( tau_classifier(stabledaughters) );
+				}
+				
 			} // end of mediator daughter loop
 
 		} else
@@ -1075,6 +1086,82 @@ void CU_ttH_EDA::Get_GenInfo(Handle<reco::GenParticleCollection> pruned,
 	} // end of pruned loop
 }
 
+void CU_ttH_EDA::printDecayChain(const reco::Candidate &p, int &index,
+								 int mother_index, bool details)
+{
+	int ndaug = p.numberOfDaughters();
+
+	for (int j = 0; j < ndaug; ++j) {
+		const reco::Candidate *daug = p.daughter(j);
+		index++;
+		cout << index << "\t" << daug->pdgId() << "\t" << daug->status() << "\t"
+			 << mother_index << "\t" << daug->numberOfDaughters();
+		if (details) {
+			cout << "\t" << daug->pt() << "\t" << daug->eta() << "\t"
+				 << daug->phi() << endl;
+		} else
+			cout << endl;
+
+		if (daug->status() != 1)
+			printDecayChain(*daug, index, index, details);
+	}
+}
+
+const reco::Candidate* CU_ttH_EDA::get_last_in_decay_chain(const reco::Candidate* p)
+{
+	int id = p->pdgId();
+	int ndaug = p->numberOfDaughters();
+	bool decay_to_itself = false;
+	int isame = -99;
+
+	for (int j = 0; j < ndaug; ++j) {
+ 		const reco::Candidate* daug = p->daughter(j);
+		if (daug -> pdgId() == id) {
+			decay_to_itself = true;
+			isame = j;
+		}
+	}
+
+	if (!decay_to_itself) {
+		const reco::Candidate* last_p = p;
+		return last_p;
+	}
+	else {	
+		const reco::Candidate* next_p = p->daughter(isame);
+		return get_last_in_decay_chain(next_p);
+	}
+}
+
+void CU_ttH_EDA::get_stable_daughters(const reco::Candidate& p,
+									 std::vector<const reco::Candidate*>& stabledaughters)
+{
+	int ndaug = p.numberOfDaughters();
+
+	for(int j = 0; j < ndaug; ++j) {
+		const reco::Candidate* daug = p.daughter(j);
+		if (daug->status() == 1) {
+			stabledaughters.push_back(daug);
+		}
+		else
+			get_stable_daughters(*daug,stabledaughters);
+	}
+}
+
+int CU_ttH_EDA::tau_classifier(std::vector<const reco::Candidate*>& stabledaughters)
+{
+	bool found_lepton = false;
+	for (auto & sdaug: stabledaughters) {
+		if( abs(sdaug->pdgId())==11 or abs(sdaug->pdgId())==13 )
+			found_lepton = true;
+	}
+
+	if (found_lepton)
+		return 1;  // leptonic
+	else
+		return 2;  // hadronic
+}
+
+//
 void CU_ttH_EDA::Write_to_Tree(CU_ttH_EDA_gen_vars &gen, CU_ttH_EDA_event_vars &local, TTree *eventTree)
 {
 	// clear variables
@@ -1129,6 +1216,8 @@ void CU_ttH_EDA::Write_to_Tree(CU_ttH_EDA_gen_vars &gen, CU_ttH_EDA_event_vars &
 	gen_xDaug_eta.clear();
 	gen_xDaug_phi.clear();
 	gen_xDaug_mass.clear();
+
+	gen_tau_class.clear();
 
 	gen_topDaug_pdgId.clear();
 	gen_topDaug_status.clear();
@@ -1222,6 +1311,8 @@ void CU_ttH_EDA::Write_to_Tree(CU_ttH_EDA_gen_vars &gen, CU_ttH_EDA_event_vars &
 		gen_xDaug_mass.push_back(gen.x_daughters[i].mass());
 	}
 
+	gen_tau_class = gen.tau_class;
+
 	// top daughters
 	for (size_t i = 0; i < gen.top_daughters.size(); ++i) {
 		gen_topDaug_pdgId.push_back(gen.top_daughters[i].pdgId());
@@ -1243,27 +1334,6 @@ void CU_ttH_EDA::Write_to_Tree(CU_ttH_EDA_gen_vars &gen, CU_ttH_EDA_event_vars &
 	}
 
 	eventTree->Fill();
-}
-
-void CU_ttH_EDA::printDecayChain(const reco::Candidate &p, int &index,
-								 int mother_index, bool details)
-{
-	int ndaug = p.numberOfDaughters();
-
-	for (int j = 0; j < ndaug; ++j) {
-		const reco::Candidate *daug = p.daughter(j);
-		index++;
-		cout << index << "\t" << daug->pdgId() << "\t" << daug->status() << "\t"
-			 << mother_index << "\t" << daug->numberOfDaughters();
-		if (details) {
-			cout << "\t" << daug->pt() << "\t" << daug->eta() << "\t"
-				 << daug->phi() << endl;
-		} else
-			cout << endl;
-
-		if (daug->status() != 1)
-			printDecayChain(*daug, index, index, details);
-	}
 }
 
 #endif

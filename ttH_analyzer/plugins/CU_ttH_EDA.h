@@ -156,6 +156,7 @@ struct CU_ttH_EDA_gen_vars {
 	reco::CandidateCollection top_daughters;
 	reco::CandidateCollection w_daughters;
 
+	std::vector<int> tau_class;	
 	double ditop_mass;
 	double ditau_mass;
 };
@@ -241,14 +242,20 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	void Check_Fill_Print_dileptauh(CU_ttH_EDA_event_vars &);
 	void Check_Fill_Print_eleditauh(CU_ttH_EDA_event_vars &);
 	void Check_Fill_Print_muditauh(CU_ttH_EDA_event_vars &);
-
+	void Write_to_Tree(CU_ttH_EDA_gen_vars &, CU_ttH_EDA_event_vars &, TTree *);
+	
+	/// Gen information functions
 	void Get_GenInfo(Handle<reco::GenParticleCollection>,
 					 Handle<pat::PackedGenParticleCollection>,
 					 CU_ttH_EDA_gen_vars &);
-	void printDecayChain(const reco::Candidate &p, int &index, int mother_index,
-						 bool details);
-	void Write_to_Tree(CU_ttH_EDA_gen_vars &, CU_ttH_EDA_event_vars &, TTree *);
-
+	void printDecayChain(const reco::Candidate &, int &, int,
+						 bool);
+	const reco::Candidate* get_last_in_decay_chain(const reco::Candidate* );
+	void get_stable_daughters(const reco::Candidate&,
+							std::vector<const reco::Candidate *>& );
+	int tau_classifier(std::vector<const reco::Candidate*>& );
+	
+	//
 	template <class lepton>
 	int Print_event_in_file1(FILE *, lepton &, std::vector<pat::Jet> &,
 							 CU_ttH_EDA_event_vars &);
@@ -454,6 +461,8 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	std::vector<float> gen_xDaug_eta;
 	std::vector<float> gen_xDaug_phi;
 	std::vector<float> gen_xDaug_mass;
+
+	std::vector<int> gen_tau_class;
 
 	std::vector<int> gen_topDaug_pdgId;
 	std::vector<int> gen_topDaug_status;
