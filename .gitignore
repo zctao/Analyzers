@@ -2,3 +2,7 @@
 *.pyc
 .fuse_*
 *#*#
+
+*_C.d
+*_C.so
+*.pcm
