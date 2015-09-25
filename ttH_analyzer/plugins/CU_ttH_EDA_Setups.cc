@@ -334,13 +334,13 @@ void CU_ttH_EDA::Set_up_tokens()
 void CU_ttH_EDA::Setup_Tree()
 {
 
-	edm::Service<TFileService> fs;
-
-	eventTree = fs->make<TTree>("EventTree", "Event tree");
+	eventTree = fs_->make<TTree>("EventTree", "Event tree");
 
 	eventTree->Branch("n_electrons", &n_electrons);
 	eventTree->Branch("n_muons", &n_muons);
-	eventTree->Branch("n_taus", &n_taus);
+	eventTree->Branch("n_taus_loose", &n_taus_loose);
+	eventTree->Branch("n_taus_medium", &n_taus_medium);
+	eventTree->Branch("n_taus_tight", &n_taus_tight);
 	eventTree->Branch("n_jets", &n_jets);
 	eventTree->Branch("n_btags", &n_btags);
 
@@ -352,22 +352,30 @@ void CU_ttH_EDA::Setup_Tree()
 	eventTree->Branch("mu_pt", &mu_pt);
 	eventTree->Branch("mu_eta", &mu_eta);
 	eventTree->Branch("mu_phi", &mu_phi);
-	eventTree->Branch("mu_mass", &e_mass);
+	eventTree->Branch("mu_mass", &mu_mass);
 	
-	eventTree->Branch("tau_pt", &tau_pt);
-	eventTree->Branch("tau_eta", &tau_eta);
-	eventTree->Branch("tau_phi", &tau_phi);
-	eventTree->Branch("tau_mass", &e_mass);
+	eventTree->Branch("tau_pt_loose", &tau_pt_loose);
+	eventTree->Branch("tau_eta_loose", &tau_eta_loose);
+	eventTree->Branch("tau_phi_loose", &tau_phi_loose);
+	eventTree->Branch("tau_mass_loose", &tau_mass_loose);
+	eventTree->Branch("tau_pt_medium", &tau_pt_medium);
+	eventTree->Branch("tau_eta_medium", &tau_eta_medium);
+	eventTree->Branch("tau_phi_medium", &tau_phi_medium);
+	eventTree->Branch("tau_mass_medium", &tau_mass_medium);
+	eventTree->Branch("tau_pt_tight", &tau_pt_tight);
+	eventTree->Branch("tau_eta_tight", &tau_eta_tight);
+	eventTree->Branch("tau_phi_tight", &tau_phi_tight);
+	eventTree->Branch("tau_mass_tight", &tau_mass_tight);
 	
 	eventTree->Branch("jet_pt", &jet_pt);
 	eventTree->Branch("jet_eta", &jet_eta);
 	eventTree->Branch("jet_phi", &jet_phi);
-	eventTree->Branch("jet_mass", &e_mass);
+	eventTree->Branch("jet_mass", &jet_mass);
 	
 	eventTree->Branch("bjet_pt", &bjet_pt);
 	eventTree->Branch("bjet_eta", &bjet_eta);
 	eventTree->Branch("bjet_phi", &bjet_phi);
-	eventTree->Branch("bjet_mass", &e_mass);
+	eventTree->Branch("bjet_mass", &bjet_mass);
 	
 	eventTree->Branch("gen_x_pdgId", &gen_x_pdgId);
 	eventTree->Branch("gen_x_status", &gen_x_status);

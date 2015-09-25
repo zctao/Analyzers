@@ -70,9 +70,9 @@ void CU_ttH_EDA::Load_configuration(string config_filename)
 		throw std::runtime_error(error_message);
 	min_tight_lepton_pT = config["Cuts"]["min_tight_lepton_pT"].as<float>();
 
-	if (!config["Cuts"]["min_tight_tau_pT"])
+	if (!config["Cuts"]["min_tau_pT"])
 		throw std::runtime_error(error_message);
-	min_tight_tau_pT = config["Cuts"]["min_tight_tau_pT"].as<float>();
+	min_tau_pT = config["Cuts"]["min_tau_pT"].as<float>();
 	
 	if (!config["Cuts"]["min_jet_pT"])
 		throw std::runtime_error(error_message);

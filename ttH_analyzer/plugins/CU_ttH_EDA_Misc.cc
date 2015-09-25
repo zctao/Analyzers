@@ -689,7 +689,7 @@ void CU_ttH_EDA::Check_Fill_Print_dileptauh(CU_ttH_EDA_event_vars &local)
 		return;
 
 	// Cut on number of taus
-	if (local.n_taus >= 1)
+	if (local.n_taus_loose >= 1)
 		h_tth_syncex_dileptauh->Fill(0.5 + fill_itr++);
 	else
 		return;		
@@ -753,21 +753,21 @@ void CU_ttH_EDA::Check_Fill_Print_eleditauh(CU_ttH_EDA_event_vars &local) {
 	else
 		return;
 
-	if (local.n_taus >= 2)
+	if (local.n_taus_loose >= 2)
 		h_tth_syncex_eleditauh->Fill(0.5 + fill_itr++);
 	else
 		return;
 
 	double mTT = -99;
 	TLorentzVector tau1,tau2;
-	tau1.SetPtEtaPhiM(local.tau_selected_sorted[0].pt(),
-					  local.tau_selected_sorted[0].eta(),
-					  local.tau_selected_sorted[0].phi(),
-					  local.tau_selected_sorted[0].mass());
-	tau2.SetPtEtaPhiM(local.tau_selected_sorted[1].pt(),
-					  local.tau_selected_sorted[1].eta(),
-					  local.tau_selected_sorted[1].phi(),
-					  local.tau_selected_sorted[1].mass());
+	tau1.SetPtEtaPhiM(local.tau_selected_sorted_loose[0].pt(),
+					  local.tau_selected_sorted_loose[0].eta(),
+					  local.tau_selected_sorted_loose[0].phi(),
+					  local.tau_selected_sorted_loose[0].mass());
+	tau2.SetPtEtaPhiM(local.tau_selected_sorted_loose[1].pt(),
+					  local.tau_selected_sorted_loose[1].eta(),
+					  local.tau_selected_sorted_loose[1].phi(),
+					  local.tau_selected_sorted_loose[1].mass());
 	mTT = (tau1+tau2).M();
 	if (mTT > 120 and mTT < 130)
 		h_tth_syncex_eleditauh->Fill(0.5 + fill_itr++);
@@ -801,21 +801,21 @@ void CU_ttH_EDA::Check_Fill_Print_muditauh(CU_ttH_EDA_event_vars &local) {
 	else
 		return;
 
-	if (local.n_taus >= 2)
+	if (local.n_taus_loose >= 2)
 		h_tth_syncex_muditauh->Fill(0.5 + fill_itr++);
 	else
 		return;
 
 	double mTT = -99;
 	TLorentzVector tau1,tau2;
-	tau1.SetPtEtaPhiM(local.tau_selected_sorted[0].pt(),
-					  local.tau_selected_sorted[0].eta(),
-					  local.tau_selected_sorted[0].phi(),
-					  local.tau_selected_sorted[0].mass());
-	tau2.SetPtEtaPhiM(local.tau_selected_sorted[1].pt(),
-					  local.tau_selected_sorted[1].eta(),
-					  local.tau_selected_sorted[1].phi(),
-					  local.tau_selected_sorted[1].mass());
+	tau1.SetPtEtaPhiM(local.tau_selected_sorted_loose[0].pt(),
+					  local.tau_selected_sorted_loose[0].eta(),
+					  local.tau_selected_sorted_loose[0].phi(),
+					  local.tau_selected_sorted_loose[0].mass());
+	tau2.SetPtEtaPhiM(local.tau_selected_sorted_loose[1].pt(),
+					  local.tau_selected_sorted_loose[1].eta(),
+					  local.tau_selected_sorted_loose[1].phi(),
+					  local.tau_selected_sorted_loose[1].mass());
 	mTT = (tau1+tau2).M();
 	if (mTT > 120 and mTT < 130)
 		h_tth_syncex_muditauh->Fill(0.5 + fill_itr++);
@@ -1086,13 +1086,15 @@ void CU_ttH_EDA::Get_GenInfo(Handle<reco::GenParticleCollection> pruned,
 				const reco::Candidate *xdaug = get_last_in_decay_chain(immed_xdaug);
 				gen.x_daughters.push_back(*xdaug);
 
-				// -- tau daughers --
+				// -- tau and tau daughers --
 				if (abs(xdaug->pdgId()) == 15) {
 					//int ndaugs_tau = xdaug->numberOfDaughters();
 					std::vector<const reco::Candidate*> stabledaughters;
 					get_stable_daughters(*xdaug,stabledaughters);
 					gen.tau_class.push_back( tau_classifier(stabledaughters) );
 				}
+				else
+					gen.tau_class.push_back(-1);  // not applicable
 				
 			} // end of mediator daughter loop
 
@@ -1172,9 +1174,9 @@ int CU_ttH_EDA::tau_classifier(std::vector<const reco::Candidate*>& stabledaught
 	}
 
 	if (found_lepton)
-		return 1;  // leptonic
+		return 0;  // leptonic
 	else
-		return 2;  // hadronic
+		return 1;  // hadronic
 }
 
 //
@@ -1183,7 +1185,9 @@ void CU_ttH_EDA::Write_to_Tree(CU_ttH_EDA_gen_vars &gen, CU_ttH_EDA_event_vars &
 	// clear variables
 	n_electrons = -99;
 	n_muons = -99;
-	n_taus = -99;
+	n_taus_loose = -99;
+	n_taus_medium = -99;
+	n_taus_tight = -99;
 	n_jets = -99;
 	n_btags = -99;
 
@@ -1197,10 +1201,18 @@ void CU_ttH_EDA::Write_to_Tree(CU_ttH_EDA_gen_vars &gen, CU_ttH_EDA_event_vars &
 	mu_phi.clear();
 	mu_mass.clear();
 
-	tau_pt.clear();
-	tau_eta.clear();
-	tau_phi.clear();
-	tau_mass.clear();
+	tau_pt_loose.clear();
+	tau_eta_loose.clear();
+	tau_phi_loose.clear();
+	tau_mass_loose.clear();
+	tau_pt_medium.clear();
+	tau_eta_medium.clear();
+	tau_phi_medium.clear();
+	tau_mass_medium.clear();
+	tau_pt_tight.clear();
+	tau_eta_tight.clear();
+	tau_phi_tight.clear();
+	tau_mass_tight.clear();
 	
 	jet_pt.clear();
 	jet_eta.clear();
@@ -1252,7 +1264,9 @@ void CU_ttH_EDA::Write_to_Tree(CU_ttH_EDA_gen_vars &gen, CU_ttH_EDA_event_vars &
 	// Number of tags per event
 	n_electrons = local.n_electrons;
 	n_muons = local.n_muons;
-	n_taus = local.n_taus;
+	n_taus_loose = local.n_taus_loose;
+	n_taus_medium = local.n_taus_medium;
+	n_taus_tight = local.n_taus_tight;
 	n_jets = local.n_jets;
 	n_btags = local.n_btags;
 
@@ -1273,11 +1287,25 @@ void CU_ttH_EDA::Write_to_Tree(CU_ttH_EDA_gen_vars &gen, CU_ttH_EDA_event_vars &
 	}
 
 	// taus
-	for (size_t i = 0; i < local.tau_selected_sorted.size(); ++i) {
-		tau_pt.push_back(local.tau_selected_sorted[i].pt());
-		tau_eta.push_back(local.tau_selected_sorted[i].eta());
-		tau_phi.push_back(local.tau_selected_sorted[i].phi());
-		tau_mass.push_back(local.tau_selected_sorted[i].mass());
+	for (auto & tau : local.tau_selected_sorted_loose) {
+		tau_pt_loose.push_back(tau.pt());
+		tau_eta_loose.push_back(tau.eta());
+		tau_phi_loose.push_back(tau.phi());
+		tau_mass_loose.push_back(tau.mass());
+	}
+
+	for (auto & tau : local.tau_selected_sorted_medium) {
+		tau_pt_medium.push_back(tau.pt());
+		tau_eta_medium.push_back(tau.eta());
+		tau_phi_medium.push_back(tau.phi());
+		tau_mass_medium.push_back(tau.mass());
+	}
+
+	for (auto & tau : local.tau_selected_sorted_tight) {
+		tau_pt_tight.push_back(tau.pt());
+		tau_eta_tight.push_back(tau.eta());
+		tau_phi_tight.push_back(tau.phi());
+		tau_mass_tight.push_back(tau.mass());
 	}
 
 	// jets

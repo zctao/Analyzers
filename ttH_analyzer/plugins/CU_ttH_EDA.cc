@@ -51,6 +51,7 @@ CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig)
 	Set_up_tokens();
 	Set_up_histograms();
 	Set_up_output_files();
+	
 }
 
 /// Destructor
@@ -110,17 +111,28 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		*(handle.electrons), min_tight_lepton_pT, electronID::electronPhys14M);
 	local.mu_selected = miniAODhelper.GetSelectedMuons(
 		*(handle.muons), min_tight_lepton_pT, muonID::muonTight);
-	local.tau_selected = miniAODhelper.GetSelectedTaus(
-		*(handle.taus),	min_tight_tau_pT, tau::loose);   // which tauID?
+	local.tau_selected_loose = miniAODhelper.GetSelectedTaus(
+		*(handle.taus),	min_tau_pT, tau::loose);
+	local.tau_selected_medium = miniAODhelper.GetSelectedTaus(
+		*(handle.taus),	min_tau_pT, tau::medium);
+	local.tau_selected_tight = miniAODhelper.GetSelectedTaus(
+		*(handle.taus),	min_tau_pT, tau::tight);
 
 	local.n_electrons = static_cast<int>(local.e_selected.size());
 	local.n_muons = static_cast<int>(local.mu_selected.size());
-	local.n_taus = static_cast<int>(local.tau_selected.size());
+	local.n_taus_loose = static_cast<int>(local.tau_selected_loose.size());
+	local.n_taus_medium = static_cast<int>(local.tau_selected_medium.size());
+	local.n_taus_tight = static_cast<int>(local.tau_selected_tight.size());
 
 	/// Sort leptons by pT
 	local.mu_selected_sorted = miniAODhelper.GetSortedByPt(local.mu_selected);
 	local.e_selected_sorted = miniAODhelper.GetSortedByPt(local.e_selected);
-	local.tau_selected_sorted = miniAODhelper.GetSortedByPt(local.tau_selected);
+	local.tau_selected_sorted_loose
+		= miniAODhelper.GetSortedByPt(local.tau_selected_loose);
+	local.tau_selected_sorted_medium
+		= miniAODhelper.GetSortedByPt(local.tau_selected_medium);
+	local.tau_selected_sorted_tight
+		= miniAODhelper.GetSortedByPt(local.tau_selected_tight);
 	
 	/// Jet selection
 	local.jets_raw = miniAODhelper.GetUncorrectedJets(handle.jets);
@@ -185,9 +197,9 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	if (gen_info) {
 		Get_GenInfo(handle.MC_particles, handle.MC_packed, gen);
 	}
-
+	
 	Write_to_Tree(gen, local, eventTree);
-
+	
 }
 
 // ------------ method called once each job just before starting event loop
@@ -199,6 +211,7 @@ void CU_ttH_EDA::beginJob()
 	event_count = 0;
 
 	Setup_Tree();
+
 }
 
 // ------------ method called once each job just after ending the event loop
@@ -349,6 +362,7 @@ void CU_ttH_EDA::endRun(const edm::Run &, const edm::EventSetup &)
 	std::cout
 		<< "***************************************************************"
 		<< std::endl;
+
 }
 
 // ------------ method called when starting to processes a luminosity block
