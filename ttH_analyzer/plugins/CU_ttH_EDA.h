@@ -148,11 +148,14 @@ struct CU_ttH_EDA_event_vars {
 	std::vector<pat::Jet> jets_selected_tag;
 	std::vector<pat::Jet> jets_selected_tag_sorted;
 
+	double weight_gen;
+	
 	/// Other quantities
 	pat::MET MET_corrected;
 	double dimuon_mass;
 	double dielectron_mass;
 	double dilepton_mass;
+	double ditau_mass;
 };
 
 struct CU_ttH_EDA_gen_vars {
@@ -207,10 +210,10 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	void Load_configuration(string); // at CU_ttH_EDA(), runs _MAODH()
 	void Load_configuration_set_type(const string &); // sets analysis_type
 	void Load_configuration_MAODH(bool); // runs miniAODhelper.SetUp
-	void Set_up_histograms();			 // at CU_ttH_EDA()
+	void Set_up_histograms(std::vector<string>);			 // at CU_ttH_EDA()
 	void Set_up_output_files();			 // at CU_ttH_EDA()
 	void Set_up_tokens();				 // at CU_ttH_EDA()
-
+	
 	void Setup_Tree();
 
 	int Set_up_Run_histograms_triggers(); // at beginRun(), after
@@ -247,9 +250,11 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	void Check_Fill_Print_dimuj(CU_ttH_EDA_event_vars &);
 	void Check_Fill_Print_dielej(CU_ttH_EDA_event_vars &);
 	void Check_Fill_Print_elemuj(CU_ttH_EDA_event_vars &);
-	void Check_Fill_Print_dileptauh(CU_ttH_EDA_event_vars &);
-	void Check_Fill_Print_eleditauh(CU_ttH_EDA_event_vars &);
-	void Check_Fill_Print_muditauh(CU_ttH_EDA_event_vars &);
+	//void Check_Fill_Print_dileptauh(CU_ttH_EDA_event_vars &);
+	//void Check_Fill_Print_eleditauh(CU_ttH_EDA_event_vars &);
+	//void Check_Fill_Print_muditauh(CU_ttH_EDA_event_vars &);
+	bool pass_cut(CU_ttH_EDA_event_vars &, string);
+	bool pass_multi_cuts(CU_ttH_EDA_event_vars &, std::vector<string>, bool, TH1D*, int);
 	void Write_to_Tree(CU_ttH_EDA_gen_vars &, CU_ttH_EDA_event_vars &, TTree *);
 	
 	/// Gen information functions
@@ -322,7 +327,7 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	double int_lumi;	  // integrated luminosity
 	double sample_n;	  // total nr of events. Should be long if compatible
 	double weight_sample; // int lumi * xs / sample_n
-	// double weight_gen;
+	double weight_gen;
 
 	std::string jet_corrector;
 
@@ -336,6 +341,8 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	int min_njets;
 	int min_nbtags;
 
+	std::vector<string> cuts;
+	
 	/// Selection helper
 	MiniAODHelper miniAODhelper;
 
@@ -481,7 +488,6 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	std::vector<float> gen_xDaug_mass;
 
 	std::vector<int> gen_tau_class;
-	std::vector<int> gen_tau_pT_cut;
 
 	std::vector<int> gen_topDaug_pdgId;
 	std::vector<int> gen_topDaug_status;

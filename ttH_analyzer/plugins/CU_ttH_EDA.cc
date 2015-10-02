@@ -49,8 +49,23 @@ CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig)
 	Load_configuration(static_cast<string>("Configs/config_analyzer_CMSSW74X.yaml"));
 
 	Set_up_tokens();
-	Set_up_histograms();
+	Setup_Tree();
+
+	if (analysis_type == Analyze_taus_dilepton) {
+		cuts = {
+			"single_lep_trig",">= 1 tau",">= 2 leptons",
+			"same sign leptons","min_njets","min_nbtags"
+		};
+	}
+	else if (analysis_type == Analyze_taus_lepton_jet) {
+		cuts = {
+			"single_e_trig",">= 1 e",">= 2 taus",
+			"100<mTT<150","min_njets","min_nbtsgs"
+		};
+	}
+	Set_up_histograms(cuts);
 	Set_up_output_files();
+	
 	
 }
 
@@ -98,7 +113,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	miniAODhelper.SetJetCorrector(
 		JetCorrector::getJetCorrector(jet_corrector, iSetup));
 
-	// 	weight_gen = event_gen_info.product()->weight();
+	weight_gen = handle.event_gen_info.product()->weight();
 	local.weight = weight_sample * (handle.event_gen_info.product()->weight());
 
 	if (trigger_stats) {
@@ -181,17 +196,27 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	}
 
 	if (analysis_type == Analyze_taus_dilepton) {
-		Check_Fill_Print_dileptauh(local);
-		//Check_Fill_Print_dimutauh(local);
-		//Check_Fill_Print_dieletauh(local);
-		//Check_Fill_Print_elemutauh(local);
+		bool draw_cut_flow = true;
+		bool cut_passed = pass_multi_cuts(local, cuts, draw_cut_flow, h_tth_syncex_dileptauh, 2);
+		if (cut_passed) {
+			Get_GenInfo(handle.MC_particles, handle.MC_packed, gen);  // MC Truth;
+			Write_to_Tree(gen, local, eventTree);
+		}
+		// Check_Fill_Print_dileptauh(local);
 	}
 
 	if (analysis_type == Analyze_taus_lepton_jet) {
-		Check_Fill_Print_eleditauh(local);
-		Check_Fill_Print_muditauh(local);
+		bool draw_cut_flow = true;
+		bool cut_passed = pass_multi_cuts(local, cuts, draw_cut_flow, h_tth_syncex_eleditauh, 2);
+		if (cut_passed) {
+			Get_GenInfo(handle.MC_particles, handle.MC_packed, gen);  // MC Truth;
+			Write_to_Tree(gen, local, eventTree);
+		}
+		//Check_Fill_Print_eleditauh(local);
+		//Check_Fill_Print_muditauh(local);
 	}
-	
+
+	/*
 	/// generator information
 	bool gen_info = true;
 	if (gen_info) {
@@ -199,7 +224,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	}
 	
 	Write_to_Tree(gen, local, eventTree);
-	
+	*/
 }
 
 // ------------ method called once each job just before starting event loop
@@ -209,8 +234,6 @@ void CU_ttH_EDA::beginJob()
 	TH1::SetDefaultSumw2(true);
 
 	event_count = 0;
-
-	Setup_Tree();
 
 }
 

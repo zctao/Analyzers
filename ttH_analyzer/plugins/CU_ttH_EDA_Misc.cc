@@ -673,7 +673,7 @@ void CU_ttH_EDA::Check_Fill_Print_elemuj(CU_ttH_EDA_event_vars &local)
 		return;
 }
 
-
+/*
 void CU_ttH_EDA::Check_Fill_Print_dileptauh(CU_ttH_EDA_event_vars &local)
 {
 	int fill_itr = 0;
@@ -832,7 +832,7 @@ void CU_ttH_EDA::Check_Fill_Print_muditauh(CU_ttH_EDA_event_vars &local) {
 	else
 		return;
 }
-
+*/
 
 template <class lepton>
 int CU_ttH_EDA::Print_event_in_file1(FILE *file, lepton &lpt,
@@ -1006,6 +1006,101 @@ int CU_ttH_EDA::Print_event_in_file1_dilepton(FILE *file, lep1 &lepton1,
 	fprintf(file, "%2d  %2d\n", local.n_jets, local.n_btags);
 
 	return ferror(file);
+}
+
+///
+bool CU_ttH_EDA::pass_cut(CU_ttH_EDA_event_vars &local, string cut)
+{
+	if (cut == "single_lep_trig")
+		return (local.pass_single_e or local.pass_single_mu);
+
+	else if (cut == "single_e_trig")
+		return (local.pass_single_e);
+
+	else if (cut == "single_mu_trig")
+		return (local.pass_single_mu);
+
+	else if (cut == ">= 1 e")
+		return (local.n_electrons >= 1);
+
+	else if (cut == ">= 1 mu")
+		return (local.n_muons >= 1);
+	
+	else if (cut == ">= 1 tau")
+		return (local.n_taus_loose >= 1);
+
+	else if (cut == ">= 2 taus")
+		return (local.n_taus_loose >= 2);
+	
+	else if (cut == ">= 2 leptons")
+		return (local.n_electrons + local.n_muons >=2);
+
+	else if (cut == "same sign leptons") {
+		std::vector<int> charges;
+		for (auto & e: local.e_selected) {
+			charges.push_back(e.charge());
+		}
+		for (auto & mu: local.mu_selected) {
+			charges.push_back(mu.charge());
+		}
+		
+		if (charges.size() > 2)
+			return true;
+		else if (charges.size() == 2)
+			return (charges[0]==charges[1]);
+		else
+			return false;
+	}
+
+	else if (cut == "100<mTT<150") {
+		double mTT = -99;
+		TLorentzVector tau1,tau2;
+		tau1.SetPtEtaPhiM(local.tau_selected_sorted_loose[0].pt(),
+						  local.tau_selected_sorted_loose[0].eta(),
+						  local.tau_selected_sorted_loose[0].phi(),
+						  local.tau_selected_sorted_loose[0].mass());
+		tau2.SetPtEtaPhiM(local.tau_selected_sorted_loose[1].pt(),
+						  local.tau_selected_sorted_loose[1].eta(),
+						  local.tau_selected_sorted_loose[1].phi(),
+						  local.tau_selected_sorted_loose[1].mass());
+		mTT = (tau1+tau2).M();
+		return (mTT>100 and mTT<150);
+	}
+	
+	else if (cut == "min_njets")
+		return (local.n_jets >= min_njets);
+
+	else if (cut == "min_nbtags")
+		return (local.n_btags >= min_nbtags);
+		
+	else
+		return false;
+}
+
+bool CU_ttH_EDA::pass_multi_cuts(CU_ttH_EDA_event_vars &local, std::vector<string> cuts, bool draw_cut_flow=false, TH1D* hist=NULL, int start_bin=2)
+{	
+	if (cuts.size()==0)
+		return false;
+	
+	if (draw_cut_flow and start_bin == 2) {
+		// All events
+		hist->Fill(0.5); // fill 0.5 first
+		// Weighted events
+		hist->Fill(1.5, weight_gen);
+	}
+	
+	bool passCuts = true;
+	for (auto & icut : cuts) {
+		passCuts = passCuts and pass_cut(local,icut);
+
+		if (!passCuts)
+			return false;
+		
+		if (draw_cut_flow)
+			hist->Fill((start_bin++)+0.5);
+	}
+
+	return true;
 }
 
 ///

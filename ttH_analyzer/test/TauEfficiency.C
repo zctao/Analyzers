@@ -16,8 +16,8 @@ using namespace std;
 
 namespace Cuts
 {
-	const float pT = 30.0;
-	const float eta = 2.1;
+	const float pT = 25.0;
+	const float eta = 2.3;
 }
 
 void TauEfficiency (const TString input_file = "/uscms/home/ztao/work/CU_ttH_WD/Outputs/CU_ttH_EDA_output.root") {

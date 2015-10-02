@@ -49,7 +49,7 @@ void CU_ttH_EDA::Close_output_files()
 	}
 }
 
-void CU_ttH_EDA::Set_up_histograms()
+void CU_ttH_EDA::Set_up_histograms(std::vector<string> cuts)
 {
 	// 	h_electron_selection = fs_->make<TH1D>("h_electron_selection",
 	// ";electron cut", 12, 0 , 12 );
@@ -144,37 +144,36 @@ void CU_ttH_EDA::Set_up_histograms()
 	}
 
 	if (analysis_type == Analyze_taus_dilepton) {
+		auto nbins = cuts.size()+2;
 		h_tth_syncex_dileptauh =
-			fs_->make<TH1D>("h_tth_syncex_dileptauh", ";cut", 7, 0, 7);
+			fs_->make<TH1D>("h_tth_syncex_dileptauh", ";cut", nbins, 0, nbins);
 		h_tth_syncex_dileptauh->GetXaxis()->SetBinLabel(1, "All events");
-		h_tth_syncex_dileptauh->GetXaxis()->SetBinLabel(2, "Single lepton trig");
-		h_tth_syncex_dileptauh->GetXaxis()->SetBinLabel(3, ">=1 tau");
-		h_tth_syncex_dileptauh->GetXaxis()->SetBinLabel(4, ">=2 mu or e");
-		h_tth_syncex_dileptauh->GetXaxis()->SetBinLabel(5, "Same sign leptons");
-		h_tth_syncex_dileptauh->GetXaxis()->SetBinLabel(6, "n_jets cut");
-		h_tth_syncex_dileptauh->GetXaxis()->SetBinLabel(7, "n_btags cut");
+		h_tth_syncex_dileptauh->GetXaxis()->SetBinLabel(2, "Weighted");
+		int itr = 3;
+		for (auto & icut : cuts) {
+			h_tth_syncex_dileptauh->GetXaxis()->SetBinLabel(itr++,icut.c_str());
+		}
 	}
-
+	
 	if (analysis_type == Analyze_taus_lepton_jet) {
+		auto nbins = cuts.size()+2;
 		h_tth_syncex_eleditauh =
-			fs_->make<TH1D>("h_tth_syncex_eleditauh", ";cut", 7, 0, 7);
+			fs_->make<TH1D>("h_tth_syncex_eleditauh", ";cut", nbins, 0, nbins);
 		h_tth_syncex_eleditauh->GetXaxis()->SetBinLabel(1, "All events");
-		h_tth_syncex_eleditauh->GetXaxis()->SetBinLabel(2, "Single e trig");
-		h_tth_syncex_eleditauh->GetXaxis()->SetBinLabel(3, ">=1 n_electrons");
-		h_tth_syncex_eleditauh->GetXaxis()->SetBinLabel(4, ">=2 n_taus");
-		h_tth_syncex_eleditauh->GetXaxis()->SetBinLabel(5, "120 < mTT < 130");
-		h_tth_syncex_eleditauh->GetXaxis()->SetBinLabel(6, "n_jets cut");
-		h_tth_syncex_eleditauh->GetXaxis()->SetBinLabel(7, "n_btags cut");
+		h_tth_syncex_eleditauh->GetXaxis()->SetBinLabel(2, "Weighted");
+		int itr_e = 3;
+		for (auto & icut : cuts) {
+			h_tth_syncex_eleditauh->GetXaxis()->SetBinLabel(itr_e++,icut.c_str());
+		}
 
 		h_tth_syncex_muditauh =
-			fs_->make<TH1D>("h_tth_syncex_muditauh", ";cut", 7, 0, 7);
+			fs_->make<TH1D>("h_tth_syncex_muditauh", ";cut", nbins, 0, nbins);
 		h_tth_syncex_muditauh->GetXaxis()->SetBinLabel(1, "All events");
-		h_tth_syncex_muditauh->GetXaxis()->SetBinLabel(2, "Single e trig");
-		h_tth_syncex_muditauh->GetXaxis()->SetBinLabel(3, ">=1 n_electrons");
-		h_tth_syncex_muditauh->GetXaxis()->SetBinLabel(4, ">=2 n_taus");
-		h_tth_syncex_muditauh->GetXaxis()->SetBinLabel(5, "120 < mTT < 130");
-		h_tth_syncex_muditauh->GetXaxis()->SetBinLabel(6, "n_jets cut");
-		h_tth_syncex_muditauh->GetXaxis()->SetBinLabel(7, "n_btags cut");
+		h_tth_syncex_muditauh->GetXaxis()->SetBinLabel(2, "Weighted");
+		int itr_mu = 3;
+		for (auto & icut : cuts) {
+			h_tth_syncex_muditauh->GetXaxis()->SetBinLabel(itr_mu++,icut.c_str());
+		}
 	}
 }
 
