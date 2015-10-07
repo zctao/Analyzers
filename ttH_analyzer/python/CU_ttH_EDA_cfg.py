@@ -42,6 +42,7 @@ process.source = cms.Source("PoolSource",
 	fileNames = cms.untracked.vstring(
         'file:/eos/uscms/store/user/ztao/ttHToTauTau_M125_13TeV_Spring15_miniAOD.root'
         #'file:/eos/uscms/store/user/ztao/ttHToTauTau_M125_13TeV_Spring15_AOD.root'
+        #'file:/eos/uscms/store/user/ztao/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_miniAOD.root'
 
         #/store/mc/RunIISpring15DR74/ttHToTT_M125_13TeV_powheg_pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v2/20000/0249345F-032D-E511-A21D-0025905C95F8.root
         #/store/mc/RunIISpring15DR74/ttHToTT_M125_13TeV_powheg_pythia8/AODSIM/Asympt25ns_MCRUN2_74_V9-v2/20000/008B5DD7-EB2B-E511-8E73-0025904C63F8.root

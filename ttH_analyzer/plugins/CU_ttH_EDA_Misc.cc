@@ -1296,6 +1296,10 @@ void CU_ttH_EDA::Write_to_Tree(CU_ttH_EDA_gen_vars &gen, CU_ttH_EDA_event_vars &
 	mu_phi.clear();
 	mu_mass.clear();
 
+	tau_pt_noniso.clear();
+	tau_eta_noniso.clear();
+	tau_phi_noniso.clear();
+	tau_mass_noniso.clear();
 	tau_pt_loose.clear();
 	tau_eta_loose.clear();
 	tau_phi_loose.clear();
@@ -1382,6 +1386,13 @@ void CU_ttH_EDA::Write_to_Tree(CU_ttH_EDA_gen_vars &gen, CU_ttH_EDA_event_vars &
 	}
 
 	// taus
+	for (auto & tau : local.tau_selected_sorted_noniso) {
+		tau_pt_noniso.push_back(tau.pt());
+		tau_eta_noniso.push_back(tau.eta());
+		tau_phi_noniso.push_back(tau.phi());
+		tau_mass_noniso.push_back(tau.mass());
+	}
+	
 	for (auto & tau : local.tau_selected_sorted_loose) {
 		tau_pt_loose.push_back(tau.pt());
 		tau_eta_loose.push_back(tau.eta());

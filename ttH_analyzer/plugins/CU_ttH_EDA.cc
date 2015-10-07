@@ -126,6 +126,8 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		*(handle.electrons), min_tight_lepton_pT, electronID::electronPhys14M);
 	local.mu_selected = miniAODhelper.GetSelectedMuons(
 		*(handle.muons), min_tight_lepton_pT, muonID::muonTight);
+	local.tau_selected_noniso = miniAODhelper.GetSelectedTaus(
+		*(handle.taus),min_tau_pT, tau::nonIso);
 	local.tau_selected_loose = miniAODhelper.GetSelectedTaus(
 		*(handle.taus),	min_tau_pT, tau::loose);
 	local.tau_selected_medium = miniAODhelper.GetSelectedTaus(
@@ -135,6 +137,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 
 	local.n_electrons = static_cast<int>(local.e_selected.size());
 	local.n_muons = static_cast<int>(local.mu_selected.size());
+	local.n_taus_noniso = static_cast<int>(local.tau_selected_noniso.size());
 	local.n_taus_loose = static_cast<int>(local.tau_selected_loose.size());
 	local.n_taus_medium = static_cast<int>(local.tau_selected_medium.size());
 	local.n_taus_tight = static_cast<int>(local.tau_selected_tight.size());
@@ -142,6 +145,8 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	/// Sort leptons by pT
 	local.mu_selected_sorted = miniAODhelper.GetSortedByPt(local.mu_selected);
 	local.e_selected_sorted = miniAODhelper.GetSortedByPt(local.e_selected);
+	local.tau_selected_sorted_noniso
+		= miniAODhelper.GetSortedByPt(local.tau_selected_noniso);
 	local.tau_selected_sorted_loose
 		= miniAODhelper.GetSortedByPt(local.tau_selected_loose);
 	local.tau_selected_sorted_medium
@@ -199,8 +204,8 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		bool draw_cut_flow = true;
 		bool cut_passed = pass_multi_cuts(local, cuts, draw_cut_flow, h_tth_syncex_dileptauh, 2);
 		if (cut_passed) {
-			Get_GenInfo(handle.MC_particles, handle.MC_packed, gen);  // MC Truth;
-			Write_to_Tree(gen, local, eventTree);
+			//Get_GenInfo(handle.MC_particles, handle.MC_packed, gen);  // MC Truth;
+			//Write_to_Tree(gen, local, eventTree);
 		}
 		// Check_Fill_Print_dileptauh(local);
 	}
@@ -209,14 +214,14 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		bool draw_cut_flow = true;
 		bool cut_passed = pass_multi_cuts(local, cuts, draw_cut_flow, h_tth_syncex_eleditauh, 2);
 		if (cut_passed) {
-			Get_GenInfo(handle.MC_particles, handle.MC_packed, gen);  // MC Truth;
-			Write_to_Tree(gen, local, eventTree);
+			//Get_GenInfo(handle.MC_particles, handle.MC_packed, gen);  // MC Truth;
+			//Write_to_Tree(gen, local, eventTree);
 		}
 		//Check_Fill_Print_eleditauh(local);
 		//Check_Fill_Print_muditauh(local);
 	}
 
-	/*
+	
 	/// generator information
 	bool gen_info = true;
 	if (gen_info) {
@@ -224,7 +229,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	}
 	
 	Write_to_Tree(gen, local, eventTree);
-	*/
+	
 }
 
 // ------------ method called once each job just before starting event loop

@@ -112,6 +112,7 @@ struct CU_ttH_EDA_event_vars {
 	/// Number of tags per event
 	int n_electrons;
 	int n_muons;
+	int n_taus_noniso;
 	int n_taus_loose;
 	int n_taus_medium;
 	int n_taus_tight;
@@ -132,6 +133,8 @@ struct CU_ttH_EDA_event_vars {
 	std::vector<pat::Electron> e_selected_sorted;
 	std::vector<pat::Muon> mu_selected;
 	std::vector<pat::Muon> mu_selected_sorted;
+	std::vector<pat::Tau> tau_selected_noniso;
+	std::vector<pat::Tau> tau_selected_sorted_noniso;
 	std::vector<pat::Tau> tau_selected_loose;
 	std::vector<pat::Tau> tau_selected_sorted_loose;
 	std::vector<pat::Tau> tau_selected_medium;
@@ -423,7 +426,7 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 
 	/// tree & branches
 	TTree *eventTree;
-
+	
 	// All sorted by pt
 	int n_electrons;
 	int n_muons;
@@ -443,6 +446,10 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	std::vector<float> mu_phi;
 	std::vector<float> mu_mass;
 
+	std::vector<float> tau_pt_noniso;
+	std::vector<float> tau_eta_noniso;
+	std::vector<float> tau_phi_noniso;
+	std::vector<float> tau_mass_noniso;
 	std::vector<float> tau_pt_loose;
 	std::vector<float> tau_eta_loose;
 	std::vector<float> tau_phi_loose;

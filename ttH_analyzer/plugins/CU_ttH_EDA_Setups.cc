@@ -352,7 +352,11 @@ void CU_ttH_EDA::Setup_Tree()
 	eventTree->Branch("mu_eta", &mu_eta);
 	eventTree->Branch("mu_phi", &mu_phi);
 	eventTree->Branch("mu_mass", &mu_mass);
-	
+
+	eventTree->Branch("tau_pt_noniso", &tau_pt_noniso);
+	eventTree->Branch("tau_eta_noniso", &tau_eta_noniso);
+	eventTree->Branch("tau_phi_noniso", &tau_phi_noniso);
+	eventTree->Branch("tau_mass_noniso", &tau_mass_noniso);
 	eventTree->Branch("tau_pt_loose", &tau_pt_loose);
 	eventTree->Branch("tau_eta_loose", &tau_eta_loose);
 	eventTree->Branch("tau_phi_loose", &tau_phi_loose);

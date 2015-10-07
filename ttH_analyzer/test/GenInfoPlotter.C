@@ -15,7 +15,7 @@
 
 using namespace std;
 
-void GenInfoPlotter (const TString input_file = "/uscms/home/ztao/work/CU_ttH_WD/Outputs/CU_ttH_EDA_output.root") {
+void GenInfoPlotter (const TString input_file = "/uscms/home/ztao/work/CU_ttH_WD/Outputs/CU_ttH_EDA_output_sig.root") {
 	// Read ntuples
 	TFile* f = new TFile(input_file);
 	TTree* tree = (TTree*) f->Get("ttHsyncExercise/EventTree");
@@ -95,8 +95,10 @@ void GenInfoPlotter (const TString input_file = "/uscms/home/ztao/work/CU_ttH_WD
 
 	TH2F* h_mtop1TT_mtop2TT = new TH2F("mtop1TT_mtop2TT", "m(top2+#tau+#tau) vs m(top1+#tau+#tau)", 100, 200, 1200, 100, 200, 1200);
 	TH2F* h_mplus_mminus = new TH2F("mplus_mminus", "m_- vs m_+", 100, 200, 1200, 100, 200, 1200);
+	TH2F* h_mminus_mplus = new TH2F("mminus_mplus", "m_+ vs m_-", 100, 200, 1200, 100, 200, 1200);
 
 	TH2F* h_mttTT_mplus = new TH2F("mttTT_mplus", "m_+ vs m(top1+top2+#tau+#tau)", 100, 0, 2500, 100, 200, 1200);
+	TH2F* h_mttTT_mminus = new TH2F("mttTT_mminus", "m_- vs m(top1+top2+#tau+#tau)", 100, 0, 2500, 100, 200, 1200);
 	
 	TH1F* h_top_higgs_dRmin = new TH1F("dRmin", "", 50, 0.0, 10.0);
 	TH1F* h_top_higgs_dRmax = new TH1F("dRmax", "", 50, 0.0, 10.0);
@@ -162,7 +164,9 @@ void GenInfoPlotter (const TString input_file = "/uscms/home/ztao/work/CU_ttH_WD
 
 		h_mtop1TT_mtop2TT->Fill(m_t1TT, m_t2TT);
 		h_mplus_mminus->Fill(m_plus, m_minus);
+		h_mminus_mplus->Fill(m_minus, m_plus);
 		h_mttTT_mplus->Fill((top1+top2+tau1+tau2).M(), m_plus);
+		h_mttTT_mminus->Fill((top1+top2+tau1+tau2).M(), m_minus);
 		
 		// dR(top, Higgs)
 		float dR0, dR1;
@@ -199,7 +203,7 @@ void GenInfoPlotter (const TString input_file = "/uscms/home/ztao/work/CU_ttH_WD
 		
 	} // end of event loop
 
-	TFile histfile("/uscms/home/ztao/work/CU_ttH_WD/Outputs/histograms.root", "RECREATE");
+	TFile histfile("/uscms/home/ztao/work/CU_ttH_WD/Outputs/gen_histograms.root", "RECREATE");
 	h_mtautau_mtop1 -> Write();
 	h_mtautau_mtop2 -> Write();
 	h_ptautau_mtop1 -> Write();
@@ -207,7 +211,9 @@ void GenInfoPlotter (const TString input_file = "/uscms/home/ztao/work/CU_ttH_WD
 
 	h_mtop1TT_mtop2TT -> Write();
 	h_mplus_mminus -> Write();
+	h_mminus_mplus -> Write();
 	h_mttTT_mplus -> Write();
+	h_mttTT_mminus -> Write();
 	
 	h_top_higgs_dRmin -> Write();
 	h_top_higgs_dRmax -> Write();
