@@ -1077,7 +1077,10 @@ bool CU_ttH_EDA::pass_cut(CU_ttH_EDA_event_vars &local, string cut)
 		return false;
 }
 
-bool CU_ttH_EDA::pass_multi_cuts(CU_ttH_EDA_event_vars &local, std::vector<string> cuts, bool draw_cut_flow=false, TH1D* hist=NULL, int start_bin=2)
+bool CU_ttH_EDA::pass_multi_cuts(CU_ttH_EDA_event_vars &local,
+								 std::vector<string> cuts,
+								 bool draw_cut_flow=false,
+								 TH1D* hist=NULL, int start_bin=2)
 {	
 	if (cuts.size()==0)
 		return false;
@@ -1101,6 +1104,102 @@ bool CU_ttH_EDA::pass_multi_cuts(CU_ttH_EDA_event_vars &local, std::vector<strin
 	}
 
 	return true;
+}
+
+///
+void CU_ttH_EDA::Fill_Tau_Eff_Hist(CU_ttH_EDA_gen_vars &gen,
+					   CU_ttH_EDA_event_vars &local)
+{
+	// Note: |eta| <= 2.5  pT > 20 GeV cut on genTau
+	int nGenTau = 0;
+	for (size_t i = 0; i < gen.x_daughters.size(); ++i) {
+		if ( abs(gen.x_daughters[i].pdgId()) != 15)  // check if it is tau
+			continue;
+		if (gen.tau_class[i] != 1)  // check if it is hadronic
+			continue;
+		if (gen.x_daughters[i].pt() < 20
+			or abs(gen.x_daughters[i].eta()) > 2.5)  // pT and eta cuts
+			continue;
+		
+		++nGenTau;
+		h_genHadTau_pt  -> Fill(gen.x_daughters[i].pt());
+		h_genHadTau_eta -> Fill(gen.x_daughters[i].eta());
+		h_genHadTau_phi -> Fill(gen.x_daughters[i].phi());
+	}
+	h_num_genHadTau -> Fill(nGenTau);
+
+	int nTau_noniso = 0;
+	for ( auto & itau : local.tau_selected_noniso ) {
+		const reco::GenParticle* genTau = getGenTau(itau);
+		if (!genTau) continue;  // check if there is associated genTau
+		if ( genTau->pt() < 20 or abs(genTau->eta()) > 2.5 )
+			continue;
+
+		++nTau_noniso;
+		h_selectedTau_noniso_genpt  -> Fill(genTau->pt());
+		h_selectedTau_noniso_geneta -> Fill(genTau->eta());
+		h_selectedTau_noniso_genphi -> Fill(genTau->phi());
+	}
+	h_num_selectedTau_noniso -> Fill(nTau_noniso);
+
+	int nTau_loose = 0;
+	for ( auto & itau : local.tau_selected_loose ) {
+		const reco::GenParticle* genTau = getGenTau(itau);
+		if (!genTau) continue;  // check if there is associated genTau
+		if ( genTau->pt() < 20 or abs(genTau->eta()) > 2.5 )
+			continue;
+
+		++nTau_loose;
+		h_selectedTau_loose_genpt  -> Fill(genTau->pt());
+		h_selectedTau_loose_geneta -> Fill(genTau->eta());
+		h_selectedTau_loose_genphi -> Fill(genTau->phi());
+	}
+	h_num_selectedTau_loose -> Fill(nTau_loose);
+	
+	int nTau_medium = 0;
+	for ( auto & itau : local.tau_selected_medium ) {
+		const reco::GenParticle* genTau = getGenTau(itau);
+		if (!genTau) continue;  // check if there is associated genTau
+		if ( genTau->pt() < 20 or abs(genTau->eta()) > 2.5 )
+			continue;
+
+		++nTau_medium;
+		h_selectedTau_medium_genpt  -> Fill(genTau->pt());
+		h_selectedTau_medium_geneta -> Fill(genTau->eta());
+		h_selectedTau_medium_genphi -> Fill(genTau->phi());
+	}
+	h_num_selectedTau_medium -> Fill(nTau_medium);
+	
+	int nTau_tight = 0;
+	for ( auto & itau : local.tau_selected_tight ) {
+		const reco::GenParticle* genTau = getGenTau(itau);
+		if (!genTau) continue;  // check if there is associated genTau
+		if ( genTau->pt() < 20 or abs(genTau->eta()) > 2.5 )
+			continue;
+
+		++nTau_tight;
+		h_selectedTau_tight_genpt  -> Fill(genTau->pt());
+		h_selectedTau_tight_geneta -> Fill(genTau->eta());
+		h_selectedTau_tight_genphi -> Fill(genTau->phi());
+	}
+	h_num_selectedTau_tight -> Fill(nTau_tight);
+}
+
+const reco::GenParticle* CU_ttH_EDA::getGenTau(const pat::Tau& patTau) {
+	
+	std::vector<reco::GenParticleRef> associatedGenParticles = patTau.genParticleRefs();
+
+	//From Pat::Tau tutorial	
+	for (std::vector<reco::GenParticleRef>::const_iterator igen = associatedGenParticles.begin();
+		 igen != associatedGenParticles.end(); ++igen) {
+		if ( igen->isAvailable() ) {
+			const reco::GenParticleRef& genParticle = (*igen);
+			if ( abs(genParticle->pdgId()) == 15 )
+				return genParticle.get();;
+		}
+	}
+
+	return 0;
 }
 
 ///

@@ -87,6 +87,7 @@ void CU_ttH_EDA::Set_up_histograms(std::vector<string> cuts)
 	// 	h_muon_selection->GetXaxis()->SetBinLabel(11, "dZ");
 	// 	h_muon_selection->GetXaxis()->SetBinLabel(12, "relIso < 0.1");
 
+	
 	if (analysis_type == Analyze_lepton_jet) {
 		h_tth_syncex1_ele =
 			fs_->make<TH1D>("h_tth_syncex1_ele", ";cut", 8, 0, 8);
@@ -153,6 +154,49 @@ void CU_ttH_EDA::Set_up_histograms(std::vector<string> cuts)
 		for (auto & icut : cuts) {
 			h_tth_syncex_dileptauh->GetXaxis()->SetBinLabel(itr++,icut.c_str());
 		}
+
+		// Tau selection efficiency histograms
+		h_num_genHadTau = fs_->make<TH1D>("h_num_genHadTau","", 4, 0, 4);
+		h_genHadTau_pt = fs_->make<TH1D>("h_genHadTau_pt", "", 80, 0, 400);
+		h_genHadTau_eta = fs_->make<TH1D>("h_genHadTau_eta","", 50,-2.5,2.5);
+		h_genHadTau_phi = fs_->make<TH1D>("h_genHadTau_phi","", 64, -3.2, 3.2);
+		//h_num_FakeTau = fs_make<TH1D>("h_num_FakeTau","", 4, 0, 4);
+
+		h_num_selectedTau_noniso =
+			fs_->make<TH1D>("h_num_selectedTau_noniso","", 4, 0, 4);
+		h_selectedTau_noniso_genpt =
+			fs_->make<TH1D>("h_selectedTau_noniso_genpt", "", 80, 0, 400);
+		h_selectedTau_noniso_geneta =
+			fs_->make<TH1D>("h_selectedTau_noniso_geneta","", 50,-2.5,2.5);
+		h_selectedTau_noniso_genphi =
+			fs_->make<TH1D>("h_selectedTau_noniso_genphi","", 64, -3.2, 3.2);
+
+		h_num_selectedTau_loose =
+			fs_->make<TH1D>("h_num_selectedTau_loose","", 4, 0, 4);
+		h_selectedTau_loose_genpt =
+			fs_->make<TH1D>("h_selectedTau_loose_genpt", "", 80, 0, 400);
+		h_selectedTau_loose_geneta =
+			fs_->make<TH1D>("h_selectedTau_loose_geneta","", 50,-2.5,2.5);
+		h_selectedTau_loose_genphi =
+			fs_->make<TH1D>("h_selectedTau_loose_genphi","", 64, -3.2, 3.2);
+
+		h_num_selectedTau_medium =
+			fs_->make<TH1D>("h_num_selectedTau_medium","", 4, 0, 4);
+		h_selectedTau_medium_genpt =
+			fs_->make<TH1D>("h_selectedTau_medium_genpt", "", 80, 0, 400);
+		h_selectedTau_medium_geneta =
+			fs_->make<TH1D>("h_selectedTau_medium_geneta","", 50,-2.5,2.5);
+		h_selectedTau_medium_genphi =
+			fs_->make<TH1D>("h_selectedTau_medium_genphi","", 64, -3.2, 3.2);
+
+		h_num_selectedTau_tight =
+			fs_->make<TH1D>("h_num_selectedTau_tight","", 4, 0, 4);
+		h_selectedTau_tight_genpt =
+			fs_->make<TH1D>("h_selectedTau_tight_genpt", "", 80, 0, 400);
+		h_selectedTau_tight_geneta =
+			fs_->make<TH1D>("h_selectedTau_tight_geneta","", 50,-2.5,2.5);
+		h_selectedTau_tight_genphi =
+			fs_->make<TH1D>("h_selectedTau_tight_genphi","", 64, -3.2, 3.2);
 	}
 	
 	if (analysis_type == Analyze_taus_lepton_jet) {

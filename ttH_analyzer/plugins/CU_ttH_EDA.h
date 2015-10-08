@@ -259,6 +259,8 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	bool pass_cut(CU_ttH_EDA_event_vars &, string);
 	bool pass_multi_cuts(CU_ttH_EDA_event_vars &, std::vector<string>, bool, TH1D*, int);
 	void Write_to_Tree(CU_ttH_EDA_gen_vars &, CU_ttH_EDA_event_vars &, TTree *);
+	void Fill_Tau_Eff_Hist(CU_ttH_EDA_gen_vars &, CU_ttH_EDA_event_vars &);
+	const reco::GenParticle* getGenTau(const pat::Tau &);
 	
 	/// Gen information functions
 	void Get_GenInfo(Handle<reco::GenParticleCollection>,
@@ -363,7 +365,6 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	TH1D *h_tth_syncex1_elemu;
 
 	TH1D *h_tth_syncex_dileptauh;
-	
 	TH1D *h_tth_syncex_eleditauh;
 	TH1D *h_tth_syncex_muditauh;
 
@@ -372,6 +373,30 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 
 	// 	TH1D* h_electron_selection;
 	// 	TH1D* h_muon_selection;
+
+	// Tau selection efficiency
+	TH1D *h_num_genHadTau;
+	TH1D *h_genHadTau_pt;
+	TH1D *h_genHadTau_eta;
+	TH1D *h_genHadTau_phi;
+	//TH1D *h_num_FakeTau;
+	TH1D *h_num_selectedTau_noniso;
+	TH1D *h_selectedTau_noniso_genpt;
+	TH1D *h_selectedTau_noniso_geneta;
+	TH1D *h_selectedTau_noniso_genphi;
+	TH1D *h_num_selectedTau_loose;
+	TH1D *h_selectedTau_loose_genpt;
+	TH1D *h_selectedTau_loose_geneta;
+	TH1D *h_selectedTau_loose_genphi;
+	TH1D *h_num_selectedTau_medium;
+	TH1D *h_selectedTau_medium_genpt;
+	TH1D *h_selectedTau_medium_geneta;
+	TH1D *h_selectedTau_medium_genphi;
+	TH1D *h_num_selectedTau_tight;
+	TH1D *h_selectedTau_tight_genpt;
+	TH1D *h_selectedTau_tight_geneta;
+	TH1D *h_selectedTau_tight_genphi;
+
 
 	/// Write-out files
 	FILE *events_e_cut1, *events_e_cut2, *events_e_cut3, *events_e_cut4,

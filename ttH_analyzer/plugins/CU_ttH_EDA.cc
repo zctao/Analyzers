@@ -188,6 +188,9 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		handle.METs->front(); // miniAODhelper.GetCorrectedMET( METs.at(0),
 							  // pfJets_forMET, iSysType );
 
+
+	Get_GenInfo(handle.MC_particles, handle.MC_packed, gen);  // MC Truth
+	
 	/// Check tags, fill hists, print events
 	if (analysis_type == Analyze_lepton_jet) {
 		Check_Fill_Print_ej(local);
@@ -201,31 +204,23 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	}
 
 	if (analysis_type == Analyze_taus_dilepton) {
-		bool draw_cut_flow = true;
+		bool draw_cut_flow = true;   // Todo: move this flag to config file
 		bool cut_passed = pass_multi_cuts(local, cuts, draw_cut_flow, h_tth_syncex_dileptauh, 2);
-		if (cut_passed) {
-			//Get_GenInfo(handle.MC_particles, handle.MC_packed, gen);  // MC Truth;
+		if (cut_passed) { 
 			//Write_to_Tree(gen, local, eventTree);
+
+			// Currently save all events (passed basic selections) into Ntuple for cut optimization purpose
 		}
-		// Check_Fill_Print_dileptauh(local);
+
+		Fill_Tau_Eff_Hist(gen,local);
 	}
 
 	if (analysis_type == Analyze_taus_lepton_jet) {
-		bool draw_cut_flow = true;
+		bool draw_cut_flow = true;   // Todo: move this flag to config file
 		bool cut_passed = pass_multi_cuts(local, cuts, draw_cut_flow, h_tth_syncex_eleditauh, 2);
 		if (cut_passed) {
-			//Get_GenInfo(handle.MC_particles, handle.MC_packed, gen);  // MC Truth;
 			//Write_to_Tree(gen, local, eventTree);
 		}
-		//Check_Fill_Print_eleditauh(local);
-		//Check_Fill_Print_muditauh(local);
-	}
-
-	
-	/// generator information
-	bool gen_info = true;
-	if (gen_info) {
-		Get_GenInfo(handle.MC_particles, handle.MC_packed, gen);
 	}
 	
 	Write_to_Tree(gen, local, eventTree);
