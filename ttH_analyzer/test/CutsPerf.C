@@ -20,7 +20,9 @@ namespace Cuts
 	const float eta = 2.3;
 }
 
-void TauEfficiency (const TString sig_file = "/uscms/home/ztao/work/CU_ttH_WD/Outputs/CU_ttH_EDA_output_sig.root", const TString bkg_file = "/uscms/home/ztao/work/CU_ttH_WD/Outputs/CU_ttH_EDA_output_bkg.root") {
+void CutPerf (const TString sig_file = "/uscms/home/ztao/work/CU_ttH_WD/Outputs/CU_ttH_EDA_output_sig.root", 
+	      const TString bkg_file = "/uscms/home/ztao/work/CU_ttH_WD/Outputs/CU_ttH_EDA_output_TTJets.root") 
+{
 	// Read ntuples
 	TFile* f_sig = new TFile(sig_file);
 	TFile* f_bkg = new TFile(bkg_file);
