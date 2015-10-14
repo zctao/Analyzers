@@ -186,12 +186,12 @@ void CutsPerf(const TString sig_file = "/uscms/home/ztao/work/CU_ttH_WD/Outputs/
 
 	//gr_noniso->SetLineColor(4);
 	//gr_noniso->SetMarkerColor(4);
-	gr_loose->SetLineColor(1);
-    gr_loose->SetMarkerColor(1);
+	gr_loose->SetLineColor(3);
+    gr_loose->SetMarkerColor(3);
 	gr_medium->SetLineColor(2);
     gr_medium->SetMarkerColor(2);
-	gr_tight->SetLineColor(3);
-    gr_tight->SetMarkerColor(3);
+	gr_tight->SetLineColor(1);
+    gr_tight->SetMarkerColor(1);
 	
 	gr_loose->SetTitle("Tau ID WP");
 	gr_loose->GetXaxis()->SetTitle("Signal efficiency");
