@@ -1080,16 +1080,16 @@ bool CU_ttH_EDA::pass_cut(CU_ttH_EDA_event_vars &local, string cut)
 bool CU_ttH_EDA::pass_multi_cuts(CU_ttH_EDA_event_vars &local,
 								 std::vector<string> cuts,
 								 bool draw_cut_flow=false,
-								 TH1D* hist=NULL, int start_bin=2)
+								 TH1D* hist=NULL, int start_bin=1)
 {	
 	if (cuts.size()==0)
 		return false;
 	
-	if (draw_cut_flow and start_bin == 2) {
+	if (draw_cut_flow and start_bin == 1) {
 		// All events
 		hist->Fill(0.5); // fill 0.5 first
 		// Weighted events
-		hist->Fill(1.5, weight_gen);
+		//hist->Fill(1.5, weight_gen);
 	}
 	
 	bool passCuts = true;

@@ -145,12 +145,12 @@ void CU_ttH_EDA::Set_up_histograms(std::vector<string> cuts)
 	}
 
 	if (analysis_type == Analyze_taus_dilepton) {
-		auto nbins = cuts.size()+2;
+		auto nbins = cuts.size()+1;
 		h_tth_syncex_dileptauh =
 			fs_->make<TH1D>("h_tth_syncex_dileptauh", ";cut", nbins, 0, nbins);
 		h_tth_syncex_dileptauh->GetXaxis()->SetBinLabel(1, "All events");
-		h_tth_syncex_dileptauh->GetXaxis()->SetBinLabel(2, "Weighted");
-		int itr = 3;
+		//h_tth_syncex_dileptauh->GetXaxis()->SetBinLabel(2, "Weighted");
+		int itr = 2;
 		for (auto & icut : cuts) {
 			h_tth_syncex_dileptauh->GetXaxis()->SetBinLabel(itr++,icut.c_str());
 		}
@@ -200,12 +200,12 @@ void CU_ttH_EDA::Set_up_histograms(std::vector<string> cuts)
 	}
 	
 	if (analysis_type == Analyze_taus_lepton_jet) {
-		auto nbins = cuts.size()+2;
+		auto nbins = cuts.size()+1;
 		h_tth_syncex_eleditauh =
 			fs_->make<TH1D>("h_tth_syncex_eleditauh", ";cut", nbins, 0, nbins);
 		h_tth_syncex_eleditauh->GetXaxis()->SetBinLabel(1, "All events");
-		h_tth_syncex_eleditauh->GetXaxis()->SetBinLabel(2, "Weighted");
-		int itr_e = 3;
+		//h_tth_syncex_eleditauh->GetXaxis()->SetBinLabel(2, "Weighted");
+		int itr_e = 2;
 		for (auto & icut : cuts) {
 			h_tth_syncex_eleditauh->GetXaxis()->SetBinLabel(itr_e++,icut.c_str());
 		}
@@ -213,8 +213,8 @@ void CU_ttH_EDA::Set_up_histograms(std::vector<string> cuts)
 		h_tth_syncex_muditauh =
 			fs_->make<TH1D>("h_tth_syncex_muditauh", ";cut", nbins, 0, nbins);
 		h_tth_syncex_muditauh->GetXaxis()->SetBinLabel(1, "All events");
-		h_tth_syncex_muditauh->GetXaxis()->SetBinLabel(2, "Weighted");
-		int itr_mu = 3;
+		//h_tth_syncex_muditauh->GetXaxis()->SetBinLabel(2, "Weighted");
+		int itr_mu = 2;
 		for (auto & icut : cuts) {
 			h_tth_syncex_muditauh->GetXaxis()->SetBinLabel(itr_mu++,icut.c_str());
 		}
