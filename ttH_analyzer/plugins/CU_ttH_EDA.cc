@@ -107,7 +107,9 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	Check_vertices_set_MAODhelper(handle.vertices);
 	// 	Check_beam_spot(BS);	// dumb implementation
 
-	
+	// Setting rho
+	auto rho = handle.srcRho;
+	miniAODhelper.SetRho(*rho);
 	
 	/// Get and set miniAODhelper's jet corrector from the event setup
 	miniAODhelper.SetJetCorrector(
@@ -204,26 +206,25 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	}
 
 	if (analysis_type == Analyze_taus_dilepton) {
-		bool draw_cut_flow = true;   // Todo: move this flag to config file
-		bool cut_passed = pass_multi_cuts(local, cuts, draw_cut_flow, h_tth_syncex_dileptauh, 2);
-		if (cut_passed) { 
-			//Write_to_Tree(gen, local, eventTree);
-
-			// Currently save all events (passed basic selections) into Ntuple for cut optimization purpose
-		}
-
 		Fill_Tau_Eff_Hist(gen,local);
+		
+		bool draw_cut_flow = true;   // Todo: move this flag to config file
+		bool cut_passed = pass_multi_cuts(local, cuts, draw_cut_flow, h_tth_syncex_dileptauh, 1);
+		
+		if (cut_passed) 
+			Write_to_Tree(gen, local, eventTree);
+		
 	}
 
 	if (analysis_type == Analyze_taus_lepton_jet) {
 		bool draw_cut_flow = true;   // Todo: move this flag to config file
-		bool cut_passed = pass_multi_cuts(local, cuts, draw_cut_flow, h_tth_syncex_eleditauh, 2);
+		bool cut_passed = pass_multi_cuts(local, cuts, draw_cut_flow, h_tth_syncex_eleditauh, 1);
 		if (cut_passed) {
-			//Write_to_Tree(gen, local, eventTree);
+			Write_to_Tree(gen, local, eventTree);
 		}
 	}
 	
-	Write_to_Tree(gen, local, eventTree);
+	//Write_to_Tree(gen, local, eventTree);
 	
 }
 

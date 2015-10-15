@@ -344,6 +344,8 @@ void CU_ttH_EDA::Set_up_tokens()
 		edm::InputTag(std::string("slimmedSecondaryVertices")));
 	token.PU_info = consumes<std::vector<PileupSummaryInfo>>(
 		edm::InputTag(std::string("addPileupInfo")));
+	token.srcRho = consumes<double>(
+		edm::InputTag("fixedGridRhoFastjetAll"));
 
 	token.electrons = consumes<pat::ElectronCollection>(
 		edm::InputTag(std::string("slimmedElectrons")));

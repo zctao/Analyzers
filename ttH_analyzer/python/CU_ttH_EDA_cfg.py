@@ -40,12 +40,13 @@ process.ak4PFchsL1L2L3 = cms.ESProducer("JetCorrectionESChain",
 
 process.source = cms.Source("PoolSource",
 	fileNames = cms.untracked.vstring(
-        'file:/eos/uscms/store/user/ztao/ttHToTauTau_M125_13TeV_Spring15_miniAOD.root'
+        #'file:/eos/uscms/store/user/ztao/ttHToTauTau_M125_13TeV_Spring15_miniAOD.root'
         #'file:/eos/uscms/store/user/ztao/ttHToTauTau_M125_13TeV_Spring15_AOD.root'
         #'file:/eos/uscms/store/user/ztao/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_miniAOD.root'
 
         #/store/mc/RunIISpring15DR74/ttHToTT_M125_13TeV_powheg_pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v2/20000/0249345F-032D-E511-A21D-0025905C95F8.root
         #/store/mc/RunIISpring15DR74/ttHToTT_M125_13TeV_powheg_pythia8/AODSIM/Asympt25ns_MCRUN2_74_V9-v2/20000/008B5DD7-EB2B-E511-8E73-0025904C63F8.root
+        '/store/mc/RunIISpring15MiniAODv2/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/74X_mcRun2_asymptotic_v2-v3/60000/00181849-176A-E511-8B11-848F69FD4C94.root'
 
         #'/store/mc/RunIISpring15DR74/ttHJetToTT_M125_13TeV_amcatnloFXFX_madspin_pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9_ext3-v1/30000/028D30EF-2530-E511-9C88-002590AC4CEC.root'
         #'root://cms-xrd-global.cern.ch///store/mc/RunIISpring15DR74/ttHJetToTT_M125_13TeV_amcatnloFXFX_madspin_pythia8/AODSIM/Asympt25ns_MCRUN2_74_V9_ext1-v1/00000/046ADB1C-9C07-E511-AA40-002590A887F2.root'
@@ -62,7 +63,9 @@ process.ttHsyncExercise = cms.EDAnalyzer('CU_ttH_EDA',
 )
 
 process.TFileService = cms.Service("TFileService",
-	fileName = cms.string('Outputs/CU_ttH_EDA_output_sig.root')
+	#fileName = cms.string('Outputs/CU_ttH_EDA_output_sig.root')
+        fileName = cms.string('Outputs/CU_ttH_EDA_output_TTJets.root')
+        #fileName = cms.string('CU_ttH_EDA_output.root')
 )
 
 

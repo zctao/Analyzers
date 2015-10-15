@@ -1027,10 +1027,10 @@ bool CU_ttH_EDA::pass_cut(CU_ttH_EDA_event_vars &local, string cut)
 		return (local.n_muons >= 1);
 	
 	else if (cut == ">= 1 tau")
-		return (local.n_taus_loose >= 1);
+		return (local.n_taus_noniso >= 1);
 
 	else if (cut == ">= 2 taus")
-		return (local.n_taus_loose >= 2);
+		return (local.n_taus_noniso >= 2);
 	
 	else if (cut == ">= 2 leptons")
 		return (local.n_electrons + local.n_muons >=2);
@@ -1110,7 +1110,7 @@ bool CU_ttH_EDA::pass_multi_cuts(CU_ttH_EDA_event_vars &local,
 void CU_ttH_EDA::Fill_Tau_Eff_Hist(CU_ttH_EDA_gen_vars &gen,
 					   CU_ttH_EDA_event_vars &local)
 {
-	// Note: |eta| <= 2.5  pT > 20 GeV cut on genTau
+	// Note: |eta| <= 2.3  pT > 20 GeV cut on genTau
 	int nGenTau = 0;
 	for (size_t i = 0; i < gen.x_daughters.size(); ++i) {
 		if ( abs(gen.x_daughters[i].pdgId()) != 15)  // check if it is tau
@@ -1118,7 +1118,7 @@ void CU_ttH_EDA::Fill_Tau_Eff_Hist(CU_ttH_EDA_gen_vars &gen,
 		if (gen.tau_class[i] != 1)  // check if it is hadronic
 			continue;
 		if (gen.x_daughters[i].pt() < 20
-			or abs(gen.x_daughters[i].eta()) > 2.5)  // pT and eta cuts
+			or abs(gen.x_daughters[i].eta()) > 2.3)  // pT and eta cuts
 			continue;
 		
 		++nGenTau;
@@ -1132,7 +1132,7 @@ void CU_ttH_EDA::Fill_Tau_Eff_Hist(CU_ttH_EDA_gen_vars &gen,
 	for ( auto & itau : local.tau_selected_noniso ) {
 		const reco::GenParticle* genTau = getGenTau(itau);
 		if (!genTau) continue;  // check if there is associated genTau
-		if ( genTau->pt() < 20 or abs(genTau->eta()) > 2.5 )
+		if ( genTau->pt() < 20 or abs(genTau->eta()) > 2.3 )
 			continue;
 
 		++nTau_noniso;
@@ -1146,7 +1146,7 @@ void CU_ttH_EDA::Fill_Tau_Eff_Hist(CU_ttH_EDA_gen_vars &gen,
 	for ( auto & itau : local.tau_selected_loose ) {
 		const reco::GenParticle* genTau = getGenTau(itau);
 		if (!genTau) continue;  // check if there is associated genTau
-		if ( genTau->pt() < 20 or abs(genTau->eta()) > 2.5 )
+		if ( genTau->pt() < 20 or abs(genTau->eta()) > 2.3 )
 			continue;
 
 		++nTau_loose;
@@ -1160,7 +1160,7 @@ void CU_ttH_EDA::Fill_Tau_Eff_Hist(CU_ttH_EDA_gen_vars &gen,
 	for ( auto & itau : local.tau_selected_medium ) {
 		const reco::GenParticle* genTau = getGenTau(itau);
 		if (!genTau) continue;  // check if there is associated genTau
-		if ( genTau->pt() < 20 or abs(genTau->eta()) > 2.5 )
+		if ( genTau->pt() < 20 or abs(genTau->eta()) > 2.3 )
 			continue;
 
 		++nTau_medium;
@@ -1174,7 +1174,7 @@ void CU_ttH_EDA::Fill_Tau_Eff_Hist(CU_ttH_EDA_gen_vars &gen,
 	for ( auto & itau : local.tau_selected_tight ) {
 		const reco::GenParticle* genTau = getGenTau(itau);
 		if (!genTau) continue;  // check if there is associated genTau
-		if ( genTau->pt() < 20 or abs(genTau->eta()) > 2.5 )
+		if ( genTau->pt() < 20 or abs(genTau->eta()) > 2.3 )
 			continue;
 
 		++nTau_tight;

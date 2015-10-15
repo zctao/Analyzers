@@ -79,6 +79,7 @@ struct edm_Handles {
 	Handle<reco::VertexCollection> vertices;
 	Handle<reco::VertexCompositePtrCandidateCollection> sec_vertices;
 	Handle<std::vector<PileupSummaryInfo>> PU_info;
+	Handle<double> srcRho;
 
 	Handle<pat::ElectronCollection> electrons;
 	Handle<pat::MuonCollection> muons;
@@ -106,6 +107,7 @@ struct edm_Tokens {
 	EDGetTokenT<reco::VertexCollection> vertices;
 	EDGetTokenT<reco::VertexCompositePtrCandidateCollection> sec_vertices;
 	EDGetTokenT<std::vector<PileupSummaryInfo>> PU_info;
+	EDGetTokenT<double> srcRho;
 
 	EDGetTokenT<pat::ElectronCollection> electrons;
 	EDGetTokenT<pat::MuonCollection> muons;
