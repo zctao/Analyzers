@@ -211,20 +211,20 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		bool draw_cut_flow = true;   // Todo: move this flag to config file
 		bool cut_passed = pass_multi_cuts(local, cuts, draw_cut_flow, h_tth_syncex_dileptauh, 1);
 		
-		if (cut_passed) 
-			Write_to_Tree(gen, local, eventTree);
-		
+		if (cut_passed) {
+		  //Write_to_Tree(gen, local, eventTree);
+		}
 	}
 
 	if (analysis_type == Analyze_taus_lepton_jet) {
 		bool draw_cut_flow = true;   // Todo: move this flag to config file
 		bool cut_passed = pass_multi_cuts(local, cuts, draw_cut_flow, h_tth_syncex_eleditauh, 1);
 		if (cut_passed) {
-			Write_to_Tree(gen, local, eventTree);
+		  //Write_to_Tree(gen, local, eventTree);
 		}
 	}
 	
-	//Write_to_Tree(gen, local, eventTree);
+	Write_to_Tree(gen, local, eventTree);
 	
 }
 
