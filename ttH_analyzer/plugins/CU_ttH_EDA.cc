@@ -31,14 +31,42 @@
 */
 
 /// Constructor
-CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig)
+CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig):
+	// Analysis type
+	config_analysis_type (iConfig.getParameter<string>("analysis_type")),
+	// Generic
+	verbose_ (iConfig.getParameter<bool>("verbosity")),
+	dumpHLT_ (iConfig.getParameter<bool>("print_HLT_event_path")),
+	hltTag (iConfig.getParameter<string>("HLT_config_tag")),
+	filterTag (iConfig.getParameter<string>("filter_config_tag")),
+	// Triggers
+	trigger_stats (iConfig.getParameter<bool>("collect_trigger_stats")),
+	trigger_on_HLT_e (iConfig.getParameter<std::vector<string>>("HLT_electron_triggers")),
+	trigger_on_HLT_mu (iConfig.getParameter<std::vector<string>>("HLT_muon_triggers")),
+	trigger_on_HLT_ee (iConfig.getParameter<std::vector<string>>("HLT_electron_electron_triggers")),
+	trigger_on_HLT_emu (iConfig.getParameter<std::vector<string>>("HLT_electron_muon_triggers")),
+	trigger_on_HLT_mumu (iConfig.getParameter<std::vector<string>>("HLT_muon_muon_triggers")),
+	// Cuts
+	min_tight_lepton_pT (iConfig.getParameter<double>("min_tight_lepton_pT")),
+	min_tau_pT (iConfig.getParameter<double>("min_tau_pT")),
+	min_jet_pT (iConfig.getParameter<double>("min_jet_pT")),
+	min_bjet_pT (iConfig.getParameter<double>("min_bjet_pT")),
+	max_jet_eta (iConfig.getParameter<double>("max_jet_eta")),
+	max_bjet_eta (iConfig.getParameter<double>("max_bjet_eta")),
+	min_njets (iConfig.getParameter<int>("min_njets")),
+	min_nbtags (iConfig.getParameter<int>("min_nbtags")),
+	// Jets
+	jet_corrector (iConfig.getParameter<string>("jet_corrector")),
+	// miniAODhelper
+	isdata (iConfig.getParameter<bool>("using_real_data")),
+	MAODHelper_b_tag_strength (iConfig.getParameter<string>("b_tag_strength")[0])
 {
 	/*
 	 * now do whatever initialization is needed
 	*/
 
 	/// temporary mock-up parameters
-	MAODHelper_era = "2012_53x";
+	MAODHelper_era = "2015_74x";
 	MAODHelper_sample_nr = 2500;
 
 	total_xs = 831.76;
@@ -46,11 +74,17 @@ CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig)
 	int_lumi = 10000;
 	weight_sample = int_lumi * total_xs / sample_n;
 
-	Load_configuration(static_cast<string>("Configs/config_analyzer_CMSSW74X.yaml"));
+	//Load_configuration(static_cast<string>("Configs/config_analyzer_CMSSW74X.yaml"));
+
+	// Set analysis type
+	Load_configuration_set_type(config_analysis_type);
+	// Setup miniAODhelper
+	Load_configuration_MAODH(isdata);
 
 	Set_up_tokens();
 	Setup_Tree();
 
+	// cuts
 	if (analysis_type == Analyze_taus_dilepton) {
 		cuts = {
 			"single_lep_trig",">= 1 tau",">= 2 leptons",
@@ -212,7 +246,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		bool cut_passed = pass_multi_cuts(local, cuts, draw_cut_flow, h_tth_syncex_dileptauh, 1);
 		
 		if (cut_passed) {
-		  //Write_to_Tree(gen, local, eventTree);
+		  Write_to_Tree(gen, local, eventTree);
 		}
 	}
 
@@ -220,11 +254,11 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		bool draw_cut_flow = true;   // Todo: move this flag to config file
 		bool cut_passed = pass_multi_cuts(local, cuts, draw_cut_flow, h_tth_syncex_eleditauh, 1);
 		if (cut_passed) {
-		  //Write_to_Tree(gen, local, eventTree);
+		  Write_to_Tree(gen, local, eventTree);
 		}
 	}
 	
-	Write_to_Tree(gen, local, eventTree);
+	//Write_to_Tree(gen, local, eventTree);
 	
 }
 

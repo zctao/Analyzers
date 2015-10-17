@@ -287,13 +287,15 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	* Variable section
 	*/
 
+	analysis_types analysis_type;
+	std::string config_analysis_type;
+	
 	/// debug flags
 	bool verbose_;
 	bool dumpHLT_;
-	bool trigger_stats;
-
-	analysis_types analysis_type;
-
+	std::string hltTag;
+	std::string filterTag;
+	
 	edm_Tokens token; // common tokens for all events
 
 	/// Triggers, paths: configs filled/updated via run
@@ -302,9 +304,8 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 
 	/// Triggers, paths.
 	// Used for trigger statistics, filled via run (trigger_stats = true)
-	std::string hltTag;
-	std::string filterTag;
-
+	bool trigger_stats;
+	
 	// counters (trigger_stats = true)
 	std::map<std::string, unsigned long> n_trigger_fired; // HLT
 	std::map<std::string, unsigned long> n_filter_fired;
@@ -334,8 +335,6 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	double weight_sample; // int lumi * xs / sample_n
 	double weight_gen;
 
-	std::string jet_corrector;
-
 	/// Cuts
 	float min_tight_lepton_pT;
 	float min_tau_pT;
@@ -347,10 +346,12 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	int min_nbtags;
 
 	std::vector<string> cuts;
-	
+
+	std::string jet_corrector;
+
 	/// Selection helper
 	MiniAODHelper miniAODhelper;
-
+	bool isdata;
 	char MAODHelper_b_tag_strength;
 
 	int MAODHelper_sample_nr; // past insample_, in-development var. for
