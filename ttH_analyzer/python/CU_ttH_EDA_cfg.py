@@ -90,8 +90,8 @@ process.ttHsyncExercise = cms.EDAnalyzer('CU_ttH_EDA',
         min_bjet_pT = cms.double(20),
         max_jet_eta = cms.double(2.5),
         max_bjet_eta = cms.double(2.5),
-        min_njets = cms.int32(2),
-        min_nbtags = cms.int32(1),
+        min_njets = cms.int32(0),
+        min_nbtags = cms.int32(0),
         # Jets
         jet_corrector = cms.string('ak4PFchsL1L2L3'),
         # MiniAODhelper

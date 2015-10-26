@@ -22,14 +22,20 @@ const int nstep = 20;
 
 void getEffArray(double ptmin, double ptmax, int nstep, double eff[4][20], TTree* tree);
 void MakeROCPlot(TTree *tree_sig, int nevt_sig, TTree* tree_bkg, int nevt_bkg);
-void CutHistFiller(TTree* tree, TH1F* h_njets, TH1F* h_nbtags, TH1F* h_ntauID);
+void CutHistFiller(TTree* tree, TH1F* h_njets, TH1F* h_nbtags, TH1F* h_ntauID,
+									 TH1F* h_njetscut, TH1F* h_nbtagscut);
 void CutHistDrawer(TString histfile);
+void CutFlowDrawer(TH1F* h_cutflow_sig, TH1F* h_cutflow_TTJets);
 
 int nsig = -99;
 int nTTJets = -99;
 
-void CutsPerf(const TString sig_file = "/uscms/home/ztao/work/CU_ttH_WD/Outputs/CU_ttH_EDA_output_sig.root", 
-	      const TString bkg_file = "/uscms/home/ztao/work/CU_ttH_WD/Outputs/CU_ttH_EDA_output_TTJets.root")
+void CutsPerf(
+							//const TString sig_file = "/uscms/home/ztao/work/CU_ttH_WD/Outputs/CU_ttH_EDA_output_sig.root",
+							//const TString bkg_file = "/uscms/home/ztao/work/CU_ttH_WD/Outputs/CU_ttH_EDA_output_TTJets.root"
+							const TString sig_file = "/eos/uscms/store/user/ztao/ttHToTT_M125_13TeV_powheg_pythia8/ttHToTauTau_Ntuple_signal/151018_210744/0000/CU_ttH_EDA_output.root",
+							const TString bkg_file = "/eos/uscms/store/user/ztao/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/ttHToTauTau_Ntuple_TTJets/151017_213809/0000/CU_ttH_EDA_output.root"
+							)
 {
 	// Read ntuples
 	TFile* f_sig = new TFile(sig_file);
@@ -57,42 +63,64 @@ void CutsPerf(const TString sig_file = "/uscms/home/ztao/work/CU_ttH_WD/Outputs/
 
 	TH1F* h_cutflow_sig =
 		(TH1F*) f_sig->Get("ttHsyncExercise/h_tth_syncex_dileptauh");
-	TH1F* h_cutflow_bkg =
+	TH1F* h_cutflow_TTJets =
 		(TH1F*) f_TTJets->Get("ttHsyncExercise/h_tth_syncex_dileptauh");
 	
 	int nevt_sig = h_cutflow_sig -> GetBinContent(1);
-	int nevt_TTJets = h_cutflow_bkg -> GetBinContent(1);
+	int nevt_TTJets = h_cutflow_TTJets -> GetBinContent(1);
 
+	cout << "Total number of signal sample processed :" << nevt_sig << endl;
+	cout << "Total number of TTJets sample processed :" << nevt_TTJets << endl;
+	
+	
 	//MakeROCPlot(tree_sig, nevt_sig, tree_TTJets, nevt_TTJets);
 	
 	// Histograms
-	TH1F* h_njets_sig = new TH1F("h_njets_sig", "", 7, -0.5, 6.5);
-	TH1F* h_nbtags_sig = new TH1F("h_nbtags_sig", "", 5, -0.5, 4.5);
+	TH1F* h_njets_sig = new TH1F("h_njets_sig", "", 11, -0.5, 10.5);
+	TH1F* h_njets_TTJets = new TH1F("h_njets_TTJets", "", 11, -0.5, 10.5);
+	
+	TH1F* h_njetscut_sig = new TH1F("h_njetscut_sig", "", 9, -0.5, 8.5);
+	TH1F* h_njetscut_TTJets = new TH1F("h_njetscut_TTJets", "", 9, -0.5, 8.5);
+	
+	TH1F* h_nbtags_sig = new TH1F("h_nbtags_sig", "", 6, -0.5, 5.5);
+	TH1F* h_nbtags_TTJets = new TH1F("h_nbtags_TTJets", "", 6, -0.5, 5.5);
+	
+	TH1F* h_nbtagscut_sig = new TH1F("h_nbtagscut_sig", "", 5, -0.5, 4.5);
+	TH1F* h_nbtagscut_TTJets = new TH1F("h_nbtagscut_TTJets", "", 5, -0.5, 4.5);
+	
 	TH1F* h_ntauID_sig = new TH1F("h_ntauID_sig", "", 4, -0.5, 3.5);
-
-	TH1F* h_njets_TTJets = new TH1F("h_njets_TTJets", "", 7, -0.5, 6.5);
-	TH1F* h_nbtags_TTJets = new TH1F("h_nbtags_TTJets", "", 5, -0.5, 4.5);
 	TH1F* h_ntauID_TTJets = new TH1F("h_ntauID_TTJets", "", 4, -0.5, 3.5);
-
-	CutHistFiller(tree_sig, h_njets_sig, h_nbtags_sig, h_ntauID_sig);
-	CutHistFiller(tree_TTJets, h_njets_TTJets, h_nbtags_TTJets, h_ntauID_TTJets);
+	
+	CutHistFiller(tree_sig, h_njets_sig, h_nbtags_sig, h_ntauID_sig,
+								h_njetscut_sig, h_nbtagscut_sig);
+	CutHistFiller(tree_TTJets, h_njets_TTJets, h_nbtags_TTJets, h_ntauID_TTJets,
+								h_njetscut_TTJets, h_nbtagscut_TTJets);
 
 	TFile *outputfile = new TFile(
 					 "/uscms/home/ztao/work/CU_ttH_WD/Outputs/cuts_histograms.root",
 					 "RECREATE");
 	
 	h_njets_sig -> Write();
+	h_njetscut_sig -> Write();
 	h_nbtags_sig -> Write();
+	h_nbtagscut_sig -> Write();
 	h_ntauID_sig -> Write();
 	h_njets_TTJets -> Write();
+	h_njetscut_TTJets -> Write();
 	h_nbtags_TTJets -> Write();
+	h_nbtagscut_TTJets -> Write();
 	h_ntauID_TTJets -> Write();
+	h_cutflow_sig -> Write();
+	h_cutflow_TTJets -> Write();
 
 	delete outputfile;
 	
 	// Draw Histograms
 	CutHistDrawer("/uscms/home/ztao/work/CU_ttH_WD/Outputs/cuts_histograms.root");
+	CutFlowDrawer(h_cutflow_sig, h_cutflow_TTJets);
+	
 }
+
 
 // ------------------------------------------------
 	
@@ -215,13 +243,13 @@ void MakeROCPlot(TTree *tree_sig, int nevt_sig, TTree* tree_bkg, int nevt_bkg)
 	
 	
 	
-	for (int i = 0; i < 4; ++i) {
+	for (int i = 2; i < 4; ++i) {
 		for (int j = 0; j < nstep; ++j){
 			eff_sig[i][j]/=nevt_sig;
 		}
 	}
 
-	for (int i = 0; i < 4; ++i) {
+	for (int i = 1; i < 4; ++i) {
 		for (int j = 0; j < nstep; ++j){
 			eff_bkg[i][j]/=nevt_bkg;
 		}
@@ -272,7 +300,8 @@ void MakeROCPlot(TTree *tree_sig, int nevt_sig, TTree* tree_bkg, int nevt_bkg)
 	c.SaveAs("/uscms/home/ztao/work/CU_ttH_WD/Outputs/tauWPROC.pdf");
 }
 
-void CutHistFiller(TTree* tree, TH1F* h_njets, TH1F* h_nbtags, TH1F* h_ntauID) 
+void CutHistFiller(TTree* tree, TH1F* h_njets, TH1F* h_nbtags, TH1F* h_ntauID,
+									 TH1F* h_njetscut, TH1F* h_nbtagscut) 
 {
 	
 	const int nEntries = tree->GetEntries();
@@ -309,10 +338,19 @@ void CutHistFiller(TTree* tree, TH1F* h_njets, TH1F* h_nbtags, TH1F* h_ntauID)
 	
 	// event loop
 	for (int ievt=0; ievt<nEntries; ++ievt) {
+		
 		tree -> GetEntry(ievt);
 
 		h_njets -> Fill(n_jets);
 		h_nbtags -> Fill(n_btags);
+
+		for (int j = 0; j < n_jets+1; ++j) {
+			h_njetscut -> Fill(j);
+		}
+
+		for (int j = 0; j < n_btags+1; ++j) {
+			h_nbtagscut -> Fill(j);
+		}
 
 		h_ntauID -> Fill(0);
 		if (n_taus_loose < 1) continue;
@@ -331,28 +369,40 @@ void CutHistDrawer(TString histfile)
 {
 	TFile* f = new TFile(histfile);
 
-	TH1F* h_njets_sig = (TH1F*)f->Get("h_njets_sig"); 
-	TH1F* h_nbtags_sig = (TH1F*)f->Get("h_nbtags_sig"); 
+	TH1F* h_njets_sig = (TH1F*)f->Get("h_njets_sig");
+	TH1F* h_njetscut_sig = (TH1F*)f->Get("h_njetscut_sig");
+	TH1F* h_nbtags_sig = (TH1F*)f->Get("h_nbtags_sig");
+	TH1F* h_nbtagscut_sig = (TH1F*)f->Get("h_nbtagscut_sig"); 
 	TH1F* h_ntauID_sig = (TH1F*)f->Get("h_ntauID_sig"); 
-	TH1F* h_njets_TTJets = (TH1F*)f->Get("h_njets_TTJets"); 
-	TH1F* h_nbtags_TTJets = (TH1F*)f->Get("h_nbtags_TTJets"); 
+	TH1F* h_njets_TTJets = (TH1F*)f->Get("h_njets_TTJets");
+	TH1F* h_njetscut_TTJets = (TH1F*)f->Get("h_njetscut_TTJets"); 
+	TH1F* h_nbtags_TTJets = (TH1F*)f->Get("h_nbtags_TTJets");
+	TH1F* h_nbtagscut_TTJets = (TH1F*)f->Get("h_nbtagscut_TTJets"); 
 	TH1F* h_ntauID_TTJets = (TH1F*)f->Get("h_ntauID_TTJets");
 
 	h_njets_sig -> Sumw2();
+	h_njetscut_sig -> Sumw2();
 	h_nbtags_sig -> Sumw2();
+	h_nbtagscut_sig -> Sumw2();
 	h_ntauID_sig -> Sumw2();
 	h_njets_TTJets -> Sumw2();
+	h_njetscut_TTJets -> Sumw2();
 	h_nbtags_TTJets -> Sumw2();
+	h_nbtagscut_TTJets -> Sumw2();
 	h_ntauID_TTJets -> Sumw2();
 	
 	h_njets_sig -> Scale(1.0/nsig);
 	h_nbtags_sig -> Scale(1.0/nsig);
+	h_njetscut_sig -> Scale(1.0/nsig);
+	h_nbtagscut_sig -> Scale(1.0/nsig);
 	h_ntauID_sig -> Scale(1.0/nsig);
 	h_njets_TTJets -> Scale(1.0/nTTJets);
 	h_nbtags_TTJets -> Scale(1.0/nTTJets);
+	h_njetscut_TTJets -> Scale(1.0/nTTJets);
+	h_nbtagscut_TTJets -> Scale(1.0/nTTJets);
 	h_ntauID_TTJets -> Scale(1.0/nTTJets);
 
-	/// number of jets
+	/// jet multiplicity
 	TCanvas *c = new TCanvas("c", "", 800, 800);
 	TPad *pad1 = new TPad("pad1", "", 0, 0.3, 1, 1.0);
 	//pad1->SetTopMargin(0.06);
@@ -360,23 +410,23 @@ void CutHistDrawer(TString histfile)
 	pad1->SetGridx();
 	pad1->Draw();
 	pad1->cd();
-	h_njets_sig->SetStats(0);
-	h_njets_sig->SetLineColor(kRed);
-	h_njets_sig->SetMarkerStyle(20);
-	h_njets_sig->SetMarkerColor(kRed);
-	h_njets_sig->GetXaxis()->SetTitle("n_jets");
-	//h_njets_sig->SetTitleOffset(0.1);
-	h_njets_sig->GetYaxis()->SetTitle("(Normalized)");
-	h_njets_sig->GetYaxis()->SetTitleSize(0.04);
-	h_njets_sig->GetYaxis()->SetTitleOffset(0.8);
-	h_njets_sig->GetYaxis()->SetLabelSize(0.03);
-	h_njets_sig->SetTitle("Number of jets");
-	h_njets_sig->Draw();
+	h_njets_TTJets->SetStats(0);
 	h_njets_TTJets->SetLineColor(kBlue);
 	h_njets_TTJets->SetMarkerStyle(20);
 	h_njets_TTJets->SetMarkerColor(kBlue);
-	h_njets_TTJets->Draw("same");
-
+	h_njets_TTJets->GetXaxis()->SetTitle("number of jets");
+	//h_njets_TTJets->SetTitleOffset(0.1);
+	h_njets_TTJets->GetYaxis()->SetTitle("(Normalized)");
+	h_njets_TTJets->GetYaxis()->SetTitleSize(0.04);
+	h_njets_TTJets->GetYaxis()->SetTitleOffset(0.8);
+	h_njets_TTJets->GetYaxis()->SetLabelSize(0.03);
+	h_njets_TTJets->SetTitle("Number of jets");
+	h_njets_TTJets->Draw();	
+	h_njets_sig->SetLineColor(kRed);
+	h_njets_sig->SetMarkerStyle(20);
+	h_njets_sig->SetMarkerColor(kRed);
+	h_njets_sig->Draw("same");
+	
 	TLegend *leg_njets = new TLegend(0.72,0.25,0.85,0.38);
 	leg_njets->AddEntry(h_njets_sig, "signal","p");
 	leg_njets->AddEntry(h_njets_TTJets, "tt+Jets","p");
@@ -416,22 +466,22 @@ void CutHistDrawer(TString histfile)
 	pad3->SetGridx();
 	pad3->Draw();
 	pad3->cd();
-	h_nbtags_sig->SetStats(0);
-	h_nbtags_sig->SetLineColor(kRed);
-	h_nbtags_sig->SetMarkerStyle(20);
-	h_nbtags_sig->SetMarkerColor(kRed);
-	h_nbtags_sig->GetXaxis()->SetTitle("n_btags");
-	//h_nbtags_sig->SetTitleOffset(0.1);
-	h_nbtags_sig->GetYaxis()->SetTitle("(Normalized)");
-	h_nbtags_sig->GetYaxis()->SetTitleSize(0.04);
-	h_nbtags_sig->GetYaxis()->SetTitleOffset(0.8);
-	h_nbtags_sig->GetYaxis()->SetLabelSize(0.03);
-	h_nbtags_sig->SetTitle("Number of b-tagged jets");
-	h_nbtags_sig->Draw();
+	h_nbtags_TTJets->SetStats(0);
 	h_nbtags_TTJets->SetLineColor(kBlue);
 	h_nbtags_TTJets->SetMarkerStyle(20);
 	h_nbtags_TTJets->SetMarkerColor(kBlue);
-	h_nbtags_TTJets->Draw("same");
+	h_nbtags_TTJets->GetXaxis()->SetTitle("n_btags");
+	//h_nbtags_TTJets->SetTitleOffset(0.1);
+	h_nbtags_TTJets->GetYaxis()->SetTitle("(Normalized)");
+	h_nbtags_TTJets->GetYaxis()->SetTitleSize(0.04);
+	h_nbtags_TTJets->GetYaxis()->SetTitleOffset(0.8);
+	h_nbtags_TTJets->GetYaxis()->SetLabelSize(0.03);
+	h_nbtags_TTJets->SetTitle("Number of b-tagged jets");
+	h_nbtags_TTJets->Draw();	
+	h_nbtags_sig->SetLineColor(kRed);
+	h_nbtags_sig->SetMarkerStyle(20);
+	h_nbtags_sig->SetMarkerColor(kRed);
+	h_nbtags_sig->Draw("same");
 
 	TLegend *leg_nbtags = new TLegend(0.72,0.25,0.85,0.38);
 	leg_nbtags->AddEntry(h_nbtags_sig, "signal","p");
@@ -487,6 +537,7 @@ void CutHistDrawer(TString histfile)
 	h_ntauID_sig->GetYaxis()->SetTitleOffset(0.8);
 	h_ntauID_sig->GetYaxis()->SetLabelSize(0.03);
 	h_ntauID_sig->SetTitle(">=1 tau");
+	h_ntauID_sig->SetMinimum(0);
 	h_ntauID_sig->Draw();
 	h_ntauID_TTJets->SetLineColor(kBlue);
 	h_ntauID_TTJets->SetMarkerStyle(20);
@@ -523,4 +574,185 @@ void CutHistDrawer(TString histfile)
 	h_ntauID_ratio->Draw("ep");
 
 	c3->SaveAs("/uscms/home/ztao/work/CU_ttH_WD/Outputs/ntauID.pdf");
+
+	/// cut on number of jets
+	TCanvas *c4 = new TCanvas("c4", "", 800, 800);
+	TPad *pad7 = new TPad("pad7", "", 0, 0.3, 1, 1.0);
+	//pad7->SetTopMargin(0.06);
+	pad7->SetBottomMargin(2);
+	pad7->SetGridx();
+	pad7->Draw();
+	pad7->cd();
+	h_njetscut_sig->SetStats(0);
+	h_njetscut_sig->SetLineColor(kRed);
+	h_njetscut_sig->SetMarkerStyle(20);
+	h_njetscut_sig->SetMarkerColor(kRed);
+	h_njetscut_sig->GetXaxis()->SetTitle(">= n_jets");
+	//h_njetscut_sig->SetTitleOffset(0.1);
+	h_njetscut_sig->GetYaxis()->SetTitle("(Normalized)");
+	h_njetscut_sig->GetYaxis()->SetTitleSize(0.04);
+	h_njetscut_sig->GetYaxis()->SetTitleOffset(0.8);
+	h_njetscut_sig->GetYaxis()->SetLabelSize(0.03);
+	h_njetscut_sig->SetTitle("Cut on number of jets");
+	h_njetscut_sig->Draw();
+	h_njetscut_TTJets->SetLineColor(kBlue);
+	h_njetscut_TTJets->SetMarkerStyle(20);
+	h_njetscut_TTJets->SetMarkerColor(kBlue);
+	h_njetscut_TTJets->Draw("same");
+
+	TLegend *leg_njetscut = new TLegend(0.72,0.25,0.85,0.38);
+	leg_njetscut->AddEntry(h_njetscut_sig, "signal","p");
+	leg_njetscut->AddEntry(h_njetscut_TTJets, "tt+Jets","p");
+	leg_njetscut->Draw("same");
+
+	c4->cd();
+	TPad *pad8 = new TPad("pad8", "", 0, 0.05, 1, 0.3);
+	pad8->SetTopMargin(0);
+	pad8->SetBottomMargin(0.01);
+	pad8->SetGridx();
+	pad8->Draw();
+	pad8->cd();
+
+	TH1F* h_njetscut_ratio = (TH1F*) h_njetscut_TTJets->Clone("h_njetscut_ratio");
+	h_njetscut_ratio->SetLineColor(kBlack);
+	h_njetscut_ratio->Sumw2();
+	h_njetscut_ratio->SetStats(0);
+	h_njetscut_ratio->Divide(h_njetscut_sig);
+	h_njetscut_ratio->SetMarkerStyle(21);
+	h_njetscut_ratio->SetMarkerColor(kBlack);
+	h_njetscut_ratio->SetTitle("");
+	h_njetscut_ratio->GetXaxis()->SetLabelSize(0.);
+	h_njetscut_ratio->GetYaxis()->SetTitle("TTJets/Signal");
+	h_njetscut_ratio->GetYaxis()->SetTitleSize(0.1);
+	h_njetscut_ratio->GetYaxis()->SetLabelSize(0.08);
+	h_njetscut_ratio->GetYaxis()->SetTitleOffset(0.3);
+	h_njetscut_ratio->GetYaxis()->SetNdivisions(505);
+	h_njetscut_ratio->Draw("ep");
+
+	c4->SaveAs("/uscms/home/ztao/work/CU_ttH_WD/Outputs/njetscut.pdf");
+	
+	/// Cut on number of b-jets
+	TCanvas *c5 = new TCanvas("c5", "", 800, 800);
+	TPad *pad9 = new TPad("pad9", "", 0, 0.3, 1, 1.0);
+	//pad9->SetTopMargin(0.06);
+	pad9->SetBottomMargin(2);
+	pad9->SetGridx();
+	pad9->Draw();
+	pad9->cd();
+	h_nbtagscut_sig->SetStats(0);
+	h_nbtagscut_sig->SetLineColor(kRed);
+	h_nbtagscut_sig->SetMarkerStyle(20);
+	h_nbtagscut_sig->SetMarkerColor(kRed);
+	h_nbtagscut_sig->GetXaxis()->SetTitle(">= n_btags");
+	//h_nbtagscut_sig->SetTitleOffset(0.1);
+	h_nbtagscut_sig->GetYaxis()->SetTitle("(Normalized)");
+	h_nbtagscut_sig->GetYaxis()->SetTitleSize(0.04);
+	h_nbtagscut_sig->GetYaxis()->SetTitleOffset(0.8);
+	h_nbtagscut_sig->GetYaxis()->SetLabelSize(0.03);
+	h_nbtagscut_sig->SetTitle("Cut on number of b-tagged jets");
+	h_nbtagscut_sig->Draw();
+	h_nbtagscut_TTJets->SetLineColor(kBlue);
+	h_nbtagscut_TTJets->SetMarkerStyle(20);
+	h_nbtagscut_TTJets->SetMarkerColor(kBlue);
+	h_nbtagscut_TTJets->Draw("same");
+
+	TLegend *leg_nbtagscut = new TLegend(0.72,0.25,0.85,0.38);
+	leg_nbtagscut->AddEntry(h_nbtagscut_sig, "signal","p");
+	leg_nbtagscut->AddEntry(h_nbtagscut_TTJets, "tt+Jets","p");
+	leg_nbtagscut->Draw("same");
+
+	c5->cd();
+	TPad *pad10 = new TPad("pad10", "", 0, 0.05, 1, 0.3);
+	pad10->SetTopMargin(0);
+	pad10->SetBottomMargin(0.01);
+	pad10->SetGridx();
+	pad10->Draw();
+	pad10->cd();
+
+	TH1F* h_nbtagscut_ratio = (TH1F*) h_nbtagscut_TTJets->Clone("h_nbtagscut_ratio");
+	h_nbtagscut_ratio->SetLineColor(kBlack);
+	h_nbtagscut_ratio->Sumw2();
+	h_nbtagscut_ratio->SetStats(0);
+	h_nbtagscut_ratio->Divide(h_nbtagscut_sig);
+	h_nbtagscut_ratio->SetMarkerStyle(21);
+	h_nbtagscut_ratio->SetMarkerColor(kBlack);
+	h_nbtagscut_ratio->SetTitle("");
+	h_nbtagscut_ratio->GetXaxis()->SetLabelSize(0.);
+	h_nbtagscut_ratio->GetYaxis()->SetTitle("TTJets/Signal");
+	h_nbtagscut_ratio->GetYaxis()->SetTitleSize(0.1);
+	h_nbtagscut_ratio->GetYaxis()->SetLabelSize(0.08);
+	h_nbtagscut_ratio->GetYaxis()->SetTitleOffset(0.3);
+	h_nbtagscut_ratio->GetYaxis()->SetNdivisions(505);
+	h_nbtagscut_ratio->Draw("ep");
+
+	c5->SaveAs("/uscms/home/ztao/work/CU_ttH_WD/Outputs/nbtagscut.pdf");
+}
+
+
+void CutFlowDrawer(TH1F* h_cutflow_sig, TH1F* h_cutflow_TTJets) {
+
+	int nsig = h_cutflow_sig -> GetBinContent(1);
+	int nTTJets = h_cutflow_TTJets -> GetBinContent(1);
+	
+	h_cutflow_sig->Sumw2();
+	h_cutflow_TTJets->Sumw2();
+	h_cutflow_sig->Scale(1.0/nsig);
+	h_cutflow_TTJets->Scale(1.0/nTTJets);
+	TCanvas *c0 = new TCanvas("c0", "", 800, 800);
+	TPad *pad_1 = new TPad("pad_1", "", 0, 0.3, 1, 1.0);
+	pad_1->SetBottomMargin(2);
+	pad_1->SetGridx();
+	pad_1->SetLogy();
+	pad_1->Draw();
+	pad_1->cd();
+	h_cutflow_TTJets->SetStats(0);
+	h_cutflow_TTJets->SetLineColor(kBlue);
+	h_cutflow_TTJets->SetMarkerStyle(20);
+	h_cutflow_TTJets->SetMarkerColor(kBlue);
+	h_cutflow_TTJets->GetXaxis()->SetTitle("Cuts");
+	h_cutflow_TTJets->GetYaxis()->SetTitle("(Normalized)");
+	h_cutflow_TTJets->GetYaxis()->SetTitleSize(0.03);
+	h_cutflow_TTJets->GetYaxis()->SetTitleOffset(0.8);
+	h_cutflow_TTJets->GetYaxis()->SetLabelSize(0.02);
+	h_cutflow_TTJets->SetTitle("Cut Flow");
+	h_cutflow_TTJets->GetXaxis()->SetBinLabel(6, ">= 2 jets");
+	h_cutflow_TTJets->GetXaxis()->SetBinLabel(7, ">= 1 b-tags");
+	h_cutflow_TTJets->Draw();
+	h_cutflow_sig->SetLineColor(kRed);
+	h_cutflow_sig->SetMarkerStyle(20);
+	h_cutflow_sig->SetMarkerColor(kRed);
+	h_cutflow_sig->GetXaxis()->SetLabelSize(0.);
+	h_cutflow_sig->Draw("same");
+
+	TLegend *leg_cf = new TLegend(0.72, 0.65, 0.85, 0.78);
+	leg_cf->AddEntry(h_cutflow_sig, "signal", "p");
+	leg_cf->AddEntry(h_cutflow_TTJets, "tt+jets", "p");
+	leg_cf->Draw("same");
+
+	c0->cd();
+	TPad *pad_2 = new TPad("pad_2", "", 0, 0.05, 1, 0.3);
+	pad_2->SetTopMargin(0);
+	pad_2->SetBottomMargin(0.01);
+	pad_2->SetGridx();
+	pad_2->SetLogy();
+	pad_2->Draw();
+	pad_2->cd();
+
+	TH1F* h_cutflow_ratio = (TH1F*) h_cutflow_TTJets->Clone("h_cutflow_ratio");
+	h_cutflow_ratio->SetLineColor(kBlack);
+	h_cutflow_ratio->SetStats(0);
+	h_cutflow_ratio->Divide(h_cutflow_sig);
+	h_cutflow_ratio->SetMarkerStyle(21);
+	h_cutflow_ratio->SetMarkerColor(kBlack);
+	h_cutflow_ratio->SetTitle("");
+	h_cutflow_ratio->GetXaxis()->SetLabelSize(0.);
+	h_cutflow_ratio->GetYaxis()->SetTitle("bkg/sig");
+	h_cutflow_ratio->GetYaxis()->SetTitleSize(0.1);
+	h_cutflow_ratio->GetYaxis()->SetLabelSize(0.08);
+	h_cutflow_ratio->GetYaxis()->SetTitleOffset(0.3);
+	h_cutflow_ratio->GetYaxis()->SetNdivisions(505);
+	h_cutflow_ratio->Draw("p");
+
+	c0->SaveAs("/uscms/home/ztao/work/CU_ttH_WD/Outputs/cutflow.pdf");
+	
 }

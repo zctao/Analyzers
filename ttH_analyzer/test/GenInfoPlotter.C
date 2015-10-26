@@ -4,12 +4,14 @@
 #include "TH1.h"
 #include "TH2.h"
 #include "TLorentzVector.h"
+#include "TVector2.h"
 #include "TLatex.h"
 #include "TAxis.h"
 #include "TCanvas.h"
 #include "TMath.h"
 #include "TStyle.h"
 #include "TLegend.h"
+#include "TGraph.h"
 
 #include <iostream>
 #include <string>
@@ -17,7 +19,7 @@
 
 using namespace std;
 
-void GenHisto (const TString input_file = "/uscms/home/ztao/work/CU_ttH_WD/Outputs/CU_ttH_EDA_output_sig.root") {
+void GenHisto (const TString input_file = "/uscms/home/ztao/work/CU_ttH_WD/Outputs/CU_ttH_EDA_output_sigtmp.root") {
 	// Read ntuples
 	TFile* f = new TFile(input_file);
 	TTree* tree = (TTree*) f->Get("ttHsyncExercise/EventTree");
@@ -110,11 +112,20 @@ void GenHisto (const TString input_file = "/uscms/home/ztao/work/CU_ttH_WD/Outpu
 	TH2F* h_costH_costbarH_com = new TH2F("ctH_ctbarH_com", "COM frame", 50, -1, 1, 50, -1, 1);
 	TH2F* h_dRtH_dRtbarH_lab = new TH2F("dRtH_dRtbarH_lab", "Lab frame", 50, 0, 10, 50, 0, 10);
 	TH2F* h_dRtH_dRtbarH_com = new TH2F("dRtH_dRtbarH_com", "COM frame", 50, 0, 10, 50, 0, 10);
-	
 	TH1F* h_top_higgs_dRmin = new TH1F("dRmin", "", 50, 0.0, 10.0);
 	TH1F* h_top_higgs_dRmax = new TH1F("dRmax", "", 50, 0.0, 10.0);
+
+	TH2F* h_detatH_detatbarH_lab = new TH2F("detatH_detatbarH_lab", "Lab frame", 50, -5, 5, 50, -5, 5);
+	TH2F* h_detatH_detatbarH_com = new TH2F("detatH_detatbarH_com", "COM frame", 50, -5, 5, 50, -5, 5);
+	TH2F* h_dphitH_dphitbarH_lab = new TH2F("dphitH_dphitbarH_lab", "Lab frame", 50, -3.5, 3.5, 50, -3.5, 3.5);
+	TH2F* h_dphitH_dphitbarH_com = new TH2F("dphitH_dphitbarH_com", "COM frame", 50, -3.5, 3.5, 50, -3.5, 3.5);
 	
-	// ----------------------------------------------------------------------------------------------------------------
+	TH2F* h_dphi_deta_th_lab = new TH2F("dphi_deta_th_lab","Lab frame", 50, -3.5, 3.5, 50, -5, 5);
+	TH2F* h_dphi_deta_tbarh_lab = new TH2F("dphi_deta_tbarh_lab","Lab frame", 50, -3.5, 3.5, 50, -5, 5);
+	TH2F* h_dphi_deta_th_com = new TH2F("dphi_deta_th_com","COM frame", 50, -3.5, 3.5, 50, -5, 5);
+	TH2F* h_dphi_deta_tbarh_com = new TH2F("dphi_deta_tbarh_com","COM frame", 50, -3.5, 3.5, 50, -5, 5);
+	
+ 	// ----------------------------------------------------------------------------------------------------------------
 	//        * * * * *     S T A R T   O F   A C T U A L   R U N N I N G   O N   E V E N T S     * * * * *
 	// ----------------------------------------------------------------------------------------------------------------
 	
@@ -236,34 +247,56 @@ void GenHisto (const TString input_file = "/uscms/home/ztao/work/CU_ttH_WD/Outpu
 		v_tbar = antitop.Vect();
 		v_h = higgs.Vect();
 		
-		double cth_th =  v_t.Dot(v_h) / TMath::Abs( v_t.Mag() * v_h.Mag() );
-		double cth_tbarh = v_tbar.Dot(v_h) / TMath::Abs( v_tbar.Mag() * v_h.Mag() );
-		h_costH_costbarH_lab -> Fill(cth_tbarh,cth_th);
+		double cth_th_lab =  v_t.Dot(v_h) / TMath::Abs( v_t.Mag() * v_h.Mag() );
+		double cth_tbarh_lab = v_tbar.Dot(v_h) / TMath::Abs( v_tbar.Mag() * v_h.Mag() );
+		h_costH_costbarH_lab -> Fill(cth_th_lab,cth_tbarh_lab);
 
-		double dR_th = higgs.DeltaR(top);
-		double dR_tbarh = higgs.DeltaR(antitop);
-		h_dRtH_dRtbarH_lab -> Fill(dR_th, dR_tbarh);
+		double dR_th_lab = higgs.DeltaR(top);
+		double dR_tbarh_lab = higgs.DeltaR(antitop);
+		h_dRtH_dRtbarH_lab -> Fill(dR_th_lab, dR_tbarh_lab);
 
+		double deta_th_lab = top.Eta()-higgs.Eta();
+		double deta_tbarh_lab = antitop.Eta()-higgs.Eta();
+		double dphi_th_lab = TVector2::Phi_mpi_pi(top.Phi()-higgs.Phi());
+		double dphi_tbarh_lab = TVector2::Phi_mpi_pi(antitop.Phi()-higgs.Phi());
+
+		h_dphi_deta_th_lab -> Fill(dphi_th_lab, deta_th_lab);
+		h_dphi_deta_tbarh_lab -> Fill(dphi_tbarh_lab, deta_tbarh_lab);
+
+	  h_detatH_detatbarH_lab -> Fill(deta_th_lab, deta_tbarh_lab);
+		h_dphitH_dphitbarH_lab -> Fill(dphi_th_lab, dphi_tbarh_lab);
+		
 		// boost into ttH COM frame
 		TVector3 v_com = (top+antitop+higgs).BoostVector();
 		top.Boost(-v_com);
 		antitop.Boost(-v_com);
 		higgs.Boost(-v_com);
-
+		
 		v_t = top.Vect();
 		v_tbar = antitop.Vect();
 		v_h = higgs.Vect();
 
-		cth_th =  v_t.Dot(v_h) / TMath::Abs( v_t.Mag() * v_h.Mag() );
-		cth_tbarh = v_tbar.Dot(v_h) / TMath::Abs( v_tbar.Mag() * v_h.Mag() );
-		h_costH_costbarH_com -> Fill(cth_tbarh,cth_th);
+		double cth_th_com =  v_t.Dot(v_h) / TMath::Abs( v_t.Mag() * v_h.Mag() );
+		double cth_tbarh_com = v_tbar.Dot(v_h) / TMath::Abs( v_tbar.Mag() * v_h.Mag() );
+		h_costH_costbarH_com -> Fill(cth_th_com,cth_tbarh_com);
 
-		dR_th = higgs.DeltaR(top);
-		dR_tbarh = higgs.DeltaR(antitop);
-		h_dRtH_dRtbarH_com -> Fill(dR_th, dR_tbarh);
+		double dR_th_com = higgs.DeltaR(top);
+		double dR_tbarh_com = higgs.DeltaR(antitop);
+		h_dRtH_dRtbarH_com -> Fill(dR_th_com, dR_tbarh_com);
+
+		double deta_th_com = top.Eta()-higgs.Eta();
+		double deta_tbarh_com = antitop.Eta()-higgs.Eta();
+		double dphi_th_com = TVector2::Phi_mpi_pi(top.Phi()-higgs.Phi());
+		double dphi_tbarh_com = TVector2::Phi_mpi_pi(antitop.Phi()-higgs.Phi());
+		
+		h_dphi_deta_th_com -> Fill(dphi_th_com, deta_th_com);
+		h_dphi_deta_tbarh_com -> Fill(dphi_tbarh_com, deta_tbarh_com);
+
+		h_detatH_detatbarH_com -> Fill(deta_th_lab, deta_tbarh_com);
+		h_dphitH_dphitbarH_com -> Fill(dphi_th_lab, dphi_tbarh_com);
 		
 	} // end of event loop
-
+	
 	TFile histfile("/uscms/home/ztao/work/CU_ttH_WD/Outputs/gen_histograms.root", "RECREATE");
 	h_mtautau_mtop1 -> Write();
 	h_mtautau_mtop2 -> Write();
@@ -283,6 +316,16 @@ void GenHisto (const TString input_file = "/uscms/home/ztao/work/CU_ttH_WD/Outpu
 	
 	h_top_higgs_dRmin -> Write();
 	h_top_higgs_dRmax -> Write();
+
+	h_detatH_detatbarH_lab -> Write();
+	h_detatH_detatbarH_com -> Write();
+	h_dphitH_dphitbarH_lab -> Write();
+	h_dphitH_dphitbarH_com -> Write();
+	
+	h_dphi_deta_th_lab -> Write();
+	h_dphi_deta_tbarh_lab -> Write();
+	h_dphi_deta_th_com -> Write();
+	h_dphi_deta_tbarh_com -> Write();	
 }
 
 void HistDrawer(const TString input =
@@ -305,10 +348,19 @@ void HistDrawer(const TString input =
 	TH2F* h_ctH_ctbarH_com = (TH2F*)f->Get("ctH_ctbarH_com");
 	TH2F* h_dRtH_dRtbarH_lab = (TH2F*)f->Get("dRtH_dRtbarH_lab");
 	TH2F* h_dRtH_dRtbarH_com = (TH2F*)f->Get("dRtH_dRtbarH_com");
-
+	TH2F* h_detatH_detatbarH_lab = (TH2F*)f->Get("detatH_detatbarH_lab");
+	TH2F* h_detatH_detatbarH_com = (TH2F*)f->Get("detatH_detatbarH_com");
+	TH2F* h_dphitH_dphitbarH_lab = (TH2F*)f->Get("dphitH_dphitbarH_lab");
+	TH2F* h_dphitH_dphitbarH_com = (TH2F*)f->Get("dphitH_dphitbarH_com");
+	
 	TH1F* h_top_higgs_dRmin = (TH1F*)f->Get("dRmin");
 	TH1F* h_top_higgs_dRmax = (TH1F*)f->Get("dRmax");
 
+	TH2F* h_dphi_deta_th_lab = (TH2F*)f->Get("dphi_deta_th_lab");
+	TH2F* h_dphi_deta_tbarh_lab = (TH2F*)f->Get("dphi_deta_tbarh_lab");
+	TH2F* h_dphi_deta_th_com = (TH2F*)f->Get("dphi_deta_th_com");
+	TH2F* h_dphi_deta_tbarh_com = (TH2F*)f->Get("dphi_deta_tbarh_com");
+	
 	TCanvas c;
 	gStyle->SetOptTitle(1);
 	gStyle->SetOptStat(10);
@@ -358,25 +410,65 @@ void HistDrawer(const TString input =
 	h_mttTT_mminus->Draw("colz");
 	c.SaveAs("/uscms/home/ztao/work/CU_ttH_WD/Outputs/mttTT_mminus.pdf");
 
-	h_ctH_ctbarH_lab->GetXaxis()->SetTitle("cos#theta(tbar,H)");
-	h_ctH_ctbarH_lab->GetYaxis()->SetTitle("cos#theta(t,H)");
+	h_ctH_ctbarH_lab->GetXaxis()->SetTitle("cos#theta(t,H)");
+	h_ctH_ctbarH_lab->GetYaxis()->SetTitle("cos#theta(tbar,H)");
 	h_ctH_ctbarH_lab->Draw("colz");
 	c.SaveAs("/uscms/home/ztao/work/CU_ttH_WD/Outputs/ctH_ctbarH_lab.pdf");
 
-	h_ctH_ctbarH_com->GetXaxis()->SetTitle("cos#theta(tbar,H)");
-	h_ctH_ctbarH_com->GetYaxis()->SetTitle("cos#theta(t,H)");
+	h_ctH_ctbarH_com->GetXaxis()->SetTitle("cos#theta(t,H)");
+	h_ctH_ctbarH_com->GetYaxis()->SetTitle("cos#theta(tbar,H)");
 	h_ctH_ctbarH_com->Draw("colz");
 	c.SaveAs("/uscms/home/ztao/work/CU_ttH_WD/Outputs/ctH_ctbarH_com.pdf");
 
-	h_dRtH_dRtbarH_lab->GetXaxis()->SetTitle("dR(tbar,H)");
-	h_dRtH_dRtbarH_lab->GetYaxis()->SetTitle("dR(t,H)");
+	h_dRtH_dRtbarH_lab->GetXaxis()->SetTitle("dR(t,H)");
+	h_dRtH_dRtbarH_lab->GetYaxis()->SetTitle("dR(tbar,H)");
 	h_dRtH_dRtbarH_lab->Draw("colz");
 	c.SaveAs("/uscms/home/ztao/work/CU_ttH_WD/Outputs/dRtH_dRtbarH_lab.pdf");
 
-	h_dRtH_dRtbarH_com->GetXaxis()->SetTitle("dR(tbar,H)");
-	h_dRtH_dRtbarH_com->GetYaxis()->SetTitle("dR(t,H)");
+	h_dRtH_dRtbarH_com->GetXaxis()->SetTitle("dR(t,H)");
+	h_dRtH_dRtbarH_com->GetYaxis()->SetTitle("dR(tbar,H)");
 	h_dRtH_dRtbarH_com->Draw("colz");
 	c.SaveAs("/uscms/home/ztao/work/CU_ttH_WD/Outputs/dRtH_dRtbarH_com.pdf");
+
+	h_detatH_detatbarH_lab->GetXaxis()->SetTitle("#Delta#eta(t,H)");
+	h_detatH_detatbarH_lab->GetYaxis()->SetTitle("#Delta#eta(tbar,H)");
+	h_detatH_detatbarH_lab->Draw("colz");
+	c.SaveAs("/uscms/home/ztao/work/CU_ttH_WD/Outputs/detatH_detatbarH_lab.pdf");
+	
+	h_dphitH_dphitbarH_lab->GetXaxis()->SetTitle("#Delta#phi(t,H)");
+	h_dphitH_dphitbarH_lab->GetYaxis()->SetTitle("#Delta#phi(tbar,H)");
+	h_dphitH_dphitbarH_lab->Draw("colz");
+	c.SaveAs("/uscms/home/ztao/work/CU_ttH_WD/Outputs/dphitH_dphitbarH_lab.pdf");
+
+	h_detatH_detatbarH_com->GetXaxis()->SetTitle("#Delta#eta(t,H)");
+	h_detatH_detatbarH_com->GetYaxis()->SetTitle("#Delta#eta(tbar,H)");
+	h_detatH_detatbarH_com->Draw("colz");
+	c.SaveAs("/uscms/home/ztao/work/CU_ttH_WD/Outputs/detatH_detatbarH_com.pdf");
+	
+	h_dphitH_dphitbarH_com->GetXaxis()->SetTitle("#Delta#phi(t,H)");
+	h_dphitH_dphitbarH_com->GetYaxis()->SetTitle("#Delta#phi(tbar,H)");
+	h_dphitH_dphitbarH_com->Draw("colz");
+	c.SaveAs("/uscms/home/ztao/work/CU_ttH_WD/Outputs/dphitH_dphitbarH_com.pdf");
+	
+	h_dphi_deta_th_lab->GetXaxis()->SetTitle("#Delta#phi(t,H)");
+	h_dphi_deta_th_lab->GetYaxis()->SetTitle("#Delta#phi(t,H)");
+	h_dphi_deta_th_lab->Draw("colz");
+	c.SaveAs("/uscms/home/ztao/work/CU_ttH_WD/Outputs/dphi_deta_th_lab.pdf");
+
+	h_dphi_deta_tbarh_lab->GetXaxis()->SetTitle("#Delta#phi(tbar,H)");
+	h_dphi_deta_tbarh_lab->GetYaxis()->SetTitle("#Delta#eta(tbar,H)");
+	h_dphi_deta_tbarh_lab->Draw("colz");
+	c.SaveAs("/uscms/home/ztao/work/CU_ttH_WD/Outputs/dphi_deta_tbarh_lab.pdf");
+
+	h_dphi_deta_th_com->GetXaxis()->SetTitle("#Delta#phi(t,H)");
+	h_dphi_deta_th_com->GetYaxis()->SetTitle("#Delta#eta(t,H)");
+	h_dphi_deta_th_com->Draw("colz");
+	c.SaveAs("/uscms/home/ztao/work/CU_ttH_WD/Outputs/dphi_deta_th_com.pdf");
+
+	h_dphi_deta_tbarh_com->GetXaxis()->SetTitle("#Delta#phi(tbar,H)");
+	h_dphi_deta_tbarh_com->GetYaxis()->SetTitle("#Delta#eta(tbar,H)");
+	h_dphi_deta_tbarh_com->Draw("colz");
+	c.SaveAs("/uscms/home/ztao/work/CU_ttH_WD/Outputs/dphi_deta_tbarh_com.pdf");
 	
 	gStyle->SetOptStat(1);
 	h_top_higgs_dRmax->GetXaxis()->SetTitle("#DeltaR(top,Higgs)");
@@ -392,6 +484,7 @@ void HistDrawer(const TString input =
 	leg->Draw("same");
 	
 	c.SaveAs("/uscms/home/ztao/work/CU_ttH_WD/Outputs/dR_top_Higgs.pdf");
+
 	
 	delete f;
 }
