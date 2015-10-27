@@ -38,7 +38,7 @@ CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig)
 	*/
 
 	/// temporary mock-up parameters
-	MAODHelper_era = "2012_53x";
+	MAODHelper_era = "2015_74x";
 	MAODHelper_sample_nr = 2500;
 
 	total_xs = 831.76;
@@ -46,7 +46,9 @@ CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig)
 	int_lumi = 10000;
 	weight_sample = int_lumi * total_xs / sample_n;
 
-	Load_configuration(static_cast<string>("Configs/config_analyzer_CMSSW74X.yaml"));
+	edm::FileInPath CMSSW_path("config_analyzer_CMSSW74X.yaml");
+	std::string yaml_config_file = CMSSW_path.fullPath();
+	Load_configuration(static_cast<string>(yaml_config_file));
 
 	Set_up_tokens();
 	Setup_Tree();
