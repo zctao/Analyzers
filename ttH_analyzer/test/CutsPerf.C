@@ -117,7 +117,7 @@ void CutsPerf(
 	
 	// Draw Histograms
 	CutHistDrawer("/uscms/home/ztao/work/CU_ttH_WD/Outputs/cuts_histograms.root");
-        CutFlowDrawer(h_cutflow_sig, h_cutflow_TTJets);
+	CutFlowDrawer(h_cutflow_sig, h_cutflow_TTJets);
 	*/
 }
 
@@ -245,7 +245,7 @@ void MakeROCPlot(TTree *tree_sig, int nevt_sig, TTree* tree_bkg, int nevt_bkg)
 	
 	
 	
-	for (int i = 2; i < 4; ++i) {
+	for (int i = 1; i < 4; ++i) {
 		for (int j = 0; j < nstep; ++j){
 			eff_sig[i][j]/=nevt_sig;
 		}
@@ -694,12 +694,12 @@ void CutHistDrawer(TString histfile)
 void CutFlowDrawer(TH1F* h_cutflow_sig, TH1F* h_cutflow_TTJets) {
 
 	int nsig = h_cutflow_sig -> GetBinContent(1);
-	int nTTJets = h_cutflow_TTJets -> GetBinContent(1);
-	
+	int nTTJets = h_cutflow_TTJets -> GetBinContent(1);	
 	h_cutflow_sig->Sumw2();
 	h_cutflow_TTJets->Sumw2();
 	h_cutflow_sig->Scale(1.0/nsig);
 	h_cutflow_TTJets->Scale(1.0/nTTJets);
+	
 	TCanvas *c0 = new TCanvas("c0", "", 800, 800);
 	TPad *pad_1 = new TPad("pad_1", "", 0, 0.3, 1, 1.0);
 	pad_1->SetBottomMargin(2);

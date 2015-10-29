@@ -16,7 +16,8 @@ using namespace std;
 
 void TauEffPlot(
 								//const TString signal = "/uscms/home/ztao/work/CU_ttH_WD/Outputs/CU_ttH_EDA_output_sig.root"
-								const TString singal = "/eos/uscms/store/user/ztao/ttHToTT_M125_13TeV_powheg_pythia8/ttHToTauTau_Ntuple_signal/151018_210744/0000/CU_ttH_EDA_output.root"
+								//const TString singal = "/eos/uscms/store/user/ztao/ttHToTT_M125_13TeV_powheg_pythia8/ttHToTauTau_Ntuple_signal/151018_210744/0000/CU_ttH_EDA_output.root"
+								const TString signal = "/eos/uscms/store/user/ztao/ttHToTT_M125_13TeV_powheg_pythia8/ttHToTauTau_Ntuple_signal/151022_185116/0000/CU_ttH_EDA_output.root"
 				)
 {
 	TFile* f_sig = new TFile(signal);
