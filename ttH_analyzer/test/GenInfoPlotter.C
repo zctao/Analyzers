@@ -19,6 +19,15 @@
 
 using namespace std;
 
+void GenHisto (const TString);
+void HistDrawer(const TString);
+
+void GenInfoPlotter ()
+{
+	GenHisto("/uscms/home/ztao/work/CU_ttH_WD/Outputs/CU_ttH_EDA_output_sigtmp.root");
+	HistDrawer("/uscms/home/ztao/work/CU_ttH_WD/Outputs/gen_histograms.root");
+}
+
 void GenHisto (const TString input_file = "/uscms/home/ztao/work/CU_ttH_WD/Outputs/CU_ttH_EDA_output_sigtmp.root") {
 	// Read ntuples
 	TFile* f = new TFile(input_file);
@@ -128,7 +137,7 @@ void GenHisto (const TString input_file = "/uscms/home/ztao/work/CU_ttH_WD/Outpu
  	// ----------------------------------------------------------------------------------------------------------------
 	//        * * * * *     S T A R T   O F   A C T U A L   R U N N I N G   O N   E V E N T S     * * * * *
 	// ----------------------------------------------------------------------------------------------------------------
-	
+	int debug_cnt = 0;
 	// event loop
 	for (int ievt=0; ievt<nevt; ++ievt) {
 		tree -> GetEntry(ievt);
@@ -149,6 +158,11 @@ void GenHisto (const TString input_file = "/uscms/home/ztao/work/CU_ttH_WD/Outpu
 		else {
 			imax = 1;
 			imin = 0;
+		}
+
+		// check if tau
+		if (fabs(gen_xDaug_pdgId->at(0))!=15 or fabs(gen_xDaug_pdgId->at(1))!=15) {
+			cout << "Oooooopppppssssss" << endl;
 		}
 		
 		tau1.SetPtEtaPhiM(gen_xDaug_pt->at(0), gen_xDaug_eta->at(0),
@@ -197,10 +211,6 @@ void GenHisto (const TString input_file = "/uscms/home/ztao/work/CU_ttH_WD/Outpu
 		// dR(top, Higgs)
 		float dR0, dR1;
 
-		/*TLorentzVector top1,top2, higgs;
-		top1.SetPtEtaPhiM(gen_top_pt->at(0), gen_top_eta->at(0), gen_top_phi->at(0), gen_top_mass->at(0));
-		top2.SetPtEtaPhiM(gen_top_pt->at(1), gen_top_eta->at(1), gen_top_phi->at(1), gen_top_mass->at(1));
-		*/
 		// LAB frame
 		dR0 = TMath::Sqrt(
 						  (gen_top_eta->at(0)-gen_higgs_eta->at(0))
@@ -225,6 +235,10 @@ void GenHisto (const TString input_file = "/uscms/home/ztao/work/CU_ttH_WD/Outpu
 			h_top_higgs_dRmin -> Fill(dR1);
 			h_top_higgs_dRmax -> Fill(dR0);
 		}
+		
+
+		// Cut of higgs eta
+		if (abs(gen_higgs_eta->at(0)) > 2.3) continue;
 
 		TLorentzVector top, antitop, higgs;
 
@@ -240,8 +254,8 @@ void GenHisto (const TString input_file = "/uscms/home/ztao/work/CU_ttH_WD/Outpu
 			antitop = higgs;
 		}
 
-		higgs = tau1+tau2;
-
+		higgs.SetPtEtaPhiM(gen_higgs_pt->at(0),gen_higgs_eta->at(0),gen_higgs_phi->at(0),gen_higgs_mass->at(0));
+		
 		TVector3 v_t, v_tbar, v_h;
 		v_t = top.Vect();
 		v_tbar = antitop.Vect();
@@ -251,6 +265,24 @@ void GenHisto (const TString input_file = "/uscms/home/ztao/work/CU_ttH_WD/Outpu
 		double cth_tbarh_lab = v_tbar.Dot(v_h) / TMath::Abs( v_tbar.Mag() * v_h.Mag() );
 		h_costH_costbarH_lab -> Fill(cth_th_lab,cth_tbarh_lab);
 
+		
+		// ---------------------------------------------------------------------
+		// Debug
+		if (cth_th_lab>0.95 and cth_tbarh_lab>0.95) {
+			++debug_cnt;
+			cout << "event #" << ievt << endl;
+			cout << "cth_th_lab :" << cth_th_lab << "\t" << "cth_tbarh_lab" << cth_tbarh_lab << endl;
+			cout << " " << "\t" << "Px" << "\t" << "Py" << "\t" << "Pz" << "\t" << "E" << "\t" << "eta" << "\t" << "phi" << "\t" << "cosTheta" << endl;
+			cout << "t " << "\t" << top.Px() << "\t" << top.Py() << "\t" << top.Pz() << "\t" << top.E() << "\t" << top.Eta() << "\t" << top.Phi() << "\t" << top.CosTheta() << endl;
+			cout << "tbar " << "\t" << antitop.Px() << "\t" << antitop.Py() << "\t" << antitop.Pz() << "\t" << antitop.E() << "\t" << antitop.Eta() << "\t" << antitop.Phi() << "\t" << antitop.CosTheta() << endl;
+			cout << "higgs " << "\t" << higgs.Px() << "\t" << higgs.Py() << "\t" << higgs.Pz() << "\t" << higgs.E() << "\t" << higgs.Eta() <<  "\t" << higgs.Phi() << "\t" << higgs.CosTheta() << endl;
+			//cout << "calculated :" << endl;
+			//cout << "cosTheta_th_lab :" << (top.Px()*higgs.Px()+top.Py()*higgs.Py()+top.Pz()*higgs.Pz())/(TMath::Sqrt(top.Px()*top.Px()+top.Py()*top.Py()+top.Pz()*top.Pz())*TMath::Sqrt(higgs.Px()*higgs.Px()+higgs.Py()*higgs.Py()+higgs.Pz()*higgs.Pz())) << endl;
+			//cout << "cosTheta_tbarh_lab :" << (antitop.Px()*higgs.Px()+antitop.Py()*higgs.Py()+antitop.Pz()*higgs.Pz())/(TMath::Sqrt(antitop.Px()*antitop.Px()+antitop.Py()*antitop.Py()+antitop.Pz()*antitop.Pz())*TMath::Sqrt(higgs.Px()*higgs.Px()+higgs.Py()*higgs.Py()+higgs.Pz()*higgs.Pz())) << endl;
+		}
+		// ---------------------------------------------------------------------
+		
+		
 		double dR_th_lab = higgs.DeltaR(top);
 		double dR_tbarh_lab = higgs.DeltaR(antitop);
 		h_dRtH_dRtbarH_lab -> Fill(dR_th_lab, dR_tbarh_lab);
@@ -296,6 +328,8 @@ void GenHisto (const TString input_file = "/uscms/home/ztao/work/CU_ttH_WD/Outpu
 		h_dphitH_dphitbarH_com -> Fill(dphi_th_lab, dphi_tbarh_com);
 		
 	} // end of event loop
+
+	cout << "debug_cnt :" << debug_cnt << endl;
 	
 	TFile histfile("/uscms/home/ztao/work/CU_ttH_WD/Outputs/gen_histograms.root", "RECREATE");
 	h_mtautau_mtop1 -> Write();
@@ -489,8 +523,3 @@ void HistDrawer(const TString input =
 	delete f;
 }
 
-void GenInfoPlotter ()
-{
-	GenHisto();
-	HistDrawer();
-}

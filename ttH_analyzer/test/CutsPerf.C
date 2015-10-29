@@ -33,8 +33,8 @@ int nTTJets = -99;
 void CutsPerf(
 							//const TString sig_file = "/uscms/home/ztao/work/CU_ttH_WD/Outputs/CU_ttH_EDA_output_sig.root",
 							//const TString bkg_file = "/uscms/home/ztao/work/CU_ttH_WD/Outputs/CU_ttH_EDA_output_TTJets.root"
-							const TString sig_file = "/eos/uscms/store/user/ztao/ttHToTT_M125_13TeV_powheg_pythia8/ttHToTauTau_Ntuple_signal/151018_210744/0000/CU_ttH_EDA_output.root",
-							const TString bkg_file = "/eos/uscms/store/user/ztao/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/ttHToTauTau_Ntuple_TTJets/151017_213809/0000/CU_ttH_EDA_output.root"
+							const TString sig_file = "/eos/uscms/store/user/ztao/ttHToTT_M125_13TeV_powheg_pythia8/ttHToTauTau_Ntuple_signal/151022_185116/0000/CU_ttH_EDA_output.root",
+							const TString bkg_file = "/eos/uscms/store/user/ztao/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/ttHToTauTau_Ntuple_TTJets/151022_143356/0000/CU_ttH_EDA_output.root"
 							)
 {
 	// Read ntuples
@@ -73,8 +73,8 @@ void CutsPerf(
 	cout << "Total number of TTJets sample processed :" << nevt_TTJets << endl;
 	
 	
-	//MakeROCPlot(tree_sig, nevt_sig, tree_TTJets, nevt_TTJets);
-	
+	MakeROCPlot(tree_sig, nevt_sig, tree_TTJets, nevt_TTJets);
+	/*
 	// Histograms
 	TH1F* h_njets_sig = new TH1F("h_njets_sig", "", 11, -0.5, 10.5);
 	TH1F* h_njets_TTJets = new TH1F("h_njets_TTJets", "", 11, -0.5, 10.5);
@@ -92,9 +92,9 @@ void CutsPerf(
 	TH1F* h_ntauID_TTJets = new TH1F("h_ntauID_TTJets", "", 4, -0.5, 3.5);
 	
 	CutHistFiller(tree_sig, h_njets_sig, h_nbtags_sig, h_ntauID_sig,
-								h_njetscut_sig, h_nbtagscut_sig);
+		      h_njetscut_sig, h_nbtagscut_sig);
 	CutHistFiller(tree_TTJets, h_njets_TTJets, h_nbtags_TTJets, h_ntauID_TTJets,
-								h_njetscut_TTJets, h_nbtagscut_TTJets);
+		      h_njetscut_TTJets, h_nbtagscut_TTJets);
 
 	TFile *outputfile = new TFile(
 					 "/uscms/home/ztao/work/CU_ttH_WD/Outputs/cuts_histograms.root",
@@ -117,8 +117,8 @@ void CutsPerf(
 	
 	// Draw Histograms
 	CutHistDrawer("/uscms/home/ztao/work/CU_ttH_WD/Outputs/cuts_histograms.root");
-	CutFlowDrawer(h_cutflow_sig, h_cutflow_TTJets);
-	
+        CutFlowDrawer(h_cutflow_sig, h_cutflow_TTJets);
+	*/
 }
 
 
@@ -228,10 +228,12 @@ void getEffArray(double ptmin /*=20*/, double ptmax, int nstep, double eff[4][20
 		
 	} // end of event loop
 	
+	delete tree;
+	
 }
 
 void MakeROCPlot(TTree *tree_sig, int nevt_sig, TTree* tree_bkg, int nevt_bkg)
-{
+{ // FIX ME
 	
 	// Define efficiency arrays
 	//const int nstep = 20;
@@ -338,20 +340,20 @@ void CutHistFiller(TTree* tree, TH1F* h_njets, TH1F* h_nbtags, TH1F* h_ntauID,
 	
 	// event loop
 	for (int ievt=0; ievt<nEntries; ++ievt) {
-		
-		tree -> GetEntry(ievt);
 
+		tree -> GetEntry(ievt);
+		
 		h_njets -> Fill(n_jets);
 		h_nbtags -> Fill(n_btags);
-
+		
 		for (int j = 0; j < n_jets+1; ++j) {
 			h_njetscut -> Fill(j);
 		}
-
-		for (int j = 0; j < n_btags+1; ++j) {
+		
+	 	for (int j = 0; j < n_btags+1; ++j) {
 			h_nbtagscut -> Fill(j);
 		}
-
+		
 		h_ntauID -> Fill(0);
 		if (n_taus_loose < 1) continue;
 		h_ntauID -> Fill(1);
