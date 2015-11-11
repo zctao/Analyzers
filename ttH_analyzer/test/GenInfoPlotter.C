@@ -265,11 +265,12 @@ void GenHisto (const TString input_file = "/uscms/home/ztao/work/CU_ttH_WD/Outpu
 		double cth_tbarh_lab = v_tbar.Dot(v_h) / TMath::Abs( v_tbar.Mag() * v_h.Mag() );
 		h_costH_costbarH_lab -> Fill(cth_th_lab,cth_tbarh_lab);
 
-		
+		/*
 		// ---------------------------------------------------------------------
 		// Debug
 		if (cth_th_lab>0.95 and cth_tbarh_lab>0.95) {
 			++debug_cnt;
+			std::cout << std::setprecision(2) << std::fixed;
 			cout << "event #" << ievt << endl;
 			cout << "cth_th_lab :" << cth_th_lab << "\t" << "cth_tbarh_lab" << cth_tbarh_lab << endl;
 			cout << " " << "\t" << "Px" << "\t" << "Py" << "\t" << "Pz" << "\t" << "E" << "\t" << "eta" << "\t" << "phi" << "\t" << "cosTheta" << endl;
@@ -279,9 +280,11 @@ void GenHisto (const TString input_file = "/uscms/home/ztao/work/CU_ttH_WD/Outpu
 			//cout << "calculated :" << endl;
 			//cout << "cosTheta_th_lab :" << (top.Px()*higgs.Px()+top.Py()*higgs.Py()+top.Pz()*higgs.Pz())/(TMath::Sqrt(top.Px()*top.Px()+top.Py()*top.Py()+top.Pz()*top.Pz())*TMath::Sqrt(higgs.Px()*higgs.Px()+higgs.Py()*higgs.Py()+higgs.Pz()*higgs.Pz())) << endl;
 			//cout << "cosTheta_tbarh_lab :" << (antitop.Px()*higgs.Px()+antitop.Py()*higgs.Py()+antitop.Pz()*higgs.Pz())/(TMath::Sqrt(antitop.Px()*antitop.Px()+antitop.Py()*antitop.Py()+antitop.Pz()*antitop.Pz())*TMath::Sqrt(higgs.Px()*higgs.Px()+higgs.Py()*higgs.Py()+higgs.Pz()*higgs.Pz())) << endl;
+			cout << endl;
 		}
-		// ---------------------------------------------------------------------
 		
+		// ---------------------------------------------------------------------
+		*/
 		
 		double dR_th_lab = higgs.DeltaR(top);
 		double dR_tbarh_lab = higgs.DeltaR(antitop);
@@ -295,7 +298,7 @@ void GenHisto (const TString input_file = "/uscms/home/ztao/work/CU_ttH_WD/Outpu
 		h_dphi_deta_th_lab -> Fill(dphi_th_lab, deta_th_lab);
 		h_dphi_deta_tbarh_lab -> Fill(dphi_tbarh_lab, deta_tbarh_lab);
 
-	  h_detatH_detatbarH_lab -> Fill(deta_th_lab, deta_tbarh_lab);
+		h_detatH_detatbarH_lab -> Fill(deta_th_lab, deta_tbarh_lab);
 		h_dphitH_dphitbarH_lab -> Fill(dphi_th_lab, dphi_tbarh_lab);
 		
 		// boost into ttH COM frame
@@ -304,12 +307,13 @@ void GenHisto (const TString input_file = "/uscms/home/ztao/work/CU_ttH_WD/Outpu
 		antitop.Boost(-v_com);
 		higgs.Boost(-v_com);
 		
-		v_t = top.Vect();
-		v_tbar = antitop.Vect();
-		v_h = higgs.Vect();
+		TVector3 v_t_com, v_tbar_com, v_h_com;
+		v_t_com = top.Vect();
+		v_tbar_com = antitop.Vect();
+		v_h_com = higgs.Vect();
 
-		double cth_th_com =  v_t.Dot(v_h) / TMath::Abs( v_t.Mag() * v_h.Mag() );
-		double cth_tbarh_com = v_tbar.Dot(v_h) / TMath::Abs( v_tbar.Mag() * v_h.Mag() );
+		double cth_th_com =  v_t_com.Dot(v_h_com) / TMath::Abs( v_t_com.Mag() * v_h_com.Mag() );
+		double cth_tbarh_com = v_tbar_com.Dot(v_h_com) / TMath::Abs( v_tbar_com.Mag() * v_h_com.Mag() );
 		h_costH_costbarH_com -> Fill(cth_th_com,cth_tbarh_com);
 
 		double dR_th_com = higgs.DeltaR(top);
@@ -324,8 +328,32 @@ void GenHisto (const TString input_file = "/uscms/home/ztao/work/CU_ttH_WD/Outpu
 		h_dphi_deta_th_com -> Fill(dphi_th_com, deta_th_com);
 		h_dphi_deta_tbarh_com -> Fill(dphi_tbarh_com, deta_tbarh_com);
 
-		h_detatH_detatbarH_com -> Fill(deta_th_lab, deta_tbarh_com);
-		h_dphitH_dphitbarH_com -> Fill(dphi_th_lab, dphi_tbarh_com);
+		h_detatH_detatbarH_com -> Fill(deta_th_com, deta_tbarh_com);
+		h_dphitH_dphitbarH_com -> Fill(dphi_th_com, dphi_tbarh_com);
+		
+		// ---------------------------------------------------------------------------------
+		// Debug 
+		if (dR_th_com > 3. and dR_tbarh_com > 3.) {
+		  ++debug_cnt;              
+		  std::cout << std::setprecision(2) << std::fixed;
+		  cout << "event #" << ievt << endl;                                                                                                                                                
+		  cout << "cth_th_lab :" << cth_th_lab << endl;
+		  cout << "cth_tbarh_lab :" << cth_tbarh_lab << endl;                                                                                         
+		  cout << "dR(t,h)_lab :" << dR_th_lab << endl;
+		  cout << "dR(tbar,h)_lab :" << dR_tbarh_lab << endl;;
+		  cout << "_____COM______" << endl;		  
+		  cout << " " << "\t" << "Px" << "\t" << "Py" << "\t" << "Pz" << "\t" << "E" << "\t" << "eta" << "\t" << "phi" << "\t" << "cosTheta" << endl;                                       
+		  cout << "t " << "\t" << top.Px() << "\t" << top.Py() << "\t" << top.Pz() << "\t" << top.E() << "\t" << top.Eta() << "\t" << top.Phi() << "\t" << top.CosTheta() << endl;          
+		  cout << "tbar " << "\t" << antitop.Px() << "\t" << antitop.Py() << "\t" << antitop.Pz() << "\t" << antitop.E() << "\t" << antitop.Eta() << "\t" << antitop.Phi() << "\t" << antitop.CosTheta() << endl;                                                                                                                                                                                    
+		  cout << "higgs " << "\t" << higgs.Px() << "\t" << higgs.Py() << "\t" << higgs.Pz() << "\t" << higgs.E() << "\t" << higgs.Eta() <<  "\t" << higgs.Phi() << "\t" << higgs.CosTheta() << endl;
+		  cout << "cth_th_com :" << cth_th_com << endl;
+		  cout << "cth_tbarh_com :" << cth_tbarh_com << endl;
+                  cout << "dR(t,h)_com :" << dR_th_com << endl;
+                  cout << "dR(tbar,h)_com :" << dR_tbarh_com << endl;;
+		  cout << endl;
+		  
+		}
+		// ---------------------------------------------------------------------------------
 		
 	} // end of event loop
 

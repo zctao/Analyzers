@@ -40,9 +40,9 @@ process.ak4PFchsL1L2L3 = cms.ESProducer("JetCorrectionESChain",
 
 process.source = cms.Source("PoolSource",
 	fileNames = cms.untracked.vstring(
-        #'file:/eos/uscms/store/user/ztao/ttHToTauTau_M125_13TeV_Spring15_miniAOD.root'
+        'file:/eos/uscms/store/user/ztao/ttHToTauTau_M125_13TeV_Spring15_miniAOD.root'
         #'file:/eos/uscms/store/user/ztao/ttHToTauTau_M125_13TeV_Spring15_AOD.root'
-        'file:/eos/uscms/store/user/ztao/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_miniAOD.root'
+        #'file:/eos/uscms/store/user/ztao/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_miniAOD.root'
 
         #'/store/mc/RunIISpring15DR74/ttHToTT_M125_13TeV_powheg_pythia8/MINIAODSIM/Asympt25ns_MCRUN2_74_V9-v2/20000/0249345F-032D-E511-A21D-0025905C95F8.root'
         #/store/mc/RunIISpring15DR74/ttHToTT_M125_13TeV_powheg_pythia8/AODSIM/Asympt25ns_MCRUN2_74_V9-v2/20000/008B5DD7-EB2B-E511-8E73-0025904C63F8.root
@@ -53,7 +53,7 @@ process.source = cms.Source("PoolSource",
 	)
 )
 
-process.ttHsyncExercise = cms.EDAnalyzer('CU_ttH_EDA',
+process.ttHtautau = cms.EDAnalyzer('CU_ttH_EDA',
         # Analysis type choices: 'lepton+jet', 'dilepton', 'taus_lepton+jet', 'taus_dilepton'
         analysis_type = cms.string("taus_dilepton"),
         # Generic
@@ -90,8 +90,8 @@ process.ttHsyncExercise = cms.EDAnalyzer('CU_ttH_EDA',
         min_bjet_pT = cms.double(20),
         max_jet_eta = cms.double(2.5),
         max_bjet_eta = cms.double(2.5),
-        min_njets = cms.int32(0),
-        min_nbtags = cms.int32(0),
+        min_njets = cms.int32(2),
+        min_nbtags = cms.int32(1),
         # Jets
         jet_corrector = cms.string('ak4PFchsL1L2L3'),
         # MiniAODhelper
@@ -103,11 +103,11 @@ process.ttHsyncExercise = cms.EDAnalyzer('CU_ttH_EDA',
 process.TFileService = cms.Service("TFileService",
 	#fileName = cms.string('Outputs/CU_ttH_EDA_output_sig.root')
         #fileName = cms.string('Outputs/CU_ttH_EDA_output_TTJets.root')
-        fileName = cms.string('CU_ttH_EDA_output.root')
+        fileName = cms.string('CU_ttH_EDA_output_test.root')
 )
 
 
-process.p = cms.Path(process.ttHsyncExercise)
+process.p = cms.Path(process.ttHtautau)
 
 
 

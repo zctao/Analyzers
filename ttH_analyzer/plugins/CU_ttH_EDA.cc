@@ -138,12 +138,14 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	/// Run checks on event containers via their handles
 	Check_triggers(handle.triggerResults, local);
 	Check_filters(handle.filterResults);
-	Check_vertices_set_MAODhelper(handle.vertices);
+
+	Check_vertices_set_MAODhelper(handle.vertices, pv);
 	// 	Check_beam_spot(BS);	// dumb implementation
 
 	// Setting rho
 	auto rho = handle.srcRho;
 	miniAODhelper.SetRho(*rho);
+
 	
 	/// Get and set miniAODhelper's jet corrector from the event setup
 	miniAODhelper.SetJetCorrector(
@@ -156,39 +158,46 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		h_hlt->Fill(0., 1);
 		h_flt->Fill(0., 1);
 	}
-
-	/// Lepton selection
-	local.e_selected = miniAODhelper.GetSelectedElectrons(
-		*(handle.electrons), min_tight_lepton_pT, electronID::electronPhys14M);
-	local.mu_selected = miniAODhelper.GetSelectedMuons(
+	
+	/// Lepton pre-selection
+	local.pre_mu = miniAODhelper.GetSelectedMuons(
 		*(handle.muons), min_tight_lepton_pT, muonID::muonTight);
-	local.tau_selected_noniso = miniAODhelper.GetSelectedTaus(
-		*(handle.taus),min_tau_pT, tau::nonIso);
-	local.tau_selected_loose = miniAODhelper.GetSelectedTaus(
+	
+	std::vector<pat::Electron> tmp_e = miniAODhelper.GetSelectedElectrons(
+		*(handle.electrons), min_tight_lepton_pT, electronID::electronSpring15T);
+	local.pre_e = removeOverlap(tmp_e, local.pre_mu, 0.05);
+	
+	/// Tau selection
+	local.noniso_tau_selected = miniAODhelper.GetSelectedTaus(
+		*(handle.taus),	min_tau_pT, tau::nonIso);
+	local.loose_tau_selected = miniAODhelper.GetSelectedTaus(
 		*(handle.taus),	min_tau_pT, tau::loose);
-	local.tau_selected_medium = miniAODhelper.GetSelectedTaus(
-		*(handle.taus),	min_tau_pT, tau::medium);
-	local.tau_selected_tight = miniAODhelper.GetSelectedTaus(
-		*(handle.taus),	min_tau_pT, tau::tight);
-
+	local.medium_tau_selected = miniAODhelper.GetSelectedTaus(
+		local.loose_tau_selected,	min_tau_pT, tau::medium);
+	local.tight_tau_selected = miniAODhelper.GetSelectedTaus(
+		local.medium_tau_selected,	min_tau_pT, tau::tight);
+	
+	// Remove overlap between taus and leptons
+	local.e_selected = removeOverlap(local.pre_e, local.loose_tau_selected, 0.15);
+	local.mu_selected = removeOverlap(local.pre_mu, local.loose_tau_selected, 0.15);
+	
 	local.n_electrons = static_cast<int>(local.e_selected.size());
 	local.n_muons = static_cast<int>(local.mu_selected.size());
-	local.n_taus_noniso = static_cast<int>(local.tau_selected_noniso.size());
-	local.n_taus_loose = static_cast<int>(local.tau_selected_loose.size());
-	local.n_taus_medium = static_cast<int>(local.tau_selected_medium.size());
-	local.n_taus_tight = static_cast<int>(local.tau_selected_tight.size());
+	local.n_loose_taus = static_cast<int>(local.loose_tau_selected.size());
+	local.n_medium_taus = static_cast<int>(local.medium_tau_selected.size());
+	local.n_tight_taus = static_cast<int>(local.tight_tau_selected.size());
 
 	/// Sort leptons by pT
 	local.mu_selected_sorted = miniAODhelper.GetSortedByPt(local.mu_selected);
 	local.e_selected_sorted = miniAODhelper.GetSortedByPt(local.e_selected);
-	local.tau_selected_sorted_noniso
-		= miniAODhelper.GetSortedByPt(local.tau_selected_noniso);
-	local.tau_selected_sorted_loose
-		= miniAODhelper.GetSortedByPt(local.tau_selected_loose);
-	local.tau_selected_sorted_medium
-		= miniAODhelper.GetSortedByPt(local.tau_selected_medium);
-	local.tau_selected_sorted_tight
-		= miniAODhelper.GetSortedByPt(local.tau_selected_tight);
+	local.noniso_tau_selected_sorted
+		= miniAODhelper.GetSortedByPt(local.noniso_tau_selected);
+	local.loose_tau_selected_sorted
+		= miniAODhelper.GetSortedByPt(local.loose_tau_selected);
+	local.medium_tau_selected_sorted
+		= miniAODhelper.GetSortedByPt(local.medium_tau_selected);
+	local.tight_tau_selected_sorted
+		= miniAODhelper.GetSortedByPt(local.tight_tau_selected);
 	
 	/// Jet selection
 	local.jets_raw = miniAODhelper.GetUncorrectedJets(handle.jets);
@@ -224,7 +233,6 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		handle.METs->front(); // miniAODhelper.GetCorrectedMET( METs.at(0),
 							  // pfJets_forMET, iSysType );
 
-
 	Get_GenInfo(handle.MC_particles, handle.MC_packed, gen);  // MC Truth
 	
 	/// Check tags, fill hists, print events
@@ -244,17 +252,17 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		
 		bool draw_cut_flow = true;   // Todo: move this flag to config file
 		bool cut_passed = pass_multi_cuts(local, cuts, draw_cut_flow, h_tth_syncex_dileptauh, 1);
-		
+
 		if (cut_passed) {
-		  Write_to_Tree(gen, local, eventTree);
+			Make_Ntuple(gen, local, eventTree);
 		}
 	}
-
+	
 	if (analysis_type == Analyze_taus_lepton_jet) {
 		bool draw_cut_flow = true;   // Todo: move this flag to config file
 		bool cut_passed = pass_multi_cuts(local, cuts, draw_cut_flow, h_tth_syncex_eleditauh, 1);
 		if (cut_passed) {
-		  Write_to_Tree(gen, local, eventTree);
+			Make_Ntuple(gen, local, eventTree);
 		}
 	}
 	

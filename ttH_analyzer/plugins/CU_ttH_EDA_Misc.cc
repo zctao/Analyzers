@@ -171,13 +171,14 @@ int CU_ttH_EDA::Check_filters(edm::Handle<edm::TriggerResults> filterResults)
 }
 
 int CU_ttH_EDA::Check_vertices_set_MAODhelper(
-	edm::Handle<reco::VertexCollection> vertices)
+			    edm::Handle<reco::VertexCollection> vertices,
+			    reco::Vertex vertex)
 {
 	/// Primary vertex handling
 	if (!vertices.isValid())
 		return 1;
 
-	reco::Vertex vertex;
+	//reco::Vertex vertex;
 	int n_PVs = 0;
 
 	for (reco::VertexCollection::const_iterator vtx = vertices->begin();
@@ -1027,10 +1028,10 @@ bool CU_ttH_EDA::pass_cut(CU_ttH_EDA_event_vars &local, string cut)
 		return (local.n_muons >= 1);
 	
 	else if (cut == ">= 1 tau")
-		return (local.n_taus_noniso >= 1);
+		return (local.n_loose_taus >= 1);
 
 	else if (cut == ">= 2 taus")
-		return (local.n_taus_noniso >= 2);
+		return (local.n_loose_taus >= 2);
 	
 	else if (cut == ">= 2 leptons")
 		return (local.n_electrons + local.n_muons >=2);
@@ -1050,21 +1051,6 @@ bool CU_ttH_EDA::pass_cut(CU_ttH_EDA_event_vars &local, string cut)
 			return (charges[0]==charges[1]);
 		else
 			return false;
-	}
-
-	else if (cut == "100<mTT<150") {
-		double mTT = -99;
-		TLorentzVector tau1,tau2;
-		tau1.SetPtEtaPhiM(local.tau_selected_sorted_loose[0].pt(),
-						  local.tau_selected_sorted_loose[0].eta(),
-						  local.tau_selected_sorted_loose[0].phi(),
-						  local.tau_selected_sorted_loose[0].mass());
-		tau2.SetPtEtaPhiM(local.tau_selected_sorted_loose[1].pt(),
-						  local.tau_selected_sorted_loose[1].eta(),
-						  local.tau_selected_sorted_loose[1].phi(),
-						  local.tau_selected_sorted_loose[1].mass());
-		mTT = (tau1+tau2).M();
-		return (mTT>100 and mTT<150);
 	}
 	
 	else if (cut == "min_njets")
@@ -1129,7 +1115,7 @@ void CU_ttH_EDA::Fill_Tau_Eff_Hist(CU_ttH_EDA_gen_vars &gen,
 	h_num_genHadTau -> Fill(nGenTau);
 
 	int nTau_noniso = 0;
-	for ( auto & itau : local.tau_selected_noniso ) {
+	for ( auto & itau : local.noniso_tau_selected ) {
 		const reco::GenParticle* genTau = getGenTau(itau);
 		if (!genTau) continue;  // check if there is associated genTau
 		if ( genTau->pt() < 20 or abs(genTau->eta()) > 2.3 )
@@ -1143,7 +1129,7 @@ void CU_ttH_EDA::Fill_Tau_Eff_Hist(CU_ttH_EDA_gen_vars &gen,
 	h_num_selectedTau_noniso -> Fill(nTau_noniso);
 
 	int nTau_loose = 0;
-	for ( auto & itau : local.tau_selected_loose ) {
+	for ( auto & itau : local.loose_tau_selected ) {
 		const reco::GenParticle* genTau = getGenTau(itau);
 		if (!genTau) continue;  // check if there is associated genTau
 		if ( genTau->pt() < 20 or abs(genTau->eta()) > 2.3 )
@@ -1157,7 +1143,7 @@ void CU_ttH_EDA::Fill_Tau_Eff_Hist(CU_ttH_EDA_gen_vars &gen,
 	h_num_selectedTau_loose -> Fill(nTau_loose);
 	
 	int nTau_medium = 0;
-	for ( auto & itau : local.tau_selected_medium ) {
+	for ( auto & itau : local.medium_tau_selected ) {
 		const reco::GenParticle* genTau = getGenTau(itau);
 		if (!genTau) continue;  // check if there is associated genTau
 		if ( genTau->pt() < 20 or abs(genTau->eta()) > 2.3 )
@@ -1171,7 +1157,7 @@ void CU_ttH_EDA::Fill_Tau_Eff_Hist(CU_ttH_EDA_gen_vars &gen,
 	h_num_selectedTau_medium -> Fill(nTau_medium);
 	
 	int nTau_tight = 0;
-	for ( auto & itau : local.tau_selected_tight ) {
+	for ( auto & itau : local.tight_tau_selected ) {
 		const reco::GenParticle* genTau = getGenTau(itau);
 		if (!genTau) continue;  // check if there is associated genTau
 		if ( genTau->pt() < 20 or abs(genTau->eta()) > 2.3 )
@@ -1374,212 +1360,301 @@ int CU_ttH_EDA::tau_classifier(std::vector<const reco::Candidate*>& stabledaught
 }
 
 //
-void CU_ttH_EDA::Write_to_Tree(CU_ttH_EDA_gen_vars &gen, CU_ttH_EDA_event_vars &local, TTree *eventTree)
+void CU_ttH_EDA::Make_Ntuple(CU_ttH_EDA_gen_vars &gen, CU_ttH_EDA_event_vars &local, TTree *eventTree)
 {
 	// clear variables
+		
 	n_electrons = -99;
 	n_muons = -99;
-	n_taus_loose = -99;
-	n_taus_medium = -99;
-	n_taus_tight = -99;
+	n_loose_taus = -99;
+	n_loose_taus = -99;
+	n_tight_taus = -99;
 	n_jets = -99;
 	n_btags = -99;
 
+	//electrons.clear();
 	e_pt.clear();
 	e_eta.clear();
 	e_phi.clear();
 	e_mass.clear();
+	e_charges.clear();
+	e_vtx_dz.clear();
+	e_vtx_dxy.clear();
+	e_vz.clear();
+	e_vr.clear();
 
+	//muons.clear();
 	mu_pt.clear();
 	mu_eta.clear();
 	mu_phi.clear();
 	mu_mass.clear();
+	mu_charges.clear();
+	mu_vtx_dz.clear();
+	mu_vtx_dxy.clear();
+	mu_vz.clear();
+	mu_vr.clear();
 
-	tau_pt_noniso.clear();
-	tau_eta_noniso.clear();
-	tau_phi_noniso.clear();
-	tau_mass_noniso.clear();
-	tau_pt_loose.clear();
-	tau_eta_loose.clear();
-	tau_phi_loose.clear();
-	tau_mass_loose.clear();
-	tau_pt_medium.clear();
-	tau_eta_medium.clear();
-	tau_phi_medium.clear();
-	tau_mass_medium.clear();
-	tau_pt_tight.clear();
-	tau_eta_tight.clear();
-	tau_phi_tight.clear();
-	tau_mass_tight.clear();
-	
+	//loose_taus.clear();
+	loose_tau_pt.clear();
+	loose_tau_eta.clear();
+	loose_tau_phi.clear();
+	loose_tau_mass.clear();
+	Ltau_charges.clear();
+	Ltau_vtx_dz.clear();
+	Ltau_vtx_dxy.clear();
+	Ltau_vr.clear();
+	Ltau_vz.clear();
+	//medium_taus.clear();
+	medium_tau_pt.clear();
+	medium_tau_eta.clear();
+	medium_tau_phi.clear();
+	medium_tau_mass.clear();
+	Mtau_charges.clear();
+	Mtau_vtx_dz.clear();
+	Mtau_vtx_dxy.clear();
+	Mtau_vr.clear();
+	Mtau_vz.clear();
+	//tight_taus.clear();
+	tight_tau_pt.clear();
+	tight_tau_eta.clear();
+	tight_tau_phi.clear();
+	tight_tau_mass.clear();
+	Ttau_charges.clear();
+	Ttau_vtx_dz.clear();
+	Ttau_vtx_dxy.clear();
+	Ttau_vr.clear();
+	Ttau_vz.clear();
+
+	//jets.clear();
 	jet_pt.clear();
 	jet_eta.clear();
 	jet_phi.clear();
 	jet_mass.clear();
-
+	jet_charges.clear();
+	jet_vtx_dz.clear();
+	jet_vtx_dxy.clear();
+	jet_vz.clear();
+	jet_vr.clear();
+	
+	//bjets.clear();
 	bjet_pt.clear();
 	bjet_eta.clear();
 	bjet_phi.clear();
 	bjet_mass.clear();
-	
+	bjet_charges.clear();
+	bjet_vtx_dz.clear();
+	bjet_vtx_dxy.clear();
+	bjet_vz.clear();
+	bjet_vr.clear();
+
 	gen_x_pdgId.clear();
 	gen_x_status.clear();
+	//gen_x.clear();
 	gen_x_pt.clear();
 	gen_x_eta.clear();
 	gen_x_phi.clear();
 	gen_x_mass.clear();
-
+	gen_x_vr.clear();
+	gen_x_vz.clear();
+	
 	gen_top_pdgId.clear();
 	gen_top_status.clear();
+	//gen_top.clear();
 	gen_top_pt.clear();
 	gen_top_eta.clear();
 	gen_top_phi.clear();
 	gen_top_mass.clear();
-
+	gen_top_vr.clear();
+	gen_top_vz.clear();
+	
 	gen_xDaug_pdgId.clear();
 	gen_xDaug_status.clear();
+	//gen_xDaug.clear();
 	gen_xDaug_pt.clear();
 	gen_xDaug_eta.clear();
 	gen_xDaug_phi.clear();
 	gen_xDaug_mass.clear();
-
+	gen_xDaug_vr.clear();
+	gen_xDaug_vz.clear();
+	
 	gen_tau_class.clear();
 
 	gen_topDaug_pdgId.clear();
 	gen_topDaug_status.clear();
+	//gen_topDaug.clear();
 	gen_topDaug_pt.clear();
 	gen_topDaug_eta.clear();
 	gen_topDaug_phi.clear();
-	gen_topDaug_mass.clear();
-
+	gen_topDaug_vr.clear();
+	gen_topDaug_vz.clear();
+	
 	gen_wDaug_pdgId.clear();
 	gen_wDaug_status.clear();
+	//gen_wDaug.clear();
 	gen_wDaug_pt.clear();
 	gen_wDaug_eta.clear();
 	gen_wDaug_phi.clear();
 	gen_wDaug_mass.clear();
+	gen_wDaug_vr.clear();
+	gen_wDaug_vz.clear();
 
 	// Number of tags per event
 	n_electrons = local.n_electrons;
 	n_muons = local.n_muons;
-	n_taus_loose = local.n_taus_loose;
-	n_taus_medium = local.n_taus_medium;
-	n_taus_tight = local.n_taus_tight;
+	n_loose_taus = local.n_loose_taus;
+	n_medium_taus = local.n_medium_taus;
+	n_tight_taus = local.n_tight_taus;
 	n_jets = local.n_jets;
 	n_btags = local.n_btags;
 
 	// electrons
-	for (size_t i = 0; i < local.e_selected_sorted.size(); ++i) {
-		e_pt.push_back(local.e_selected_sorted[i].pt());
-		e_eta.push_back(local.e_selected_sorted[i].eta());
-		e_phi.push_back(local.e_selected_sorted[i].phi());
-		e_mass.push_back(local.e_selected_sorted[i].mass());
+	for (auto & ele : local.e_selected_sorted) {
+		e_pt.push_back(ele.pt());
+		e_eta.push_back(ele.eta());
+		e_phi.push_back(ele.phi());
+		e_mass.push_back(ele.mass());
+		e_charges.push_back(ele.charge());
+		if ( ele.gsfTrack().isAvailable() ) {
+			e_vtx_dz.push_back( ele.gsfTrack()->dz(pv.position()) );
+			e_vtx_dxy.push_back( ele.gsfTrack()->dxy(pv.position()) );
+		}
+		e_vz.push_back(ele.vz());
+		e_vr.push_back( sqrt(ele.vx()*ele.vx()+ele.vy()*ele.vy()) );
 	}
 
 	// muons
-	for (size_t i = 0; i < local.mu_selected_sorted.size(); ++i) {
-		mu_pt.push_back(local.mu_selected_sorted[i].pt());
-		mu_eta.push_back(local.mu_selected_sorted[i].eta());
-		mu_phi.push_back(local.mu_selected_sorted[i].phi());
-		mu_mass.push_back(local.mu_selected_sorted[i].mass());
+	for (auto & mu : local.mu_selected_sorted) {
+		mu_pt.push_back(mu.pt());
+		mu_eta.push_back(mu.eta());
+		mu_phi.push_back(mu.phi());
+		mu_mass.push_back(mu.mass());
+		mu_charges.push_back(mu.charge());
+		if ( mu.muonBestTrack().isAvailable() ) {
+			mu_vtx_dz.push_back( mu.muonBestTrack()->dz(pv.position()) );
+			mu_vtx_dxy.push_back( mu.muonBestTrack()->dxy(pv.position()) );
+			// innerTrack? GlobalTrack?
+		}
+		mu_vz.push_back(mu.vz());
+		mu_vr.push_back( sqrt(mu.vx()*mu.vx()+mu.vy()*mu.vy()) );
 	}
 
 	// taus
-	for (auto & tau : local.tau_selected_sorted_noniso) {
-		tau_pt_noniso.push_back(tau.pt());
-		tau_eta_noniso.push_back(tau.eta());
-		tau_phi_noniso.push_back(tau.phi());
-		tau_mass_noniso.push_back(tau.mass());
-	}
-	
-	for (auto & tau : local.tau_selected_sorted_loose) {
-		tau_pt_loose.push_back(tau.pt());
-		tau_eta_loose.push_back(tau.eta());
-		tau_phi_loose.push_back(tau.phi());
-		tau_mass_loose.push_back(tau.mass());
+	for (auto & tau : local.loose_tau_selected_sorted) {
+	    loose_tau_pt.push_back(tau.pt());
+		loose_tau_eta.push_back(tau.eta());
+		loose_tau_phi.push_back(tau.phi());
+		loose_tau_mass.push_back(tau.mass());
+		Ltau_charges.push_back(tau.charge());
+		// tau vertex
+		Ltau_vz.push_back(tau.vz());
+		Ltau_vr.push_back( sqrt(tau.vx()*tau.vx()+tau.vy()*tau.vy()) );
 	}
 
-	for (auto & tau : local.tau_selected_sorted_medium) {
-		tau_pt_medium.push_back(tau.pt());
-		tau_eta_medium.push_back(tau.eta());
-		tau_phi_medium.push_back(tau.phi());
-		tau_mass_medium.push_back(tau.mass());
+	for (auto & tau : local.medium_tau_selected_sorted) {
+	    medium_tau_pt.push_back(tau.pt());
+		medium_tau_eta.push_back(tau.eta());
+		medium_tau_phi.push_back(tau.phi());
+		medium_tau_mass.push_back(tau.mass());
+		Mtau_charges.push_back(tau.charge());
+		Mtau_vz.push_back(tau.vz());
+		Mtau_vr.push_back( sqrt(tau.vx()*tau.vx()+tau.vy()*tau.vy()) );
 	}
 
-	for (auto & tau : local.tau_selected_sorted_tight) {
-		tau_pt_tight.push_back(tau.pt());
-		tau_eta_tight.push_back(tau.eta());
-		tau_phi_tight.push_back(tau.phi());
-		tau_mass_tight.push_back(tau.mass());
+	for (auto & tau : local.tight_tau_selected_sorted) {
+		tight_tau_pt.push_back(tau.pt());
+		tight_tau_eta.push_back(tau.eta());
+		tight_tau_phi.push_back(tau.phi());
+		tight_tau_mass.push_back(tau.mass());
+		Ttau_charges.push_back(tau.charge());
+		Ttau_vz.push_back(tau.vz());
+		Ttau_vr.push_back( sqrt(tau.vx()*tau.vx()+tau.vy()*tau.vy()) );
 	}
 
 	// jets
-	for (size_t i = 0; i < local.jets_selected_sorted.size(); ++i) {
-		jet_pt.push_back(local.jets_selected_sorted[i].pt());
-		jet_eta.push_back(local.jets_selected_sorted[i].eta());
-		jet_phi.push_back(local.jets_selected_sorted[i].phi());
-		jet_mass.push_back(local.jets_selected_sorted[i].mass());
+	for (auto & jet : local.jets_selected_sorted) {
+		jet_pt.push_back(jet.pt());
+		jet_eta.push_back(jet.eta());
+		jet_phi.push_back(jet.phi());
+		jet_mass.push_back(jet.mass());
+		jet_charges.push_back(jet.jetCharge());
+		// jet vertex
+		jet_vz.push_back(jet.vz());
+		jet_vr.push_back( sqrt(jet.vx()*jet.vx()+jet.vy()*jet.vy()) );
 	}
 
 	// b-jets
-	for (size_t i = 0; i < local.jets_selected_tag_sorted.size(); ++i) {
-		bjet_pt.push_back(local.jets_selected_tag_sorted[i].pt());
-		bjet_eta.push_back(local.jets_selected_tag_sorted[i].eta());
-		bjet_phi.push_back(local.jets_selected_tag_sorted[i].phi());
-		bjet_mass.push_back(local.jets_selected_tag_sorted[i].mass());
+	for (auto & bjet : local.jets_selected_tag_sorted) {
+		bjet_pt.push_back(bjet.pt());
+		bjet_eta.push_back(bjet.eta());
+		bjet_phi.push_back(bjet.phi());
+		bjet_mass.push_back(bjet.mass());
+		// b vertex
+		bjet_vz.push_back(bjet.vz());
+		bjet_vr.push_back( sqrt(bjet.vx()*bjet.vx()+bjet.vy()*bjet.vy()) );
 	}
-	
+
 	// GenParticle Information
 	// mediators
-	for (size_t i = 0; i < gen.x.size(); ++i) {
-		gen_x_pdgId.push_back(gen.x[i].pdgId());
-		gen_x_status.push_back(gen.x[i].status());
-		gen_x_pt.push_back(gen.x[i].pt());
-		gen_x_eta.push_back(gen.x[i].eta());
-		gen_x_phi.push_back(gen.x[i].phi());
-		gen_x_mass.push_back(gen.x[i].mass());
+	for (auto & mediator : gen.x) {
+		gen_x_pdgId.push_back(mediator.pdgId());
+		gen_x_status.push_back(mediator.status());
+		gen_x_pt.push_back(mediator.pt());
+		gen_x_eta.push_back(mediator.eta());
+		gen_x_phi.push_back(mediator.phi());
+		gen_x_mass.push_back(mediator.mass());
+		gen_x_vr.push_back(sqrt(mediator.vx()*mediator.vx()
+								+mediator.vy()*mediator.vy()));
+		gen_x_vz.push_back(mediator.vz());
 	}
 
 	// tops
-	for (size_t i = 0; i < gen.tops.size(); ++i) {
-		gen_top_pdgId.push_back(gen.tops[i].pdgId());
-		gen_top_status.push_back(gen.tops[i].status());
-		gen_top_pt.push_back(gen.tops[i].pt());
-		gen_top_eta.push_back(gen.tops[i].eta());
-		gen_top_phi.push_back(gen.tops[i].phi());
-		gen_top_mass.push_back(gen.tops[i].mass());
+	for (auto & top : gen.tops) {
+		gen_top_pdgId.push_back(top.pdgId());
+		gen_top_status.push_back(top.status());
+		gen_top_pt.push_back(top.pt());
+		gen_top_eta.push_back(top.eta());
+		gen_top_phi.push_back(top.phi());
+		gen_top_mass.push_back(top.mass());
+		gen_top_vr.push_back(sqrt(top.vx()*top.vx()+top.vy()*top.vy()));
+		gen_top_vz.push_back(top.vz());
 	}
 
 	// mediator daughters
-	for (size_t i = 0; i < gen.x_daughters.size(); ++i) {
-		gen_xDaug_pdgId.push_back(gen.x_daughters[i].pdgId());
-		gen_xDaug_status.push_back(gen.x_daughters[i].status());
-		gen_xDaug_pt.push_back(gen.x_daughters[i].pt());
-		gen_xDaug_eta.push_back(gen.x_daughters[i].eta());
-		gen_xDaug_phi.push_back(gen.x_daughters[i].phi());
-		gen_xDaug_mass.push_back(gen.x_daughters[i].mass());
+	for (auto & xdaug : gen.x_daughters) {
+		gen_xDaug_pdgId.push_back(xdaug.pdgId());
+		gen_xDaug_status.push_back(xdaug.status());
+		gen_xDaug_pt.push_back(xdaug.pt());
+		gen_xDaug_eta.push_back(xdaug.eta());
+		gen_xDaug_phi.push_back(xdaug.phi());
+		gen_xDaug_mass.push_back(xdaug.mass());
+		gen_xDaug_vr.push_back(sqrt(xdaug.vx()*xdaug.vx()+xdaug.vy()*xdaug.vy()));
+		gen_xDaug_vz.push_back(xdaug.vz());
 	}
 
 	gen_tau_class = gen.tau_class;
 
 	// top daughters
-	for (size_t i = 0; i < gen.top_daughters.size(); ++i) {
-		gen_topDaug_pdgId.push_back(gen.top_daughters[i].pdgId());
-		gen_topDaug_status.push_back(gen.top_daughters[i].status());
-		gen_topDaug_pt.push_back(gen.top_daughters[i].pt());
-		gen_topDaug_eta.push_back(gen.top_daughters[i].eta());
-		gen_topDaug_phi.push_back(gen.top_daughters[i].phi());
-		gen_topDaug_mass.push_back(gen.top_daughters[i].mass());
+	for (auto & tdaug : gen.top_daughters) {
+		gen_topDaug_pdgId.push_back(tdaug.pdgId());
+		gen_topDaug_status.push_back(tdaug.status());
+		gen_topDaug_pt.push_back(tdaug.pt());
+		gen_topDaug_eta.push_back(tdaug.eta());
+		gen_topDaug_phi.push_back(tdaug.phi());
+		gen_topDaug_mass.push_back(tdaug.mass());
+		gen_topDaug_vr.push_back(sqrt(tdaug.vx()*tdaug.vx()+tdaug.vy()*tdaug.vy()));
+		gen_topDaug_vz.push_back(tdaug.vz());
 	}
 
 	// w daughters
-	for (size_t i = 0; i < gen.w_daughters.size(); ++i) {
-		gen_wDaug_pdgId.push_back(gen.w_daughters[i].pdgId());
-		gen_wDaug_status.push_back(gen.w_daughters[i].status());
-		gen_wDaug_pt.push_back(gen.w_daughters[i].pt());
-		gen_wDaug_eta.push_back(gen.w_daughters[i].eta());
-		gen_wDaug_phi.push_back(gen.w_daughters[i].phi());
-		gen_wDaug_mass.push_back(gen.w_daughters[i].mass());
+	for (auto & wdaug : gen.w_daughters) {
+		gen_wDaug_pdgId.push_back(wdaug.pdgId());
+		gen_wDaug_status.push_back(wdaug.status());
+		gen_wDaug_pt.push_back(wdaug.pt());
+		gen_wDaug_eta.push_back(wdaug.eta());
+		gen_wDaug_phi.push_back(wdaug.phi());
+		gen_wDaug_mass.push_back(wdaug.mass());
+		gen_wDaug_vr.push_back(sqrt(wdaug.vx()*wdaug.vx()+wdaug.vy()*wdaug.vy()));
+		gen_wDaug_vz.push_back(wdaug.vz());
 	}
 
 	eventTree->Fill();

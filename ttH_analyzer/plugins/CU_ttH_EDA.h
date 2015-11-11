@@ -5,6 +5,7 @@
 #include <memory>
 #include <cstdio>	// printf, fprintf
 #include <stdexcept> // standard exceptions
+#include <cmath>
 
 /// CMSSW user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
@@ -66,7 +67,9 @@
 /// ROOT includes
 #include "TH1.h"
 #include "TTree.h"
+#include "TBranch.h"
 #include "TParameter.h"
+#include "TLorentzVector.h"
 
 /// Higgs and top tagger
 #include "MiniAOD/BoostedObjects/interface/HTTTopJet.h"
@@ -112,10 +115,9 @@ struct CU_ttH_EDA_event_vars {
 	/// Number of tags per event
 	int n_electrons;
 	int n_muons;
-	int n_taus_noniso;
-	int n_taus_loose;
-	int n_taus_medium;
-	int n_taus_tight;
+	int n_loose_taus;
+	int n_medium_taus;
+	int n_tight_taus;
 	int n_jets;
 	int n_btags;
 	int n_ttags;
@@ -127,20 +129,23 @@ struct CU_ttH_EDA_event_vars {
 	bool pass_double_mu;
 	bool pass_double_e;
 	bool pass_elemu;
-
+	
 	/// Particle container vectors
+	std::vector<pat::Electron> pre_e;
 	std::vector<pat::Electron> e_selected;
 	std::vector<pat::Electron> e_selected_sorted;
+	std::vector<pat::Muon> pre_mu;
 	std::vector<pat::Muon> mu_selected;
 	std::vector<pat::Muon> mu_selected_sorted;
-	std::vector<pat::Tau> tau_selected_noniso;
-	std::vector<pat::Tau> tau_selected_sorted_noniso;
-	std::vector<pat::Tau> tau_selected_loose;
-	std::vector<pat::Tau> tau_selected_sorted_loose;
-	std::vector<pat::Tau> tau_selected_medium;
-	std::vector<pat::Tau> tau_selected_sorted_medium;
-	std::vector<pat::Tau> tau_selected_tight;
-	std::vector<pat::Tau> tau_selected_sorted_tight;
+
+	std::vector<pat::Tau> noniso_tau_selected;
+	std::vector<pat::Tau> noniso_tau_selected_sorted;
+	std::vector<pat::Tau> loose_tau_selected;
+	std::vector<pat::Tau> loose_tau_selected_sorted;
+	std::vector<pat::Tau> medium_tau_selected;
+	std::vector<pat::Tau> medium_tau_selected_sorted;
+	std::vector<pat::Tau> tight_tau_selected;
+	std::vector<pat::Tau> tight_tau_selected_sorted;
 	
 	std::vector<pat::Jet> jets_raw;
 	std::vector<pat::Jet> jets_no_mu;
@@ -234,7 +239,7 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	int Check_triggers(edm::Handle<edm::TriggerResults>,
 					   CU_ttH_EDA_event_vars &); // adjusts event variables
 	int Check_filters(edm::Handle<edm::TriggerResults>);
-	int Check_vertices_set_MAODhelper(edm::Handle<reco::VertexCollection>);
+	int Check_vertices_set_MAODhelper(edm::Handle<reco::VertexCollection>, reco::Vertex);
 
 	// trigger iterator, part of Check_triggers()
 	bool Check_triggers_iterator(const vector<string> &,
@@ -258,11 +263,15 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	//void Check_Fill_Print_muditauh(CU_ttH_EDA_event_vars &);
 	bool pass_cut(CU_ttH_EDA_event_vars &, string);
 	bool pass_multi_cuts(CU_ttH_EDA_event_vars &, std::vector<string>, bool, TH1D*, int);
-	void Write_to_Tree(CU_ttH_EDA_gen_vars &, CU_ttH_EDA_event_vars &, TTree *);
+	void Make_Ntuple(CU_ttH_EDA_gen_vars &, CU_ttH_EDA_event_vars &, TTree *);
 	void Fill_Tau_Eff_Hist(CU_ttH_EDA_gen_vars &, CU_ttH_EDA_event_vars &);
-	const reco::GenParticle* getGenTau(const pat::Tau &);
+
+	template <typename T1, typename T2>
+		std::vector<T1>
+		removeOverlap(const std::vector<T1>& v1, const std::vector<T2>& v2, double dR = 0.02);
 	
 	/// Gen information functions
+	const reco::GenParticle* getGenTau(const pat::Tau &);
 	void Get_GenInfo(Handle<reco::GenParticleCollection>,
 					 Handle<pat::PackedGenParticleCollection>,
 					 CU_ttH_EDA_gen_vars &);
@@ -335,6 +344,9 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	double weight_sample; // int lumi * xs / sample_n
 	double weight_gen;
 
+	/// primary vertex
+	reco::Vertex pv;
+	
 	/// Cuts
 	float min_tight_lepton_pT;
 	float min_tau_pT;
@@ -456,86 +468,156 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	// All sorted by pt
 	int n_electrons;
 	int n_muons;
-	int n_taus_loose;
-	int n_taus_medium;
-	int n_taus_tight;
+	int n_loose_taus;
+	int n_medium_taus;
+	int n_tight_taus;
 	int n_jets;
 	int n_btags;
 
+	//std::vector<TLorentzVector> electrons; // sorted by pt
 	std::vector<float> e_pt;
 	std::vector<float> e_eta;
 	std::vector<float> e_phi;
 	std::vector<float> e_mass;
-
+	std::vector<int> e_charges;
+	std::vector<float> e_vz;
+	std::vector<float> e_vr;
+	std::vector<float> e_vtx_dz;
+	std::vector<float> e_vtx_dxy;
+	
+	//std::vector<TLorentzVector> muons; // sorted by pt
 	std::vector<float> mu_pt;
 	std::vector<float> mu_eta;
 	std::vector<float> mu_phi;
 	std::vector<float> mu_mass;
-
-	std::vector<float> tau_pt_noniso;
-	std::vector<float> tau_eta_noniso;
-	std::vector<float> tau_phi_noniso;
-	std::vector<float> tau_mass_noniso;
-	std::vector<float> tau_pt_loose;
-	std::vector<float> tau_eta_loose;
-	std::vector<float> tau_phi_loose;
-	std::vector<float> tau_mass_loose;
-	std::vector<float> tau_pt_medium;
-	std::vector<float> tau_eta_medium;
-	std::vector<float> tau_phi_medium;
-	std::vector<float> tau_mass_medium;
-	std::vector<float> tau_pt_tight;
-	std::vector<float> tau_eta_tight;
-	std::vector<float> tau_phi_tight;
-	std::vector<float> tau_mass_tight;
-
-	std::vector<float> jet_pt;  // jets_selected_sorted
+	std::vector<int> mu_charges;
+	std::vector<float> mu_vz;
+	std::vector<float> mu_vr;
+	std::vector<float> mu_vtx_dz;
+	std::vector<float> mu_vtx_dxy;
+	
+	//std::vector<TLorentzVector> loose_taus; // sorted by pt
+	std::vector<float> loose_tau_pt;
+	std::vector<float> loose_tau_eta;
+	std::vector<float> loose_tau_phi;
+	std::vector<float> loose_tau_mass;
+	//std::vector<TLorentzVector> medium_taus; // sorted by pt
+	std::vector<float> medium_tau_pt;
+	std::vector<float> medium_tau_eta;
+	std::vector<float> medium_tau_phi;
+	std::vector<float> medium_tau_mass;
+	//std::vector<TLorentzVector> tight_taus; // sorted by pt
+	std::vector<float> tight_tau_pt;
+	std::vector<float> tight_tau_eta;
+	std::vector<float> tight_tau_phi;
+	std::vector<float> tight_tau_mass;
+	std::vector<int> Ltau_charges;
+	std::vector<int> Mtau_charges;
+	std::vector<int> Ttau_charges;
+	std::vector<float> Ltau_vz;
+	std::vector<float> Mtau_vz;
+	std::vector<float> Ttau_vz;
+	std::vector<float> Ltau_vr;
+	std::vector<float> Mtau_vr;
+	std::vector<float> Ttau_vr;
+	std::vector<float> Ltau_vtx_dz;
+	std::vector<float> Mtau_vtx_dz;
+	std::vector<float> Ttau_vtx_dz;
+	std::vector<float> Ltau_vtx_dxy;
+	std::vector<float> Mtau_vtx_dxy;
+	std::vector<float> Ttau_vtx_dxy;
+	
+	//std::vector<TLorentzVector> jets; // jets_selected_sorted
+	std::vector<float> jet_pt;
 	std::vector<float> jet_eta;
 	std::vector<float> jet_phi;
 	std::vector<float> jet_mass;
-
-	std::vector<float> bjet_pt;  // jets_selected_tag_sorted
+	std::vector<float> jet_charges;
+	std::vector<float> jet_vz;
+	std::vector<float> jet_vr;
+	std::vector<float> jet_vtx_dz;
+	std::vector<float> jet_vtx_dxy;
+	//std::vector<TLorentzVector> bjets; // jets_selected_tag_sorted
+	std::vector<float> bjet_pt;
 	std::vector<float> bjet_eta;
 	std::vector<float> bjet_phi;
 	std::vector<float> bjet_mass;
-	
+	std::vector<float> bjet_charges;
+	std::vector<float> bjet_vz;
+	std::vector<float> bjet_vr;
+	std::vector<float> bjet_vtx_dz;
+	std::vector<float> bjet_vtx_dxy;
+
+	// MC truth
 	std::vector<int> gen_x_pdgId;
 	std::vector<int> gen_x_status;
+	//std::vector<TLorentzVector> gen_x;
 	std::vector<float> gen_x_pt;
 	std::vector<float> gen_x_eta;
 	std::vector<float> gen_x_phi;
 	std::vector<float> gen_x_mass;
-
+	std::vector<float> gen_x_vr;
+	std::vector<float> gen_x_vz;
+	
 	std::vector<int> gen_top_pdgId;
 	std::vector<int> gen_top_status;
+	//std::vector<TLorentzVector> gen_top;
 	std::vector<float> gen_top_pt;
 	std::vector<float> gen_top_eta;
 	std::vector<float> gen_top_phi;
 	std::vector<float> gen_top_mass;
-
+	std::vector<float> gen_top_vr;
+	std::vector<float> gen_top_vz;
+	
 	std::vector<int> gen_xDaug_pdgId;
 	std::vector<int> gen_xDaug_status;
+	//std::vector<TLorentzVector> gen_xDaug;
 	std::vector<float> gen_xDaug_pt;
 	std::vector<float> gen_xDaug_eta;
 	std::vector<float> gen_xDaug_phi;
 	std::vector<float> gen_xDaug_mass;
+	std::vector<float> gen_xDaug_vr;
+	std::vector<float> gen_xDaug_vz;
 
 	std::vector<int> gen_tau_class;
 
 	std::vector<int> gen_topDaug_pdgId;
 	std::vector<int> gen_topDaug_status;
+	//std::vector<TLorentzVector> gen_topDaug;
 	std::vector<float> gen_topDaug_pt;
 	std::vector<float> gen_topDaug_eta;
 	std::vector<float> gen_topDaug_phi;
 	std::vector<float> gen_topDaug_mass;
-
+	std::vector<float> gen_topDaug_vr;
+	std::vector<float> gen_topDaug_vz;
+	
 	std::vector<int> gen_wDaug_pdgId;
 	std::vector<int> gen_wDaug_status;
+	//std::vector<TLorentzVector> gen_wDaug;
 	std::vector<float> gen_wDaug_pt;
 	std::vector<float> gen_wDaug_eta;
 	std::vector<float> gen_wDaug_phi;
 	std::vector<float> gen_wDaug_mass;
-	
+	std::vector<float> gen_wDaug_vr;
+	std::vector<float> gen_wDaug_vz;
 };
+
+
+
+template <typename T1, typename T2>
+std::vector<T1>
+CU_ttH_EDA::removeOverlap(const std::vector<T1> &v1, const std::vector<T2> &v2, double dR)
+{
+	std::vector<T1> res;
+	for (const auto& o1: v1) {
+		bool keep = true;
+		for (const auto& o2: v2)
+			if (miniAODhelper.DeltaR(&o1, &o2) < dR)
+				keep = false;
+		if (keep)
+			res.push_back(o1);
+	}
+	return res;
+}
 
 #endif
