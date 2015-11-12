@@ -115,6 +115,7 @@ struct CU_ttH_EDA_event_vars {
 	/// Number of tags per event
 	int n_electrons;
 	int n_muons;
+	int n_noniso_taus;
 	int n_loose_taus;
 	int n_medium_taus;
 	int n_tight_taus;
@@ -387,6 +388,12 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	// 	TH1D* h_electron_selection;
 	// 	TH1D* h_muon_selection;
 
+	// Jet multiplicity
+	TH1D *h_njets;
+	TH1D *h_nbtags;
+
+	// Tau
+	TH1D *h_ntauID;
 	// Tau selection efficiency
 	TH1D *h_num_genHadTau;
 	TH1D *h_genHadTau_pt;
@@ -474,6 +481,10 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	int n_jets;
 	int n_btags;
 
+	float pv_x;
+	float pv_y;
+	float pv_z;
+	
 	//std::vector<TLorentzVector> electrons; // sorted by pt
 	std::vector<float> e_pt;
 	std::vector<float> e_eta;
@@ -481,7 +492,8 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	std::vector<float> e_mass;
 	std::vector<int> e_charges;
 	std::vector<float> e_vz;
-	std::vector<float> e_vr;
+	std::vector<float> e_vx;
+	std::vector<float> e_vy;
 	std::vector<float> e_vtx_dz;
 	std::vector<float> e_vtx_dxy;
 	
@@ -492,7 +504,8 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	std::vector<float> mu_mass;
 	std::vector<int> mu_charges;
 	std::vector<float> mu_vz;
-	std::vector<float> mu_vr;
+	std::vector<float> mu_vx;
+	std::vector<float> mu_vy;
 	std::vector<float> mu_vtx_dz;
 	std::vector<float> mu_vtx_dxy;
 	
@@ -517,9 +530,12 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	std::vector<float> Ltau_vz;
 	std::vector<float> Mtau_vz;
 	std::vector<float> Ttau_vz;
-	std::vector<float> Ltau_vr;
-	std::vector<float> Mtau_vr;
-	std::vector<float> Ttau_vr;
+	std::vector<float> Ltau_vx;
+	std::vector<float> Mtau_vx;
+	std::vector<float> Ttau_vx;
+	std::vector<float> Ltau_vy;
+	std::vector<float> Mtau_vy;
+	std::vector<float> Ttau_vy;
 	std::vector<float> Ltau_vtx_dz;
 	std::vector<float> Mtau_vtx_dz;
 	std::vector<float> Ttau_vtx_dz;
@@ -534,7 +550,8 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	std::vector<float> jet_mass;
 	std::vector<float> jet_charges;
 	std::vector<float> jet_vz;
-	std::vector<float> jet_vr;
+	std::vector<float> jet_vx;
+	std::vector<float> jet_vy;
 	std::vector<float> jet_vtx_dz;
 	std::vector<float> jet_vtx_dxy;
 	//std::vector<TLorentzVector> bjets; // jets_selected_tag_sorted
@@ -544,7 +561,8 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	std::vector<float> bjet_mass;
 	std::vector<float> bjet_charges;
 	std::vector<float> bjet_vz;
-	std::vector<float> bjet_vr;
+	std::vector<float> bjet_vx;
+	std::vector<float> bjet_vy;
 	std::vector<float> bjet_vtx_dz;
 	std::vector<float> bjet_vtx_dxy;
 
@@ -556,7 +574,8 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	std::vector<float> gen_x_eta;
 	std::vector<float> gen_x_phi;
 	std::vector<float> gen_x_mass;
-	std::vector<float> gen_x_vr;
+	std::vector<float> gen_x_vx;
+	std::vector<float> gen_x_vy;
 	std::vector<float> gen_x_vz;
 	
 	std::vector<int> gen_top_pdgId;
@@ -566,7 +585,8 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	std::vector<float> gen_top_eta;
 	std::vector<float> gen_top_phi;
 	std::vector<float> gen_top_mass;
-	std::vector<float> gen_top_vr;
+	std::vector<float> gen_top_vx;
+	std::vector<float> gen_top_vy;
 	std::vector<float> gen_top_vz;
 	
 	std::vector<int> gen_xDaug_pdgId;
@@ -576,7 +596,8 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	std::vector<float> gen_xDaug_eta;
 	std::vector<float> gen_xDaug_phi;
 	std::vector<float> gen_xDaug_mass;
-	std::vector<float> gen_xDaug_vr;
+	std::vector<float> gen_xDaug_vx;
+	std::vector<float> gen_xDaug_vy;
 	std::vector<float> gen_xDaug_vz;
 
 	std::vector<int> gen_tau_class;
@@ -588,7 +609,8 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	std::vector<float> gen_topDaug_eta;
 	std::vector<float> gen_topDaug_phi;
 	std::vector<float> gen_topDaug_mass;
-	std::vector<float> gen_topDaug_vr;
+	std::vector<float> gen_topDaug_vx;
+	std::vector<float> gen_topDaug_vy;
 	std::vector<float> gen_topDaug_vz;
 	
 	std::vector<int> gen_wDaug_pdgId;
@@ -598,7 +620,8 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	std::vector<float> gen_wDaug_eta;
 	std::vector<float> gen_wDaug_phi;
 	std::vector<float> gen_wDaug_mass;
-	std::vector<float> gen_wDaug_vr;
+	std::vector<float> gen_wDaug_vx;
+	std::vector<float> gen_wDaug_vy;
 	std::vector<float> gen_wDaug_vz;
 };
 

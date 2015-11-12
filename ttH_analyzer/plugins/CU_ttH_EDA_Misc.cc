@@ -1372,6 +1372,10 @@ void CU_ttH_EDA::Make_Ntuple(CU_ttH_EDA_gen_vars &gen, CU_ttH_EDA_event_vars &lo
 	n_jets = -99;
 	n_btags = -99;
 
+	pv_x = -99.9;
+	pv_y = -99.9;
+	pv_z = -99.9;
+	
 	//electrons.clear();
 	e_pt.clear();
 	e_eta.clear();
@@ -1381,7 +1385,8 @@ void CU_ttH_EDA::Make_Ntuple(CU_ttH_EDA_gen_vars &gen, CU_ttH_EDA_event_vars &lo
 	e_vtx_dz.clear();
 	e_vtx_dxy.clear();
 	e_vz.clear();
-	e_vr.clear();
+	e_vx.clear();
+	e_vy.clear();
 
 	//muons.clear();
 	mu_pt.clear();
@@ -1392,7 +1397,8 @@ void CU_ttH_EDA::Make_Ntuple(CU_ttH_EDA_gen_vars &gen, CU_ttH_EDA_event_vars &lo
 	mu_vtx_dz.clear();
 	mu_vtx_dxy.clear();
 	mu_vz.clear();
-	mu_vr.clear();
+	mu_vx.clear();
+	mu_vy.clear();
 
 	//loose_taus.clear();
 	loose_tau_pt.clear();
@@ -1402,7 +1408,8 @@ void CU_ttH_EDA::Make_Ntuple(CU_ttH_EDA_gen_vars &gen, CU_ttH_EDA_event_vars &lo
 	Ltau_charges.clear();
 	Ltau_vtx_dz.clear();
 	Ltau_vtx_dxy.clear();
-	Ltau_vr.clear();
+	Ltau_vx.clear();
+	Ltau_vy.clear();
 	Ltau_vz.clear();
 	//medium_taus.clear();
 	medium_tau_pt.clear();
@@ -1412,7 +1419,8 @@ void CU_ttH_EDA::Make_Ntuple(CU_ttH_EDA_gen_vars &gen, CU_ttH_EDA_event_vars &lo
 	Mtau_charges.clear();
 	Mtau_vtx_dz.clear();
 	Mtau_vtx_dxy.clear();
-	Mtau_vr.clear();
+	Mtau_vx.clear();
+	Mtau_vy.clear();
 	Mtau_vz.clear();
 	//tight_taus.clear();
 	tight_tau_pt.clear();
@@ -1422,7 +1430,8 @@ void CU_ttH_EDA::Make_Ntuple(CU_ttH_EDA_gen_vars &gen, CU_ttH_EDA_event_vars &lo
 	Ttau_charges.clear();
 	Ttau_vtx_dz.clear();
 	Ttau_vtx_dxy.clear();
-	Ttau_vr.clear();
+	Ttau_vx.clear();
+	Ttau_vy.clear();
 	Ttau_vz.clear();
 
 	//jets.clear();
@@ -1434,7 +1443,8 @@ void CU_ttH_EDA::Make_Ntuple(CU_ttH_EDA_gen_vars &gen, CU_ttH_EDA_event_vars &lo
 	jet_vtx_dz.clear();
 	jet_vtx_dxy.clear();
 	jet_vz.clear();
-	jet_vr.clear();
+	jet_vx.clear();
+	jet_vy.clear();
 	
 	//bjets.clear();
 	bjet_pt.clear();
@@ -1445,7 +1455,8 @@ void CU_ttH_EDA::Make_Ntuple(CU_ttH_EDA_gen_vars &gen, CU_ttH_EDA_event_vars &lo
 	bjet_vtx_dz.clear();
 	bjet_vtx_dxy.clear();
 	bjet_vz.clear();
-	bjet_vr.clear();
+	bjet_vx.clear();
+	bjet_vy.clear();
 
 	gen_x_pdgId.clear();
 	gen_x_status.clear();
@@ -1454,7 +1465,8 @@ void CU_ttH_EDA::Make_Ntuple(CU_ttH_EDA_gen_vars &gen, CU_ttH_EDA_event_vars &lo
 	gen_x_eta.clear();
 	gen_x_phi.clear();
 	gen_x_mass.clear();
-	gen_x_vr.clear();
+	gen_x_vx.clear();
+	gen_x_vy.clear();
 	gen_x_vz.clear();
 	
 	gen_top_pdgId.clear();
@@ -1464,7 +1476,8 @@ void CU_ttH_EDA::Make_Ntuple(CU_ttH_EDA_gen_vars &gen, CU_ttH_EDA_event_vars &lo
 	gen_top_eta.clear();
 	gen_top_phi.clear();
 	gen_top_mass.clear();
-	gen_top_vr.clear();
+	gen_top_vx.clear();
+	gen_top_vy.clear();
 	gen_top_vz.clear();
 	
 	gen_xDaug_pdgId.clear();
@@ -1474,7 +1487,8 @@ void CU_ttH_EDA::Make_Ntuple(CU_ttH_EDA_gen_vars &gen, CU_ttH_EDA_event_vars &lo
 	gen_xDaug_eta.clear();
 	gen_xDaug_phi.clear();
 	gen_xDaug_mass.clear();
-	gen_xDaug_vr.clear();
+	gen_xDaug_vx.clear();
+	gen_xDaug_vy.clear();
 	gen_xDaug_vz.clear();
 	
 	gen_tau_class.clear();
@@ -1485,7 +1499,8 @@ void CU_ttH_EDA::Make_Ntuple(CU_ttH_EDA_gen_vars &gen, CU_ttH_EDA_event_vars &lo
 	gen_topDaug_pt.clear();
 	gen_topDaug_eta.clear();
 	gen_topDaug_phi.clear();
-	gen_topDaug_vr.clear();
+	gen_topDaug_vx.clear();
+	gen_topDaug_vy.clear();
 	gen_topDaug_vz.clear();
 	
 	gen_wDaug_pdgId.clear();
@@ -1495,7 +1510,8 @@ void CU_ttH_EDA::Make_Ntuple(CU_ttH_EDA_gen_vars &gen, CU_ttH_EDA_event_vars &lo
 	gen_wDaug_eta.clear();
 	gen_wDaug_phi.clear();
 	gen_wDaug_mass.clear();
-	gen_wDaug_vr.clear();
+	gen_wDaug_vx.clear();
+	gen_wDaug_vy.clear();
 	gen_wDaug_vz.clear();
 
 	// Number of tags per event
@@ -1507,6 +1523,10 @@ void CU_ttH_EDA::Make_Ntuple(CU_ttH_EDA_gen_vars &gen, CU_ttH_EDA_event_vars &lo
 	n_jets = local.n_jets;
 	n_btags = local.n_btags;
 
+	pv_x = pv.x();
+	pv_y = pv.y();
+	pv_z = pv.z();
+	
 	// electrons
 	for (auto & ele : local.e_selected_sorted) {
 		e_pt.push_back(ele.pt());
@@ -1518,8 +1538,10 @@ void CU_ttH_EDA::Make_Ntuple(CU_ttH_EDA_gen_vars &gen, CU_ttH_EDA_event_vars &lo
 			e_vtx_dz.push_back( ele.gsfTrack()->dz(pv.position()) );
 			e_vtx_dxy.push_back( ele.gsfTrack()->dxy(pv.position()) );
 		}
+		e_vx.push_back(ele.vx());
+		e_vy.push_back(ele.vy());
 		e_vz.push_back(ele.vz());
-		e_vr.push_back( sqrt(ele.vx()*ele.vx()+ele.vy()*ele.vy()) );
+		//e_vr.push_back( sqrt(ele.vx()*ele.vx()+ele.vy()*ele.vy()) );
 	}
 
 	// muons
@@ -1534,8 +1556,10 @@ void CU_ttH_EDA::Make_Ntuple(CU_ttH_EDA_gen_vars &gen, CU_ttH_EDA_event_vars &lo
 			mu_vtx_dxy.push_back( mu.muonBestTrack()->dxy(pv.position()) );
 			// innerTrack? GlobalTrack?
 		}
+		mu_vx.push_back(mu.vx());
+		mu_vy.push_back(mu.vy());
 		mu_vz.push_back(mu.vz());
-		mu_vr.push_back( sqrt(mu.vx()*mu.vx()+mu.vy()*mu.vy()) );
+		//mu_vr.push_back( sqrt(mu.vx()*mu.vx()+mu.vy()*mu.vy()) );
 	}
 
 	// taus
@@ -1546,8 +1570,10 @@ void CU_ttH_EDA::Make_Ntuple(CU_ttH_EDA_gen_vars &gen, CU_ttH_EDA_event_vars &lo
 		loose_tau_mass.push_back(tau.mass());
 		Ltau_charges.push_back(tau.charge());
 		// tau vertex
+		Ltau_vx.push_back(tau.vx());
+		Ltau_vy.push_back(tau.vy());
 		Ltau_vz.push_back(tau.vz());
-		Ltau_vr.push_back( sqrt(tau.vx()*tau.vx()+tau.vy()*tau.vy()) );
+		//Ltau_vr.push_back( sqrt(tau.vx()*tau.vx()+tau.vy()*tau.vy()) );
 	}
 
 	for (auto & tau : local.medium_tau_selected_sorted) {
@@ -1556,8 +1582,10 @@ void CU_ttH_EDA::Make_Ntuple(CU_ttH_EDA_gen_vars &gen, CU_ttH_EDA_event_vars &lo
 		medium_tau_phi.push_back(tau.phi());
 		medium_tau_mass.push_back(tau.mass());
 		Mtau_charges.push_back(tau.charge());
+		Mtau_vx.push_back(tau.vx());
+		Mtau_vy.push_back(tau.vy());
 		Mtau_vz.push_back(tau.vz());
-		Mtau_vr.push_back( sqrt(tau.vx()*tau.vx()+tau.vy()*tau.vy()) );
+		//Mtau_vr.push_back( sqrt(tau.vx()*tau.vx()+tau.vy()*tau.vy()) );
 	}
 
 	for (auto & tau : local.tight_tau_selected_sorted) {
@@ -1566,8 +1594,10 @@ void CU_ttH_EDA::Make_Ntuple(CU_ttH_EDA_gen_vars &gen, CU_ttH_EDA_event_vars &lo
 		tight_tau_phi.push_back(tau.phi());
 		tight_tau_mass.push_back(tau.mass());
 		Ttau_charges.push_back(tau.charge());
+		Ttau_vx.push_back(tau.vx());
+		Ttau_vy.push_back(tau.vy());
 		Ttau_vz.push_back(tau.vz());
-		Ttau_vr.push_back( sqrt(tau.vx()*tau.vx()+tau.vy()*tau.vy()) );
+		//Ttau_vr.push_back( sqrt(tau.vx()*tau.vx()+tau.vy()*tau.vy()) );
 	}
 
 	// jets
@@ -1578,8 +1608,10 @@ void CU_ttH_EDA::Make_Ntuple(CU_ttH_EDA_gen_vars &gen, CU_ttH_EDA_event_vars &lo
 		jet_mass.push_back(jet.mass());
 		jet_charges.push_back(jet.jetCharge());
 		// jet vertex
+		jet_vx.push_back(jet.vx());
+		jet_vy.push_back(jet.vy());
 		jet_vz.push_back(jet.vz());
-		jet_vr.push_back( sqrt(jet.vx()*jet.vx()+jet.vy()*jet.vy()) );
+		//jet_vr.push_back( sqrt(jet.vx()*jet.vx()+jet.vy()*jet.vy()) );
 	}
 
 	// b-jets
@@ -1589,8 +1621,10 @@ void CU_ttH_EDA::Make_Ntuple(CU_ttH_EDA_gen_vars &gen, CU_ttH_EDA_event_vars &lo
 		bjet_phi.push_back(bjet.phi());
 		bjet_mass.push_back(bjet.mass());
 		// b vertex
+		bjet_vx.push_back(bjet.vx());
+		bjet_vy.push_back(bjet.vy());
 		bjet_vz.push_back(bjet.vz());
-		bjet_vr.push_back( sqrt(bjet.vx()*bjet.vx()+bjet.vy()*bjet.vy()) );
+		//bjet_vr.push_back( sqrt(bjet.vx()*bjet.vx()+bjet.vy()*bjet.vy()) );
 	}
 
 	// GenParticle Information
@@ -1602,8 +1636,10 @@ void CU_ttH_EDA::Make_Ntuple(CU_ttH_EDA_gen_vars &gen, CU_ttH_EDA_event_vars &lo
 		gen_x_eta.push_back(mediator.eta());
 		gen_x_phi.push_back(mediator.phi());
 		gen_x_mass.push_back(mediator.mass());
-		gen_x_vr.push_back(sqrt(mediator.vx()*mediator.vx()
-								+mediator.vy()*mediator.vy()));
+		//gen_x_vr.push_back(sqrt(mediator.vx()*mediator.vx()
+		//						+mediator.vy()*mediator.vy()));
+		gen_x_vx.push_back(mediator.vx());
+		gen_x_vy.push_back(mediator.vy());
 		gen_x_vz.push_back(mediator.vz());
 	}
 
@@ -1615,7 +1651,9 @@ void CU_ttH_EDA::Make_Ntuple(CU_ttH_EDA_gen_vars &gen, CU_ttH_EDA_event_vars &lo
 		gen_top_eta.push_back(top.eta());
 		gen_top_phi.push_back(top.phi());
 		gen_top_mass.push_back(top.mass());
-		gen_top_vr.push_back(sqrt(top.vx()*top.vx()+top.vy()*top.vy()));
+		//gen_top_vr.push_back(sqrt(top.vx()*top.vx()+top.vy()*top.vy()));
+		gen_top_vx.push_back(top.vx());
+		gen_top_vy.push_back(top.vy());
 		gen_top_vz.push_back(top.vz());
 	}
 
@@ -1627,7 +1665,9 @@ void CU_ttH_EDA::Make_Ntuple(CU_ttH_EDA_gen_vars &gen, CU_ttH_EDA_event_vars &lo
 		gen_xDaug_eta.push_back(xdaug.eta());
 		gen_xDaug_phi.push_back(xdaug.phi());
 		gen_xDaug_mass.push_back(xdaug.mass());
-		gen_xDaug_vr.push_back(sqrt(xdaug.vx()*xdaug.vx()+xdaug.vy()*xdaug.vy()));
+		//gen_xDaug_vr.push_back(sqrt(xdaug.vx()*xdaug.vx()+xdaug.vy()*xdaug.vy()));
+		gen_xDaug_vx.push_back(xdaug.vx());
+		gen_xDaug_vy.push_back(xdaug.vy());
 		gen_xDaug_vz.push_back(xdaug.vz());
 	}
 
@@ -1641,7 +1681,9 @@ void CU_ttH_EDA::Make_Ntuple(CU_ttH_EDA_gen_vars &gen, CU_ttH_EDA_event_vars &lo
 		gen_topDaug_eta.push_back(tdaug.eta());
 		gen_topDaug_phi.push_back(tdaug.phi());
 		gen_topDaug_mass.push_back(tdaug.mass());
-		gen_topDaug_vr.push_back(sqrt(tdaug.vx()*tdaug.vx()+tdaug.vy()*tdaug.vy()));
+		//gen_topDaug_vr.push_back(sqrt(tdaug.vx()*tdaug.vx()+tdaug.vy()*tdaug.vy()));
+		gen_topDaug_vx.push_back(tdaug.vx());
+		gen_topDaug_vy.push_back(tdaug.vy());
 		gen_topDaug_vz.push_back(tdaug.vz());
 	}
 
@@ -1653,7 +1695,9 @@ void CU_ttH_EDA::Make_Ntuple(CU_ttH_EDA_gen_vars &gen, CU_ttH_EDA_event_vars &lo
 		gen_wDaug_eta.push_back(wdaug.eta());
 		gen_wDaug_phi.push_back(wdaug.phi());
 		gen_wDaug_mass.push_back(wdaug.mass());
-		gen_wDaug_vr.push_back(sqrt(wdaug.vx()*wdaug.vx()+wdaug.vy()*wdaug.vy()));
+		//gen_wDaug_vr.push_back(sqrt(wdaug.vx()*wdaug.vx()+wdaug.vy()*wdaug.vy()));
+		gen_wDaug_vx.push_back(wdaug.vx());
+		gen_wDaug_vy.push_back(wdaug.vy());
 		gen_wDaug_vz.push_back(wdaug.vz());
 	}
 

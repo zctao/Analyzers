@@ -155,6 +155,16 @@ void CU_ttH_EDA::Set_up_histograms(std::vector<string> cuts)
 			h_tth_syncex_dileptauh->GetXaxis()->SetBinLabel(itr++,icut.c_str());
 		}
 
+		// Jet multiplicity
+		h_njets = fs_->make<TH1D>("h_njets", "", 11, -0.5, 10.5);
+		h_nbtags = fs_->make<TH1D>("h_nbtags", "", 6, -0.5, 5.5);
+
+		// Tau
+		h_ntauID = fs_->make<TH1D>("h_ntauID", "", 4, -0.5, 3.5);
+		h_ntauID->GetXaxis()->SetBinLabel(1, "nonIso");
+		h_ntauID->GetXaxis()->SetBinLabel(2, "loose");
+		h_ntauID->GetXaxis()->SetBinLabel(3, "medium");
+		h_ntauID->GetXaxis()->SetBinLabel(4, "tight");
 		// Tau selection efficiency histograms
 		h_num_genHadTau = fs_->make<TH1D>("h_num_genHadTau","", 4, 0, 4);
 		h_genHadTau_pt = fs_->make<TH1D>("h_genHadTau_pt", "", 80, 0, 400);
@@ -389,6 +399,10 @@ void CU_ttH_EDA::Setup_Tree()
 	eventTree->Branch("n_jets", &n_jets);
 	eventTree->Branch("n_btags", &n_btags);
 
+	eventTree->Branch("pv_x", &pv_x);
+	eventTree->Branch("pv_y", &pv_y);
+	eventTree->Branch("pv_z", &pv_z);
+	
 	//eventTree->Bronch("electrons", "std::vector<TLorentzVector>", &electrons);
 	eventTree->Branch("e_pt", &e_pt);
 	eventTree->Branch("e_eta", &e_eta);
@@ -398,7 +412,8 @@ void CU_ttH_EDA::Setup_Tree()
 	eventTree->Branch("e_vtx_dz", &e_vtx_dz);
 	eventTree->Branch("e_vtx_dxy", &e_vtx_dxy);
 	eventTree->Branch("e_vz", &e_vz);
-	eventTree->Branch("e_vr", &e_vr);
+	eventTree->Branch("e_vx", &e_vx);
+	eventTree->Branch("e_vy", &e_vy);
 	
 	//eventTree->Bronch("muons", "TLorentzVector", &muons);
 	eventTree->Branch("mu_pt", &mu_pt);
@@ -409,7 +424,8 @@ void CU_ttH_EDA::Setup_Tree()
 	eventTree->Branch("mu_vtx_dz", &mu_vtx_dz);
 	eventTree->Branch("mu_vtx_dxy", &mu_vtx_dxy);
 	eventTree->Branch("mu_vz", &mu_vz);
-	eventTree->Branch("mu_vr", &mu_vr);
+	eventTree->Branch("mu_vx", &mu_vx);
+	eventTree->Branch("mu_vy", &mu_vy);
 	
 	//eventTree->Bronch("loose_taus", "TLorentzVector", &loose_taus);
 	eventTree->Branch("loose_tau_pt", &loose_tau_pt);
@@ -418,7 +434,8 @@ void CU_ttH_EDA::Setup_Tree()
 	eventTree->Branch("loose_tau_mass", &loose_tau_mass);
 	eventTree->Branch("loose_tau_charges", &Ltau_charges);
 	eventTree->Branch("loose_tau_vz", &Ltau_vz);
-	eventTree->Branch("loose_tau_vr", &Ltau_vr);
+	eventTree->Branch("loose_tau_vx", &Ltau_vx);
+	eventTree->Branch("loose_tau_vy", &Ltau_vy);
 	eventTree->Branch("loose_tau_vtx_dz", &Ltau_vtx_dz);
 	eventTree->Branch("loose_tau_vtx_dxy", &Ltau_vtx_dxy);
 	//eventTree->Bronch("medium_taus", "TLorentzVector", &medium_taus);
@@ -428,7 +445,8 @@ void CU_ttH_EDA::Setup_Tree()
 	eventTree->Branch("medium_tau_mass", &medium_tau_mass);
 	eventTree->Branch("medium_tau_charges", &Mtau_charges);
 	eventTree->Branch("medium_tau_vz", &Mtau_vz);
-	eventTree->Branch("medium_tau_vr", &Mtau_vr);
+	eventTree->Branch("medium_tau_vx", &Mtau_vx);
+	eventTree->Branch("medium_tau_vy", &Mtau_vy);
 	eventTree->Branch("medium_tau_vtx_dz", &Mtau_vtx_dz);
 	eventTree->Branch("medium_tau_vtx_dxy", &Mtau_vtx_dxy);
 	//eventTree->Bronch("tight_taus", "TLorentzVector", &tight_taus);
@@ -438,7 +456,8 @@ void CU_ttH_EDA::Setup_Tree()
 	eventTree->Branch("tight_tau_mass", &tight_tau_mass);
 	eventTree->Branch("tight_tau_charges", &Ttau_charges);
 	eventTree->Branch("tight_tau_vz", &Ttau_vz);
-	eventTree->Branch("tight_tau_vr", &Ttau_vr);
+	eventTree->Branch("tight_tau_vx", &Ttau_vx);
+	eventTree->Branch("tight_tau_vy", &Ttau_vy);
 	eventTree->Branch("tight_tau_vtx_dz", &Ttau_vtx_dz);
 	eventTree->Branch("tight_tau_vtx_dxy", &Ttau_vtx_dxy);
 	
@@ -449,7 +468,8 @@ void CU_ttH_EDA::Setup_Tree()
 	eventTree->Branch("jet_mass", &jet_mass);
 	eventTree->Branch("jet_charges", &jet_charges);
 	eventTree->Branch("jet_vz", &jet_vz);
-	eventTree->Branch("jet_vr", &jet_vr);
+	eventTree->Branch("jet_vx", &jet_vx);
+	eventTree->Branch("jet_vy", &jet_vy);
 	eventTree->Branch("jet_vtx_dz", &jet_vtx_dz);
 	eventTree->Branch("jet_vtx_dxy", &jet_vtx_dxy);
 
@@ -460,7 +480,8 @@ void CU_ttH_EDA::Setup_Tree()
 	eventTree->Branch("bjet_mass", &bjet_mass);
 	eventTree->Branch("bjet_charges", &bjet_charges);
 	eventTree->Branch("bjet_vz", &bjet_vz);
-	eventTree->Branch("bjet_vr", &bjet_vr);
+	eventTree->Branch("bjet_vx", &bjet_vx);
+	eventTree->Branch("bjet_vy", &bjet_vy);
 	eventTree->Branch("bjet_vtx_dz", &bjet_vtx_dz);
 	eventTree->Branch("bjet_vtx_dxy", &bjet_vtx_dxy);
 	
@@ -471,7 +492,8 @@ void CU_ttH_EDA::Setup_Tree()
 	eventTree->Branch("gen_x_eta", &gen_x_eta);
 	eventTree->Branch("gen_x_phi", &gen_x_phi);
 	eventTree->Branch("gen_x_mass", &gen_x_mass);
-	eventTree->Branch("gen_x_vr", &gen_x_vr);
+	eventTree->Branch("gen_x_vx", &gen_x_vx);
+	eventTree->Branch("gen_x_vy", &gen_x_vy);
 	eventTree->Branch("gen_x_vz", &gen_x_vz);
 
 	eventTree->Branch("gen_top_pdgId", &gen_top_pdgId);
@@ -481,8 +503,9 @@ void CU_ttH_EDA::Setup_Tree()
 	eventTree->Branch("gen_top_eta", &gen_top_eta);
 	eventTree->Branch("gen_top_phi", &gen_top_phi);
 	eventTree->Branch("gen_top_mass", &gen_top_mass);
-	eventTree->Branch("gen_top_vz", &gen_top_vr);
-	eventTree->Branch("gen_top_vz", &gen_top_vr);
+	eventTree->Branch("gen_top_vx", &gen_top_vx);
+	eventTree->Branch("gen_top_vy", &gen_top_vy);
+	eventTree->Branch("gen_top_vz", &gen_top_vz);
 	
 	eventTree->Branch("gen_x_daughter_pdgId", &gen_xDaug_pdgId);
 	eventTree->Branch("gen_x_daughter_status", &gen_xDaug_status);
@@ -491,7 +514,8 @@ void CU_ttH_EDA::Setup_Tree()
 	eventTree->Branch("gen_x_daughter_eta", &gen_xDaug_eta);
 	eventTree->Branch("gen_x_daughter_phi", &gen_xDaug_phi);
 	eventTree->Branch("gen_x_daughter_mass", &gen_xDaug_mass);
-	eventTree->Branch("gen_x_daughter_vr", &gen_xDaug_vr);
+	eventTree->Branch("gen_x_daughter_vx", &gen_xDaug_vx);
+	eventTree->Branch("gen_x_daughter_vy", &gen_xDaug_vy);
 	eventTree->Branch("gen_x_daughter_vz", &gen_xDaug_vz);
 	
 	eventTree->Branch("gen_tau_class", &gen_tau_class);
@@ -503,7 +527,8 @@ void CU_ttH_EDA::Setup_Tree()
 	eventTree->Branch("gen_top_daughter_eta", &gen_topDaug_eta);
 	eventTree->Branch("gen_top_daughter_phi", &gen_topDaug_phi);
 	eventTree->Branch("gen_top_daughter_mass", &gen_topDaug_mass);
-	eventTree->Branch("gen_top_daughter_vr", &gen_topDaug_vr);
+	eventTree->Branch("gen_top_daughter_vx", &gen_topDaug_vx);
+	eventTree->Branch("gen_top_daughter_vy", &gen_topDaug_vy);
 	eventTree->Branch("gen_top_daughter_vz", &gen_topDaug_vz);
 	
 	eventTree->Branch("gen_w_daughter_pdgId", &gen_wDaug_pdgId);
@@ -513,7 +538,8 @@ void CU_ttH_EDA::Setup_Tree()
 	eventTree->Branch("gen_w_daughter_eta", &gen_wDaug_eta);
 	eventTree->Branch("gen_w_daughter_phi", &gen_wDaug_phi);
 	eventTree->Branch("gen_w_daughter_mass", &gen_wDaug_mass);
-	eventTree->Branch("gen_w_daughter_vr", &gen_wDaug_vr);
+	eventTree->Branch("gen_w_daughter_vx", &gen_wDaug_vx);
+	eventTree->Branch("gen_w_daughter_vy", &gen_wDaug_vy);
 	eventTree->Branch("gen_w_daughter_vz", &gen_wDaug_vz);
 }
 

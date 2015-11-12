@@ -183,6 +183,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	
 	local.n_electrons = static_cast<int>(local.e_selected.size());
 	local.n_muons = static_cast<int>(local.mu_selected.size());
+	local.n_noniso_taus = static_cast<int>(local.noniso_tau_selected.size());
 	local.n_loose_taus = static_cast<int>(local.loose_tau_selected.size());
 	local.n_medium_taus = static_cast<int>(local.medium_tau_selected.size());
 	local.n_tight_taus = static_cast<int>(local.tight_tau_selected.size());
@@ -248,7 +249,24 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	}
 
 	if (analysis_type == Analyze_taus_dilepton) {
+		
 		Fill_Tau_Eff_Hist(gen,local);
+		// Tau ID histograms
+		if (local.n_noniso_taus >= 1) {
+			h_ntauID -> Fill(0);
+			if(local.n_loose_taus >= 1) {
+				h_ntauID -> Fill(1);
+				if (local.n_medium_taus >= 1) {
+					h_ntauID -> Fill(2);
+					if (local.n_tight_taus >= 1)
+						h_ntauID -> Fill(3);
+				}
+			}
+		}
+
+		// Jet multiplicity
+		h_njets->Fill(local.n_jets);
+		h_nbtags->Fill(local.n_btags);
 		
 		bool draw_cut_flow = true;   // Todo: move this flag to config file
 		bool cut_passed = pass_multi_cuts(local, cuts, draw_cut_flow, h_tth_syncex_dileptauh, 1);
