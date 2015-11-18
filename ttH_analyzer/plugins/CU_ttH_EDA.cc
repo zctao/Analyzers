@@ -84,20 +84,7 @@ CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig):
 	Set_up_tokens();
 	Setup_Tree();
 
-	// cuts
-	if (analysis_type == Analyze_taus_dilepton) {
-		cuts = {
-			"single_lep_trig",">= 1 tau",">= 2 leptons",
-			"same sign leptons","min_njets","min_nbtags"
-		};
-	}
-	else if (analysis_type == Analyze_taus_lepton_jet) {
-		cuts = {
-			"single_e_trig",">= 1 e",">= 2 taus",
-			"100<mTT<150","min_njets","min_nbtsgs"
-		};
-	}
-	Set_up_histograms(cuts);
+	Set_up_histograms();
 	Set_up_output_files();
 	
 	
@@ -180,6 +167,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	// Remove overlap between taus and leptons
 	local.e_selected = removeOverlap(local.pre_e, local.loose_tau_selected, 0.15);
 	local.mu_selected = removeOverlap(local.pre_mu, local.loose_tau_selected, 0.15);
+	// Or remove tau instead of leptons?
 	
 	local.n_electrons = static_cast<int>(local.e_selected.size());
 	local.n_muons = static_cast<int>(local.mu_selected.size());
@@ -236,17 +224,6 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 
 	Get_GenInfo(handle.MC_particles, handle.MC_packed, gen);  // MC Truth
 	
-	/// Check tags, fill hists, print events
-	if (analysis_type == Analyze_lepton_jet) {
-		Check_Fill_Print_ej(local);
-		Check_Fill_Print_muj(local);
-	}
-
-	if (analysis_type == Analyze_dilepton) {
-		Check_Fill_Print_dimuj(local);
-		Check_Fill_Print_dielej(local);
-		Check_Fill_Print_elemuj(local);
-	}
 
 	if (analysis_type == Analyze_taus_dilepton) {
 		
@@ -268,23 +245,65 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		h_njets->Fill(local.n_jets);
 		h_nbtags->Fill(local.n_btags);
 		
-		bool draw_cut_flow = true;   // Todo: move this flag to config file
-		bool cut_passed = pass_multi_cuts(local, cuts, draw_cut_flow, h_tth_syncex_dileptauh, 1);
+		//bool draw_cut_flow = true;   // Todo: move this flag to config file
+		//bool cut_passed = pass_multi_cuts(local, cuts, draw_cut_flow, h_tth_syncex_dileptauh, 1);
 
-		if (cut_passed) {
-			Make_Ntuple(gen, local, eventTree);
-		}
+		/// event selection
+		int fill_itr = 0;
+		h_tth_syncex_dileptauh->Fill(0.5 + fill_itr++);
+		
+		// Trigger: single lepton trigger
+		if (!local.pass_single_e and !local.pass_single_mu)
+			return;
+		h_tth_syncex_dileptauh->Fill(0.5 + fill_itr++);
+		
+		// >= 2 leptons
+		if (local.n_electrons+local.n_muons <2)
+			return;
+		h_tth_syncex_dileptauh->Fill(0.5 + fill_itr++);
+		
+		// 1 tau
+		if (local.n_loose_taus != 1)
+			return;
+		h_tth_syncex_dileptauh->Fill(0.5 + fill_itr++);
+		
+		// same sign leptons
+		std::vector<int> charges;
+		for (auto & e: local.e_selected)
+			charges.push_back(e.charge());
+		for (auto & mu: local.mu_selected)
+			charges.push_back(mu.charge());
+		
+		if (charges.size() == 2 and charges[0]*charges[1] < 0)
+			return;
+		h_tth_syncex_dileptauh->Fill(0.5 + fill_itr++);
+
+		// opposite sign to tau charge
+		int op_cnt = 0;
+		for (auto & q: charges) {
+			if (q * local.loose_tau_selected[0].charge() < 0)
+				++op_cnt;
+		}			
+		if (op_cnt < 2)
+			return;
+		h_tth_syncex_dileptauh->Fill(0.5 + fill_itr++);
+
+		// number of jets
+		if (local.n_jets < min_njets)
+			return;
+		h_tth_syncex_dileptauh->Fill(0.5 + fill_itr++);
+
+		// number of b-tags
+		if (local.n_btags < min_nbtags)
+			return;
+		h_tth_syncex_dileptauh->Fill(0.5 + fill_itr++);
+
+
+		// Make ntuple
+		Make_Ntuple(gen, local, eventTree);
+		
 	}
 	
-	if (analysis_type == Analyze_taus_lepton_jet) {
-		bool draw_cut_flow = true;   // Todo: move this flag to config file
-		bool cut_passed = pass_multi_cuts(local, cuts, draw_cut_flow, h_tth_syncex_eleditauh, 1);
-		if (cut_passed) {
-			Make_Ntuple(gen, local, eventTree);
-		}
-	}
-	
-	//Write_to_Tree(gen, local, eventTree);
 	
 }
 

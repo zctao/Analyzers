@@ -49,7 +49,7 @@ void CU_ttH_EDA::Close_output_files()
 	}
 }
 
-void CU_ttH_EDA::Set_up_histograms(std::vector<string> cuts)
+void CU_ttH_EDA::Set_up_histograms()
 {
 	// 	h_electron_selection = fs_->make<TH1D>("h_electron_selection",
 	// ";electron cut", 12, 0 , 12 );
@@ -145,15 +145,17 @@ void CU_ttH_EDA::Set_up_histograms(std::vector<string> cuts)
 	}
 
 	if (analysis_type == Analyze_taus_dilepton) {
-		auto nbins = cuts.size()+1;
 		h_tth_syncex_dileptauh =
-			fs_->make<TH1D>("h_tth_syncex_dileptauh", ";cut", nbins, 0, nbins);
+			fs_->make<TH1D>("h_tth_syncex_dileptauh", ";cut", 8, 0, 8);
 		h_tth_syncex_dileptauh->GetXaxis()->SetBinLabel(1, "All events");
 		//h_tth_syncex_dileptauh->GetXaxis()->SetBinLabel(2, "Weighted");
-		int itr = 2;
-		for (auto & icut : cuts) {
-			h_tth_syncex_dileptauh->GetXaxis()->SetBinLabel(itr++,icut.c_str());
-		}
+		h_tth_syncex_dileptauh->GetXaxis()->SetBinLabel(2, "Single lep trig");
+		h_tth_syncex_dileptauh->GetXaxis()->SetBinLabel(3, ">= 2 lep");
+		h_tth_syncex_dileptauh->GetXaxis()->SetBinLabel(4, "1 tauh");
+		h_tth_syncex_dileptauh->GetXaxis()->SetBinLabel(5, "Same sign lep");
+		h_tth_syncex_dileptauh->GetXaxis()->SetBinLabel(6, "Opposite sign tau");
+		h_tth_syncex_dileptauh->GetXaxis()->SetBinLabel(7, "min_njets");
+		h_tth_syncex_dileptauh->GetXaxis()->SetBinLabel(8, "min_nbtags");
 
 		// Jet multiplicity
 		h_njets = fs_->make<TH1D>("h_njets", "", 11, -0.5, 10.5);

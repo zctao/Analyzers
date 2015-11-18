@@ -103,7 +103,8 @@ process.ttHtautau = cms.EDAnalyzer('CU_ttH_EDA',
 process.TFileService = cms.Service("TFileService",
 	#fileName = cms.string('Outputs/CU_ttH_EDA_output_sig.root')
         #fileName = cms.string('Outputs/CU_ttH_EDA_output_TTJets.root')
-        fileName = cms.string('CU_ttH_EDA_output_test.root')
+        #fileName = cms.string('CU_ttH_EDA_output_test.root')
+        fileName = cms.string('CU_ttH_EDA_output.root')
 )
 
 

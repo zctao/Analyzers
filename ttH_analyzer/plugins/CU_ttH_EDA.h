@@ -219,7 +219,7 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	void Load_configuration(string); // at CU_ttH_EDA(), runs _MAODH()
 	void Load_configuration_set_type(const string &); // sets analysis_type
 	void Load_configuration_MAODH(bool); // runs miniAODhelper.SetUp
-	void Set_up_histograms(std::vector<string>);			 // at CU_ttH_EDA()
+	void Set_up_histograms();			 // at CU_ttH_EDA()
 	void Set_up_output_files();			 // at CU_ttH_EDA()
 	void Set_up_tokens();				 // at CU_ttH_EDA()
 	
@@ -240,7 +240,7 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	int Check_triggers(edm::Handle<edm::TriggerResults>,
 					   CU_ttH_EDA_event_vars &); // adjusts event variables
 	int Check_filters(edm::Handle<edm::TriggerResults>);
-	int Check_vertices_set_MAODhelper(edm::Handle<reco::VertexCollection>, reco::Vertex);
+	int Check_vertices_set_MAODhelper(edm::Handle<reco::VertexCollection>, reco::Vertex &);
 
 	// trigger iterator, part of Check_triggers()
 	bool Check_triggers_iterator(const vector<string> &,
@@ -262,8 +262,8 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	//void Check_Fill_Print_dileptauh(CU_ttH_EDA_event_vars &);
 	//void Check_Fill_Print_eleditauh(CU_ttH_EDA_event_vars &);
 	//void Check_Fill_Print_muditauh(CU_ttH_EDA_event_vars &);
-	bool pass_cut(CU_ttH_EDA_event_vars &, string);
-	bool pass_multi_cuts(CU_ttH_EDA_event_vars &, std::vector<string>, bool, TH1D*, int);
+	//bool pass_cut(CU_ttH_EDA_event_vars &, string);
+	//bool pass_multi_cuts(CU_ttH_EDA_event_vars &, std::vector<string>, bool, TH1D*, int);
 	void Make_Ntuple(CU_ttH_EDA_gen_vars &, CU_ttH_EDA_event_vars &, TTree *);
 	void Fill_Tau_Eff_Hist(CU_ttH_EDA_gen_vars &, CU_ttH_EDA_event_vars &);
 
