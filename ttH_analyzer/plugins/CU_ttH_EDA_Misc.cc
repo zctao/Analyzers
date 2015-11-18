@@ -620,6 +620,8 @@ void CU_ttH_EDA::Make_Ntuple(CU_ttH_EDA_gen_vars &gen, CU_ttH_EDA_event_vars &lo
 	Ltau_vx.clear();
 	Ltau_vy.clear();
 	Ltau_vz.clear();
+	Ltau_decaymode.clear();
+	Ltau_ntrk.clear();
 	//medium_taus.clear();
 	medium_tau_pt.clear();
 	medium_tau_eta.clear();
@@ -631,6 +633,8 @@ void CU_ttH_EDA::Make_Ntuple(CU_ttH_EDA_gen_vars &gen, CU_ttH_EDA_event_vars &lo
 	Mtau_vx.clear();
 	Mtau_vy.clear();
 	Mtau_vz.clear();
+	Mtau_decaymode.clear();
+	Mtau_ntrk.clear();
 	//tight_taus.clear();
 	tight_tau_pt.clear();
 	tight_tau_eta.clear();
@@ -642,6 +646,8 @@ void CU_ttH_EDA::Make_Ntuple(CU_ttH_EDA_gen_vars &gen, CU_ttH_EDA_event_vars &lo
 	Ttau_vx.clear();
 	Ttau_vy.clear();
 	Ttau_vz.clear();
+	Ttau_decaymode.clear();
+	Ttau_ntrk.clear();
 
 	//jets.clear();
 	jet_pt.clear();
@@ -649,8 +655,6 @@ void CU_ttH_EDA::Make_Ntuple(CU_ttH_EDA_gen_vars &gen, CU_ttH_EDA_event_vars &lo
 	jet_phi.clear();
 	jet_mass.clear();
 	jet_charges.clear();
-	jet_vtx_dz.clear();
-	jet_vtx_dxy.clear();
 	jet_vz.clear();
 	jet_vx.clear();
 	jet_vy.clear();
@@ -661,8 +665,6 @@ void CU_ttH_EDA::Make_Ntuple(CU_ttH_EDA_gen_vars &gen, CU_ttH_EDA_event_vars &lo
 	bjet_phi.clear();
 	bjet_mass.clear();
 	bjet_charges.clear();
-	bjet_vtx_dz.clear();
-	bjet_vtx_dxy.clear();
 	bjet_vz.clear();
 	bjet_vx.clear();
 	bjet_vy.clear();
@@ -747,9 +749,9 @@ void CU_ttH_EDA::Make_Ntuple(CU_ttH_EDA_gen_vars &gen, CU_ttH_EDA_event_vars &lo
 			e_vtx_dz.push_back( ele.gsfTrack()->dz(pv.position()) );
 			e_vtx_dxy.push_back( ele.gsfTrack()->dxy(pv.position()) );
 		}
-		e_vx.push_back(ele.vx()-pv.x());
-		e_vy.push_back(ele.vy()-pv.y());
-		e_vz.push_back(ele.vz()-pv.z());
+		//e_vx.push_back(ele.vx());
+		//e_vy.push_back(ele.vy());
+		//e_vz.push_back(ele.vz());
 	}
 
 	// muons
@@ -764,9 +766,9 @@ void CU_ttH_EDA::Make_Ntuple(CU_ttH_EDA_gen_vars &gen, CU_ttH_EDA_event_vars &lo
 			mu_vtx_dxy.push_back( mu.muonBestTrack()->dxy(pv.position()) );
 			// innerTrack? GlobalTrack?
 		}
-		mu_vx.push_back(mu.vx()-pv.x());
-		mu_vy.push_back(mu.vy()-pv.y());
-		mu_vz.push_back(mu.vz()-pv.z());
+		//mu_vx.push_back(mu.vx());
+		//mu_vy.push_back(mu.vy());
+		//mu_vz.push_back(mu.vz());
 	}
 
 	// taus
@@ -776,10 +778,12 @@ void CU_ttH_EDA::Make_Ntuple(CU_ttH_EDA_gen_vars &gen, CU_ttH_EDA_event_vars &lo
 		loose_tau_phi.push_back(tau.phi());
 		loose_tau_mass.push_back(tau.mass());
 		Ltau_charges.push_back(tau.charge());
+		Ltau_decaymode.push_back(tau.decayMode());
+		//Ltau_ntrk.push_back(tau.signalTracks().size());
 		// tau vertex
-		Ltau_vx.push_back(tau.vx());
-		Ltau_vy.push_back(tau.vy());
-		Ltau_vz.push_back(tau.vz());
+		//Ltau_vx.push_back(tau.vx());
+		//Ltau_vy.push_back(tau.vy());
+		//Ltau_vz.push_back(tau.vz());
 		//Ltau_vr.push_back( sqrt(tau.vx()*tau.vx()+tau.vy()*tau.vy()) );
 	}
 
@@ -789,9 +793,11 @@ void CU_ttH_EDA::Make_Ntuple(CU_ttH_EDA_gen_vars &gen, CU_ttH_EDA_event_vars &lo
 		medium_tau_phi.push_back(tau.phi());
 		medium_tau_mass.push_back(tau.mass());
 		Mtau_charges.push_back(tau.charge());
-		Mtau_vx.push_back(tau.vx());
-		Mtau_vy.push_back(tau.vy());
-		Mtau_vz.push_back(tau.vz());
+		Mtau_decaymode.push_back(tau.decayMode());
+		//Mtau_ntrk.push_back(tau.signalTracks().size());
+		//Mtau_vx.push_back(tau.vx());
+		//Mtau_vy.push_back(tau.vy());
+		//Mtau_vz.push_back(tau.vz());
 		//Mtau_vr.push_back( sqrt(tau.vx()*tau.vx()+tau.vy()*tau.vy()) );
 	}
 
@@ -801,9 +807,11 @@ void CU_ttH_EDA::Make_Ntuple(CU_ttH_EDA_gen_vars &gen, CU_ttH_EDA_event_vars &lo
 		tight_tau_phi.push_back(tau.phi());
 		tight_tau_mass.push_back(tau.mass());
 		Ttau_charges.push_back(tau.charge());
-		Ttau_vx.push_back(tau.vx());
-		Ttau_vy.push_back(tau.vy());
-		Ttau_vz.push_back(tau.vz());
+		Ttau_decaymode.push_back(tau.decayMode());
+		//Ttau_ntrk.push_back(tau.signalTracks().size());
+		//Ttau_vx.push_back(tau.vx());
+		//Ttau_vy.push_back(tau.vy());
+		//Ttau_vz.push_back(tau.vz());
 		//Ttau_vr.push_back( sqrt(tau.vx()*tau.vx()+tau.vy()*tau.vy()) );
 	}
 
@@ -815,9 +823,9 @@ void CU_ttH_EDA::Make_Ntuple(CU_ttH_EDA_gen_vars &gen, CU_ttH_EDA_event_vars &lo
 		jet_mass.push_back(jet.mass());
 		jet_charges.push_back(jet.jetCharge());
 		// jet vertex
-		jet_vx.push_back(jet.vx());
-		jet_vy.push_back(jet.vy());
-		jet_vz.push_back(jet.vz());
+		//jet_vx.push_back(jet.vx());
+		//jet_vy.push_back(jet.vy());
+		//jet_vz.push_back(jet.vz());
 		//jet_vr.push_back( sqrt(jet.vx()*jet.vx()+jet.vy()*jet.vy()) );
 	}
 
@@ -828,9 +836,9 @@ void CU_ttH_EDA::Make_Ntuple(CU_ttH_EDA_gen_vars &gen, CU_ttH_EDA_event_vars &lo
 		bjet_phi.push_back(bjet.phi());
 		bjet_mass.push_back(bjet.mass());
 		// b vertex
-		bjet_vx.push_back(bjet.vx());
-		bjet_vy.push_back(bjet.vy());
-		bjet_vz.push_back(bjet.vz());
+		//bjet_vx.push_back(bjet.vx());
+		//bjet_vy.push_back(bjet.vy());
+		//bjet_vz.push_back(bjet.vz());
 		//bjet_vr.push_back( sqrt(bjet.vx()*bjet.vx()+bjet.vy()*bjet.vy()) );
 	}
 

@@ -440,6 +440,8 @@ void CU_ttH_EDA::Setup_Tree()
 	eventTree->Branch("loose_tau_vy", &Ltau_vy);
 	eventTree->Branch("loose_tau_vtx_dz", &Ltau_vtx_dz);
 	eventTree->Branch("loose_tau_vtx_dxy", &Ltau_vtx_dxy);
+	eventTree->Branch("loose_tau_decaymode", &Ltau_decaymode);
+	eventTree->Branch("loose_tau_ntrk", &Ltau_ntrk);
 	//eventTree->Bronch("medium_taus", "TLorentzVector", &medium_taus);
 	eventTree->Branch("medium_tau_pt", &medium_tau_pt);
 	eventTree->Branch("medium_tau_eta", &medium_tau_eta);
@@ -451,6 +453,8 @@ void CU_ttH_EDA::Setup_Tree()
 	eventTree->Branch("medium_tau_vy", &Mtau_vy);
 	eventTree->Branch("medium_tau_vtx_dz", &Mtau_vtx_dz);
 	eventTree->Branch("medium_tau_vtx_dxy", &Mtau_vtx_dxy);
+	eventTree->Branch("medium_tau_decaymode", &Mtau_decaymode);
+	eventTree->Branch("medium_tau_ntrk", &Mtau_ntrk);
 	//eventTree->Bronch("tight_taus", "TLorentzVector", &tight_taus);
 	eventTree->Branch("tight_tau_pt", &tight_tau_pt);
 	eventTree->Branch("tight_tau_eta", &tight_tau_eta);
@@ -462,6 +466,8 @@ void CU_ttH_EDA::Setup_Tree()
 	eventTree->Branch("tight_tau_vy", &Ttau_vy);
 	eventTree->Branch("tight_tau_vtx_dz", &Ttau_vtx_dz);
 	eventTree->Branch("tight_tau_vtx_dxy", &Ttau_vtx_dxy);
+	eventTree->Branch("tight_tau_decaymode", &Ttau_decaymode);
+	eventTree->Branch("tight_tau_ntrk", &Ttau_ntrk);
 	
 	//eventTree->Bronch("jets", "TLorentzVector", &jets);
 	eventTree->Branch("jet_pt", &jet_pt);
@@ -472,8 +478,6 @@ void CU_ttH_EDA::Setup_Tree()
 	eventTree->Branch("jet_vz", &jet_vz);
 	eventTree->Branch("jet_vx", &jet_vx);
 	eventTree->Branch("jet_vy", &jet_vy);
-	eventTree->Branch("jet_vtx_dz", &jet_vtx_dz);
-	eventTree->Branch("jet_vtx_dxy", &jet_vtx_dxy);
 
 	//eventTree->Bronch("bjets", "TLorentzVector", &bjets);
 	eventTree->Branch("bjet_pt", &bjet_pt);
@@ -484,8 +488,6 @@ void CU_ttH_EDA::Setup_Tree()
 	eventTree->Branch("bjet_vz", &bjet_vz);
 	eventTree->Branch("bjet_vx", &bjet_vx);
 	eventTree->Branch("bjet_vy", &bjet_vy);
-	eventTree->Branch("bjet_vtx_dz", &bjet_vtx_dz);
-	eventTree->Branch("bjet_vtx_dxy", &bjet_vtx_dxy);
 	
 	eventTree->Branch("gen_x_pdgId", &gen_x_pdgId);
 	eventTree->Branch("gen_x_status", &gen_x_status);

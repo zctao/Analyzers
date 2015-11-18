@@ -542,6 +542,12 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	std::vector<float> Ltau_vtx_dxy;
 	std::vector<float> Mtau_vtx_dxy;
 	std::vector<float> Ttau_vtx_dxy;
+	std::vector<int> Ltau_decaymode;
+	std::vector<int> Mtau_decaymode;
+	std::vector<int> Ttau_decaymode;
+	std::vector<size_t> Ltau_ntrk;
+	std::vector<size_t> Mtau_ntrk;
+	std::vector<size_t> Ttau_ntrk;
 	
 	//std::vector<TLorentzVector> jets; // jets_selected_sorted
 	std::vector<float> jet_pt;
@@ -552,8 +558,6 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	std::vector<float> jet_vz;
 	std::vector<float> jet_vx;
 	std::vector<float> jet_vy;
-	std::vector<float> jet_vtx_dz;
-	std::vector<float> jet_vtx_dxy;
 	//std::vector<TLorentzVector> bjets; // jets_selected_tag_sorted
 	std::vector<float> bjet_pt;
 	std::vector<float> bjet_eta;
@@ -563,9 +567,7 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	std::vector<float> bjet_vz;
 	std::vector<float> bjet_vx;
 	std::vector<float> bjet_vy;
-	std::vector<float> bjet_vtx_dz;
-	std::vector<float> bjet_vtx_dxy;
-
+	
 	// MC truth
 	std::vector<int> gen_x_pdgId;
 	std::vector<int> gen_x_status;
