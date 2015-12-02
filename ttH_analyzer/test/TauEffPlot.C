@@ -25,46 +25,46 @@ void TauEffPlot(
 	f_sig->cd("ttHsyncExercise");
 	
 	// Get historamgs
-	TH1D* h_num_genHadTau = (TH1D*)f_sig->Get("ttHsyncExercise/h_num_genHadTau");
-	TH1D* h_genHadTau_pt = (TH1D*)f_sig->Get("ttHsyncExercise/h_genHadTau_pt");
-	TH1D* h_genHadTau_eta = (TH1D*)f_sig->Get("ttHsyncExercise/h_genHadTau_eta");
-	TH1D* h_genHadTau_phi = (TH1D*)f_sig->Get("ttHsyncExercise/h_genHadTau_phi");
+	TH1D* h_num_genHadTau = (TH1D*)f_sig->Get("ttHtautau/h_num_genHadTau");
+	TH1D* h_genHadTau_pt = (TH1D*)f_sig->Get("ttHtautau/h_genHadTau_pt");
+	TH1D* h_genHadTau_eta = (TH1D*)f_sig->Get("ttHtautau/h_genHadTau_eta");
+	TH1D* h_genHadTau_phi = (TH1D*)f_sig->Get("ttHtautau/h_genHadTau_phi");
 
 	TH1D* h_nTau_noniso = (TH1D*)f_sig->
-		Get("ttHsyncExercise/h_num_selectedTau_noniso");
+		Get("ttHtautau/h_num_selectedTau_noniso");
 	TH1D* h_eff_Tau_noniso_pt = (TH1D*)f_sig->
-		Get("ttHsyncExercise/h_selectedTau_noniso_genpt");
+		Get("ttHtautau/h_selectedTau_noniso_genpt");
 	TH1D* h_eff_Tau_noniso_eta = (TH1D*)f_sig->
-		Get("ttHsyncExercise/h_selectedTau_noniso_geneta");
+		Get("ttHtautau/h_selectedTau_noniso_geneta");
 	TH1D* h_eff_Tau_noniso_phi = (TH1D*)f_sig->
-		Get("ttHsyncExercise/h_selectedTau_noniso_genphi");
+		Get("ttHtautau/h_selectedTau_noniso_genphi");
 
 	TH1D* h_nTau_loose = (TH1D*)f_sig->
-		Get("ttHsyncExercise/h_num_selectedTau_loose");
+		Get("ttHtautau/h_num_selectedTau_loose");
 	TH1D* h_eff_Tau_loose_pt = (TH1D*)f_sig->
-		Get("ttHsyncExercise/h_selectedTau_loose_genpt");
+		Get("ttHtautau/h_selectedTau_loose_genpt");
 	TH1D* h_eff_Tau_loose_eta = (TH1D*)f_sig->
-		Get("ttHsyncExercise/h_selectedTau_loose_geneta");
+		Get("ttHtautau/h_selectedTau_loose_geneta");
 	TH1D* h_eff_Tau_loose_phi = (TH1D*)f_sig->
-		Get("ttHsyncExercise/h_selectedTau_loose_genphi");
+		Get("ttHtautau/h_selectedTau_loose_genphi");
 
 	TH1D* h_nTau_medium = (TH1D*)f_sig->
-		Get("ttHsyncExercise/h_num_selectedTau_medium");
+		Get("ttHtautau/h_num_selectedTau_medium");
 	TH1D* h_eff_Tau_medium_pt = (TH1D*)f_sig->
-		Get("ttHsyncExercise/h_selectedTau_medium_genpt");
+		Get("ttHtautau/h_selectedTau_medium_genpt");
 	TH1D* h_eff_Tau_medium_eta = (TH1D*)f_sig->
-		Get("ttHsyncExercise/h_selectedTau_medium_geneta");
+		Get("ttHtautau/h_selectedTau_medium_geneta");
 	TH1D* h_eff_Tau_medium_phi = (TH1D*)f_sig->
-		Get("ttHsyncExercise/h_selectedTau_medium_genphi");
+		Get("ttHtautau/h_selectedTau_medium_genphi");
 
 	TH1D* h_nTau_tight = (TH1D*)f_sig->
-		Get("ttHsyncExercise/h_num_selectedTau_tight");
+		Get("ttHtautau/h_num_selectedTau_tight");
 	TH1D* h_eff_Tau_tight_pt = (TH1D*)f_sig->
-		Get("ttHsyncExercise/h_selectedTau_tight_genpt");
+		Get("ttHtautau/h_selectedTau_tight_genpt");
 	TH1D* h_eff_Tau_tight_eta = (TH1D*)f_sig->
-		Get("ttHsyncExercise/h_selectedTau_tight_geneta");
+		Get("ttHtautau/h_selectedTau_tight_geneta");
 	TH1D* h_eff_Tau_tight_phi = (TH1D*)f_sig->
-		Get("ttHsyncExercise/h_selectedTau_tight_genphi");
+		Get("ttHtautau/h_selectedTau_tight_genphi");
 
 	h_num_genHadTau -> Sumw2();
 	h_genHadTau_pt  -> Sumw2();

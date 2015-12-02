@@ -31,7 +31,7 @@ void GenInfoPlotter ()
 void GenHisto (const TString input_file = "/uscms/home/ztao/work/CU_ttH_WD/Outputs/CU_ttH_EDA_output_sigtmp.root") {
 	// Read ntuples
 	TFile* f = new TFile(input_file);
-	TTree* tree = (TTree*) f->Get("ttHsyncExercise/EventTree");
+	TTree* tree = (TTree*) f->Get("ttHtautau/EventTree");
 
 	const int nevt = tree->GetEntries();
 
