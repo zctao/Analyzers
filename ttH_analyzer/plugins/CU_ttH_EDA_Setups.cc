@@ -416,6 +416,7 @@ void CU_ttH_EDA::Setup_Tree()
 	eventTree->Branch("e_vz", &e_vz);
 	eventTree->Branch("e_vx", &e_vx);
 	eventTree->Branch("e_vy", &e_vy);
+	eventTree->Branch("e_isGsfCtfScPixChargeConsistent", &e_isGsfCtfScPixChargeConsistent);
 	
 	//eventTree->Bronch("muons", "TLorentzVector", &muons);
 	eventTree->Branch("mu_pt", &mu_pt);
@@ -428,6 +429,7 @@ void CU_ttH_EDA::Setup_Tree()
 	eventTree->Branch("mu_vz", &mu_vz);
 	eventTree->Branch("mu_vx", &mu_vx);
 	eventTree->Branch("mu_vy", &mu_vy);
+	eventTree->Branch("mu_relTrkPtError", &mu_relTrkPtError);
 	
 	//eventTree->Bronch("loose_taus", "TLorentzVector", &loose_taus);
 	eventTree->Branch("loose_tau_pt", &loose_tau_pt);
@@ -488,6 +490,12 @@ void CU_ttH_EDA::Setup_Tree()
 	eventTree->Branch("bjet_vz", &bjet_vz);
 	eventTree->Branch("bjet_vx", &bjet_vx);
 	eventTree->Branch("bjet_vy", &bjet_vy);
+
+	// MET
+	eventTree->Branch("MET_x", &MET_x);
+	eventTree->Branch("MET_y", &MET_y);
+
+	
 	
 	eventTree->Branch("gen_x_pdgId", &gen_x_pdgId);
 	eventTree->Branch("gen_x_status", &gen_x_status);

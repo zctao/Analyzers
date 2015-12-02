@@ -46,8 +46,9 @@ CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig):
 	trigger_on_HLT_ee (iConfig.getParameter<std::vector<string>>("HLT_electron_electron_triggers")),
 	trigger_on_HLT_emu (iConfig.getParameter<std::vector<string>>("HLT_electron_muon_triggers")),
 	trigger_on_HLT_mumu (iConfig.getParameter<std::vector<string>>("HLT_muon_muon_triggers")),
-	// Cuts
-	min_tight_lepton_pT (iConfig.getParameter<double>("min_tight_lepton_pT")),
+	// Cuts	
+	min_ldg_lepton_pT (iConfig.getParameter<double>("min_ldg_lepton_pT")),
+	min_subldg_lepton_pT (iConfig.getParameter<double>("min_subldg_lepton_pT")),
 	min_tau_pT (iConfig.getParameter<double>("min_tau_pT")),
 	min_jet_pT (iConfig.getParameter<double>("min_jet_pT")),
 	min_bjet_pT (iConfig.getParameter<double>("min_bjet_pT")),
@@ -147,40 +148,43 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	}
 	
 	/// Lepton pre-selection
-	local.pre_mu = miniAODhelper.GetSelectedMuons(
-		*(handle.muons), min_tight_lepton_pT, muonID::muonTight);
+	local.mu_selected = miniAODhelper.GetSelectedMuons(
+		*(handle.muons), min_subldg_lepton_pT, muonID::muonTight);
 	
-	std::vector<pat::Electron> tmp_e = miniAODhelper.GetSelectedElectrons(
-		*(handle.electrons), min_tight_lepton_pT, electronID::electronSpring15T);
-	local.pre_e = removeOverlap(tmp_e, local.pre_mu, 0.05);
+	local.e_selected = miniAODhelper.GetSelectedElectrons(
+		*(handle.electrons), min_subldg_lepton_pT, electronID::electronSpring15T);
+	// remove electrons that overlap with muons
+	local.e_selected = removeOverlap(local.e_selected, local.mu_selected, 0.05);
 	
 	/// Tau selection
-	local.noniso_tau_selected = miniAODhelper.GetSelectedTaus(
-		*(handle.taus),	min_tau_pT, tau::nonIso);
+	//local.noniso_tau_selected = miniAODhelper.GetSelectedTaus(
+	//	*(handle.taus),	min_tau_pT, tau::nonIso);
 	local.loose_tau_selected = miniAODhelper.GetSelectedTaus(
 		*(handle.taus),	min_tau_pT, tau::loose);
+	// Remove taus that overlap with leptons
+	local.loose_tau_selected =
+		removeOverlap(local.loose_tau_selected, local.mu_selected, 0.4);
+	local.loose_tau_selected =
+		removeOverlap(local.loose_tau_selected, local.e_selected, 0.4);
+	
 	local.medium_tau_selected = miniAODhelper.GetSelectedTaus(
 		local.loose_tau_selected,	min_tau_pT, tau::medium);
 	local.tight_tau_selected = miniAODhelper.GetSelectedTaus(
 		local.medium_tau_selected,	min_tau_pT, tau::tight);
 	
-	// Remove overlap between taus and leptons
-	local.e_selected = removeOverlap(local.pre_e, local.loose_tau_selected, 0.15);
-	local.mu_selected = removeOverlap(local.pre_mu, local.loose_tau_selected, 0.15);
-	// Or remove tau instead of leptons?
 	
 	local.n_electrons = static_cast<int>(local.e_selected.size());
 	local.n_muons = static_cast<int>(local.mu_selected.size());
-	local.n_noniso_taus = static_cast<int>(local.noniso_tau_selected.size());
+	local.n_noniso_taus = 0;
 	local.n_loose_taus = static_cast<int>(local.loose_tau_selected.size());
 	local.n_medium_taus = static_cast<int>(local.medium_tau_selected.size());
 	local.n_tight_taus = static_cast<int>(local.tight_tau_selected.size());
 
-	/// Sort leptons by pT
+	/// Sort by pT
 	local.mu_selected_sorted = miniAODhelper.GetSortedByPt(local.mu_selected);
 	local.e_selected_sorted = miniAODhelper.GetSortedByPt(local.e_selected);
-	local.noniso_tau_selected_sorted
-		= miniAODhelper.GetSortedByPt(local.noniso_tau_selected);
+	//local.noniso_tau_selected_sorted
+	//	= miniAODhelper.GetSortedByPt(local.noniso_tau_selected);
 	local.loose_tau_selected_sorted
 		= miniAODhelper.GetSortedByPt(local.loose_tau_selected);
 	local.medium_tau_selected_sorted
@@ -216,7 +220,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	Top_tagger(handle.top_jets, local);
 	Higgs_tagger(handle.subfilter_jets, local);
 
-	/// Get Corrected MET, !!!not yet used!!!
+	/// Get Corrected MET, !!!not yet used!!!    ????
 	// may need to be placed in CU_ttH_EDA_event_vars
 	local.MET_corrected =
 		handle.METs->front(); // miniAODhelper.GetCorrectedMET( METs.at(0),
@@ -229,8 +233,8 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		
 		Fill_Tau_Eff_Hist(gen,local);
 		// Tau ID histograms
-		if (local.n_noniso_taus >= 1) {
-			h_ntauID -> Fill(0);
+		//if (local.n_noniso_taus >= 1) {
+		    //h_ntauID -> Fill(0);
 			if(local.n_loose_taus >= 1) {
 				h_ntauID -> Fill(1);
 				if (local.n_medium_taus >= 1) {
@@ -239,39 +243,48 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 						h_ntauID -> Fill(3);
 				}
 			}
-		}
+		//}
 
 		// Jet multiplicity
 		h_njets->Fill(local.n_jets);
 		h_nbtags->Fill(local.n_btags);
 		
-		//bool draw_cut_flow = true;   // Todo: move this flag to config file
-		//bool cut_passed = pass_multi_cuts(local, cuts, draw_cut_flow, h_tth_syncex_dileptauh, 1);
 
 		/// event selection
 		int fill_itr = 0;
 		h_tth_syncex_dileptauh->Fill(0.5 + fill_itr++);
 		
-		// Trigger: single lepton trigger
+		// Trigger: single lepton trigger   dilepton trig with lower pt?
 		if (!local.pass_single_e and !local.pass_single_mu)
 			return;
 		h_tth_syncex_dileptauh->Fill(0.5 + fill_itr++);
 		
 		// >= 2 leptons
+		// require ldg lepton pt > min_tight_ldg_lep_pT
 		if (local.n_electrons+local.n_muons <2)
 			return;
+		float mu_pt_max = 0;
+		float e_pt_max = 0;
+		if (!local.e_selected_sorted.empty())
+			e_pt_max = local.e_selected_sorted[0].pt();
+		if (!local.mu_selected_sorted.empty())
+			mu_pt_max = local.mu_selected_sorted[0].pt();
+		if (e_pt_max < min_ldg_lepton_pT and
+			mu_pt_max < min_ldg_lepton_pT)
+			return;
+		
 		h_tth_syncex_dileptauh->Fill(0.5 + fill_itr++);
 		
-		// 1 tau
+		// exactly one tau
 		if (local.n_loose_taus != 1)
 			return;
 		h_tth_syncex_dileptauh->Fill(0.5 + fill_itr++);
 		
 		// same sign leptons
 		std::vector<int> charges;
-		for (auto & e: local.e_selected)
+		for (auto & e: local.e_selected_sorted)
 			charges.push_back(e.charge());
-		for (auto & mu: local.mu_selected)
+		for (auto & mu: local.mu_selected_sorted)
 			charges.push_back(mu.charge());
 		
 		if (charges.size() == 2 and charges[0]*charges[1] < 0)
@@ -279,12 +292,12 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		h_tth_syncex_dileptauh->Fill(0.5 + fill_itr++);
 
 		// opposite sign to tau charge
-		int op_cnt = 0;
+		int os_cnt = 0;
 		for (auto & q: charges) {
 			if (q * local.loose_tau_selected[0].charge() < 0)
-				++op_cnt;
+				++os_cnt;
 		}			
-		if (op_cnt < 2)
+		if (os_cnt < 2)  // os_cnt == 2 ?
 			return;
 		h_tth_syncex_dileptauh->Fill(0.5 + fill_itr++);
 

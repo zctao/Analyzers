@@ -752,6 +752,7 @@ void CU_ttH_EDA::Make_Ntuple(CU_ttH_EDA_gen_vars &gen, CU_ttH_EDA_event_vars &lo
 		//e_vx.push_back(ele.vx());
 		//e_vy.push_back(ele.vy());
 		//e_vz.push_back(ele.vz());
+		e_isGsfCtfScPixChargeConsistent.push_back(ele.isGsfCtfScPixChargeConsistent());
 	}
 
 	// muons
@@ -762,9 +763,11 @@ void CU_ttH_EDA::Make_Ntuple(CU_ttH_EDA_gen_vars &gen, CU_ttH_EDA_event_vars &lo
 		mu_mass.push_back(mu.mass());
 		mu_charges.push_back(mu.charge());
 		if ( mu.muonBestTrack().isAvailable() ) {
+			// innerTrack? GlobalTrack?
 			mu_vtx_dz.push_back( mu.muonBestTrack()->dz(pv.position()) );
 			mu_vtx_dxy.push_back( mu.muonBestTrack()->dxy(pv.position()) );
-			// innerTrack? GlobalTrack?
+			mu_relTrkPtError.push_back( mu.muonBestTrack()->ptError() /
+										  mu.muonBestTrack()->pt());
 		}
 		//mu_vx.push_back(mu.vx());
 		//mu_vy.push_back(mu.vy());
@@ -842,6 +845,10 @@ void CU_ttH_EDA::Make_Ntuple(CU_ttH_EDA_gen_vars &gen, CU_ttH_EDA_event_vars &lo
 		//bjet_vr.push_back( sqrt(bjet.vx()*bjet.vx()+bjet.vy()*bjet.vy()) );
 	}
 
+	// MET
+	MET_x = local.MET_corrected.px();
+	MET_y = local.MET_corrected.py();
+	
 	// GenParticle Information
 	// mediators
 	for (auto & mediator : gen.x) {

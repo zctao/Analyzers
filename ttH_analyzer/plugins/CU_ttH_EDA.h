@@ -132,10 +132,8 @@ struct CU_ttH_EDA_event_vars {
 	bool pass_elemu;
 	
 	/// Particle container vectors
-	std::vector<pat::Electron> pre_e;
 	std::vector<pat::Electron> e_selected;
 	std::vector<pat::Electron> e_selected_sorted;
-	std::vector<pat::Muon> pre_mu;
 	std::vector<pat::Muon> mu_selected;
 	std::vector<pat::Muon> mu_selected_sorted;
 
@@ -161,6 +159,7 @@ struct CU_ttH_EDA_event_vars {
 	
 	/// Other quantities
 	pat::MET MET_corrected;
+	
 	double dimuon_mass;
 	double dielectron_mass;
 	double dilepton_mass;
@@ -349,7 +348,8 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	reco::Vertex pv;
 	
 	/// Cuts
-	float min_tight_lepton_pT;
+	float min_ldg_lepton_pT;
+	float min_subldg_lepton_pT;
 	float min_tau_pT;
 	float min_jet_pT;
 	float min_bjet_pT;
@@ -496,6 +496,7 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	std::vector<float> e_vy;
 	std::vector<float> e_vtx_dz;
 	std::vector<float> e_vtx_dxy;
+	std::vector<bool> e_isGsfCtfScPixChargeConsistent;
 	
 	//std::vector<TLorentzVector> muons; // sorted by pt
 	std::vector<float> mu_pt;
@@ -508,6 +509,7 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	std::vector<float> mu_vy;
 	std::vector<float> mu_vtx_dz;
 	std::vector<float> mu_vtx_dxy;
+	std::vector<float> mu_relTrkPtError;
 	
 	//std::vector<TLorentzVector> loose_taus; // sorted by pt
 	std::vector<float> loose_tau_pt;
@@ -548,6 +550,12 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	std::vector<size_t> Ltau_ntrk;
 	std::vector<size_t> Mtau_ntrk;
 	std::vector<size_t> Ttau_ntrk;
+	// dxy_PCA
+	// dxy_Sig
+	// flightLength
+	// secondary vertex
+	// leading track
+	
 	
 	//std::vector<TLorentzVector> jets; // jets_selected_sorted
 	std::vector<float> jet_pt;
@@ -567,6 +575,10 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	std::vector<float> bjet_vz;
 	std::vector<float> bjet_vx;
 	std::vector<float> bjet_vy;
+
+	// MET
+	float MET_x;
+	float MET_y;
 	
 	// MC truth
 	std::vector<int> gen_x_pdgId;

@@ -4,6 +4,7 @@
 /// Includes
 #include "CU_ttH_EDA.h"
 
+/*
 void CU_ttH_EDA::Load_configuration(string config_filename)
 {
 	const string error_message = "A problem in "
@@ -114,6 +115,7 @@ void CU_ttH_EDA::Load_configuration(string config_filename)
 	MAODHelper_b_tag_strength =
 		config["miniAODhelper_parameters"]["b_tag_strength"].as<char>();
 }
+*/
 
 void CU_ttH_EDA::Load_configuration_set_type(const string &conf_analysis_type)
 {
