@@ -120,7 +120,9 @@ struct CU_ttH_EDA_event_vars {
 	int n_medium_taus;
 	int n_tight_taus;
 	int n_jets;
-	int n_btags;
+	//int n_btags;
+	int n_btags_loose;
+	int n_btags_medium;
 	int n_ttags;
 	int n_Htags;
 
@@ -152,8 +154,12 @@ struct CU_ttH_EDA_event_vars {
 	std::vector<pat::Jet> jets_corrected;
 	std::vector<pat::Jet> jets_selected;
 	std::vector<pat::Jet> jets_selected_sorted;
-	std::vector<pat::Jet> jets_selected_tag;
-	std::vector<pat::Jet> jets_selected_tag_sorted;
+	//std::vector<pat::Jet> jets_selected_tag;
+	//std::vector<pat::Jet> jets_selected_tag_sorted;
+	std::vector<pat::Jet> jets_selected_tag_loose;
+	std::vector<pat::Jet> jets_selected_tag_loose_sorted;
+	std::vector<pat::Jet> jets_selected_tag_medium;
+	std::vector<pat::Jet> jets_selected_tag_medium_sorted;
 
 	double weight_gen;
 	

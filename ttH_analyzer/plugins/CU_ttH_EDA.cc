@@ -147,7 +147,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		h_flt->Fill(0., 1);
 	}
 	
-	/// Lepton pre-selection
+	/// Lepton selection
 	local.mu_selected = miniAODhelper.GetSelectedMuons(
 		*(handle.muons), min_subldg_lepton_pT, muonID::muonTight);
 	
@@ -170,8 +170,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	local.medium_tau_selected = miniAODhelper.GetSelectedTaus(
 		local.loose_tau_selected,	min_tau_pT, tau::medium);
 	local.tight_tau_selected = miniAODhelper.GetSelectedTaus(
-		local.medium_tau_selected,	min_tau_pT, tau::tight);
-	
+		local.medium_tau_selected,	min_tau_pT, tau::tight);	
 	
 	local.n_electrons = static_cast<int>(local.e_selected.size());
 	local.n_muons = static_cast<int>(local.mu_selected.size());
@@ -202,18 +201,30 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		miniAODhelper.GetCorrectedJets(local.jets_no_mu_e, iEvent, iSetup);
 	local.jets_selected = miniAODhelper.GetSelectedJets(
 		local.jets_corrected, min_jet_pT, max_jet_eta, jetID::jetLoose, '-');
-	local.jets_selected_tag = miniAODhelper.GetSelectedJets(
-		local.jets_corrected, min_bjet_pT, max_bjet_eta, jetID::jetLoose,
-		MAODHelper_b_tag_strength);
+	//local.jets_selected_tag = miniAODhelper.GetSelectedJets(
+	//	local.jets_corrected, min_bjet_pT, max_bjet_eta, jetID::jetLoose,
+	//	MAODHelper_b_tag_strength);
+	local.jets_selected_tag_loose = miniAODhelper.GetSelectedJets(
+	    local.jets_corrected, min_bjet_pT, max_bjet_eta, jetID::jetLoose,
+		'L');
+	local.jets_selected_tag_medium = miniAODhelper.GetSelectedJets(
+	    local.jets_selected_tag_loose, min_bjet_pT, max_bjet_eta, jetID::jetLoose,
+		'M');
 
 	local.n_jets = static_cast<int>(local.jets_selected.size());
-	local.n_btags = static_cast<int>(local.jets_selected_tag.size());
+	//local.n_btags = static_cast<int>(local.jets_selected_tag.size());
+	local.n_btags_loose = static_cast<int>(local.jets_selected_tag_loose.size());
+	local.n_btags_medium = static_cast<int>(local.jets_selected_tag_medium.size());
 
 	/// Sort jets by pT
 	local.jets_selected_sorted =
 		miniAODhelper.GetSortedByPt(local.jets_selected);
-	local.jets_selected_tag_sorted =
-		miniAODhelper.GetSortedByPt(local.jets_selected_tag);
+	//local.jets_selected_tag_sorted =
+	//	miniAODhelper.GetSortedByPt(local.jets_selected_tag);
+	local.jets_selected_tag_loose_sorted =
+		miniAODhelper.GetSortedByPt(local.jets_selected_tag_loose);
+	local.jets_selected_tag_medium_sorted =
+		miniAODhelper.GetSortedByPt(local.jets_selected_tag_medium);
 
 	/// Top and Higgs tagging using collections through handles. adjusts
 	/// local.<tag>
@@ -247,15 +258,17 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 
 		// Jet multiplicity
 		h_njets->Fill(local.n_jets);
-		h_nbtags->Fill(local.n_btags);
+		h_nbtags->Fill(local.n_btags_loose);
 		
 
 		/// event selection
 		int fill_itr = 0;
 		h_tth_syncex_dileptauh->Fill(0.5 + fill_itr++);
 		
-		// Trigger: single lepton trigger   dilepton trig with lower pt?
-		if (!local.pass_single_e and !local.pass_single_mu)
+		// Trigger: single lepton trigger + dilepton trig
+		if (!local.pass_single_e and !local.pass_single_mu
+			and !local.pass_double_mu and !local.pass_double_e
+			and !local.pass_elemu)
 			return;
 		h_tth_syncex_dileptauh->Fill(0.5 + fill_itr++);
 		
@@ -307,7 +320,8 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		h_tth_syncex_dileptauh->Fill(0.5 + fill_itr++);
 
 		// number of b-tags
-		if (local.n_btags < min_nbtags)
+		//if (local.n_btags < min_nbtags)
+		if (local.n_btags_loose < 2 and local.n_btags_medium < 1)
 			return;
 		h_tth_syncex_dileptauh->Fill(0.5 + fill_itr++);
 

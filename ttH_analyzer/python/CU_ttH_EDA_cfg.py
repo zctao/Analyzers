@@ -84,20 +84,21 @@ process.ttHtautau = cms.EDAnalyzer('CU_ttH_EDA',
             'HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v1'
         ]),
         # Cuts
-        min_tight_lepton_pT = cms.double(20),
+        min_ldg_lepton_pT = cms.double(20),
+        min_subldg_lepton_pT = cms.double(10),
         min_tau_pT = cms.double(20),
         min_jet_pT = cms.double(30),
         min_bjet_pT = cms.double(20),
         max_jet_eta = cms.double(2.5),
         max_bjet_eta = cms.double(2.5),
         min_njets = cms.int32(2),
-        min_nbtags = cms.int32(1),
+        min_nbtags = cms.int32(2),
         # Jets
         jet_corrector = cms.string('ak4PFchsL1L2L3'),
         # MiniAODhelper
         using_real_data = cms.bool(False),
         ## available choices '-': none, 'L': loose, 'M': medium, 'T': tight
-        b_tag_strength = cms.string('M')
+        b_tag_strength = cms.string('L')
 )
 
 process.TFileService = cms.Service("TFileService",
