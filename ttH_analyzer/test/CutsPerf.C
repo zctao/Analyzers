@@ -46,8 +46,8 @@ const int sig_scale = 10;
 void CutsPerf(
 			  //const TString sig_file = "/uscms/home/ztao/work/CU_ttH_WD/Outputs/CU_ttH_EDA_output_sig.root",
 			  //const TString bkg_file = "/uscms/home/ztao/work/CU_ttH_WD/Outputs/CU_ttH_EDA_output_TTJets.root"
-			  const TString sig_file = "/eos/uscms/store/user/ztao/ttHToTT_M125_13TeV_powheg_pythia8/ttHToTauTau_Ntuple_signal/151119_151045/0000/CU_ttH_EDA_output_tmp.root",
-			  const TString bkg_file = "/eos/uscms/store/user/ztao/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/ttHToTauTau_Ntuple_TTJets/151118_223202/0000/CU_ttH_EDA_output_tmp.root"
+			  const TString sig_file = "/eos/uscms/store/user/ztao/ttHToTT_M125_13TeV_powheg_pythia8/ttHToTauTau_Ntuple_signal/151202_013926//0000/CU_ttH_EDA_output.root",
+			  const TString bkg_file = "/eos/uscms/store/user/ztao/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/ttHToTauTau_Ntuple_TTJets/151202_014024/0000/CU_ttH_EDA_output_tmp.root"
 							)
 {
 	// Read ntuples
@@ -449,7 +449,12 @@ int HistFiller(TTree* tree, TString label)
 	TH1F* h_visM_taulep2 = new TH1F("h_visM_taulep2", "", 30, 0, 300);
 	TH1F* h_visM_taulepmaxdxy = new TH1F("h_visM_taulepmaxdxy", "", 30, 0, 300);
 	TH1F* h_visM_taulepmindR = new TH1F("h_visM_taulepmindR", "", 30, 0, 300);
-	
+
+	TH1F* h_MET = new TH1F("h_MET", "", 50, 0 ,500);
+	TH1F* h_MHT = new TH1F("h_MHT", "", 50, 0, 500);
+	TH1F* h_HT = new TH1F("h_HT", "", 100, 0, 1000);
+	TH1F* h_metLD = new TH1F("h_metLD", "", 50, 0, 5);
+	TH1F* h_visMtot = new TH1F("h_visMtot", "", 50, 0, 2000);
 	
 	// ----------------------------------------------------------------------------------------------------------------
 	//        * * * * *     S T A R T   O F   A C T U A L   R U N N I N G   O N   E V E N T S     * * * * *
@@ -464,31 +469,6 @@ int HistFiller(TTree* tree, TString label)
 		std::vector<float> *lep_pt, *lep_eta, *lep_phi, *lep_mass;
 		std::vector<float> *lep_vtx_dz, *lep_vtx_dxy;
 		std::vector<int> *lep_charges;
-
-		/*
-		////////////////////////////////////
-		// debug
-		int lepcomb = 10*e_pt->size()+mu_pt->size();
-		size_t esize = e_pt->size();
-		size_t musize = mu_pt->size();
-		size_t lepsize = e_pt->size()+mu_pt->size();
-
-		// check how many events have >=2 leptons with |dz|<cuts(0.01)
-		int vzcutpass = 0;
-		for (size_t ive=0; ive<e_vz->size(); ++ive) {
-			if (abs(e_vz->at(ive)) <= 0.01)
-				vzcutpass++;
-		}
-		for (size_t ivm=0; ivm<mu_vz->size(); ++ivm) {
-			if (abs(mu_vz->at(ivm)) <= 0.01)
-				vzcutpass++;
-		}
-
-		if (vzcutpass < 2)
-			continue;
-		
-		////////////////////////////////////
-		*/
 		
 		lep_pt = e_pt;
 		lep_eta = e_eta;
@@ -511,71 +491,107 @@ int HistFiller(TTree* tree, TString label)
 		lep_charges->insert(lep_charges->end(), mu_charges->begin(), mu_charges->end());
 		lep_vtx_dz->insert(lep_vtx_dz->end(), mu_vtx_dz->begin(), mu_vtx_dz->end());
 		lep_vtx_dxy->insert(lep_vtx_dxy->end(), mu_vtx_dxy->begin(), mu_vtx_dxy->end());
-				
-		
-		// cut on dz
-		/* !!!NotRight
-		for (size_t ilep=0; ilep<lep_vz->size(); ++ilep) {
-			if (fabs(lep_vz->at(ilep))>0.01) {
-				lep_pt->erase(lep_pt->begin()+ilep);
-				lep_eta->erase(lep_eta->begin()+ilep);
-				lep_phi->erase(lep_phi->begin()+ilep);
-				lep_mass->erase(lep_mass->begin()+ilep);
-				lep_charges->erase(lep_charges->begin()+ilep);
-				lep_vx->erase(lep_vx->begin()+ilep);
-				lep_vy->erase(lep_vy->begin()+ilep);
-				lep_vz->erase(lep_vz->begin()+ilep);
-			}
-		}
-		
-		if (lep_vz->size()<2)
-			continue;
-		
-		else if (lep_pt->size()==2) {
-			if (lep_charges->at(0) * lep_charges->at(1) < 0)
-				continue;
-		}
-		*/
-		/*
-		// debug
-		// check how many events have >=2 leptons with |dz|<cuts(0.01)
-		int vzcutpass = 0;
-		for (size_t ilep = 0; ilep<lep_vz->size(); ++ilep) {
-			if (abs(lep_vz->at(ilep)) <= 0.01)
-				vzcutpass++;
-		}
-		if (vzcutpass < 2)
-			continue;
-		
-		////////////////////////////////////
-		// debug
-		int netlepq = 0;
-		for (size_t il=0; il<lep_charges->size(); ++il) {
-			netlepq += lep_charges->at(il);
-		}
-		int nettauq = 0;
-		for (size_t itau=0; itau<loose_tau_charges->size(); ++itau) {
-			nettauq += loose_tau_charges->at(itau);
-		}
-		if (netlepq * nettauq >=0) {
-			++bug_cnt;
-			std::cout << "lep_pt size :" << lep_pt->size() << endl;
-			std::cout << "e+mu size :" << lepsize << endl;
-			std::cout << "leps net charge :" << netlepq << endl;
-			std::cout << "lep charges :" << lep_charges->at(0) << lep_charges->at(1) << endl;
-			std::cout << "lepcomb :" << lepcomb << endl;
-			std::cout << "e size :" << esize << "\t" << "mu size :" << musize << endl;
-			std::cout << "tau net charge :" << nettauq << endl;
-			std::cout << "loose_tau size :" << loose_tau_charges->size() << endl;
-			std::cout << "bug_cnt :" << bug_cnt << endl;
-			std::cout << "lep vertices :" << endl;
-			for (size_t ilep=0; ilep<lep_vz->size(); ++ilep) {
-				cout << "dz :" << lep_vz->at(ilep) - pv_z << endl;
-			}
-		}
-		////////////////////////////////////
-		*/
 
+		// MET
+		float MET = TMath::Sqrt(met_x*met_x+met_y*met_y);
+		h_MET -> Fill(MET);
+		
+		/// Calculate variables that are not yet included in the ntuple
+		std::vector<TLorentzVector> leptons;
+		std::vector<TLorentzVector> jets;
+		std::vector<TLorentzVector> tau_soft; // pT < jet pT cut (30)
+		std::vector<TLorentzVector> b_soft; // pT < jet pT cut (30)
+
+		for (size_t itr=0; itr < lep_pt->size(); ++itr) {
+			TLorentzVector lepp4;
+			lepp4.SetPtEtaPhiM(lep_pt->at(itr),lep_eta->at(itr),lep_phi->at(itr),lep_mass->at(itr));
+			leptons.push_back(lepp4);
+		}
+		for (size_t itr=0; itr < jet_pt->size(); ++itr) {
+			TLorentzVector jetp4;
+			jetp4.SetPtEtaPhiM(jet_pt->at(itr),jet_eta->at(itr),jet_phi->at(itr),jet_mass->at(itr));
+			jets.push_back(jetp4);
+		}
+
+		// bjet and tau pT cuts are smaller than jet pT cut, include tau and bjet with pT < jet pT cut(30)?
+		// pT cuts for tau and bjet are 20 GeV
+		TLorentzVector bp4, taup4;
+		for (size_t ib=0; ib < bjet_pt->size(); ++ib) {
+			if (bjet_pt->at(ib) < 30) {
+				bp4.SetPtEtaPhiM(bjet_pt->at(ib),bjet_eta->at(ib),
+								 bjet_phi->at(ib),bjet_mass->at(ib));
+				b_soft.push_back(bp4);
+			}
+		}
+		for (size_t itau=0; itau < loose_tau_pt->size(); ++itau) {
+			if (loose_tau_pt->at(itau) < 30) {
+				taup4.SetPtEtaPhiM(loose_tau_pt->at(itau),loose_tau_eta->at(itau),
+								 loose_tau_phi->at(itau),loose_tau_mass->at(itau));
+				tau_soft.push_back(taup4);
+			}
+		}
+
+		// upper bound on number of jets?
+		
+		// HT
+		float HT = 0;
+		for (auto & pt : *lep_pt)
+			HT += pt;
+		for (auto & pt : *jet_pt)
+			HT += pt;
+		for (auto & pt : *loose_tau_pt) {
+			if (pt < 30)
+				HT += pt;
+		}
+		for (auto & pt : *bjet_pt) {
+			if (pt < 30)
+				HT += pt;
+		}
+		h_HT -> Fill(HT);
+		
+		// MHT
+		float MHT_x = 0;
+		float MHT_y = 0;
+		for (auto & l : leptons) {
+			MHT_x -= l.Px();
+			MHT_y -= l.Py();
+		}
+		for (auto & j : jets) {
+			MHT_x -= j.Px();
+			MHT_y -= j.Py();
+		}
+		for (auto & tau: tau_soft) {
+			MHT_x -= tau.Px();
+			MHT_y -= tau.Py();
+		}
+		for (auto & b : b_soft) {
+			MHT_x -= b.Px();
+			MHT_y -= b.Py();
+		}
+		float MHT = TMath::Sqrt(MHT_x*MHT_x+MHT_y*MHT_y);
+		h_MHT -> Fill(MHT);
+
+		// metLD
+		float metLD = 0.00397*MET+ 0.00265*MHT;
+		h_metLD -> Fill(metLD);
+		
+		// total visible mass
+		TLorentzVector p4tot;
+		for (auto & l : leptons)
+			p4tot += l;
+		for (auto & j : jets)
+			p4tot += j;
+		for (auto & tau : tau_soft)
+			p4tot += tau;
+		for (auto & b : b_soft)
+			p4tot += b;
+		
+		h_visMtot -> Fill(p4tot.M());
+		
+		/// Additional cuts if applicale
+		
+		++nevtpass;
+		
 		// Look for leading and sub-leading leptons
 		// require both lepton charges are of opposite sign to tau charge
 
@@ -597,75 +613,12 @@ int HistFiller(TTree* tree, TString label)
 				ilep2 = itr;
 			}
 		}
-		
-		
-		/*
-		if (lep_charges->at(0) * tau_charge > 0 and lep_pt->size() < 3) {
-			//std::cout << "initialize ilep1" << endl;
-		
-		}
-		
-		for (size_t i=0; i<lep_pt->size(); ++i) {
-			if (lep_charges->at(i) * tau_charge  < 0) {
-				ilep1 = i;
-				break;
-			}
-		}
-		//std::cout << "ilep1 :" << ilep1 << endl;
-		if (ilep1 >= lep_pt->size()) {
-			std::cout << "Oooooops" << endl;
-			break;
-		}
-		
-		for (size_t i=0; i<lep_pt->size(); ++i) {
-			if (lep_charges->at(i)* tau_charge > 0 )
-				continue;
-			if (lep_pt->at(i) < lep_pt->at(ilep1))
-				continue;
-			ilep1 = i;			
-		}
-		
-		//std::cout << "initialize ilep2" << endl;
-		for (size_t i=0; i<lep_pt->size(); ++i) {
-			if (i != ilep1 and lep_charges->at(i) * tau_charge < 0) {
-				ilep2 = i;
-				break;
-			}
-				
-		}
-		if (ilep2 >= lep_pt->size()) {
-			std::cout << "Oooooops2" << endl;
-			break;
-		}
-		
-		for (size_t i=0; i<lep_pt->size(); ++i) {
-			if (lep_charges->at(i) * tau_charge > 0 ) continue;
-			if (i==ilep1) continue;
-			if (lep_pt->at(i) < lep_pt->at(ilep2)) continue;
-			ilep2 = i;
-		}
-		
-		////////////////////////////////////
-		// debug
-		bool sort_bug = false;
-		if (lep_pt->at(ilep1)<lep_pt->at(ilep2)) sort_bug = true;
-		for (size_t i = 0; i< lep_pt->size(); ++i) {
-			if (lep_charges->at(i) * tau_charge > 0) continue;
-			if (i == ilep1 or i == ilep2) continue;
-			if (lep_pt->at(i)>lep_pt->at(ilep2)) sort_bug = true;
-		}
-		if (sort_bug) std::cout << "sorting oops" << endl;
-		////////////////////////////////////
-		*/
+	
 		
 		float dz_lep1 = lep_vtx_dz->at(ilep1);
 		float dz_lep2 = lep_vtx_dz->at(ilep2);
 		float dxy_lep1 = lep_vtx_dxy->at(ilep1);
 		float dxy_lep2 = lep_vtx_dxy->at(ilep2);
-		//float dxy_tau1 = TMath::Sqrt((loose_tau_vx->at(itau1)-pv_x)*(loose_tau_vx->at(itau1)-pv_x)+(loose_tau_vy->at(itau1)-pv_y)*(loose_tau_vy->at(itau1)-pv_y));
-
-		
-		++nevtpass;
 
 		//std::cout << "fill histograms" << endl;
 		/// Fill histograms
@@ -756,6 +709,12 @@ int HistFiller(TTree* tree, TString label)
 	h_visM_taulep2 -> Write();
 	h_visM_taulepmaxdxy -> Write();
 	h_visM_taulepmindR -> Write();
+
+	h_MET -> Write();
+	h_MHT -> Write();
+	h_HT -> Write();
+	h_metLD -> Write();
+	h_visMtot -> Write();
 	
 	delete outputfile;
 
@@ -789,6 +748,11 @@ void CutHistDrawer(TString histfile1, TString histfile2)
 	TH1F* h_visM_taulep2_sig = (TH1F*)f_sig->Get("h_visM_taulep2");
 	TH1F* h_visM_taulepmaxdxy_sig = (TH1F*)f_sig->Get("h_visM_taulepmaxdxy");
 	TH1F* h_visM_taulepmindR_sig = (TH1F*)f_sig->Get("h_visM_taulepmindR");
+	TH1F* h_MET_sig = (TH1F*)f_sig->Get("h_MET");
+	TH1F* h_MHT_sig = (TH1F*)f_sig->Get("h_MHT");
+	TH1F* h_HT_sig = (TH1F*)f_sig->Get("h_HT");
+	TH1F* h_metLD_sig = (TH1F*)f_sig->Get("h_metLD");
+	TH1F* h_visMtot_sig = (TH1F*)f_sig->Get("h_visMtot");
 	
 	TH1F* h_lep1pt_TTJets = (TH1F*)f_TTJets->Get("h_lep1pt");
 	TH1F* h_lep1eta_TTJets = (TH1F*)f_TTJets->Get("h_lep1eta");
@@ -810,6 +774,11 @@ void CutHistDrawer(TString histfile1, TString histfile2)
 	TH1F* h_visM_taulep2_TTJets = (TH1F*)f_TTJets->Get("h_visM_taulep2");
 	TH1F* h_visM_taulepmaxdxy_TTJets = (TH1F*)f_TTJets->Get("h_visM_taulepmaxdxy");
 	TH1F* h_visM_taulepmindR_TTJets = (TH1F*)f_TTJets->Get("h_visM_taulepmindR");
+	TH1F* h_MET_TTJets = (TH1F*)f_TTJets->Get("h_MET");
+	TH1F* h_MHT_TTJets = (TH1F*)f_TTJets->Get("h_MHT");
+	TH1F* h_HT_TTJets = (TH1F*)f_TTJets->Get("h_HT");
+	TH1F* h_metLD_TTJets = (TH1F*)f_TTJets->Get("h_metLD");
+	TH1F* h_visMtot_TTJets = (TH1F*)f_TTJets->Get("h_visMtot");
 	
 	/*
 	h_lep1pt_sig -> Sumw2();
@@ -855,6 +824,11 @@ void CutHistDrawer(TString histfile1, TString histfile2)
 	h_visM_taulep2_sig -> Scale(1.0/nsig);
 	h_visM_taulepmaxdxy_sig -> Scale(1.0/nsig);
 	h_visM_taulepmindR_sig -> Scale(1.0/nsig);
+	h_MET_sig -> Scale(1.0/nsig);
+	h_MHT_sig -> Scale(1.0/nsig);
+	h_HT_sig -> Scale(1.0/nsig);
+	h_metLD_sig -> Scale(1.0/nsig);
+	h_visMtot_sig -> Scale(1.0/nsig);
 	
 	h_lep1pt_TTJets -> Scale(1.0/nTTJets);
 	h_lep1eta_TTJets -> Scale(1.0/nTTJets);
@@ -876,6 +850,11 @@ void CutHistDrawer(TString histfile1, TString histfile2)
 	h_visM_taulep2_TTJets -> Scale(1.0/nTTJets);
 	h_visM_taulepmaxdxy_TTJets -> Scale(1.0/nTTJets);
 	h_visM_taulepmindR_TTJets -> Scale(1.0/nTTJets);
+	h_MET_TTJets -> Scale(1.0/nTTJets);
+	h_MHT_TTJets -> Scale(1.0/nTTJets);
+	h_HT_TTJets -> Scale(1.0/nTTJets);
+	h_metLD_TTJets -> Scale(1.0/nTTJets);
+	h_visMtot_TTJets -> Scale(1.0/nTTJets);
 	
 	TCanvas c;
 
@@ -1444,6 +1423,151 @@ void CutHistDrawer(TString histfile1, TString histfile2)
 	leg_visM_taulepmindR -> AddEntry(h_visM_taulepmindR_TTJets, "tt+Jets", "L");
 	leg_visM_taulepmindR->Draw("same");
 	c.SaveAs("/uscms/home/ztao/work/CU_ttH_WD/Outputs/visM_taulepmindR.pdf");
+
+	//// h_MET
+	h_MET_TTJets->SetTitle("same sign leptons + #tau_{h}");
+	h_MET_TTJets->GetXaxis()->SetTitle("MET [GeV]");
+	h_MET_TTJets->GetYaxis()->SetTitle("Normalized to 1");
+	h_MET_TTJets->SetLineColor(kBlue);
+	float MET_max =
+		max(h_MET_TTJets->GetMaximum(),h_MET_sig->GetMaximum());
+	h_MET_TTJets->SetMaximum(MET_max*1.1);
+	h_MET_TTJets->Draw("");
+	gPad->Update();
+	TPaveStats *st_MET_bkg = (TPaveStats*) h_MET_TTJets->GetListOfFunctions()->FindObject("stats");
+	st_MET_bkg->SetTextColor(kBlue);
+	st_MET_bkg->SetOptStat(1110);
+	h_MET_sig->SetLineColor(kRed);
+	h_MET_sig->Draw("sames");
+	gPad->Update();
+	TPaveStats *st_MET_sig = (TPaveStats*) h_MET_sig->GetListOfFunctions()->FindObject("stats");
+	st_MET_sig->SetTextColor(kRed);
+	st_MET_sig->SetOptStat(1110);
+	st_MET_bkg->SetY1NDC(2*(st_MET_sig->GetY1NDC())-st_MET_sig->GetY2NDC());
+	st_MET_bkg->SetY2NDC(st_MET_sig->GetY1NDC());
+	gPad->Modified();
+	
+	TLegend *leg_MET = new TLegend(0.72,0.25,0.85,0.38);
+	leg_MET -> AddEntry(h_MET_sig, "signal", "L");
+	leg_MET -> AddEntry(h_MET_TTJets, "tt+Jets", "L");
+	leg_MET->Draw("same");
+	c.SaveAs("/uscms/home/ztao/work/CU_ttH_WD/Outputs/MET.pdf");
+
+	//// h_MHT
+	h_MHT_TTJets->SetTitle("same sign leptons + #tau_{h}");
+	h_MHT_TTJets->GetXaxis()->SetTitle("MHT [GeV]");
+	h_MHT_TTJets->GetYaxis()->SetTitle("Normalized to 1");
+	h_MHT_TTJets->SetLineColor(kBlue);
+	float MHT_max =
+		max(h_MHT_TTJets->GetMaximum(),h_MHT_sig->GetMaximum());
+	h_MHT_TTJets->SetMaximum(MHT_max*1.1);
+	h_MHT_TTJets->Draw("");
+	gPad->Update();
+	TPaveStats *st_MHT_bkg = (TPaveStats*) h_MHT_TTJets->GetListOfFunctions()->FindObject("stats");
+	st_MHT_bkg->SetTextColor(kBlue);
+	st_MHT_bkg->SetOptStat(1110);
+	h_MHT_sig->SetLineColor(kRed);
+	h_MHT_sig->Draw("sames");
+	gPad->Update();
+	TPaveStats *st_MHT_sig = (TPaveStats*) h_MHT_sig->GetListOfFunctions()->FindObject("stats");
+	st_MHT_sig->SetTextColor(kRed);
+	st_MHT_sig->SetOptStat(1110);
+	st_MHT_bkg->SetY1NDC(2*(st_MHT_sig->GetY1NDC())-st_MHT_sig->GetY2NDC());
+	st_MHT_bkg->SetY2NDC(st_MHT_sig->GetY1NDC());
+	gPad->Modified();
+	
+	TLegend *leg_MHT = new TLegend(0.72,0.25,0.85,0.38);
+	leg_MHT -> AddEntry(h_MHT_sig, "signal", "L");
+	leg_MHT -> AddEntry(h_MHT_TTJets, "tt+Jets", "L");
+	leg_MHT->Draw("same");
+	c.SaveAs("/uscms/home/ztao/work/CU_ttH_WD/Outputs/MHT.pdf");
+
+	//// h_HT
+	h_HT_TTJets->SetTitle("same sign leptons + #tau_{h}");
+	h_HT_TTJets->GetXaxis()->SetTitle("HT [GeV]");
+	h_HT_TTJets->GetYaxis()->SetTitle("Normalized to 1");
+	h_HT_TTJets->SetLineColor(kBlue);
+	float HT_max =
+		max(h_HT_TTJets->GetMaximum(),h_HT_sig->GetMaximum());
+	h_HT_TTJets->SetMaximum(HT_max*1.1);
+	h_HT_TTJets->Draw("");
+	gPad->Update();
+	TPaveStats *st_HT_bkg = (TPaveStats*) h_HT_TTJets->GetListOfFunctions()->FindObject("stats");
+	st_HT_bkg->SetTextColor(kBlue);
+	st_HT_bkg->SetOptStat(1110);
+	h_HT_sig->SetLineColor(kRed);
+	h_HT_sig->Draw("sames");
+	gPad->Update();
+	TPaveStats *st_HT_sig = (TPaveStats*) h_HT_sig->GetListOfFunctions()->FindObject("stats");
+	st_HT_sig->SetTextColor(kRed);
+	st_HT_sig->SetOptStat(1110);
+	st_HT_bkg->SetY1NDC(2*(st_HT_sig->GetY1NDC())-st_HT_sig->GetY2NDC());
+	st_HT_bkg->SetY2NDC(st_HT_sig->GetY1NDC());
+	gPad->Modified();
+	
+	TLegend *leg_HT = new TLegend(0.72,0.25,0.85,0.38);
+	leg_HT -> AddEntry(h_HT_sig, "signal", "L");
+	leg_HT -> AddEntry(h_HT_TTJets, "tt+Jets", "L");
+	leg_HT->Draw("same");
+	c.SaveAs("/uscms/home/ztao/work/CU_ttH_WD/Outputs/HT.pdf");
+
+	//// h_metLD
+	h_metLD_TTJets->SetTitle("same sign leptons + #tau_{h}");
+	h_metLD_TTJets->GetXaxis()->SetTitle("metLD [GeV]");
+	h_metLD_TTJets->GetYaxis()->SetTitle("Normalized to 1");
+	h_metLD_TTJets->SetLineColor(kBlue);
+	float metLD_max =
+		max(h_metLD_TTJets->GetMaximum(),h_metLD_sig->GetMaximum());
+	h_metLD_TTJets->SetMaximum(metLD_max*1.1);
+	h_metLD_TTJets->Draw("");
+	gPad->Update();
+	TPaveStats *st_metLD_bkg = (TPaveStats*) h_metLD_TTJets->GetListOfFunctions()->FindObject("stats");
+	st_metLD_bkg->SetTextColor(kBlue);
+	st_metLD_bkg->SetOptStat(1110);
+	h_metLD_sig->SetLineColor(kRed);
+	h_metLD_sig->Draw("sames");
+	gPad->Update();
+	TPaveStats *st_metLD_sig = (TPaveStats*) h_metLD_sig->GetListOfFunctions()->FindObject("stats");
+	st_metLD_sig->SetTextColor(kRed);
+	st_metLD_sig->SetOptStat(1110);
+	st_metLD_bkg->SetY1NDC(2*(st_metLD_sig->GetY1NDC())-st_metLD_sig->GetY2NDC());
+	st_metLD_bkg->SetY2NDC(st_metLD_sig->GetY1NDC());
+	gPad->Modified();
+	
+	TLegend *leg_metLD = new TLegend(0.72,0.25,0.85,0.38);
+	leg_metLD -> AddEntry(h_metLD_sig, "signal", "L");
+	leg_metLD -> AddEntry(h_metLD_TTJets, "tt+Jets", "L");
+	leg_metLD->Draw("same");
+	c.SaveAs("/uscms/home/ztao/work/CU_ttH_WD/Outputs/metLD.pdf");
+
+	//// h_visMtot
+	h_visMtot_TTJets->SetTitle("same sign leptons + #tau_{h}");
+	h_visMtot_TTJets->GetXaxis()->SetTitle("visMtot [GeV]");
+	h_visMtot_TTJets->GetYaxis()->SetTitle("Normalized to 1");
+	h_visMtot_TTJets->SetLineColor(kBlue);
+	float visMtot_max =
+		max(h_visMtot_TTJets->GetMaximum(),h_visMtot_sig->GetMaximum());
+	h_visMtot_TTJets->SetMaximum(visMtot_max*1.1);
+	h_visMtot_TTJets->Draw("");
+	gPad->Update();
+	TPaveStats *st_visMtot_bkg = (TPaveStats*) h_visMtot_TTJets->GetListOfFunctions()->FindObject("stats");
+	st_visMtot_bkg->SetTextColor(kBlue);
+	st_visMtot_bkg->SetOptStat(1110);
+	h_visMtot_sig->SetLineColor(kRed);
+	h_visMtot_sig->Draw("sames");
+	gPad->Update();
+	TPaveStats *st_visMtot_sig = (TPaveStats*) h_visMtot_sig->GetListOfFunctions()->FindObject("stats");
+	st_visMtot_sig->SetTextColor(kRed);
+	st_visMtot_sig->SetOptStat(1110);
+	st_visMtot_bkg->SetY1NDC(2*(st_visMtot_sig->GetY1NDC())-st_visMtot_sig->GetY2NDC());
+	st_visMtot_bkg->SetY2NDC(st_visMtot_sig->GetY1NDC());
+	gPad->Modified();
+	
+	TLegend *leg_visMtot = new TLegend(0.72,0.25,0.85,0.38);
+	leg_visMtot -> AddEntry(h_visMtot_sig, "signal", "L");
+	leg_visMtot -> AddEntry(h_visMtot_TTJets, "tt+Jets", "L");
+	leg_visMtot->Draw("same");
+	c.SaveAs("/uscms/home/ztao/work/CU_ttH_WD/Outputs/visMtot.pdf");	
 	
 }
 
@@ -1479,7 +1603,7 @@ void NtupleHistDrawer(TH1F* h_cutflow_sig, TH1F* h_cutflow_TTJets,
 	h_cutflow_TTJets->GetYaxis()->SetLabelSize(0.02);
 	h_cutflow_TTJets->SetTitle("Cut Flow (100 fb^{-1})");
 	h_cutflow_TTJets->GetXaxis()->SetBinLabel(7, ">= 2 jets");
-	h_cutflow_TTJets->GetXaxis()->SetBinLabel(8, ">= 1 b-tag");
+	h_cutflow_TTJets->GetXaxis()->SetBinLabel(8, ">= 2 b-tag");
 	h_cutflow_TTJets->Draw();
 	h_cutflow_sig->Scale(sig_scale);
 	h_cutflow_sig->SetLineColor(kRed);
@@ -1599,7 +1723,7 @@ void NtupleHistDrawer(TH1F* h_cutflow_sig, TH1F* h_cutflow_TTJets,
 	h_nbtags_TTJets->SetLineColor(kBlue);
 	h_nbtags_TTJets->SetMarkerStyle(20);
 	h_nbtags_TTJets->SetMarkerColor(kBlue);
-	h_nbtags_TTJets->GetXaxis()->SetTitle("number of btags");
+	h_nbtags_TTJets->GetXaxis()->SetTitle("number of btags (loose)");
 	//h_nbtags_TTJets->SetTitleOffset(0.1);
 	h_nbtags_TTJets->GetYaxis()->SetTitle("Normalized to 1");
 	h_nbtags_TTJets->GetYaxis()->SetTitleSize(0.04);
