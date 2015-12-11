@@ -122,7 +122,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	/// Create and set up edm:Handles in stack mem.
 	edm_Handles handle;
 	Set_up_handles(iEvent, handle, token);
-
+	
 	/// Run checks on event containers via their handles
 	Check_triggers(handle.triggerResults, local);
 	Check_filters(handle.filterResults);
@@ -134,7 +134,6 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	auto rho = handle.srcRho;
 	miniAODhelper.SetRho(*rho);
 
-	
 	/// Get and set miniAODhelper's jet corrector from the event setup
 	miniAODhelper.SetJetCorrector(
 		JetCorrector::getJetCorrector(jet_corrector, iSetup));
@@ -236,9 +235,10 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	local.MET_corrected =
 		handle.METs->front(); // miniAODhelper.GetCorrectedMET( METs.at(0),
 							  // pfJets_forMET, iSysType );
-
+ 
+	local.METSignificance = *(handle.METSig);
+	local.METCovariance = *(handle.METCov);
 	Get_GenInfo(handle.MC_particles, handle.MC_packed, gen);  // MC Truth
-	
 
 	if (analysis_type == Analyze_taus_dilepton) {
 		
@@ -325,12 +325,10 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 			return;
 		h_tth_syncex_dileptauh->Fill(0.5 + fill_itr++);
 
-
 		// Make ntuple
 		Make_Ntuple(gen, local, eventTree);
 		
 	}
-	
 	
 }
 

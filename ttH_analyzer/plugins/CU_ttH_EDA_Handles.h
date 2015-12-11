@@ -87,6 +87,8 @@ struct edm_Handles {
 
 	Handle<pat::JetCollection> jets;
 	Handle<pat::METCollection> METs;
+	Handle<double> METSig;
+	Handle<ROOT::Math::SMatrix<double,2,2,ROOT::Math::MatRepSym<double,2>> > METCov;
 
 	Handle<reco::GenParticleCollection> MC_particles;
 	Handle<pat::PackedCandidateCollection> PF_candidates;
@@ -115,6 +117,8 @@ struct edm_Tokens {
 
 	EDGetTokenT<pat::JetCollection> jets;
 	EDGetTokenT<pat::METCollection> METs;
+	EDGetTokenT<double> METSig;
+	EDGetTokenT<ROOT::Math::SMatrix<double,2,2,ROOT::Math::MatRepSym<double,2>>> METCov;
 
 	EDGetTokenT<reco::GenParticleCollection> MC_particles;
 	EDGetTokenT<pat::PackedCandidateCollection> PF_candidates;

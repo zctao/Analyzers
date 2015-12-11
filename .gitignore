@@ -7,3 +7,6 @@
 *_C.so
 *.pcm
 *crab.log
+
+ttH_analyzer/test/debug
+ttH_analyzer/test/debug2

@@ -21,6 +21,8 @@ void Set_up_handles(const Event &iEvent, edm_Handles &handle, edm_Tokens &token)
 
 	iEvent.getByToken(token.jets, handle.jets);
 	iEvent.getByToken(token.METs, handle.METs);
+	iEvent.getByToken(token.METSig, handle.METSig);
+	iEvent.getByToken(token.METCov, handle.METCov);
 
 	iEvent.getByToken(token.MC_particles, handle.MC_particles);
 	iEvent.getByToken(token.PF_candidates, handle.PF_candidates);

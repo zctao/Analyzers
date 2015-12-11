@@ -584,6 +584,14 @@ void CU_ttH_EDA::Make_Ntuple(CU_ttH_EDA_gen_vars &gen, CU_ttH_EDA_event_vars &lo
 	pv_x = -99.9;
 	pv_y = -99.9;
 	pv_z = -99.9;
+
+	MET_x = -999.9;
+	MET_y = -999.9;
+	METSig = -999.9;
+	METCov00 = -999.9;
+	METCov01 = -999.9;
+	METCov10 = -999.9;
+	METCov11 = -999.9;
 	
 	//electrons.clear();
 	e_pt.clear();
@@ -848,6 +856,11 @@ void CU_ttH_EDA::Make_Ntuple(CU_ttH_EDA_gen_vars &gen, CU_ttH_EDA_event_vars &lo
 	// MET
 	MET_x = local.MET_corrected.px();
 	MET_y = local.MET_corrected.py();
+	METSig = local.METSignificance;
+	METCov00 = local.METCovariance[0][0];
+	METCov01 = local.METCovariance[0][1];
+	METCov10 = local.METCovariance[1][0];
+	METCov11 = local.METCovariance[1][1];
 	
 	// GenParticle Information
 	// mediators

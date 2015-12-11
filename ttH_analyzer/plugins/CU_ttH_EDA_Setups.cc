@@ -149,7 +149,7 @@ void CU_ttH_EDA::Set_up_histograms()
 			fs_->make<TH1D>("h_tth_syncex_dileptauh", ";cut", 8, 0, 8);
 		h_tth_syncex_dileptauh->GetXaxis()->SetBinLabel(1, "All events");
 		//h_tth_syncex_dileptauh->GetXaxis()->SetBinLabel(2, "Weighted");
-		h_tth_syncex_dileptauh->GetXaxis()->SetBinLabel(2, "Single lep trig");
+		h_tth_syncex_dileptauh->GetXaxis()->SetBinLabel(2, "HLT");
 		h_tth_syncex_dileptauh->GetXaxis()->SetBinLabel(3, ">= 2 lep");
 		h_tth_syncex_dileptauh->GetXaxis()->SetBinLabel(4, "1 tauh");
 		h_tth_syncex_dileptauh->GetXaxis()->SetBinLabel(5, "Same sign lep");
@@ -370,7 +370,11 @@ void CU_ttH_EDA::Set_up_tokens()
 		consumes<pat::JetCollection>(edm::InputTag(std::string("slimmedJets")));
 	token.METs =
 		consumes<pat::METCollection>(edm::InputTag(std::string("slimmedMETs")));
-
+	token.METSig =
+		consumes<double>(edm::InputTag(std::string("METSignificance"),std::string("METSignificance")));
+	token.METCov =
+		consumes<ROOT::Math::SMatrix<double,2,2,ROOT::Math::MatRepSym<double,2>>>(edm::InputTag(std::string("METSignificance"),std::string("METCovariance")));
+	
 	token.MC_particles = consumes<reco::GenParticleCollection>(
 		edm::InputTag(std::string("prunedGenParticles")));
 	token.PF_candidates = consumes<pat::PackedCandidateCollection>(
@@ -494,8 +498,11 @@ void CU_ttH_EDA::Setup_Tree()
 	// MET
 	eventTree->Branch("MET_x", &MET_x);
 	eventTree->Branch("MET_y", &MET_y);
-
-	
+	eventTree->Branch("METSignificance", &METSig);
+	eventTree->Branch("METCovariance00", &METCov00);
+	eventTree->Branch("METCovariance01", &METCov01);
+	eventTree->Branch("METCovariance10", &METCov10);
+	eventTree->Branch("METCovariance11", &METCov11);
 	
 	eventTree->Branch("gen_x_pdgId", &gen_x_pdgId);
 	eventTree->Branch("gen_x_status", &gen_x_status);

@@ -12,6 +12,9 @@ process.GlobalTag.globaltag = 'MCRUN2_74_V9::All'
 
 process.load("SimGeneral.HepPDTESSource.pythiapdt_cfi")
 
+process.load("RecoMET/METProducers.METSignificance_cfi")
+process.load("RecoMET/METProducers.METSignificanceParams_cfi")
+
 process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
 
 process.maxEvents = cms.untracked.PSet(
@@ -98,7 +101,8 @@ process.ttHtautau = cms.EDAnalyzer('CU_ttH_EDA',
         # MiniAODhelper
         using_real_data = cms.bool(False),
         ## available choices '-': none, 'L': loose, 'M': medium, 'T': tight
-        b_tag_strength = cms.string('L')
+        b_tag_strength = cms.string('L'),
+        # MET Significance
 )
 
 process.TFileService = cms.Service("TFileService",
@@ -109,7 +113,18 @@ process.TFileService = cms.Service("TFileService",
 )
 
 
-process.p = cms.Path(process.ttHtautau)
+process.p = cms.Path(process.METSignificance * process.ttHtautau)
 
-
-
+#process.out = cms.OutputModule(
+#    "PoolOutputModule",
+#    fileName = cms.untracked.string('recoMET_METSignificance.root'),
+#    SelectEvents   = cms.untracked.PSet( SelectEvents = cms.vstring('p') ),
+#    outputCommands = cms.untracked.vstring(
+#        'drop *',
+#        'keep *_*_*_MAOD'
+#        )
+#    )
+#
+#process.e1 = cms.EndPath(
+#    process.out
+#    )

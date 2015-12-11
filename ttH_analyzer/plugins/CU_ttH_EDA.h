@@ -70,6 +70,7 @@
 #include "TBranch.h"
 #include "TParameter.h"
 #include "TLorentzVector.h"
+#include "TMath.h"
 
 /// Higgs and top tagger
 #include "MiniAOD/BoostedObjects/interface/HTTTopJet.h"
@@ -165,6 +166,8 @@ struct CU_ttH_EDA_event_vars {
 	
 	/// Other quantities
 	pat::MET MET_corrected;
+	double METSignificance;
+	ROOT::Math::SMatrix<double,2,2,ROOT::Math::MatRepSym<double,2>> METCovariance;
 	
 	double dimuon_mass;
 	double dielectron_mass;
@@ -585,6 +588,11 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	// MET
 	float MET_x;
 	float MET_y;
+	float METSig;
+	float METCov00;
+	float METCov01;
+	float METCov10;
+	float METCov11;
 	
 	// MC truth
 	std::vector<int> gen_x_pdgId;

@@ -31,6 +31,8 @@ void NtupleHistDrawer(TH1F* h_cutflow_sig, TH1F* h_cutflow_TTJets,
 				   TH1F* h_njets_sig, TH1F* h_njets_TTJets,
 				   TH1F* h_nbtags_sig, TH1F* h_nbtags_TTJets,
 				   TH1F* h_ntauID_sig, TH1F* h_ntauID_TTJets);
+void Draw_Histogram_W2Stat(TH1F* h_sig, TH1F* h_bkg, TString pname, TString xtitle, TString ytitle, TString title, bool setlogy);
+void Draw_Histogram_WRatio(TH1F* h_sig, TH1F* h_bkg, TString xtitle, TString ytitle, TString title);
 
 int nsig = -99;
 int nTTJets = -99;
@@ -46,8 +48,8 @@ const int sig_scale = 10;
 void CutsPerf(
 			  //const TString sig_file = "/uscms/home/ztao/work/CU_ttH_WD/Outputs/CU_ttH_EDA_output_sig.root",
 			  //const TString bkg_file = "/uscms/home/ztao/work/CU_ttH_WD/Outputs/CU_ttH_EDA_output_TTJets.root"
-			  const TString sig_file = "/eos/uscms/store/user/ztao/ttHToTT_M125_13TeV_powheg_pythia8/ttHToTauTau_Ntuple_signal/151202_013926//0000/CU_ttH_EDA_output.root",
-			  const TString bkg_file = "/eos/uscms/store/user/ztao/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/ttHToTauTau_Ntuple_TTJets/151202_014024/0000/CU_ttH_EDA_output_tmp.root"
+			  const TString sig_file = "/eos/uscms/store/user/ztao/ttHToTT_M125_13TeV_powheg_pythia8/ttHToTauTau_Ntuple_signal/151209_202153/0000/CU_ttH_EDA_output_tmp.root",
+			  const TString bkg_file = "/eos/uscms/store/user/ztao/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/ttHToTauTau_Ntuple_TTJets/151209_202324/0000/CU_ttH_EDA_output_tmp.root"
 							)
 {
 	// Read ntuples
@@ -337,6 +339,10 @@ int HistFiller(TTree* tree, TString label)
 	std::vector<float>* bjet_charges = 0;
 	float met_x = -9999.9;
 	float met_y = -9999.9;
+	float metsig = -999.9;
+	float metcov00 = -9999.9;
+	float metcov01 = -9999.9;  // metcov10 = metcov01
+	float metcov11 = -9999.9;
 
 	TBranch* b_n_electrons;
 	TBranch* b_n_muons;
@@ -382,6 +388,10 @@ int HistFiller(TTree* tree, TString label)
 	TBranch* b_bjet_charges;
 	TBranch* b_met_x;
 	TBranch* b_met_y;
+	TBranch* b_metsig;
+	TBranch* b_metcov00;
+	TBranch* b_metcov01;
+	TBranch* b_metcov11;
 
 	tree->SetBranchAddress("n_electrons", &n_electrons, &b_n_electrons);
 	tree->SetBranchAddress("n_loose_taus", &n_loose_taus, &b_n_loose_taus);
@@ -426,6 +436,10 @@ int HistFiller(TTree* tree, TString label)
 	tree->SetBranchAddress("bjet_charges", &bjet_charges, &b_bjet_charges);
 	tree->SetBranchAddress("MET_x", &met_x, &b_met_x);
 	tree->SetBranchAddress("MET_y", &met_y, &b_met_y);
+	tree->SetBranchAddress("METSignificance", &metsig, &b_metsig);
+	tree->SetBranchAddress("METCovariance00", &metcov00, &b_metcov00);
+	tree->SetBranchAddress("METCovariance01", &metcov01, &b_metcov01);
+	tree->SetBranchAddress("METCovariance11", &metcov11, &b_metcov11);
 
 	// Histograms
 	TH1F* h_lep1pt = new TH1F("h_lep1pt", "", 30, 0., 300.);
@@ -452,9 +466,16 @@ int HistFiller(TTree* tree, TString label)
 
 	TH1F* h_MET = new TH1F("h_MET", "", 50, 0 ,500);
 	TH1F* h_MHT = new TH1F("h_MHT", "", 50, 0, 500);
+	TH1F* h_METSig = new TH1F("h_METSig", "", 40, 0, 200);
 	TH1F* h_HT = new TH1F("h_HT", "", 100, 0, 1000);
 	TH1F* h_metLD = new TH1F("h_metLD", "", 50, 0, 5);
 	TH1F* h_visMtot = new TH1F("h_visMtot", "", 50, 0, 2000);
+	TH1F* h_dilepmass = new TH1F("h_dilepmass", "", 20, 0, 100);
+
+	TH1F* h_dRlep1jet1 = new TH1F("h_dRlep1jet1", "", 25, 0., 5.);
+	TH1F* h_dRlep1jet2 = new TH1F("h_dRlep1jet2", "", 25, 0., 5.);
+	TH1F* h_dRlep2jet1 = new TH1F("h_dRlep2jet1", "", 25, 0., 5.);
+	TH1F* h_dRlep2jet2 = new TH1F("h_dRlep2jet2", "", 25, 0., 5.);
 	
 	// ----------------------------------------------------------------------------------------------------------------
 	//        * * * * *     S T A R T   O F   A C T U A L   R U N N I N G   O N   E V E N T S     * * * * *
@@ -495,6 +516,8 @@ int HistFiller(TTree* tree, TString label)
 		// MET
 		float MET = TMath::Sqrt(met_x*met_x+met_y*met_y);
 		h_MET -> Fill(MET);
+		// MET Significance
+		h_METSig -> Fill(metsig);
 		
 		/// Calculate variables that are not yet included in the ntuple
 		std::vector<TLorentzVector> leptons;
@@ -652,7 +675,7 @@ int HistFiller(TTree* tree, TString label)
 		//h_tau1dz -> Fill(dz_tau1);
 		//h_tau1dxy -> Fill(dxy_tau1);
 		h_lepmaxdxy -> Fill(std::max(lep_vtx_dxy->at(ilep1),lep_vtx_dxy->at(ilep2)));
-
+		
 		// visible mass
 		TLorentzVector tau_p4, lep1_p4, lep2_p4, lep_maxdxy_p4,lep_mindR_p4;
 		tau_p4.SetPtEtaPhiM(loose_tau_pt->at(0),loose_tau_eta->at(0),
@@ -681,7 +704,17 @@ int HistFiller(TTree* tree, TString label)
 		h_visM_taulep2 -> Fill((tau_p4+lep2_p4).M());
 		h_visM_taulepmaxdxy -> Fill((tau_p4+lep_maxdxy_p4).M());
 		h_visM_taulepmindR -> Fill((tau_p4+lep_mindR_p4).M());
-		
+
+		// Di-lepton mass
+		if ((lep1_p4+lep2_p4).M() < 100)
+			h_dilepmass -> Fill((lep1_p4+lep2_p4).M());
+
+		// dR between leptons and jets
+		h_dRlep1jet1 -> Fill(lep1_p4.DeltaR(jets[0]));
+		h_dRlep1jet2 -> Fill(lep1_p4.DeltaR(jets[1]));
+		h_dRlep2jet1 -> Fill(lep2_p4.DeltaR(jets[0]));
+		h_dRlep2jet2 -> Fill(lep2_p4.DeltaR(jets[1]));
+			
 	} // end of event loop
 
 	TFile *outputfile = new TFile(
@@ -711,10 +744,17 @@ int HistFiller(TTree* tree, TString label)
 	h_visM_taulepmindR -> Write();
 
 	h_MET -> Write();
+	h_METSig -> Write();
 	h_MHT -> Write();
 	h_HT -> Write();
 	h_metLD -> Write();
 	h_visMtot -> Write();
+	h_dilepmass -> Write();
+
+	h_dRlep1jet1 -> Write();
+	h_dRlep1jet2 -> Write();
+	h_dRlep2jet1 -> Write();
+	h_dRlep2jet2 -> Write();
 	
 	delete outputfile;
 
@@ -749,10 +789,16 @@ void CutHistDrawer(TString histfile1, TString histfile2)
 	TH1F* h_visM_taulepmaxdxy_sig = (TH1F*)f_sig->Get("h_visM_taulepmaxdxy");
 	TH1F* h_visM_taulepmindR_sig = (TH1F*)f_sig->Get("h_visM_taulepmindR");
 	TH1F* h_MET_sig = (TH1F*)f_sig->Get("h_MET");
+	TH1F* h_METSig_sig = (TH1F*)f_sig->Get("h_METSig");
 	TH1F* h_MHT_sig = (TH1F*)f_sig->Get("h_MHT");
 	TH1F* h_HT_sig = (TH1F*)f_sig->Get("h_HT");
 	TH1F* h_metLD_sig = (TH1F*)f_sig->Get("h_metLD");
 	TH1F* h_visMtot_sig = (TH1F*)f_sig->Get("h_visMtot");
+	TH1F* h_dilepmass_sig = (TH1F*)f_sig->Get("h_dilepmass");
+	TH1F* h_dRlep1jet1_sig = (TH1F*)f_sig->Get("h_dRlep1jet1");
+	TH1F* h_dRlep1jet2_sig = (TH1F*)f_sig->Get("h_dRlep1jet2");
+	TH1F* h_dRlep2jet1_sig = (TH1F*)f_sig->Get("h_dRlep2jet1");
+	TH1F* h_dRlep2jet2_sig = (TH1F*)f_sig->Get("h_dRlep2jet2");
 	
 	TH1F* h_lep1pt_TTJets = (TH1F*)f_TTJets->Get("h_lep1pt");
 	TH1F* h_lep1eta_TTJets = (TH1F*)f_TTJets->Get("h_lep1eta");
@@ -775,10 +821,16 @@ void CutHistDrawer(TString histfile1, TString histfile2)
 	TH1F* h_visM_taulepmaxdxy_TTJets = (TH1F*)f_TTJets->Get("h_visM_taulepmaxdxy");
 	TH1F* h_visM_taulepmindR_TTJets = (TH1F*)f_TTJets->Get("h_visM_taulepmindR");
 	TH1F* h_MET_TTJets = (TH1F*)f_TTJets->Get("h_MET");
+	TH1F* h_METSig_TTJets = (TH1F*)f_TTJets->Get("h_METSig");
 	TH1F* h_MHT_TTJets = (TH1F*)f_TTJets->Get("h_MHT");
 	TH1F* h_HT_TTJets = (TH1F*)f_TTJets->Get("h_HT");
 	TH1F* h_metLD_TTJets = (TH1F*)f_TTJets->Get("h_metLD");
 	TH1F* h_visMtot_TTJets = (TH1F*)f_TTJets->Get("h_visMtot");
+	TH1F* h_dilepmass_TTJets = (TH1F*)f_TTJets->Get("h_dilepmass");
+	TH1F* h_dRlep1jet1_TTJets = (TH1F*)f_TTJets->Get("h_dRlep1jet1");
+	TH1F* h_dRlep1jet2_TTJets = (TH1F*)f_TTJets->Get("h_dRlep1jet2");
+	TH1F* h_dRlep2jet1_TTJets = (TH1F*)f_TTJets->Get("h_dRlep2jet1");
+	TH1F* h_dRlep2jet2_TTJets = (TH1F*)f_TTJets->Get("h_dRlep2jet2");
 	
 	/*
 	h_lep1pt_sig -> Sumw2();
@@ -825,10 +877,16 @@ void CutHistDrawer(TString histfile1, TString histfile2)
 	h_visM_taulepmaxdxy_sig -> Scale(1.0/nsig);
 	h_visM_taulepmindR_sig -> Scale(1.0/nsig);
 	h_MET_sig -> Scale(1.0/nsig);
+	h_METSig_sig -> Scale(1.0/nsig);
 	h_MHT_sig -> Scale(1.0/nsig);
 	h_HT_sig -> Scale(1.0/nsig);
 	h_metLD_sig -> Scale(1.0/nsig);
 	h_visMtot_sig -> Scale(1.0/nsig);
+	h_dilepmass_sig -> Scale(1.0/nsig);
+	h_dRlep1jet1_sig -> Scale(1.0/nsig);
+	h_dRlep1jet2_sig -> Scale(1.0/nsig);
+	h_dRlep2jet1_sig -> Scale(1.0/nsig);
+	h_dRlep2jet2_sig -> Scale(1.0/nsig);
 	
 	h_lep1pt_TTJets -> Scale(1.0/nTTJets);
 	h_lep1eta_TTJets -> Scale(1.0/nTTJets);
@@ -851,723 +909,169 @@ void CutHistDrawer(TString histfile1, TString histfile2)
 	h_visM_taulepmaxdxy_TTJets -> Scale(1.0/nTTJets);
 	h_visM_taulepmindR_TTJets -> Scale(1.0/nTTJets);
 	h_MET_TTJets -> Scale(1.0/nTTJets);
+	h_METSig_TTJets -> Scale(1.0/nTTJets);
 	h_MHT_TTJets -> Scale(1.0/nTTJets);
 	h_HT_TTJets -> Scale(1.0/nTTJets);
 	h_metLD_TTJets -> Scale(1.0/nTTJets);
 	h_visMtot_TTJets -> Scale(1.0/nTTJets);
-	
-	TCanvas c;
+	h_dilepmass_TTJets -> Scale(1.0/nTTJets);
+	h_dRlep1jet1_TTJets -> Scale(1.0/nTTJets);
+	h_dRlep1jet2_TTJets -> Scale(1.0/nTTJets);
+	h_dRlep2jet1_TTJets -> Scale(1.0/nTTJets);
+	h_dRlep2jet2_TTJets -> Scale(1.0/nTTJets);
 
+	// Plotting
 	//// h_lep1pt
-	h_lep1pt_TTJets->SetTitle("same sign leptons + #tau_{h}");
-	h_lep1pt_TTJets->GetXaxis()->SetTitle("Leading Lepton p_{T} [GeV]");
-	h_lep1pt_TTJets->GetYaxis()->SetTitle("Normalized to 1");
-	h_lep1pt_TTJets->SetLineColor(kBlue);
-	float lep1pt_max =
-		max(h_lep1pt_TTJets->GetMaximum(), h_lep1pt_sig->GetMaximum());
-	h_lep1pt_TTJets->SetMaximum(lep1pt_max*1.1);
-	h_lep1pt_TTJets->Draw("");
-	gPad->Update();
-	TPaveStats *st_lep1pt_bkg = (TPaveStats*) h_lep1pt_TTJets->GetListOfFunctions()->FindObject("stats");
-	st_lep1pt_bkg->SetTextColor(kBlue);
-	st_lep1pt_bkg->SetOptStat(1110);
-	h_lep1pt_sig->SetLineColor(kRed);
-	h_lep1pt_sig->Draw("sames");
-	gPad->Update();
-	TPaveStats *st_lep1pt_sig = (TPaveStats*) h_lep1pt_sig->GetListOfFunctions()->FindObject("stats");
-	st_lep1pt_sig->SetTextColor(kRed);
-	st_lep1pt_sig->SetOptStat(1110);
-	st_lep1pt_bkg->SetY1NDC(2*(st_lep1pt_sig->GetY1NDC())-st_lep1pt_sig->GetY2NDC());
-	st_lep1pt_bkg->SetY2NDC(st_lep1pt_sig->GetY1NDC());
-	gPad->Modified();
-	
-	TLegend *leg_lep1pt = new TLegend(0.72,0.25,0.85,0.38);
-	leg_lep1pt -> AddEntry(h_lep1pt_sig, "signal", "L");
-	leg_lep1pt -> AddEntry(h_lep1pt_TTJets, "tt+Jets", "L");
-	leg_lep1pt -> Draw("same");
-	c.SaveAs("/uscms/home/ztao/work/CU_ttH_WD/Outputs/lep1pt.pdf");
-
+	Draw_Histogram_W2Stat(h_lep1pt_sig, h_lep1pt_TTJets, "lep1pt",
+						  "Leading Lepton p_{T} [GeV]",
+						  "Normalized to 1",
+						  "same sign leptons + #tau_{h}", false);
 	//// h_lep1eta
-	h_lep1eta_TTJets->SetTitle("same sign leptons + #tau_{h}");
-	h_lep1eta_TTJets->GetXaxis()->SetTitle("Leading Lepton #eta");
-	h_lep1eta_TTJets->GetYaxis()->SetTitle("Normalized to 1");
-	h_lep1eta_TTJets->SetLineColor(kBlue);
-	float lep1eta_max =
-		max(h_lep1eta_TTJets->GetMaximum(), h_lep1eta_sig->GetMaximum());
-	h_lep1eta_TTJets->SetMaximum(lep1eta_max*1.1);
-	h_lep1eta_TTJets->Draw("");
-	gPad->Update();
-	TPaveStats *st_lep1eta_bkg = (TPaveStats*) h_lep1eta_TTJets->GetListOfFunctions()->FindObject("stats");
-	st_lep1eta_bkg->SetTextColor(kBlue);
-	st_lep1eta_bkg->SetOptStat(1110);
-	h_lep1eta_sig->SetLineColor(kRed);
-	h_lep1eta_sig->Draw("sames");
-	gPad->Update();
-	TPaveStats *st_lep1eta_sig = (TPaveStats*) h_lep1eta_sig->GetListOfFunctions()->FindObject("stats");
-	st_lep1eta_sig->SetTextColor(kRed);
-	st_lep1eta_sig->SetOptStat(1110);
-	st_lep1eta_bkg->SetY1NDC(2*(st_lep1eta_sig->GetY1NDC())-st_lep1eta_sig->GetY2NDC());
-	st_lep1eta_bkg->SetY2NDC(st_lep1eta_sig->GetY1NDC());
-	gPad->Modified();
-	
-	TLegend *leg_lep1eta = new TLegend(0.72,0.25,0.85,0.38);
-	leg_lep1eta -> AddEntry(h_lep1eta_sig, "signal", "L");
-	leg_lep1eta -> AddEntry(h_lep1eta_TTJets, "tt+Jets", "L");
-	leg_lep1eta -> Draw("same");
-	c.SaveAs("/uscms/home/ztao/work/CU_ttH_WD/Outputs/lep1eta.pdf");
-
+	Draw_Histogram_W2Stat(h_lep1eta_sig, h_lep1eta_TTJets, "lep1eta",
+						  "Leading Lepton #eta",
+						  "Normalized to 1",
+						  "same sign leptons + #tau_{h}", false);
 	//// h_lep2pt
-	h_lep2pt_TTJets->SetTitle("same sign leptons + #tau_{h}");
-	h_lep2pt_TTJets->GetXaxis()->SetTitle("Subleading Lepton p_{T} [GeV]");
-	h_lep2pt_TTJets->GetYaxis()->SetTitle("Normalized to 1");
-	h_lep2pt_TTJets->SetLineColor(kBlue);
-	float lep2pt_max =
-		max(h_lep2pt_TTJets->GetMaximum(), h_lep2pt_sig->GetMaximum());
-	h_lep2pt_TTJets->SetMaximum(lep2pt_max*1.1);
-	h_lep2pt_TTJets->Draw("");
-	gPad->Update();
-	TPaveStats *st_lep2pt_bkg = (TPaveStats*) h_lep2pt_TTJets->GetListOfFunctions()->FindObject("stats");
-	st_lep2pt_bkg->SetTextColor(kBlue);
-	st_lep2pt_bkg->SetOptStat(1110);
-	h_lep2pt_sig->SetLineColor(kRed);
-	h_lep2pt_sig->Draw("sames");
-	gPad->Update();
-	TPaveStats *st_lep2pt_sig = (TPaveStats*) h_lep2pt_sig->GetListOfFunctions()->FindObject("stats");
-	st_lep2pt_sig->SetTextColor(kRed);
-	st_lep2pt_sig->SetOptStat(1110);
-	st_lep2pt_bkg->SetY1NDC(2*(st_lep2pt_sig->GetY1NDC())-st_lep2pt_sig->GetY2NDC());
-	st_lep2pt_bkg->SetY2NDC(st_lep2pt_sig->GetY1NDC());
-	gPad->Modified();
-	
-	TLegend *leg_lep2pt = new TLegend(0.72,0.25,0.85,0.38);
-	leg_lep2pt -> AddEntry(h_lep2pt_sig, "signal", "L");
-	leg_lep2pt -> AddEntry(h_lep2pt_TTJets, "tt+Jets", "L");
-	leg_lep2pt -> Draw("same");
-	c.SaveAs("/uscms/home/ztao/work/CU_ttH_WD/Outputs/lep2pt.pdf");
-
+	Draw_Histogram_W2Stat(h_lep2pt_sig, h_lep2pt_TTJets, "lep2pt",
+						  "Subleading Lepton p_{T} [GeV]",
+						  "Normalized to 1",
+						  "same sign leptons + #tau_{h}", false);
 	//// h_lep2eta
-	h_lep2eta_TTJets->SetTitle("same sign leptons + #tau_{h}");
-	h_lep2eta_TTJets->GetXaxis()->SetTitle("Subleading Lepton #eta");
-	h_lep2eta_TTJets->GetYaxis()->SetTitle("Normalized to 1");
-	h_lep2eta_TTJets->SetLineColor(kBlue);
-	float lep2eta_max =
-		max(h_lep2eta_TTJets->GetMaximum(), h_lep2eta_sig->GetMaximum());
-	h_lep2eta_TTJets->SetMaximum(lep2eta_max*1.1);
-	h_lep2eta_TTJets->Draw("");
-	gPad->Update();
-	TPaveStats *st_lep2eta_bkg = (TPaveStats*) h_lep2eta_TTJets->GetListOfFunctions()->FindObject("stats");
-	st_lep2eta_bkg->SetTextColor(kBlue);
-	st_lep2eta_bkg->SetOptStat(1110);
-	h_lep2eta_sig->SetLineColor(kRed);
-	h_lep2eta_sig->Draw("sames");
-	gPad->Update();
-	TPaveStats *st_lep2eta_sig = (TPaveStats*) h_lep2eta_sig->GetListOfFunctions()->FindObject("stats");
-	st_lep2eta_sig->SetTextColor(kRed);
-	st_lep2eta_sig->SetOptStat(1110);
-	st_lep2eta_bkg->SetY1NDC(2*(st_lep2eta_sig->GetY1NDC())-st_lep2eta_sig->GetY2NDC());
-	st_lep2eta_bkg->SetY2NDC(st_lep2eta_sig->GetY1NDC());
-	gPad->Modified();
-	
-	TLegend *leg_lep2eta = new TLegend(0.72,0.25,0.85,0.38);
-	leg_lep2eta -> AddEntry(h_lep2eta_sig, "signal", "L");
-	leg_lep2eta -> AddEntry(h_lep2eta_TTJets, "tt+Jets", "L");
-	leg_lep2eta -> Draw("same");
-	c.SaveAs("/uscms/home/ztao/work/CU_ttH_WD/Outputs/lep2eta.pdf");
-
+	Draw_Histogram_W2Stat(h_lep2eta_sig, h_lep2eta_TTJets, "lep2eta",
+						  "Subleading Lepton #eta",
+						  "Normalized to 1",
+						  "same sign leptons + #tau_{h}", false);
 	//// h_taupt
-	h_taupt_TTJets->SetTitle("same sign leptons + #tau_{h}");
-	h_taupt_TTJets->GetXaxis()->SetTitle("#tau p_{T} [GeV]");
-	h_taupt_TTJets->GetYaxis()->SetTitle("Normalized to 1");
-	h_taupt_TTJets->SetLineColor(kBlue);
-	float taupt_max =
-		max(h_taupt_TTJets->GetMaximum(), h_taupt_sig->GetMaximum());
-	h_taupt_TTJets->SetMaximum(taupt_max*1.1);
-	h_taupt_TTJets->Draw("");
-	gPad->Update();
-	TPaveStats *st_taupt_bkg = (TPaveStats*) h_taupt_TTJets->GetListOfFunctions()->FindObject("stats");
-	st_taupt_bkg->SetTextColor(kBlue);
-	st_taupt_bkg->SetOptStat(1110);
-	h_taupt_sig->SetLineColor(kRed);
-	h_taupt_sig->Draw("sames");
-	gPad->Update();
-	TPaveStats *st_taupt_sig = (TPaveStats*) h_taupt_sig->GetListOfFunctions()->FindObject("stats");
-	st_taupt_sig->SetTextColor(kRed);
-	st_taupt_sig->SetOptStat(1110);
-	st_taupt_bkg->SetY1NDC(2*(st_taupt_sig->GetY1NDC())-st_taupt_sig->GetY2NDC());
-	st_taupt_bkg->SetY2NDC(st_taupt_sig->GetY1NDC());
-	gPad->Modified();
-	
-	TLegend *leg_taupt = new TLegend(0.72,0.25,0.85,0.38);
-	leg_taupt -> AddEntry(h_taupt_sig, "signal", "L");
-	leg_taupt -> AddEntry(h_taupt_TTJets, "tt+Jets", "L");
-	leg_taupt -> Draw("same");
-	c.SaveAs("/uscms/home/ztao/work/CU_ttH_WD/Outputs/taupt.pdf");
-
+	Draw_Histogram_W2Stat(h_taupt_sig, h_taupt_TTJets, "taupt",
+						  "#tau p_{T} [GeV]",
+						  "Normalized to 1",
+						  "same sign leptons + #tau_{h}", false);
 	//// h_taueta
-	h_taueta_TTJets->SetTitle("same sign leptons + #tau_{h}");
-	h_taueta_TTJets->GetXaxis()->SetTitle("#tau #eta");
-	h_taueta_TTJets->GetYaxis()->SetTitle("Normalized to 1");
-	h_taueta_TTJets->SetLineColor(kBlue);
-	float taueta_max =
-		max(h_taueta_TTJets->GetMaximum(), h_taueta_sig->GetMaximum());
-	h_taueta_TTJets->SetMaximum(taueta_max*1.1);
-	h_taueta_TTJets->Draw("");
-	gPad->Update();
-	TPaveStats *st_taueta_bkg = (TPaveStats*) h_taueta_TTJets->GetListOfFunctions()->FindObject("stats");
-	st_taueta_bkg->SetTextColor(kBlue);
-	st_taueta_bkg->SetOptStat(1110);
-	h_taueta_sig->SetLineColor(kRed);
-	h_taueta_sig->Draw("sames");
-	gPad->Update();
-	TPaveStats *st_taueta_sig = (TPaveStats*) h_taueta_sig->GetListOfFunctions()->FindObject("stats");
-	st_taueta_sig->SetTextColor(kRed);
-	st_taueta_sig->SetOptStat(1110);
-	st_taueta_bkg->SetY1NDC(2*(st_taueta_sig->GetY1NDC())-st_taueta_sig->GetY2NDC());
-	st_taueta_bkg->SetY2NDC(st_taueta_sig->GetY1NDC());
-	gPad->Modified();
-	
-	TLegend *leg_taueta = new TLegend(0.72,0.25,0.85,0.38);
-	leg_taueta -> AddEntry(h_taueta_sig, "signal", "L");
-	leg_taueta -> AddEntry(h_taueta_TTJets, "tt+Jets", "L");
-	leg_taueta -> Draw("same");
-	c.SaveAs("/uscms/home/ztao/work/CU_ttH_WD/Outputs/taueta.pdf");
-
+	Draw_Histogram_W2Stat(h_taueta_sig, h_taueta_TTJets, "taueta",
+						  "#tau #eta",
+						  "Normalized to 1",
+						  "same sign leptons + #tau_{h}", false);
 	//// h_bjet1pt
-	h_bjet1pt_TTJets->SetTitle("same sign leptons + #tau_{h}");
-	h_bjet1pt_TTJets->GetXaxis()->SetTitle("Leading b-jet p_{T} [GeV]");
-	h_bjet1pt_TTJets->GetYaxis()->SetTitle("Normalized to 1");
-	h_bjet1pt_TTJets->SetLineColor(kBlue);
-	float bjet1pt_max =
-		max(h_bjet1pt_TTJets->GetMaximum(), h_bjet1pt_sig->GetMaximum());
-	h_bjet1pt_TTJets->SetMaximum(bjet1pt_max*1.1);
-	h_bjet1pt_TTJets->Draw("");
-	gPad->Update();
-	TPaveStats *st_bjet1pt_bkg = (TPaveStats*) h_bjet1pt_TTJets->GetListOfFunctions()->FindObject("stats");
-	st_bjet1pt_bkg->SetTextColor(kBlue);
-	st_bjet1pt_bkg->SetOptStat(1110);
-	h_bjet1pt_sig->SetLineColor(kRed);
-	h_bjet1pt_sig->Draw("sames");
-	gPad->Update();
-	TPaveStats *st_bjet1pt_sig = (TPaveStats*) h_bjet1pt_sig->GetListOfFunctions()->FindObject("stats");
-	st_bjet1pt_sig->SetTextColor(kRed);
-	st_bjet1pt_sig->SetOptStat(1110);
-	st_bjet1pt_bkg->SetY1NDC(2*(st_bjet1pt_sig->GetY1NDC())-st_bjet1pt_sig->GetY2NDC());
-	st_bjet1pt_bkg->SetY2NDC(st_bjet1pt_sig->GetY1NDC());
-	gPad->Modified();
-	
-	TLegend *leg_bjet1pt = new TLegend(0.72,0.25,0.85,0.38);
-	leg_bjet1pt -> AddEntry(h_bjet1pt_sig, "signal", "L");
-	leg_bjet1pt -> AddEntry(h_bjet1pt_TTJets, "tt+Jets", "L");
-	leg_bjet1pt -> Draw("same");
-	c.SaveAs("/uscms/home/ztao/work/CU_ttH_WD/Outputs/bjet1pt.pdf");
-
+	Draw_Histogram_W2Stat(h_bjet1pt_sig, h_bjet1pt_TTJets, "bjet1pt",
+						  "Leading b-jet p_{T} [GeV]",
+						  "Normalized to 1",
+						  "same sign leptons + #tau_{h}", false);
 	//// h_bjet1eta
-	h_bjet1eta_TTJets->SetTitle("same sign leptons + #tau_{h}");
-	h_bjet1eta_TTJets->GetXaxis()->SetTitle("Leading b-jet #eta");
-	h_bjet1eta_TTJets->GetYaxis()->SetTitle("Normalized to 1");
-	h_bjet1eta_TTJets->SetLineColor(kBlue);
-	float bjet1eta_max =
-		max(h_bjet1eta_TTJets->GetMaximum(), h_bjet1eta_sig->GetMaximum());
-	h_bjet1eta_TTJets->SetMaximum(bjet1eta_max*1.1);
-	h_bjet1eta_TTJets->Draw("");
-	gPad->Update();
-	TPaveStats *st_bjet1eta_bkg = (TPaveStats*) h_bjet1eta_TTJets->GetListOfFunctions()->FindObject("stats");
-	st_bjet1eta_bkg->SetTextColor(kBlue);
-	st_bjet1eta_bkg->SetOptStat(1110);
-	h_bjet1eta_sig->SetLineColor(kRed);
-	h_bjet1eta_sig->Draw("sames");
-	gPad->Update();
-	TPaveStats *st_bjet1eta_sig = (TPaveStats*) h_bjet1eta_sig->GetListOfFunctions()->FindObject("stats");
-	st_bjet1eta_sig->SetTextColor(kRed);
-	st_bjet1eta_sig->SetOptStat(1110);
-	st_bjet1eta_bkg->SetY1NDC(2*(st_bjet1eta_sig->GetY1NDC())-st_bjet1eta_sig->GetY2NDC());
-	st_bjet1eta_bkg->SetY2NDC(st_bjet1eta_sig->GetY1NDC());
-	gPad->Modified();
-	
-	TLegend *leg_bjet1eta = new TLegend(0.72,0.25,0.85,0.38);
-	leg_bjet1eta -> AddEntry(h_bjet1eta_sig, "signal", "L");
-	leg_bjet1eta -> AddEntry(h_bjet1eta_TTJets, "tt+Jets", "L");
-	leg_bjet1eta -> Draw("same");
-	c.SaveAs("/uscms/home/ztao/work/CU_ttH_WD/Outputs/bjet1eta.pdf");
-
+	Draw_Histogram_W2Stat(h_bjet1eta_sig, h_bjet1eta_TTJets, "bjet1eta",
+						  "Leading b-jet #eta",
+						  "Normalized to 1",
+						  "same sign leptons + #tau_{h}", false);
 	//// h_dRlep1tau
-	h_dRlep1tau_TTJets->SetTitle("same sign leptons + #tau_{h}");
-	h_dRlep1tau_TTJets->GetXaxis()->SetTitle("#DeltaR(l_{ldg},#tau_{h})");
-	h_dRlep1tau_TTJets->GetYaxis()->SetTitle("Normalized to 1");
-	h_dRlep1tau_TTJets->SetLineColor(kBlue);
-	float dRlep1tau_max =
-		max(h_dRlep1tau_TTJets->GetMaximum(), h_dRlep1tau_sig->GetMaximum());
-	h_dRlep1tau_TTJets->SetMaximum(dRlep1tau_max*1.1);
-	h_dRlep1tau_TTJets->Draw("");
-	gPad->Update();
-	TPaveStats *st_dRlep1tau_bkg = (TPaveStats*) h_dRlep1tau_TTJets->GetListOfFunctions()->FindObject("stats");
-	st_dRlep1tau_bkg->SetTextColor(kBlue);
-	st_dRlep1tau_bkg->SetOptStat(1110);
-	h_dRlep1tau_sig->SetLineColor(kRed);
-	h_dRlep1tau_sig->Draw("sames");
-	gPad->Update();
-	TPaveStats *st_dRlep1tau_sig = (TPaveStats*) h_dRlep1tau_sig->GetListOfFunctions()->FindObject("stats");
-	st_dRlep1tau_sig->SetTextColor(kRed);
-	st_dRlep1tau_sig->SetOptStat(1110);
-	st_dRlep1tau_bkg->SetY1NDC(2*(st_dRlep1tau_sig->GetY1NDC())-st_dRlep1tau_sig->GetY2NDC());
-	st_dRlep1tau_bkg->SetY2NDC(st_dRlep1tau_sig->GetY1NDC());
-	gPad->Modified();
-	
-	TLegend *leg_dRlep1tau = new TLegend(0.72,0.25,0.85,0.38);
-	leg_dRlep1tau -> AddEntry(h_dRlep1tau_sig, "signal", "L");
-	leg_dRlep1tau -> AddEntry(h_dRlep1tau_TTJets, "tt+Jets", "L");
-	leg_dRlep1tau -> Draw("same");
-	c.SaveAs("/uscms/home/ztao/work/CU_ttH_WD/Outputs/dRlep1tau.pdf");
-
+	Draw_Histogram_W2Stat(h_dRlep1tau_sig, h_dRlep1tau_TTJets, "dRlep1tau",
+						  "#DeltaR(l_{ldg},#tau_{h})",
+						  "Normalized to 1",
+						  "same sign leptons + #tau_{h}", false);
 	//// h_dRlep2tau
-	h_dRlep2tau_TTJets->SetTitle("same sign leptons + #tau_{h}");
-	h_dRlep2tau_TTJets->GetXaxis()->SetTitle("#DeltaR(l_{sub-ldg},#tau_{h})");
-	h_dRlep2tau_TTJets->GetYaxis()->SetTitle("Normalized to 1");
-	h_dRlep2tau_TTJets->SetLineColor(kBlue);
-	float dRlep2tau_max =
-		max(h_dRlep2tau_TTJets->GetMaximum(), h_dRlep2tau_sig->GetMaximum());
-	h_dRlep2tau_TTJets->SetMaximum(dRlep2tau_max*1.1);
-	h_dRlep2tau_TTJets->Draw("");
-	gPad->Update();
-	TPaveStats *st_dRlep2tau_bkg = (TPaveStats*) h_dRlep2tau_TTJets->GetListOfFunctions()->FindObject("stats");
-	st_dRlep2tau_bkg->SetTextColor(kBlue);
-	st_dRlep2tau_bkg->SetOptStat(1110);
-	h_dRlep2tau_sig->SetLineColor(kRed);
-	h_dRlep2tau_sig->Draw("sames");
-	gPad->Update();
-	TPaveStats *st_dRlep2tau_sig = (TPaveStats*) h_dRlep2tau_sig->GetListOfFunctions()->FindObject("stats");
-	st_dRlep2tau_sig->SetTextColor(kRed);
-	st_dRlep2tau_sig->SetOptStat(1110);
-	st_dRlep2tau_bkg->SetY1NDC(2*(st_dRlep2tau_sig->GetY1NDC())-st_dRlep2tau_sig->GetY2NDC());
-	st_dRlep2tau_bkg->SetY2NDC(st_dRlep2tau_sig->GetY1NDC());
-	gPad->Modified();
-	
-	TLegend *leg_dRlep2tau = new TLegend(0.72,0.25,0.85,0.38);
-	leg_dRlep2tau -> AddEntry(h_dRlep2tau_sig, "signal", "L");
-	leg_dRlep2tau -> AddEntry(h_dRlep2tau_TTJets, "tt+Jets", "L");
-	leg_dRlep2tau -> Draw("same");
-	c.SaveAs("/uscms/home/ztao/work/CU_ttH_WD/Outputs/dRlep2tau.pdf");
-
+	Draw_Histogram_W2Stat(h_dRlep2tau_sig, h_dRlep2tau_TTJets, "dRlep2tau",
+						  "#DeltaR(l_{sub-ldg},#tau_{h})",
+						  "Normalized to 1",
+						  "same sign leptons + #tau_{h}", false);
 	//// h_lep1dxy
-	h_lep1dxy_TTJets->SetTitle("same sign leptons + #tau_{h}");
-	h_lep1dxy_TTJets->GetXaxis()->SetTitle("dxy_{ldg lep}");
-	h_lep1dxy_TTJets->GetYaxis()->SetTitle("Normalized to 1");
-	h_lep1dxy_TTJets->SetLineColor(kBlue);
-	float lep1dxy_max =
-		max(h_lep1dxy_TTJets->GetMaximum(), h_lep1dxy_sig->GetMaximum());
-	h_lep1dxy_TTJets->SetMaximum(lep1dxy_max*1.1);
-	h_lep1dxy_TTJets->Draw("");
-	gPad->Update();
-	TPaveStats *st_lep1dxy_bkg = (TPaveStats*) h_lep1dxy_TTJets->GetListOfFunctions()->FindObject("stats");
-	st_lep1dxy_bkg->SetTextColor(kBlue);
-	st_lep1dxy_bkg->SetOptStat(1110);
-	h_lep1dxy_sig->SetLineColor(kRed);
-	h_lep1dxy_sig->Draw("sames");
-	gPad->Update();
-	TPaveStats *st_lep1dxy_sig = (TPaveStats*) h_lep1dxy_sig->GetListOfFunctions()->FindObject("stats");
-	st_lep1dxy_sig->SetTextColor(kRed);
-	st_lep1dxy_sig->SetOptStat(1110);
-	st_lep1dxy_bkg->SetY1NDC(2*(st_lep1dxy_sig->GetY1NDC())-st_lep1dxy_sig->GetY2NDC());
-	st_lep1dxy_bkg->SetY2NDC(st_lep1dxy_sig->GetY1NDC());
-	gPad->Modified();
-	
-	TLegend *leg_lep1dxy = new TLegend(0.72,0.25,0.85,0.38);
-	leg_lep1dxy -> AddEntry(h_lep1dxy_sig, "signal", "L");
-	leg_lep1dxy -> AddEntry(h_lep1dxy_TTJets, "tt+Jets", "L");
-	leg_lep1dxy -> Draw("same");
-	c.SaveAs("/uscms/home/ztao/work/CU_ttH_WD/Outputs/lep1dxy.pdf");
-
+	Draw_Histogram_W2Stat(h_lep1dxy_sig, h_lep1dxy_TTJets, "lep1dxy",
+						  "dxy_{ldg lep}",
+						  "Normalized to 1",
+						  "same sign leptons + #tau_{h}", false);
 	//// h_lep2dxy
-	h_lep2dxy_TTJets->SetTitle("same sign leptons + #tau_{h}");
-	h_lep2dxy_TTJets->GetXaxis()->SetTitle("dxy_{sub-ldg lep}");
-	h_lep2dxy_TTJets->GetYaxis()->SetTitle("Normalized to 1");
-	h_lep2dxy_TTJets->SetLineColor(kBlue);
-	float lep2dxy_max =
-		max(h_lep2dxy_TTJets->GetMaximum(), h_lep2dxy_sig->GetMaximum());
-	h_lep2dxy_TTJets->SetMaximum(lep2dxy_max*1.1);
-	h_lep2dxy_TTJets->Draw("");
-	gPad->Update();
-	TPaveStats *st_lep2dxy_bkg = (TPaveStats*) h_lep2dxy_TTJets->GetListOfFunctions()->FindObject("stats");
-	st_lep2dxy_bkg->SetTextColor(kBlue);
-	st_lep2dxy_bkg->SetOptStat(1110);
-	h_lep2dxy_sig->SetLineColor(kRed);
-	h_lep2dxy_sig->Draw("sames");
-	gPad->Update();
-	TPaveStats *st_lep2dxy_sig = (TPaveStats*) h_lep2dxy_sig->GetListOfFunctions()->FindObject("stats");
-	st_lep2dxy_sig->SetTextColor(kRed);
-	st_lep2dxy_sig->SetOptStat(1110);
-	st_lep2dxy_bkg->SetY1NDC(2*(st_lep2dxy_sig->GetY1NDC())-st_lep2dxy_sig->GetY2NDC());
-	st_lep2dxy_bkg->SetY2NDC(st_lep2dxy_sig->GetY1NDC());
-	gPad->Modified();
-	
-	TLegend *leg_lep2dxy = new TLegend(0.72,0.25,0.85,0.38);
-	leg_lep2dxy -> AddEntry(h_lep2dxy_sig, "signal", "L");
-	leg_lep2dxy -> AddEntry(h_lep2dxy_TTJets, "tt+Jets", "L");
-	leg_lep2dxy -> Draw("same");
-	c.SaveAs("/uscms/home/ztao/work/CU_ttH_WD/Outputs/lep2dxy.pdf");
-
+	Draw_Histogram_W2Stat(h_lep2dxy_sig, h_lep2dxy_TTJets, "lep2dxy",
+						  "dxy_{sub-ldg lep}",
+						  "Normalized to 1",
+						  "same sign leptons + #tau_{h}", false);
 	//// h_lep1dz
-	h_lep1dz_TTJets->SetTitle("same sign leptons + #tau_{h}");
-	h_lep1dz_TTJets->GetXaxis()->SetTitle("dz_{ldg lep}");
-	h_lep1dz_TTJets->GetYaxis()->SetTitle("Normalized to 1");
-	h_lep1dz_TTJets->SetLineColor(kBlue);
-	float lep1dz_max =
-		max(h_lep1dz_TTJets->GetMaximum(), h_lep1dz_sig->GetMaximum());
-	h_lep1dz_TTJets->SetMaximum(lep1dz_max*1.1);
-	h_lep1dz_TTJets->Draw("");
-	gPad->Update();
-	TPaveStats *st_lep1dz_bkg = (TPaveStats*) h_lep1dz_TTJets->GetListOfFunctions()->FindObject("stats");
-	st_lep1dz_bkg->SetTextColor(kBlue);
-	st_lep1dz_bkg->SetOptStat(1110);
-	h_lep1dz_sig->SetLineColor(kRed);
-	h_lep1dz_sig->Draw("sames");
-	gPad->Update();
-	TPaveStats *st_lep1dz_sig = (TPaveStats*) h_lep1dz_sig->GetListOfFunctions()->FindObject("stats");
-	st_lep1dz_sig->SetTextColor(kRed);
-	st_lep1dz_sig->SetOptStat(1110);
-	st_lep1dz_bkg->SetY1NDC(2*(st_lep1dz_sig->GetY1NDC())-st_lep1dz_sig->GetY2NDC());
-	st_lep1dz_bkg->SetY2NDC(st_lep1dz_sig->GetY1NDC());
-	gPad->Modified();
-	
-	TLegend *leg_lep1dz = new TLegend(0.72,0.25,0.85,0.38);
-	leg_lep1dz -> AddEntry(h_lep1dz_sig, "signal", "L");
-	leg_lep1dz -> AddEntry(h_lep1dz_TTJets, "tt+Jets", "L");
-	leg_lep1dz -> Draw("same");
-	c.SaveAs("/uscms/home/ztao/work/CU_ttH_WD/Outputs/lep1dz.pdf");
-
+	Draw_Histogram_W2Stat(h_lep1dz_sig, h_lep1dz_TTJets, "lep1dz",
+						  "dz_{ldg lep}",
+						  "Normalized to 1",
+						  "same sign leptons + #tau_{h}", false);
 	//// h_lep2dz
-	h_lep2dz_TTJets->SetTitle("same sign leptons + #tau_{h}");
-	h_lep2dz_TTJets->GetXaxis()->SetTitle("dz_{sub-ldg lep}");
-	h_lep2dz_TTJets->GetYaxis()->SetTitle("Normalized to 1");
-	h_lep2dz_TTJets->SetLineColor(kBlue);
-	float lep2dz_max =
-		max(h_lep2dz_TTJets->GetMaximum(), h_lep2dz_sig->GetMaximum());
-	h_lep2dz_TTJets->SetMaximum(lep2dz_max*1.1);
-	h_lep2dz_TTJets->Draw("");
-	gPad->Update();
-	TPaveStats *st_lep2dz_bkg = (TPaveStats*) h_lep2dz_TTJets->GetListOfFunctions()->FindObject("stats");
-	st_lep2dz_bkg->SetTextColor(kBlue);
-	st_lep2dz_bkg->SetOptStat(1110);
-	h_lep2dz_sig->SetLineColor(kRed);
-	h_lep2dz_sig->Draw("sames");
-	gPad->Update();
-	TPaveStats *st_lep2dz_sig = (TPaveStats*) h_lep2dz_sig->GetListOfFunctions()->FindObject("stats");
-	st_lep2dz_sig->SetTextColor(kRed);
-	st_lep2dz_sig->SetOptStat(1110);
-	st_lep2dz_bkg->SetY1NDC(2*(st_lep2dz_sig->GetY1NDC())-st_lep2dz_sig->GetY2NDC());
-	st_lep2dz_bkg->SetY2NDC(st_lep2dz_sig->GetY1NDC());
-	gPad->Modified();
-	
-	TLegend *leg_lep2dz = new TLegend(0.72,0.25,0.85,0.38);
-	leg_lep2dz -> AddEntry(h_lep2dz_sig, "signal", "L");
-	leg_lep2dz -> AddEntry(h_lep2dz_TTJets, "tt+Jets", "L");
-	leg_lep2dz -> Draw("same");
-	c.SaveAs("/uscms/home/ztao/work/CU_ttH_WD/Outputs/lep2dz.pdf");
-
-	/*
-	h_tau1dz_TTJets->SetTitle("same sign leptons + #tau_{h}");
-	h_tau1dz_TTJets->GetXaxis()->SetTitle("dz_{#tau_{h}}");
-	h_tau1dz_TTJets->GetYaxis()->SetTitle("Normalized");
-	h_tau1dz_TTJets->SetLineColor(kBlue);
-	h_tau1dz_TTJets->Draw("");
-	h_tau1dz_sig->SetLineColor(kRed);
-	h_tau1dz_sig->Draw("same");
-	TLegend *leg_tau1dz = new TLegend(0.72,0.25,0.85,0.38);
-	leg_tau1dz -> AddEntry(h_tau1dz_sig, "signal", "L");
-	leg_tau1dz -> AddEntry(h_tau1dz_TTJets, "tt+Jets", "L");
-	leg_tau1dz -> Draw("same");
-	c.SaveAs("/uscms/home/ztao/work/CU_ttH_WD/Outputs/tau1dz.pdf");
-	*/
-
+	Draw_Histogram_W2Stat(h_lep2dz_sig, h_lep2dz_TTJets, "lep2dz",
+						  "dz_{sub-ldg lep}",
+						  "Normalized to 1",
+						  "same sign leptons + #tau_{h}", false);
 	//// h_lepmaxdxy
-	h_lepmaxdxy_TTJets->SetTitle("same sign leptons + #tau_{h}");
-	h_lepmaxdxy_TTJets->GetXaxis()->SetTitle("max(dxy_{ldg lep},dxy_{sub-ldg lep})");
-	h_lepmaxdxy_TTJets->GetYaxis()->SetTitle("Normalized to 1");
-	h_lepmaxdxy_TTJets->SetLineColor(kBlue);
-	float lepmaxdxy_max =
-		max(h_lepmaxdxy_TTJets->GetMaximum(), h_lepmaxdxy_sig->GetMaximum());
-	h_lepmaxdxy_TTJets->SetMaximum(lepmaxdxy_max*1.1);
-	h_lepmaxdxy_TTJets->Draw("");
-	gPad->Update();
-	TPaveStats *st_lepmaxdxy_bkg = (TPaveStats*) h_lepmaxdxy_TTJets->GetListOfFunctions()->FindObject("stats");
-	st_lepmaxdxy_bkg->SetTextColor(kBlue);
-	st_lepmaxdxy_bkg->SetOptStat(1110);
-	h_lepmaxdxy_sig->SetLineColor(kRed);
-	h_lepmaxdxy_sig->Draw("sames");
-	gPad->Update();
-	TPaveStats *st_lepmaxdxy_sig = (TPaveStats*) h_lepmaxdxy_sig->GetListOfFunctions()->FindObject("stats");
-	st_lepmaxdxy_sig->SetTextColor(kRed);
-	st_lepmaxdxy_sig->SetOptStat(1110);
-	st_lepmaxdxy_bkg->SetY1NDC(2*(st_lepmaxdxy_sig->GetY1NDC())-st_lepmaxdxy_sig->GetY2NDC());
-	st_lepmaxdxy_bkg->SetY2NDC(st_lepmaxdxy_sig->GetY1NDC());
-	gPad->Modified();
-	
-	TLegend *leg_lepmaxdxy = new TLegend(0.72,0.25,0.85,0.38);
-	leg_lepmaxdxy -> AddEntry(h_lepmaxdxy_sig, "signal", "L");
-	leg_lepmaxdxy -> AddEntry(h_lepmaxdxy_TTJets, "tt+Jets", "L");
-	leg_lepmaxdxy -> Draw("same");
-	c.SaveAs("/uscms/home/ztao/work/CU_ttH_WD/Outputs/lepmaxdxy.pdf");
-
+	Draw_Histogram_W2Stat(h_lepmaxdxy_sig, h_lepmaxdxy_TTJets, "lepmaxdxy",
+						  "max(dxy_{ldg lep},dxy_{sub-ldg lep})",
+						  "Normalized to 1",
+						  "same sign leptons + #tau_{h}", false);
 	//// h_visM_taulep1
-	h_visM_taulep1_TTJets->SetTitle("same sign leptons + #tau_{h}");
-	h_visM_taulep1_TTJets->GetXaxis()->SetTitle("visMass(#tau_{h},l_{ldg})");
-	h_visM_taulep1_TTJets->GetYaxis()->SetTitle("Normalized to 1");
-	h_visM_taulep1_TTJets->SetLineColor(kBlue);
-	float visM_taulep1_max =
-		max(h_visM_taulep1_TTJets->GetMaximum(),h_visM_taulep1_sig->GetMaximum());
-	h_visM_taulep1_TTJets->SetMaximum(visM_taulep1_max*1.1);
-	h_visM_taulep1_TTJets->Draw("");
-	gPad->Update();
-	TPaveStats *st_visM_taulep1_bkg = (TPaveStats*) h_visM_taulep1_TTJets->GetListOfFunctions()->FindObject("stats");
-	st_visM_taulep1_bkg->SetTextColor(kBlue);
-	st_visM_taulep1_bkg->SetOptStat(1110);
-	h_visM_taulep1_sig->SetLineColor(kRed);
-	h_visM_taulep1_sig->Draw("sames");
-	gPad->Update();
-	TPaveStats *st_visM_taulep1_sig = (TPaveStats*) h_visM_taulep1_sig->GetListOfFunctions()->FindObject("stats");
-	st_visM_taulep1_sig->SetTextColor(kRed);
-	st_visM_taulep1_sig->SetOptStat(1110);
-	st_visM_taulep1_bkg->SetY1NDC(2*(st_visM_taulep1_sig->GetY1NDC())-st_visM_taulep1_sig->GetY2NDC());
-	st_visM_taulep1_bkg->SetY2NDC(st_visM_taulep1_sig->GetY1NDC());
-	gPad->Modified();
-	
-	TLegend *leg_visM_taulep1 = new TLegend(0.72,0.25,0.85,0.38);
-	leg_visM_taulep1 -> AddEntry(h_visM_taulep1_sig, "signal", "L");
-	leg_visM_taulep1 -> AddEntry(h_visM_taulep1_TTJets, "tt+Jets", "L");
-	leg_visM_taulep1->Draw("same");
-	c.SaveAs("/uscms/home/ztao/work/CU_ttH_WD/Outputs/visM_taulep1.pdf");
-
+	Draw_Histogram_W2Stat(h_visM_taulep1_sig, h_visM_taulep1_TTJets, "visM_taulep1",
+						  "visMass(#tau_{h},l_{ldg})",
+						  "Normalized to 1",
+						  "same sign leptons + #tau_{h}", false);
 	//// h_visM_taulep2
-	h_visM_taulep2_TTJets->SetTitle("same sign leptons + #tau_{h}");
-	h_visM_taulep2_TTJets->GetXaxis()->SetTitle("visMass(#tau_{h},l_{subldg})");
-	h_visM_taulep2_TTJets->GetYaxis()->SetTitle("Normalized to 1");
-	h_visM_taulep2_TTJets->SetLineColor(kBlue);
-	float visM_taulep2_max =
-		max(h_visM_taulep2_TTJets->GetMaximum(),h_visM_taulep2_sig->GetMaximum());
-	h_visM_taulep2_TTJets->SetMaximum(visM_taulep2_max*1.1);
-	h_visM_taulep2_TTJets->Draw("");
-	gPad->Update();
-	TPaveStats *st_visM_taulep2_bkg = (TPaveStats*) h_visM_taulep2_TTJets->GetListOfFunctions()->FindObject("stats");
-	st_visM_taulep2_bkg->SetTextColor(kBlue);
-	st_visM_taulep2_bkg->SetOptStat(1110);
-	h_visM_taulep2_sig->SetLineColor(kRed);
-	h_visM_taulep2_sig->Draw("sames");
-	gPad->Update();
-	TPaveStats *st_visM_taulep2_sig = (TPaveStats*) h_visM_taulep2_sig->GetListOfFunctions()->FindObject("stats");
-	st_visM_taulep2_sig->SetTextColor(kRed);
-	st_visM_taulep2_sig->SetOptStat(1110);
-	st_visM_taulep2_bkg->SetY1NDC(2*(st_visM_taulep2_sig->GetY1NDC())-st_visM_taulep2_sig->GetY2NDC());
-	st_visM_taulep2_bkg->SetY2NDC(st_visM_taulep2_sig->GetY1NDC());
-	gPad->Modified();
-	
-	TLegend *leg_visM_taulep2 = new TLegend(0.72,0.25,0.85,0.38);
-	leg_visM_taulep2 -> AddEntry(h_visM_taulep2_sig, "signal", "L");
-	leg_visM_taulep2 -> AddEntry(h_visM_taulep2_TTJets, "tt+Jets", "L");
-	leg_visM_taulep2->Draw("same");
-	c.SaveAs("/uscms/home/ztao/work/CU_ttH_WD/Outputs/visM_taulep2.pdf");
-
+	Draw_Histogram_W2Stat(h_visM_taulep2_sig, h_visM_taulep2_TTJets, "visM_taulep2",
+						  "visMass(#tau_{h},l_{subldg})",
+						  "Normalized to 1",
+						  "same sign leptons + #tau_{h}", false);
 	//// h_visM_taulepmaxdxy
-	h_visM_taulepmaxdxy_TTJets->SetTitle("same sign leptons + #tau_{h}");
-	h_visM_taulepmaxdxy_TTJets->GetXaxis()->SetTitle("visMass(#tau_{h},l_{max(dxy)})");
-	h_visM_taulepmaxdxy_TTJets->GetYaxis()->SetTitle("Normalized to 1");
-	h_visM_taulepmaxdxy_TTJets->SetLineColor(kBlue);
-	float visM_taulepmaxdxy_max =
-		max(h_visM_taulepmaxdxy_TTJets->GetMaximum(),h_visM_taulepmaxdxy_sig->GetMaximum());
-	h_visM_taulepmaxdxy_TTJets->SetMaximum(visM_taulepmaxdxy_max*1.1);
-	h_visM_taulepmaxdxy_TTJets->Draw("");
-	gPad->Update();
-	TPaveStats *st_visM_taulepmaxdxy_bkg = (TPaveStats*) h_visM_taulepmaxdxy_TTJets->GetListOfFunctions()->FindObject("stats");
-	st_visM_taulepmaxdxy_bkg->SetTextColor(kBlue);
-	st_visM_taulepmaxdxy_bkg->SetOptStat(1110);
-	h_visM_taulepmaxdxy_sig->SetLineColor(kRed);
-	h_visM_taulepmaxdxy_sig->Draw("sames");
-	gPad->Update();
-	TPaveStats *st_visM_taulepmaxdxy_sig = (TPaveStats*) h_visM_taulepmaxdxy_sig->GetListOfFunctions()->FindObject("stats");
-	st_visM_taulepmaxdxy_sig->SetTextColor(kRed);
-	st_visM_taulepmaxdxy_sig->SetOptStat(1110);
-	st_visM_taulepmaxdxy_bkg->SetY1NDC(2*(st_visM_taulepmaxdxy_sig->GetY1NDC())-st_visM_taulepmaxdxy_sig->GetY2NDC());
-	st_visM_taulepmaxdxy_bkg->SetY2NDC(st_visM_taulepmaxdxy_sig->GetY1NDC());
-	gPad->Modified();
-	
-	TLegend *leg_visM_taulepmaxdxy = new TLegend(0.72,0.25,0.85,0.38);
-	leg_visM_taulepmaxdxy -> AddEntry(h_visM_taulepmaxdxy_sig, "signal", "L");
-	leg_visM_taulepmaxdxy -> AddEntry(h_visM_taulepmaxdxy_TTJets, "tt+Jets", "L");
-	leg_visM_taulepmaxdxy->Draw("same");
-	c.SaveAs("/uscms/home/ztao/work/CU_ttH_WD/Outputs/visM_taulepmaxdxy.pdf");
-
+	Draw_Histogram_W2Stat(h_visM_taulepmaxdxy_sig, h_visM_taulepmaxdxy_TTJets, "visM_taulepmaxdxy",
+						  "visMass(#tau_{h},l_{max(dxy)})",
+						  "Normalized to 1",
+						  "same sign leptons + #tau_{h}", false);
 	//// h_visM_taulepmindR
-	h_visM_taulepmindR_TTJets->SetTitle("same sign leptons + #tau_{h}");
-	h_visM_taulepmindR_TTJets->GetXaxis()->SetTitle("visMass(#tau_{h},l_{min(dR)})");
-	h_visM_taulepmindR_TTJets->GetYaxis()->SetTitle("Normalized to 1");
-	h_visM_taulepmindR_TTJets->SetLineColor(kBlue);
-	float visM_taulepmindR_max =
-		max(h_visM_taulepmindR_TTJets->GetMaximum(),h_visM_taulepmindR_sig->GetMaximum());
-	h_visM_taulepmindR_TTJets->SetMaximum(visM_taulepmindR_max*1.1);
-	h_visM_taulepmindR_TTJets->Draw("");
-	gPad->Update();
-	TPaveStats *st_visM_taulepmindR_bkg = (TPaveStats*) h_visM_taulepmindR_TTJets->GetListOfFunctions()->FindObject("stats");
-	st_visM_taulepmindR_bkg->SetTextColor(kBlue);
-	st_visM_taulepmindR_bkg->SetOptStat(1110);
-	h_visM_taulepmindR_sig->SetLineColor(kRed);
-	h_visM_taulepmindR_sig->Draw("sames");
-	gPad->Update();
-	TPaveStats *st_visM_taulepmindR_sig = (TPaveStats*) h_visM_taulepmindR_sig->GetListOfFunctions()->FindObject("stats");
-	st_visM_taulepmindR_sig->SetTextColor(kRed);
-	st_visM_taulepmindR_sig->SetOptStat(1110);
-	st_visM_taulepmindR_bkg->SetY1NDC(2*(st_visM_taulepmindR_sig->GetY1NDC())-st_visM_taulepmindR_sig->GetY2NDC());
-	st_visM_taulepmindR_bkg->SetY2NDC(st_visM_taulepmindR_sig->GetY1NDC());
-	gPad->Modified();
-	
-	TLegend *leg_visM_taulepmindR = new TLegend(0.72,0.25,0.85,0.38);
-	leg_visM_taulepmindR -> AddEntry(h_visM_taulepmindR_sig, "signal", "L");
-	leg_visM_taulepmindR -> AddEntry(h_visM_taulepmindR_TTJets, "tt+Jets", "L");
-	leg_visM_taulepmindR->Draw("same");
-	c.SaveAs("/uscms/home/ztao/work/CU_ttH_WD/Outputs/visM_taulepmindR.pdf");
-
+	Draw_Histogram_W2Stat(h_visM_taulepmindR_sig, h_visM_taulepmindR_TTJets, "visM_taulepmindR",
+						  "visMass(#tau_{h},l_{min(dR)})",
+						  "Normalized to 1",
+						  "same sign leptons + #tau_{h}", false);
 	//// h_MET
-	h_MET_TTJets->SetTitle("same sign leptons + #tau_{h}");
-	h_MET_TTJets->GetXaxis()->SetTitle("MET [GeV]");
-	h_MET_TTJets->GetYaxis()->SetTitle("Normalized to 1");
-	h_MET_TTJets->SetLineColor(kBlue);
-	float MET_max =
-		max(h_MET_TTJets->GetMaximum(),h_MET_sig->GetMaximum());
-	h_MET_TTJets->SetMaximum(MET_max*1.1);
-	h_MET_TTJets->Draw("");
-	gPad->Update();
-	TPaveStats *st_MET_bkg = (TPaveStats*) h_MET_TTJets->GetListOfFunctions()->FindObject("stats");
-	st_MET_bkg->SetTextColor(kBlue);
-	st_MET_bkg->SetOptStat(1110);
-	h_MET_sig->SetLineColor(kRed);
-	h_MET_sig->Draw("sames");
-	gPad->Update();
-	TPaveStats *st_MET_sig = (TPaveStats*) h_MET_sig->GetListOfFunctions()->FindObject("stats");
-	st_MET_sig->SetTextColor(kRed);
-	st_MET_sig->SetOptStat(1110);
-	st_MET_bkg->SetY1NDC(2*(st_MET_sig->GetY1NDC())-st_MET_sig->GetY2NDC());
-	st_MET_bkg->SetY2NDC(st_MET_sig->GetY1NDC());
-	gPad->Modified();
-	
-	TLegend *leg_MET = new TLegend(0.72,0.25,0.85,0.38);
-	leg_MET -> AddEntry(h_MET_sig, "signal", "L");
-	leg_MET -> AddEntry(h_MET_TTJets, "tt+Jets", "L");
-	leg_MET->Draw("same");
-	c.SaveAs("/uscms/home/ztao/work/CU_ttH_WD/Outputs/MET.pdf");
-
+	Draw_Histogram_W2Stat(h_MET_sig, h_MET_TTJets, "MET",
+						  "MET [GeV]",
+						  "Normalized to 1",
+						  "same sign leptons + #tau_{h}", false);
+	// h_METSig
+	Draw_Histogram_W2Stat(h_METSig_sig, h_METSig_TTJets, "METSig_log",
+						  "MET Significance [GeV]",
+						  "Normalized to 1",
+						  "same sign leptons + #tau_{h}", true);
+	Draw_Histogram_W2Stat(h_METSig_sig, h_METSig_TTJets, "METSig",
+						  "MET Significance [GeV]",
+						  "Normalized to 1",
+						  "same sign leptons + #tau_{h}", false);
 	//// h_MHT
-	h_MHT_TTJets->SetTitle("same sign leptons + #tau_{h}");
-	h_MHT_TTJets->GetXaxis()->SetTitle("MHT [GeV]");
-	h_MHT_TTJets->GetYaxis()->SetTitle("Normalized to 1");
-	h_MHT_TTJets->SetLineColor(kBlue);
-	float MHT_max =
-		max(h_MHT_TTJets->GetMaximum(),h_MHT_sig->GetMaximum());
-	h_MHT_TTJets->SetMaximum(MHT_max*1.1);
-	h_MHT_TTJets->Draw("");
-	gPad->Update();
-	TPaveStats *st_MHT_bkg = (TPaveStats*) h_MHT_TTJets->GetListOfFunctions()->FindObject("stats");
-	st_MHT_bkg->SetTextColor(kBlue);
-	st_MHT_bkg->SetOptStat(1110);
-	h_MHT_sig->SetLineColor(kRed);
-	h_MHT_sig->Draw("sames");
-	gPad->Update();
-	TPaveStats *st_MHT_sig = (TPaveStats*) h_MHT_sig->GetListOfFunctions()->FindObject("stats");
-	st_MHT_sig->SetTextColor(kRed);
-	st_MHT_sig->SetOptStat(1110);
-	st_MHT_bkg->SetY1NDC(2*(st_MHT_sig->GetY1NDC())-st_MHT_sig->GetY2NDC());
-	st_MHT_bkg->SetY2NDC(st_MHT_sig->GetY1NDC());
-	gPad->Modified();
-	
-	TLegend *leg_MHT = new TLegend(0.72,0.25,0.85,0.38);
-	leg_MHT -> AddEntry(h_MHT_sig, "signal", "L");
-	leg_MHT -> AddEntry(h_MHT_TTJets, "tt+Jets", "L");
-	leg_MHT->Draw("same");
-	c.SaveAs("/uscms/home/ztao/work/CU_ttH_WD/Outputs/MHT.pdf");
-
+	Draw_Histogram_W2Stat(h_MHT_sig, h_MHT_TTJets, "MHT",
+						  "MHT [GeV]",
+						  "Normalized to 1",
+						  "same sign leptons + #tau_{h}", false);
 	//// h_HT
-	h_HT_TTJets->SetTitle("same sign leptons + #tau_{h}");
-	h_HT_TTJets->GetXaxis()->SetTitle("HT [GeV]");
-	h_HT_TTJets->GetYaxis()->SetTitle("Normalized to 1");
-	h_HT_TTJets->SetLineColor(kBlue);
-	float HT_max =
-		max(h_HT_TTJets->GetMaximum(),h_HT_sig->GetMaximum());
-	h_HT_TTJets->SetMaximum(HT_max*1.1);
-	h_HT_TTJets->Draw("");
-	gPad->Update();
-	TPaveStats *st_HT_bkg = (TPaveStats*) h_HT_TTJets->GetListOfFunctions()->FindObject("stats");
-	st_HT_bkg->SetTextColor(kBlue);
-	st_HT_bkg->SetOptStat(1110);
-	h_HT_sig->SetLineColor(kRed);
-	h_HT_sig->Draw("sames");
-	gPad->Update();
-	TPaveStats *st_HT_sig = (TPaveStats*) h_HT_sig->GetListOfFunctions()->FindObject("stats");
-	st_HT_sig->SetTextColor(kRed);
-	st_HT_sig->SetOptStat(1110);
-	st_HT_bkg->SetY1NDC(2*(st_HT_sig->GetY1NDC())-st_HT_sig->GetY2NDC());
-	st_HT_bkg->SetY2NDC(st_HT_sig->GetY1NDC());
-	gPad->Modified();
-	
-	TLegend *leg_HT = new TLegend(0.72,0.25,0.85,0.38);
-	leg_HT -> AddEntry(h_HT_sig, "signal", "L");
-	leg_HT -> AddEntry(h_HT_TTJets, "tt+Jets", "L");
-	leg_HT->Draw("same");
-	c.SaveAs("/uscms/home/ztao/work/CU_ttH_WD/Outputs/HT.pdf");
-
+	Draw_Histogram_W2Stat(h_HT_sig, h_HT_TTJets, "HT",
+						  "HT [GeV]",
+						  "Normalized to 1",
+						  "same sign leptons + #tau_{h}", false);
 	//// h_metLD
-	h_metLD_TTJets->SetTitle("same sign leptons + #tau_{h}");
-	h_metLD_TTJets->GetXaxis()->SetTitle("metLD [GeV]");
-	h_metLD_TTJets->GetYaxis()->SetTitle("Normalized to 1");
-	h_metLD_TTJets->SetLineColor(kBlue);
-	float metLD_max =
-		max(h_metLD_TTJets->GetMaximum(),h_metLD_sig->GetMaximum());
-	h_metLD_TTJets->SetMaximum(metLD_max*1.1);
-	h_metLD_TTJets->Draw("");
-	gPad->Update();
-	TPaveStats *st_metLD_bkg = (TPaveStats*) h_metLD_TTJets->GetListOfFunctions()->FindObject("stats");
-	st_metLD_bkg->SetTextColor(kBlue);
-	st_metLD_bkg->SetOptStat(1110);
-	h_metLD_sig->SetLineColor(kRed);
-	h_metLD_sig->Draw("sames");
-	gPad->Update();
-	TPaveStats *st_metLD_sig = (TPaveStats*) h_metLD_sig->GetListOfFunctions()->FindObject("stats");
-	st_metLD_sig->SetTextColor(kRed);
-	st_metLD_sig->SetOptStat(1110);
-	st_metLD_bkg->SetY1NDC(2*(st_metLD_sig->GetY1NDC())-st_metLD_sig->GetY2NDC());
-	st_metLD_bkg->SetY2NDC(st_metLD_sig->GetY1NDC());
-	gPad->Modified();
-	
-	TLegend *leg_metLD = new TLegend(0.72,0.25,0.85,0.38);
-	leg_metLD -> AddEntry(h_metLD_sig, "signal", "L");
-	leg_metLD -> AddEntry(h_metLD_TTJets, "tt+Jets", "L");
-	leg_metLD->Draw("same");
-	c.SaveAs("/uscms/home/ztao/work/CU_ttH_WD/Outputs/metLD.pdf");
-
+	Draw_Histogram_W2Stat(h_metLD_sig, h_metLD_TTJets, "metLD",
+						  "metLD [GeV]",
+						  "Normalized to 1",
+						  "same sign leptons + #tau_{h}", false);
 	//// h_visMtot
-	h_visMtot_TTJets->SetTitle("same sign leptons + #tau_{h}");
-	h_visMtot_TTJets->GetXaxis()->SetTitle("visMtot [GeV]");
-	h_visMtot_TTJets->GetYaxis()->SetTitle("Normalized to 1");
-	h_visMtot_TTJets->SetLineColor(kBlue);
-	float visMtot_max =
-		max(h_visMtot_TTJets->GetMaximum(),h_visMtot_sig->GetMaximum());
-	h_visMtot_TTJets->SetMaximum(visMtot_max*1.1);
-	h_visMtot_TTJets->Draw("");
-	gPad->Update();
-	TPaveStats *st_visMtot_bkg = (TPaveStats*) h_visMtot_TTJets->GetListOfFunctions()->FindObject("stats");
-	st_visMtot_bkg->SetTextColor(kBlue);
-	st_visMtot_bkg->SetOptStat(1110);
-	h_visMtot_sig->SetLineColor(kRed);
-	h_visMtot_sig->Draw("sames");
-	gPad->Update();
-	TPaveStats *st_visMtot_sig = (TPaveStats*) h_visMtot_sig->GetListOfFunctions()->FindObject("stats");
-	st_visMtot_sig->SetTextColor(kRed);
-	st_visMtot_sig->SetOptStat(1110);
-	st_visMtot_bkg->SetY1NDC(2*(st_visMtot_sig->GetY1NDC())-st_visMtot_sig->GetY2NDC());
-	st_visMtot_bkg->SetY2NDC(st_visMtot_sig->GetY1NDC());
-	gPad->Modified();
-	
-	TLegend *leg_visMtot = new TLegend(0.72,0.25,0.85,0.38);
-	leg_visMtot -> AddEntry(h_visMtot_sig, "signal", "L");
-	leg_visMtot -> AddEntry(h_visMtot_TTJets, "tt+Jets", "L");
-	leg_visMtot->Draw("same");
-	c.SaveAs("/uscms/home/ztao/work/CU_ttH_WD/Outputs/visMtot.pdf");	
+	Draw_Histogram_W2Stat(h_visMtot_sig, h_visMtot_TTJets, "visMtot",
+						  "visMtot [GeV]",
+						  "Normalized to 1",
+						  "same sign leptons + #tau_{h}", false);
+	//// h_dilepmass
+	Draw_Histogram_W2Stat(h_dilepmass_sig, h_dilepmass_TTJets, "dilepmass",
+						  "dilepmass [GeV] (< 100 GeV)",
+						  "Normalized to 1",
+						  "same sign leptons + #tau_{h}", false);
+	// dR between lepton and jet
+	Draw_Histogram_W2Stat(h_dRlep1jet1_sig, h_dRlep1jet1_TTJets, "dRlep1jet1",
+						  "#DeltaR(l_{ldg},jet_{ldg})",
+						  "Normalized to 1",
+						  "same sign leptons + #tau_{h}", false);
+	Draw_Histogram_W2Stat(h_dRlep1jet2_sig, h_dRlep1jet2_TTJets, "dRlep1jet2",
+						  "#DeltaR(l_{ldg},jet_{subldg})",
+						  "Normalized to 1",
+						  "same sign leptons + #tau_{h}", false);
+	Draw_Histogram_W2Stat(h_dRlep2jet1_sig, h_dRlep2jet1_TTJets, "dRlep2jet1",
+						  "#DeltaR(l_{subldg},jet_{ldg})",
+						  "Normalized to 1",
+						  "same sign leptons + #tau_{h}", false);
+	Draw_Histogram_W2Stat(h_dRlep2jet2_sig, h_dRlep2jet2_TTJets, "dRlep2jet2",
+						  "#DeltaR(l_{subldg},jet_{subldg})",
+						  "Normalized to 1",
+						  "same sign leptons + #tau_{h}", false);
 	
 }
 
@@ -1602,8 +1106,9 @@ void NtupleHistDrawer(TH1F* h_cutflow_sig, TH1F* h_cutflow_TTJets,
 	h_cutflow_TTJets->GetYaxis()->SetTitleOffset(0.8);
 	h_cutflow_TTJets->GetYaxis()->SetLabelSize(0.02);
 	h_cutflow_TTJets->SetTitle("Cut Flow (100 fb^{-1})");
+	h_cutflow_TTJets->GetXaxis()->SetBinLabel(2, "HLT");;
 	h_cutflow_TTJets->GetXaxis()->SetBinLabel(7, ">= 2 jets");
-	h_cutflow_TTJets->GetXaxis()->SetBinLabel(8, ">= 2 b-tag");
+	h_cutflow_TTJets->GetXaxis()->SetBinLabel(8, "n_ btags");
 	h_cutflow_TTJets->Draw();
 	h_cutflow_sig->Scale(sig_scale);
 	h_cutflow_sig->SetLineColor(kRed);
@@ -1950,4 +1455,43 @@ void NtupleHistDrawer(TH1F* h_cutflow_sig, TH1F* h_cutflow_TTJets,
 
 	c5->SaveAs("/uscms/home/ztao/work/CU_ttH_WD/Outputs/nbtagscut.pdf");
 	*/
+}
+
+void Draw_Histogram_W2Stat(TH1F* h_sig, TH1F* h_bkg, TString pname, TString xtitle, TString ytitle, TString title, bool setlogy)
+{
+	TCanvas c;
+
+	if (setlogy)
+		gPad->SetLogy(1);
+	else
+		gPad->SetLogy(0);
+	
+	h_sig->SetTitle(title);
+	h_sig->GetXaxis()->SetTitle(xtitle);
+	h_sig->GetYaxis()->SetTitle(ytitle);
+	h_sig->SetLineColor(kRed);
+	float ymax = max(h_sig->GetMaximum(), h_bkg->GetMaximum());
+	h_sig->SetMaximum(ymax*1.1);
+	h_sig->Draw("");
+	gPad->Update();
+	TPaveStats *st_sig = (TPaveStats*) h_sig->GetListOfFunctions()->FindObject("stats");
+	st_sig->SetTextColor(kRed);
+	st_sig->SetOptStat(1110);
+
+	h_bkg->SetLineColor(kBlue);
+	h_bkg->Draw("sames");
+	gPad->Update();
+	TPaveStats *st_bkg = (TPaveStats*) h_bkg->GetListOfFunctions()->FindObject("stats");
+	st_bkg->SetTextColor(kBlue);
+	st_bkg->SetOptStat(1110);
+	st_bkg->SetY1NDC(2*(st_sig->GetY1NDC())-st_sig->GetY2NDC());
+	st_bkg->SetY2NDC(st_sig->GetY1NDC());
+	gPad->Modified();
+
+	TLegend *leg = new TLegend(0.72,0.25,0.85,0.38);
+	leg -> AddEntry(h_sig, "signal", "L");
+	leg -> AddEntry(h_bkg, "tt_jets", "L");
+	leg -> Draw("same");
+
+	c.SaveAs("/uscms/home/ztao/work/CU_ttH_WD/Outputs/"+pname+".pdf");
 }
