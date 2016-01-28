@@ -14,15 +14,14 @@ using namespace std;
 void MVATreeMaker(TString label)
 {
 	// Read ntuple
-    TString file;
+    TString ntuple;
 	if (label == "signal") 
-	    file = "/eos/uscms/store/user/ztao/ttHToTT_M125_13TeV_powheg_pythia8/ttHToTauTau_Ntuple_signal/151209_202153/0000/CU_ttH_EDA_output.root";
+	    ntuple = "/eos/uscms/store/user/ztao/ttHToTT_M125_13TeV_powheg_pythia8/ttHToTauTau_Ntuple_signal/151209_202153/0000/CU_ttH_EDA_output.root";
 	else if (label == "TTJets")
-		file = "/eos/uscms/store/user/ztao/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/ttHToTauTau_Ntuple_TTJets/151209_202324/0000/CU_ttH_EDA_output.root";
+		ntuple = "/eos/uscms/store/user/ztao/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/ttHToTauTau_Ntuple_TTJets/151209_202324/0000/CU_ttH_EDA_output.root";
 	
-	TFile* f = new TFile(file);
-
-	TTree* tree = (TTree*) f -> Get("ttHtautau/EventTree");
+	TFile* input = new TFile(ntuple);
+	TTree* tree = (TTree*) input -> Get("ttHtautau/EventTree");
 
 	const int nEntries = tree->GetEntries();
 	
@@ -182,8 +181,9 @@ void MVATreeMaker(TString label)
 	tree->SetBranchAddress("METCovariance01", &metcov01, &b_metcov01);
 	tree->SetBranchAddress("METCovariance11", &metcov11, &b_metcov11);	
 
-	// Create a target tree
-	TTree* tree_mva;
+	// Create a target tree and output file
+	TFile *output = new TFile("./mvaTree_"+label+".root", "RECREATE");
+	TTree* tree_mva = new TTree("mvaTree", "mvaTree");
 	// Define target tree leafs and branches
 	float dRlep1tau;
 	float dRlep2tau;
@@ -434,11 +434,10 @@ void MVATreeMaker(TString label)
 		dRlep2jet1 = lep2_p4.DeltaR(jets[0]);
 		dRlep2jet2 = lep2_p4.DeltaR(jets[1]);
 
-		// Fill target tree
+		// Fill target tree		
 		tree_mva -> Fill();
 		
 	} // end of event loop
-
-	TFile *output = new TFile("./tmva_tree"+label+".root", "RECREATE");
+	
 	tree_mva -> Write();
 }

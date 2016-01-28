@@ -48,8 +48,8 @@ const int sig_scale = 10;
 void CutsPerf(
 			  //const TString sig_file = "/uscms/home/ztao/work/CU_ttH_WD/Outputs/CU_ttH_EDA_output_sig.root",
 			  //const TString bkg_file = "/uscms/home/ztao/work/CU_ttH_WD/Outputs/CU_ttH_EDA_output_TTJets.root"
-			  const TString sig_file = "/eos/uscms/store/user/ztao/ttHToTT_M125_13TeV_powheg_pythia8/ttHToTauTau_Ntuple_signal/151209_202153/0000/CU_ttH_EDA_output_tmp.root",
-			  const TString bkg_file = "/eos/uscms/store/user/ztao/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/ttHToTauTau_Ntuple_TTJets/151209_202324/0000/CU_ttH_EDA_output_tmp.root"
+			  const TString sig_file = "/eos/uscms/store/user/ztao/ttHToTT_M125_13TeV_powheg_pythia8/ttHToTauTau_Ntuple_signal/151209_202153/0000/CU_ttH_EDA_output.root",
+			  const TString bkg_file = "/eos/uscms/store/user/ztao/TTJets_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/ttHToTauTau_Ntuple_TTJets/151209_202324/0000/CU_ttH_EDA_output.root"
 							)
 {
 	// Read ntuples
