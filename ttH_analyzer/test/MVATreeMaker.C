@@ -181,10 +181,15 @@ void MVATreeMaker(TString label)
 	tree->SetBranchAddress("METCovariance01", &metcov01, &b_metcov01);
 	tree->SetBranchAddress("METCovariance11", &metcov11, &b_metcov11);	
 
+	///////////////////////////////////////////////////////////////////
 	// Create a target tree and output file
 	TFile *output = new TFile("./mvaTree_"+label+".root", "RECREATE");
 	TTree* tree_mva = new TTree("mvaTree", "mvaTree");
 	// Define target tree leafs and branches
+	float taupt;
+	float taueta;
+	float jet1pt;
+	float bjet1pt;
 	float dRlep1tau;
 	float dRlep2tau;
 	float lep1dxy;
@@ -208,6 +213,10 @@ void MVATreeMaker(TString label)
 	float dRlep2jet1;
 	float dRlep2jet2;
 	// Setup branches
+	tree_mva -> Branch("taupt", &taupt);
+	tree_mva -> Branch("taueta", &taueta);
+	tree_mva -> Branch("jet1pt", &jet1pt);
+	tree_mva -> Branch("bjet1pt", &bjet1pt);
 	tree_mva -> Branch("dRlep1tau", &dRlep1tau);
 	tree_mva -> Branch("dRlep2tau", &dRlep2tau);
 	tree_mva -> Branch("lep1dxy", &lep1dxy);
@@ -267,6 +276,16 @@ void MVATreeMaker(TString label)
 		lep_vtx_dz->insert(lep_vtx_dz->end(), mu_vtx_dz->begin(), mu_vtx_dz->end());
 		lep_vtx_dxy->insert(lep_vtx_dxy->end(), mu_vtx_dxy->begin(), mu_vtx_dxy->end());
 
+		// tau kinematics
+		taupt = loose_tau_pt->at(0);
+		taueta = loose_tau_eta->at(0);
+
+		// leading jet pt
+		jet1pt = jet_pt->at(0);
+
+		// leading b-jet pt
+		bjet1pt = bjet_pt->at(0);
+		
 		// MET
 		MET = TMath::Sqrt(met_x*met_x+met_y*met_y);
 		// MET Significance
