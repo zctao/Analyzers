@@ -204,6 +204,7 @@ int CU_ttH_EDA::Check_vertices_set_MAODhelper(
 	return 0;
 }
 
+/*
 /// Taggers
 int CU_ttH_EDA::Higgs_tagger(
 	Handle<boosted::SubFilterJetCollection> subfilter_jets,
@@ -298,6 +299,7 @@ int CU_ttH_EDA::Top_tagger(Handle<boosted::HTTTopJetCollection> top_jets,
 
 	return 0;
 }
+*/
 
 /// Other functions
 void CU_ttH_EDA::Check_Fill_Print_muj(CU_ttH_EDA_event_vars &local)

@@ -68,9 +68,9 @@
 #include "TTree.h"
 
 /// Higgs and top tagger
-#include "MiniAOD/BoostedObjects/interface/HTTTopJet.h"
-#include "MiniAOD/BoostedObjects/interface/SubFilterJet.h"
-#include "BoostedTTH/BoostedAnalyzer/interface/BoostedUtils.hpp"
+//#include "MiniAOD/BoostedObjects/interface/HTTTopJet.h"
+//#include "MiniAOD/BoostedObjects/interface/SubFilterJet.h"
+//#include "BoostedTTH/BoostedAnalyzer/interface/BoostedUtils.hpp"
 #include "MiniAOD/MiniAODHelper/interface/TopTagger.h"
 #include "MiniAOD/MiniAODHelper/interface/HiggsTagger.h"
 
@@ -226,11 +226,11 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 								 edm::Handle<edm::TriggerResults>);
 
 	/// Taggers. Returns 1 in case of an error
-	int Higgs_tagger(Handle<boosted::SubFilterJetCollection>,
-					 CU_ttH_EDA_event_vars &); // FIXME: uses b-tag medium WP
-	int Top_tagger(Handle<boosted::HTTTopJetCollection>,
-				   CU_ttH_EDA_event_vars &);
-	TopTagger toptagger;
+	//int Higgs_tagger(Handle<boosted::SubFilterJetCollection>,
+	//				 CU_ttH_EDA_event_vars &); // FIXME: uses b-tag medium WP
+	//int Top_tagger(Handle<boosted::HTTTopJetCollection>,
+	//				   CU_ttH_EDA_event_vars &);
+	//TopTagger toptagger;
 
 	/// Other functions
 	void Check_Fill_Print_ej(CU_ttH_EDA_event_vars &);

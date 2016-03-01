@@ -145,8 +145,8 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 
 	/// Top and Higgs tagging using collections through handles. adjusts
 	/// local.<tag>
-	Top_tagger(handle.top_jets, local);
-	Higgs_tagger(handle.subfilter_jets, local);
+	//Top_tagger(handle.top_jets, local);
+	//Higgs_tagger(handle.subfilter_jets, local);
 
 	/// Get Corrected MET, !!!not yet used!!!
 	// may need to be placed in CU_ttH_EDA_event_vars
