@@ -13,6 +13,7 @@ void Set_up_handles(const Event &iEvent, edm_Handles &handle, edm_Tokens &token)
 	iEvent.getByToken(token.vertices, handle.vertices);
 	iEvent.getByToken(token.sec_vertices, handle.sec_vertices);
 	iEvent.getByToken(token.PU_info, handle.PU_info);
+	iEvent.getByToken(token.srcRho, handle.srcRho);
 
 	iEvent.getByToken(token.electrons, handle.electrons);
 	iEvent.getByToken(token.muons, handle.muons);
