@@ -128,12 +128,12 @@ void CU_ttH_EDA::Load_configuration_set_type(const string &conf_analysis_type)
 	}
 
 	if (conf_analysis_type == "taus_lepton+jet") {
-		analysis_type = Analyze_taus_lepton_jet;
+		analysis_type = Analyze_ditaus_lepton;
 		return;
 	}
 
 	if (conf_analysis_type == "taus_dilepton") {
-		analysis_type = Analyze_taus_dilepton;
+		analysis_type = Analyze_tau_ssleptons;
 		return;
 	}
 }
@@ -156,7 +156,7 @@ void CU_ttH_EDA::Load_configuration_MAODH(bool data)
 		return;
 	}
 
-	if (analysis_type == Analyze_taus_lepton_jet) {
+	if (analysis_type == Analyze_ditaus_lepton) {
 		miniAODhelper.SetUp(MAODHelper_era, MAODHelper_sample_nr,
 							analysisType::TauLJ, // LJ, DIL, TauLJ, TauDIL
 							data				 // is data
@@ -164,7 +164,7 @@ void CU_ttH_EDA::Load_configuration_MAODH(bool data)
 		return;
 	}
 
-	if (analysis_type == Analyze_taus_dilepton) {
+	if (analysis_type == Analyze_tau_ssleptons) {
 		miniAODhelper.SetUp(MAODHelper_era, MAODHelper_sample_nr,
 							analysisType::TauDIL, // LJ, DIL, TauLJ, TauDIL
 							data				  // is data

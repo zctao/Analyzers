@@ -143,55 +143,12 @@ void CU_ttH_EDA::Set_up_histograms()
 		h_tth_syncex1_elemu->GetXaxis()->SetBinLabel(6, ">=1 b-tags");
 	}
 
-	if (analysis_type == Analyze_taus_dilepton) {
-		h_tth_syncex_dimutauh =
-			fs_->make<TH1D>("h_tth_syncex_dimutauh", ";cut", 6, 0, 6);
-		h_tth_syncex_dimutauh->GetXaxis()->SetBinLabel(1, "All events");
-		h_tth_syncex_dimutauh->GetXaxis()->SetBinLabel(2, "Double mu trig");
-		h_tth_syncex_dimutauh->GetXaxis()->SetBinLabel(3, "Same sign leptons");
-		h_tth_syncex_dimutauh->GetXaxis()->SetBinLabel(4, ">=1 tau");
-		h_tth_syncex_dimutauh->GetXaxis()->SetBinLabel(5, "n_jets cut");
-		h_tth_syncex_dimutauh->GetXaxis()->SetBinLabel(6, "n_btags cut");
+	if (analysis_type == Analyze_tau_ssleptons) {
 
-		h_tth_syncex_dieletauh =
-			fs_->make<TH1D>("h_tth_syncex_dieletauh", ";cut", 6, 0, 6);
-		h_tth_syncex_dieletauh->GetXaxis()->SetBinLabel(1, "All events");
-		h_tth_syncex_dieletauh->GetXaxis()->SetBinLabel(2, "Double e trig");
-		h_tth_syncex_dieletauh->GetXaxis()->SetBinLabel(3, "Same sign leptons");
-		h_tth_syncex_dieletauh->GetXaxis()->SetBinLabel(4, ">=1 tau");
-		h_tth_syncex_dieletauh->GetXaxis()->SetBinLabel(5, "n_jets cut");
-		h_tth_syncex_dieletauh->GetXaxis()->SetBinLabel(6, "n_btags cut");
-		
-		h_tth_syncex_elemutauh =
-			fs_->make<TH1D>("h_tth_syncex_elemutauh", ";cut", 6, 0, 6);
-		h_tth_syncex_elemutauh->GetXaxis()->SetBinLabel(1, "All events");
-		h_tth_syncex_elemutauh->GetXaxis()->SetBinLabel(2, "e mu trig");
-		h_tth_syncex_elemutauh->GetXaxis()->SetBinLabel(3, "Same sign leptons");
-		h_tth_syncex_elemutauh->GetXaxis()->SetBinLabel(4, ">=1 tau");
-		h_tth_syncex_elemutauh->GetXaxis()->SetBinLabel(5, "n_jets cut");
-		h_tth_syncex_elemutauh->GetXaxis()->SetBinLabel(6, "n_btags cut");
 	}
 
-	if (analysis_type == Analyze_taus_lepton_jet) {
-		h_tth_syncex_eleditauh =
-			fs_->make<TH1D>("h_tth_syncex_eleditauh", ";cut", 7, 0, 7);
-		h_tth_syncex_eleditauh->GetXaxis()->SetBinLabel(1, "All events");
-		h_tth_syncex_eleditauh->GetXaxis()->SetBinLabel(2, "Single e trig");
-		h_tth_syncex_eleditauh->GetXaxis()->SetBinLabel(3, ">=1 n_electrons");
-		h_tth_syncex_eleditauh->GetXaxis()->SetBinLabel(4, ">=2 n_taus");
-		h_tth_syncex_eleditauh->GetXaxis()->SetBinLabel(5, "120 < mTT < 130");
-		h_tth_syncex_eleditauh->GetXaxis()->SetBinLabel(6, "n_jets cut");
-		h_tth_syncex_eleditauh->GetXaxis()->SetBinLabel(7, "n_btags cut");
+	if (analysis_type == Analyze_ditaus_lepton) {
 
-		h_tth_syncex_muditauh =
-			fs_->make<TH1D>("h_tth_syncex_muditauh", ";cut", 7, 0, 7);
-		h_tth_syncex_muditauh->GetXaxis()->SetBinLabel(1, "All events");
-		h_tth_syncex_muditauh->GetXaxis()->SetBinLabel(2, "Single e trig");
-		h_tth_syncex_muditauh->GetXaxis()->SetBinLabel(3, ">=1 n_electrons");
-		h_tth_syncex_muditauh->GetXaxis()->SetBinLabel(4, ">=2 n_taus");
-		h_tth_syncex_muditauh->GetXaxis()->SetBinLabel(5, "120 < mTT < 130");
-		h_tth_syncex_muditauh->GetXaxis()->SetBinLabel(6, "n_jets cut");
-		h_tth_syncex_muditauh->GetXaxis()->SetBinLabel(7, "n_btags cut");
 	}
 }
 
@@ -352,45 +309,11 @@ void CU_ttH_EDA::Set_up_tokens()
 
 void CU_ttH_EDA::Set_up_Tree()
 {
-
-	edm::Service<TFileService> fs;
-
-	eventTree = fs->make<TTree>("GenParticlesTree", "Event tree");
-
-	eventTree->Branch("x_pdgId", &x_pdgId);
-	eventTree->Branch("x_status", &x_status);
-	eventTree->Branch("x_pt", &x_pt);
-	eventTree->Branch("x_eta", &x_eta);
-	eventTree->Branch("x_phi", &x_phi);
-	eventTree->Branch("x_mass", &x_mass);
-
-	eventTree->Branch("top_pdgId", &top_pdgId);
-	eventTree->Branch("top_status", &top_status);
-	eventTree->Branch("top_pt", &top_pt);
-	eventTree->Branch("top_eta", &top_eta);
-	eventTree->Branch("top_phi", &top_phi);
-	eventTree->Branch("top_mass", &top_mass);
-
-	eventTree->Branch("x_daughter_pdgId", &xDaug_pdgId);
-	eventTree->Branch("x_daughter_status", &xDaug_status);
-	eventTree->Branch("x_daughter_pt", &xDaug_pt);
-	eventTree->Branch("x_daughter_eta", &xDaug_eta);
-	eventTree->Branch("x_daughter_phi", &xDaug_phi);
-	eventTree->Branch("x_daughter_mass", &xDaug_mass);
-
-	eventTree->Branch("top_daughter_pdgId", &topDaug_pdgId);
-	eventTree->Branch("top_daughter_status", &topDaug_status);
-	eventTree->Branch("top_daughter_pt", &topDaug_pt);
-	eventTree->Branch("top_daughter_eta", &topDaug_eta);
-	eventTree->Branch("top_daughter_phi", &topDaug_phi);
-	eventTree->Branch("top_daughter_mass", &topDaug_mass);
-
-	eventTree->Branch("w_daughter_pdgId", &wDaug_pdgId);
-	eventTree->Branch("w_daughter_status", &wDaug_status);
-	eventTree->Branch("w_daughter_pt", &wDaug_pt);
-	eventTree->Branch("w_daughter_eta", &wDaug_eta);
-	eventTree->Branch("w_daughter_phi", &wDaug_phi);
-	eventTree->Branch("w_daughter_mass", &wDaug_mass);
+	
+	eventTree = fs_->make<TTree>("eventTree", "Event tree");
+	
+	ntuple = 0;
+	eventTree -> Branch("ntuple_", "CU_ttH_EDA_Ntuple", &ntuple);
 }
 
 #endif

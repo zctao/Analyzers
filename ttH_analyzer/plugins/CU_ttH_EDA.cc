@@ -38,7 +38,7 @@ CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig)
 	*/
 
 	/// temporary mock-up parameters
-	MAODHelper_era = "2012_53x";
+	MAODHelper_era = "2016_76x";
 	MAODHelper_sample_nr = 2500;
 
 	total_xs = 831.76;
@@ -51,6 +51,8 @@ CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig)
 	Set_up_tokens();
 	Set_up_histograms();
 	Set_up_output_files();
+	
+	Set_up_Tree();
 }
 
 /// Destructor
@@ -71,7 +73,6 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 
 	/// Declaring local struct for data readout and manipulations
 	CU_ttH_EDA_event_vars local;
-	CU_ttH_EDA_gen_vars gen;
 
 	/// Triggers have not fired yet. Check_triggers, Check_filters will adjust
 	local.pass_single_e = false;
@@ -153,7 +154,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	local.MET_corrected =
 		handle.METs->front(); // miniAODhelper.GetCorrectedMET( METs.at(0),
 							  // pfJets_forMET, iSysType );
-
+	
 	/// Check tags, fill hists, print events
 	if (analysis_type == Analyze_lepton_jet) {
 		Check_Fill_Print_ej(local);
@@ -166,23 +167,19 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		Check_Fill_Print_elemuj(local);
 	}
 
-	if (analysis_type == Analyze_taus_dilepton) {
-		Check_Fill_Print_dimutauh(local);
-		Check_Fill_Print_dieletauh(local);
-		Check_Fill_Print_elemutauh(local);
+	if (analysis_type == Analyze_tau_ssleptons) {
+
 	}
 
-	if (analysis_type == Analyze_taus_lepton_jet) {
-		Check_Fill_Print_eleditauh(local);
-		Check_Fill_Print_muditauh(local);
+	if (analysis_type == Analyze_ditaus_lepton) {
+
 	}
+
+	// Write ntuple and fill eventTree
+	ntuple->Initialize();
+	ntuple->Write(local);
+	eventTree->Fill();
 	
-	/// generator information
-	bool get_gen_info = true;
-	if (get_gen_info) {
-		Get_GenInfo(handle.MC_particles, handle.MC_packed, gen);
-		Write_to_Tree(gen, eventTree);
-	}
 }
 
 // ------------ method called once each job just before starting event loop
@@ -192,8 +189,6 @@ void CU_ttH_EDA::beginJob()
 	TH1::SetDefaultSumw2(true);
 
 	event_count = 0;
-
-	Set_up_Tree();
 }
 
 // ------------ method called once each job just after ending the event loop
