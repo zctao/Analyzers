@@ -31,7 +31,35 @@
 */
 
 /// Constructor
-CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig)
+CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig):
+	// Analysis type
+	config_analysis_type (iConfig.getParameter<string>("analysis_type")),
+	// Generic
+	verbose_ (iConfig.getParameter<bool>("verbosity")),
+	dumpHLT_ (iConfig.getParameter<bool>("print_HLT_event_path")),
+	hltTag (iConfig.getParameter<string>("HLT_config_tag")),
+	filterTag (iConfig.getParameter<string>("filter_config_tag")),
+	// Triggers
+	trigger_stats (iConfig.getParameter<bool>("collect_trigger_stats")),
+	trigger_on_HLT_e (iConfig.getParameter<std::vector<string>>("HLT_electron_triggers")),
+	trigger_on_HLT_mu (iConfig.getParameter<std::vector<string>>("HLT_muon_triggers")),
+	trigger_on_HLT_ee (iConfig.getParameter<std::vector<string>>("HLT_electron_electron_triggers")),
+	trigger_on_HLT_emu (iConfig.getParameter<std::vector<string>>("HLT_electron_muon_triggers")),
+	trigger_on_HLT_mumu (iConfig.getParameter<std::vector<string>>("HLT_muon_muon_triggers")),
+	// Cuts
+	min_tight_lepton_pT (iConfig.getParameter<double>("min_tight_lepton_pT")),
+	min_tau_pT (iConfig.getParameter<double>("min_tau_pT")),
+	min_jet_pT (iConfig.getParameter<double>("min_jet_pT")),
+	min_bjet_pT (iConfig.getParameter<double>("min_bjet_pT")),
+	max_jet_eta (iConfig.getParameter<double>("max_jet_eta")),
+	max_bjet_eta (iConfig.getParameter<double>("max_bjet_eta")),
+	min_njets (iConfig.getParameter<int>("min_njets")),
+	min_nbtags (iConfig.getParameter<int>("min_nbtags")),
+	// Jets
+	jet_corrector (iConfig.getParameter<string>("jet_corrector")),
+	// miniAODhelper
+	isdata (iConfig.getParameter<bool>("using_real_data")),
+	MAODHelper_b_tag_strength (iConfig.getParameter<string>("b_tag_strength")[0])
 {
 	/*
 	 * now do whatever initialization is needed
@@ -46,7 +74,10 @@ CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig)
 	int_lumi = 10000;
 	weight_sample = int_lumi * total_xs / sample_n;
 
-	Load_configuration(static_cast<string>("Configs/config_analyzer_tau.yaml"));
+	Load_configuration_set_type(config_analysis_type);
+	Load_configuration_MAODH(isdata);
+	
+	// Load_configuration(static_cast<string>("Configs/config_analyzer.yaml"));
 
 	Set_up_tokens();
 	Set_up_histograms();
@@ -110,8 +141,8 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	local.mu_selected = miniAODhelper.GetSelectedMuons(
 		*(handle.muons), min_tight_lepton_pT, muonID::muonTight);
 	local.tau_selected = miniAODhelper.GetSelectedTaus(
-		*(handle.taus),	min_tight_tau_pT, tau::tight);   // which tauID?
-
+		*(handle.taus),	min_tau_pT, tau::loose);
+	
 	local.n_electrons = static_cast<int>(local.e_selected.size());
 	local.n_muons = static_cast<int>(local.mu_selected.size());
 	local.n_taus = static_cast<int>(local.tau_selected.size());
