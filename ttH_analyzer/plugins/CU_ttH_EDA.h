@@ -77,7 +77,7 @@
 /// structs for holding multiple edm::Handle and EDGetTokenT
 #include "CU_ttH_EDA_Handles.h"
 
-#include "CU_ttH_EDA_Ntuple.h"
+#include "Analyzers/ttH_analyzer/interface/CU_ttH_EDA_Ntuple.h"
 
 /// Configuration reader
 #include "yaml-cpp/yaml.h"
