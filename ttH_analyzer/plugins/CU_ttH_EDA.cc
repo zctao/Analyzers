@@ -66,7 +66,7 @@ CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig):
 	*/
 
 	/// temporary mock-up parameters
-	MAODHelper_era = "2016_76x";
+	MAODHelper_era = "2015_74x";
 	MAODHelper_sample_nr = 2500;
 
 	total_xs = 831.76;
