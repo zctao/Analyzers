@@ -82,21 +82,8 @@ struct CU_ttH_EDA_event_vars {
  *
  */
 
-//#ifdef __MAKECINT__
-//#pragma link C++ class CU_ttH_EDA_Ntuple+;
-//#pragma link C++ all_datamember CU_ttH_EDA_Ntuple+;
-//#endif
-
 class CU_ttH_EDA_Ntuple
 {
- private:
-	// private member functions
-	void fill_ntuple_electrons(const CU_ttH_EDA_event_vars &);
-	void fill_ntuple_muons(const CU_ttH_EDA_event_vars &);
-	void fill_ntuple_taus(const CU_ttH_EDA_event_vars &);
-	void fill_ntuple_jets(const CU_ttH_EDA_event_vars &);
-	void fill_ntuple_met(const CU_ttH_EDA_event_vars &);
-	
  public:
 	/// function member
 	CU_ttH_EDA_Ntuple();
@@ -263,8 +250,15 @@ class CU_ttH_EDA_Ntuple
 	// MET
 	double PFMET;
 	double PFMETphi;
-
-	// ClassDef(CU_ttH_EDA_Ntuple,1);
+	
+ private:
+	
+	// private member functions
+	void fill_ntuple_electrons(const CU_ttH_EDA_event_vars &);
+	void fill_ntuple_muons(const CU_ttH_EDA_event_vars &);
+	void fill_ntuple_taus(const CU_ttH_EDA_event_vars &);
+	void fill_ntuple_jets(const CU_ttH_EDA_event_vars &);
+	void fill_ntuple_met(const CU_ttH_EDA_event_vars &);
 };
 
 #endif

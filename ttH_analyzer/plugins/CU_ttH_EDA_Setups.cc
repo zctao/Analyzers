@@ -4,10 +4,6 @@
 /// Includes
 #include "CU_ttH_EDA.h"
 
-//#ifdef __ROOTCLING__
-//#pragma link C++ all_datamember CU_ttH_EDA_Ntuple+;
-//#endif
-
 void CU_ttH_EDA::Close_output_files()
 {
 	if (analysis_type == Analyze_lepton_jet) {
@@ -317,7 +313,7 @@ void CU_ttH_EDA::Set_up_Tree()
 	eventTree = fs_->make<TTree>("eventTree", "Event tree");
 	
 	ntuple = 0;
-	eventTree -> Branch("ntuple.", "CU_ttH_EDA_Ntuple", &ntuple);
+	eventTree -> Branch("ntuple_", "CU_ttH_EDA_Ntuple", &ntuple);
 }
 
 #endif

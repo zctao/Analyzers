@@ -1,5 +1,0 @@
-<lcgdict>
-  <class name="CU_ttH_EDA_Ntuple"/>
-  <class name="std::vector<CU_ttH_EDA_Ntuple>"/>
-  <class name="edm::Wrapper<std::vector<CU_ttH_EDA_Ntuple> >"/>
-</lcgdict>
