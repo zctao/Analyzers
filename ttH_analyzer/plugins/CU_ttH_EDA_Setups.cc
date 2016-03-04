@@ -309,11 +309,16 @@ void CU_ttH_EDA::Set_up_tokens()
 
 void CU_ttH_EDA::Set_up_Tree()
 {
-	
 	eventTree = fs_->make<TTree>("eventTree", "Event tree");
 	
-	ntuple = 0;
-	eventTree -> Branch("ntuple_", "CU_ttH_EDA_Ntuple", &ntuple);
+	ntuple->initialize();
+	std::cout << "initialized" << std::endl;
+	//eventTree -> Branch("ntuple_", "CU_ttH_EDA_Ntuple", &ntuple);
+	//eventTree -> Branch("pt" ,&(ntuple->mu0_pt));
+	std::cout << "IsTObject :" << ntuple->IsTObject() <<  std::endl;
+	std::cout << "GetNdata() :" << ntuple->GetNdata() << std::endl;
+	std::cout << "CanSplit() :" << ntuple->CanSplit() << std::endl;
+	ntuple->Dump();
 }
 
 #endif

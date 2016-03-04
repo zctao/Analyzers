@@ -132,7 +132,7 @@ void CU_ttH_EDA::Load_configuration_set_type(const string &conf_analysis_type)
 		return;
 	}
 
-	if (conf_analysis_type == "tau_sslepton") {
+	if (conf_analysis_type == "tau_ssleptons") {
 		analysis_type = Analyze_tau_ssleptons;
 		return;
 	}

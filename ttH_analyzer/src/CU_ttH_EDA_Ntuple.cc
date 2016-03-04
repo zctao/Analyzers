@@ -2,7 +2,8 @@
 #define CU_ttH_EDA_Ntuple_cc
 
 #include "Analyzers/ttH_analyzer/interface/CU_ttH_EDA_Ntuple.h"
-#include "math.h"
+#include "Analyzers/ttH_analyzer/interface/CU_ttH_EDA_event_vars.h"
+#include <cmath>
 
 // Constructor
 CU_ttH_EDA_Ntuple::CU_ttH_EDA_Ntuple() {}
@@ -12,14 +13,14 @@ CU_ttH_EDA_Ntuple::~CU_ttH_EDA_Ntuple() {}
 
 // Member functions
 
-void CU_ttH_EDA_Ntuple::Write(const CU_ttH_EDA_event_vars &local)
+void CU_ttH_EDA_Ntuple::write_ntuple(const CU_ttH_EDA_event_vars &local)
 {
 	nEvent = local.event_nr;  // Need to verify
 	n_presel_mu = local.n_muons;
 	n_presel_ele = local.n_electrons;
 	n_presel_tau = local.n_taus;
 	n_presel_jet = local.n_jets;
-
+	
 	fill_ntuple_electrons(local);
 	fill_ntuple_muons(local);
 	fill_ntuple_taus(local);
@@ -36,7 +37,7 @@ void CU_ttH_EDA_Ntuple::fill_ntuple_electrons(const CU_ttH_EDA_event_vars &local
 		ele0_phi = local.e_selected_sorted[0].phi();
 		ele0_E = local.e_selected_sorted[0].energy();
 	}
-
+	
 	if (local.e_selected_sorted.size() > 1 ) {
 		ele1_pt = local.e_selected_sorted[1].pt();
 		ele1_eta = local.e_selected_sorted[1].eta();
@@ -53,7 +54,7 @@ void CU_ttH_EDA_Ntuple::fill_ntuple_muons(const CU_ttH_EDA_event_vars &local)
 		mu0_phi = local.mu_selected_sorted[0].phi();
 		mu0_E = local.mu_selected_sorted[0].energy();
 	}
-
+	
 	if (local.mu_selected_sorted.size() > 1 ) {
 		mu1_pt = local.mu_selected_sorted[1].pt();
 		mu1_eta = local.mu_selected_sorted[1].eta();
@@ -70,7 +71,7 @@ void CU_ttH_EDA_Ntuple::fill_ntuple_taus(const CU_ttH_EDA_event_vars &local)
 		tau0_phi = local.tau_selected_sorted[0].phi();
 		tau0_E = local.tau_selected_sorted[0].energy();
 	}
-
+	
 	if (local.tau_selected_sorted.size() > 1 ) {
 		tau1_pt = local.tau_selected_sorted[1].pt();
 		tau1_eta = local.tau_selected_sorted[1].eta();
@@ -87,21 +88,21 @@ void CU_ttH_EDA_Ntuple::fill_ntuple_jets(const CU_ttH_EDA_event_vars &local)
 		jet0_phi = local.jets_selected_sorted[0].phi();
 		jet0_E = local.jets_selected_sorted[0].energy();
 	}
-
+	
 	if (local.jets_selected_sorted.size() > 1 ) {
 		jet1_pt = local.jets_selected_sorted[1].pt();
 		jet1_eta = local.jets_selected_sorted[1].eta();
 		jet1_phi = local.jets_selected_sorted[1].phi();
 		jet1_E = local.jets_selected_sorted[1].energy();
 	}
-
+	
 	if (local.jets_selected_sorted.size() > 2) {
 		jet2_pt = local.jets_selected_sorted[2].pt();
 		jet2_eta = local.jets_selected_sorted[2].eta();
 		jet2_phi = local.jets_selected_sorted[2].phi();
 		jet2_E = local.jets_selected_sorted[2].energy();
 	}
-
+	
 	if (local.jets_selected_sorted.size() > 3 ) {
 		jet3_pt = local.jets_selected_sorted[3].pt();
 		jet3_eta = local.jets_selected_sorted[3].eta();
@@ -115,9 +116,9 @@ void CU_ttH_EDA_Ntuple::fill_ntuple_met(const CU_ttH_EDA_event_vars &local)
 	double metx = local.MET_corrected.px();
 	double mety = local.MET_corrected.py();
 	PFMET = sqrt(metx*metx+mety*mety);
-}
+	}
 
-void CU_ttH_EDA_Ntuple::Initialize()
+void CU_ttH_EDA_Ntuple::initialize()
 {
 	// event variables
 	nEvent = -9999;
@@ -125,6 +126,7 @@ void CU_ttH_EDA_Ntuple::Initialize()
 	n_presel_ele = -9999;
 	n_presel_tau = -9999;
 	n_presel_jet = -9999;
+
 	// muons
 	mu0_pt = -9999;
 	mu0_eta = -9999;
@@ -252,6 +254,7 @@ void CU_ttH_EDA_Ntuple::Initialize()
 	tau1_againstElectronMediumMVA6 = -9999;
 	tau1_againstElectronTightMVA6 = -9999;
 	tau1_againstElectronVTightMVA6 = -9999;
+	
 	// jets
 	jet0_pt = -9999;
 	jet0_eta = -9999;
@@ -277,5 +280,7 @@ void CU_ttH_EDA_Ntuple::Initialize()
 	PFMET = -9999;
 	PFMETphi = -9999;
 }
+
+//ClassImp(CU_ttH_EDA_Ntuple);
 
 #endif

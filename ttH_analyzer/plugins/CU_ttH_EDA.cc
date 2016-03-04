@@ -82,7 +82,8 @@ CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig):
 	Set_up_tokens();
 	Set_up_histograms();
 	Set_up_output_files();
-	
+
+	ntuple = new CU_ttH_EDA_Ntuple();
 	Set_up_Tree();
 }
 
@@ -122,6 +123,10 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	Check_filters(handle.filterResults);
 	Check_vertices_set_MAODhelper(handle.vertices);
 	// 	Check_beam_spot(BS);	// dumb implementation
+
+	// Setting rho
+	auto rho = handle.srcRho;
+	miniAODhelper.SetRho(*rho);
 
 	/// Get and set miniAODhelper's jet corrector from the event setup
 	miniAODhelper.SetJetCorrector(
@@ -197,9 +202,9 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		Check_Fill_Print_dielej(local);
 		Check_Fill_Print_elemuj(local);
 	}
-
+	
 	if (analysis_type == Analyze_tau_ssleptons) {
-
+	
 	}
 
 	if (analysis_type == Analyze_ditaus_lepton) {
@@ -207,8 +212,9 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	}
 
 	// Write ntuple and fill eventTree
-	ntuple->Initialize();
-	ntuple->Write(local);
+	ntuple->initialize();
+	ntuple->write_ntuple(local);
+	
 	eventTree->Fill();
 	
 }
