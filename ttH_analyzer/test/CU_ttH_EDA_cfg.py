@@ -7,7 +7,7 @@ process.load("FWCore.MessageLogger.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 
 process.load( "Configuration.StandardSequences.FrontierConditions_GlobalTag_cff" )
-process.GlobalTag.globaltag = 'PHYS14_25_V2::All'
+process.GlobalTag.globaltag = '76X_mcRun2_asymptotic_v12'
 
 process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
 
@@ -37,11 +37,11 @@ process.ak4PFchsL1L2L3 = cms.ESProducer("JetCorrectionESChain",
 
 process.source = cms.Source("PoolSource",
 	fileNames = cms.untracked.vstring(
-        
+        '/store/mc/RunIIFall15MiniAODv2/ttHJetToTT_M125_13TeV_amcatnloFXFX_madspin_pythia8/MINIAODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v3/60000/0C6DA13E-38C8-E511-8F6E-00259055220A.root'
 	)
 )
 
-process.ttHsyncExercise = cms.EDAnalyzer('CU_ttH_EDA',
+process.ttHtaus = cms.EDAnalyzer('CU_ttH_EDA',
         # Analysis type choice: 'lepton+jet', 'dilepton', 'tau_ssleptons', 'ditaus_lepton'
         analysis_type = cms.string("tau_ssleptons"),
         # Generic
@@ -92,4 +92,4 @@ process.TFileService = cms.Service("TFileService",
 	fileName = cms.string('CU_ttH_EDA_output.root')
 )
 
-process.p = cms.Path(process.ttHsyncExercise)
+process.p = cms.Path(process.ttHtaus)

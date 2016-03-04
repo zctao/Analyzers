@@ -2,3 +2,4 @@
 *.pyc
 .fuse_*
 #*#
+*.root

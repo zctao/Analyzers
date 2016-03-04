@@ -1,8 +1,10 @@
 #ifndef CU_ttH_EDA_Ntuple_cc
 #define CU_ttH_EDA_Ntuple_cc
 
-#include "CU_ttH_EDA_Ntuple.h"
+#include "Analyzers/ttH_analyzer/interface/CU_ttH_EDA_Ntuple.h"
 #include "math.h"
+
+//ClassImp(CU_ttH_EDA_Ntuple);
 
 // Constructor
 CU_ttH_EDA_Ntuple::CU_ttH_EDA_Ntuple() {}
