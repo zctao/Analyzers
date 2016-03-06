@@ -276,7 +276,8 @@ void CU_ttH_EDA::Set_up_tokens()
 	token.PU_info = consumes<std::vector<PileupSummaryInfo>>(
 		edm::InputTag(std::string("addPileupInfo")));
 	token.srcRho = consumes<double>(
-								   edm::InputTag("fixedGridRhoFastjetAll"));
+									edm::InputTag("fixedGridRhoFastjetCentralNeutral"));
+									//edm::InputTag("fixedGridRhoFastjetAll"));
 	
 	token.electrons = consumes<pat::ElectronCollection>(
 		edm::InputTag(std::string("slimmedElectrons")));
@@ -311,14 +312,16 @@ void CU_ttH_EDA::Set_up_Tree()
 {
 	eventTree = fs_->make<TTree>("eventTree", "Event tree");
 	
-	ntuple->initialize();
-	std::cout << "initialized" << std::endl;
+	/*
+	// If ntuple class is inherited from Root TClass (ToDo)
+	//
 	//eventTree -> Branch("ntuple_", "CU_ttH_EDA_Ntuple", &ntuple);
-	//eventTree -> Branch("pt" ,&(ntuple->mu0_pt));
-	std::cout << "IsTObject :" << ntuple->IsTObject() <<  std::endl;
-	std::cout << "GetNdata() :" << ntuple->GetNdata() << std::endl;
-	std::cout << "CanSplit() :" << ntuple->CanSplit() << std::endl;
-	ntuple->Dump();
+	//std::cout << "IsTObject :" << ntuple->IsTObject() <<  std::endl;
+	//std::cout << "GetNdata() :" << ntuple->GetNdata() << std::endl;
+	//std::cout << "CanSplit() :" << ntuple->CanSplit() << std::endl;
+	//ntuple->Dump();
+	*/
+	ntuple->set_up_branches(eventTree);
 }
 
 #endif

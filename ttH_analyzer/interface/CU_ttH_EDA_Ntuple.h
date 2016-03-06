@@ -3,6 +3,7 @@
 
 #include <map>
 
+#include "TTree.h"
 #include "TClass.h"
 
 #include "Analyzers/ttH_analyzer/interface/CU_ttH_EDA_event_vars.h"
@@ -16,7 +17,7 @@
 //#pragma link C++ class CU_ttH_EDA_Ntuple+;
 //#endif
 
-class CU_ttH_EDA_Ntuple : public TClass
+class CU_ttH_EDA_Ntuple //: public TClass
 {
 	
  private:
@@ -34,6 +35,7 @@ class CU_ttH_EDA_Ntuple : public TClass
 	~CU_ttH_EDA_Ntuple();
 	
 	void initialize();
+	void set_up_branches(TTree *);
 	void write_ntuple(const CU_ttH_EDA_event_vars &);
 	
 	/// variables
