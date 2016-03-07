@@ -260,7 +260,7 @@ void CU_ttH_EDA::Set_up_output_files()
 	}
 }
 
-void CU_ttH_EDA::Set_up_tokens()
+void CU_ttH_EDA::Set_up_tokens(const edm::ParameterSet &config)
 {
 	token.event_gen_info =
 		consumes<GenEventInfoProduct>(edm::InputTag(std::string("generator")));
@@ -270,42 +270,35 @@ void CU_ttH_EDA::Set_up_tokens()
 		std::string("TriggerResults"), std::string(""), filterTag));
 
 	token.vertices = consumes<reco::VertexCollection>(
-		edm::InputTag(std::string("offlineSlimmedPrimaryVertices")));
+	    config.getParameter<edm::InputTag>("pv"));
 	token.sec_vertices = consumes<reco::VertexCompositePtrCandidateCollection>(
-		edm::InputTag(std::string("slimmedSecondaryVertices")));
+	    config.getParameter<edm::InputTag>("sv"));
 	token.PU_info = consumes<std::vector<PileupSummaryInfo>>(
-		edm::InputTag(std::string("addPileupInfo")));
+	    config.getParameter<edm::InputTag>("pileup"));
 	token.srcRho = consumes<double>(
-									edm::InputTag("fixedGridRhoFastjetCentralNeutral"));
-									//edm::InputTag("fixedGridRhoFastjetAll"));
-	
+	    config.getParameter<edm::InputTag>("rho"));
 	token.electrons = consumes<pat::ElectronCollection>(
-		edm::InputTag(std::string("slimmedElectrons")));
+	    config.getParameter<edm::InputTag>("electrons"));
 	token.muons = consumes<pat::MuonCollection>(
-		edm::InputTag(std::string("slimmedMuons")));
+		config.getParameter<edm::InputTag>("muons"));
 	token.taus = consumes<pat::TauCollection>(
-		edm::InputTag(std::string("slimmedTaus")));
-
-	token.jets =
-		consumes<pat::JetCollection>(edm::InputTag(std::string("slimmedJets")));
-	token.METs =
-		consumes<pat::METCollection>(edm::InputTag(std::string("slimmedMETs")));
-
-	token.MC_particles = consumes<reco::GenParticleCollection>(
-		edm::InputTag(std::string("prunedGenParticles")));
+	    config.getParameter<edm::InputTag>("taus"));
+	token.jets = consumes<pat::JetCollection>(
+	    config.getParameter<edm::InputTag>("jets"));
+	token.METs = consumes<pat::METCollection>(
+	    config.getParameter<edm::InputTag>("mets"));
 	token.PF_candidates = consumes<pat::PackedCandidateCollection>(
-		edm::InputTag(std::string("packedPFCandidates")));
-
-	token.BS =
-		consumes<reco::BeamSpot>(edm::InputTag(std::string("offlineBeamSpot")));
-
+	    config.getParameter<edm::InputTag>("pfcand"));
+	token.BS = consumes<reco::BeamSpot>(
+	    config.getParameter<edm::InputTag>("beamspot"));
 	//token.top_jets = consumes<boosted::HTTTopJetCollection>(
 	//	edm::InputTag("HTTTopJetsPFMatcher", "heptopjets", "p"));
 	//token.subfilter_jets = consumes<boosted::SubFilterJetCollection>(
-	//	edm::InputTag("CA12JetsCA3FilterjetsPFMatcher", "subfilterjets", "p"));
-
+	//	edm::InputTag("CA12JetsCA3FilterjetsPFMatcher", "subfilterjets", "p"));	
+	token.MC_particles = consumes<reco::GenParticleCollection>(
+	    config.getParameter<edm::InputTag>("prunedgen"));
 	token.MC_packed = consumes<pat::PackedGenParticleCollection>(
-		edm::InputTag(std::string("packedGenParticles")));
+	    config.getParameter<edm::InputTag>("packedgen"));
 }
 
 void CU_ttH_EDA::Set_up_Tree()

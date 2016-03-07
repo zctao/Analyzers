@@ -136,7 +136,7 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	void Load_configuration_MAODH(bool); // runs miniAODhelper.SetUp
 	void Set_up_histograms();			 // at CU_ttH_EDA()
 	void Set_up_output_files();			 // at CU_ttH_EDA()
-	void Set_up_tokens();				 // at CU_ttH_EDA()
+	void Set_up_tokens(const edm::ParameterSet &);
 
 	void Set_up_Tree();
 

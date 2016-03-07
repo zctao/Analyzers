@@ -79,7 +79,7 @@ CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig):
 	
 	// Load_configuration(static_cast<string>("Configs/config_analyzer.yaml"));
 
-	Set_up_tokens();
+	Set_up_tokens(iConfig.getParameter<edm::ParameterSet>("input_tags"));
 	Set_up_histograms();
 	Set_up_output_files();
 
