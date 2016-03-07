@@ -144,7 +144,6 @@ class CU_ttH_EDA_Ntuple //: public TClass
 	int    tau0_againstElectronLooseMVA6;
 	int    tau0_againstElectronMediumMVA6;
 	int    tau0_againstElectronTightMVA6;
-	int    tau0_againstElectronVTightMVA6;
 	double tau1_pt;
 	double tau1_eta;
 	double tau1_phi;
@@ -171,7 +170,6 @@ class CU_ttH_EDA_Ntuple //: public TClass
 	int    tau1_againstElectronLooseMVA6;
 	int    tau1_againstElectronMediumMVA6;
 	int    tau1_againstElectronTightMVA6;
-	int    tau1_againstElectronVTightMVA6;
 	// jets
 	double jet0_pt;
 	double jet0_eta;

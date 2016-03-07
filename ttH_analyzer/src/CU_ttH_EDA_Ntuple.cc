@@ -36,6 +36,7 @@ void CU_ttH_EDA_Ntuple::fill_ntuple_muons(const CU_ttH_EDA_event_vars &local)
 		mu0_eta = local.mu_selected_sorted[0].eta();
 		mu0_phi = local.mu_selected_sorted[0].phi();
 		mu0_E = local.mu_selected_sorted[0].energy();
+		mu0_charge = local.mu_selected_sorted[0].charge();
 	}
 	
 	if (local.mu_selected_sorted.size() > 1 ) {
@@ -43,6 +44,7 @@ void CU_ttH_EDA_Ntuple::fill_ntuple_muons(const CU_ttH_EDA_event_vars &local)
 		mu1_eta = local.mu_selected_sorted[1].eta();
 		mu1_phi = local.mu_selected_sorted[1].phi();
 		mu1_E = local.mu_selected_sorted[1].energy();
+		mu1_charge = local.mu_selected_sorted[1].charge();
 	}
 }
 
@@ -53,6 +55,7 @@ void CU_ttH_EDA_Ntuple::fill_ntuple_electrons(const CU_ttH_EDA_event_vars &local
 		ele0_eta = local.e_selected_sorted[0].eta();
 		ele0_phi = local.e_selected_sorted[0].phi();
 		ele0_E = local.e_selected_sorted[0].energy();
+		ele0_charge = local.e_selected_sorted[0].charge();
 	}
 	
 	if (local.e_selected_sorted.size() > 1 ) {
@@ -60,6 +63,7 @@ void CU_ttH_EDA_Ntuple::fill_ntuple_electrons(const CU_ttH_EDA_event_vars &local
 		ele1_eta = local.e_selected_sorted[1].eta();
 		ele1_phi = local.e_selected_sorted[1].phi();
 		ele1_E = local.e_selected_sorted[1].energy();
+		ele1_charge = local.e_selected_sorted[1].charge();
 	}
 }
 
@@ -70,6 +74,34 @@ void CU_ttH_EDA_Ntuple::fill_ntuple_taus(const CU_ttH_EDA_event_vars &local)
 		tau0_eta = local.tau_selected_sorted[0].eta();
 		tau0_phi = local.tau_selected_sorted[0].phi();
 		tau0_E = local.tau_selected_sorted[0].energy();
+		tau0_charge = local.tau_selected_sorted[0].charge();
+		tau0_dxy = local.tau_selected_sorted[0].dxy();
+		//tau0_dz = local.tau_selected_sorted[0].dz()   To be corrected
+		
+		tau0_decayModeFindingOldDMs =  local.tau_selected_sorted[0].tauID("decayModeFinding");  // decayModeFindingOldDMs   need to check
+		tau0_decayModeFindingNewDMs =  local.tau_selected_sorted[0].tauID("decayModeFindingNewDMs");
+		
+		tau0_byCombinedIsolationDeltaBetaCorr3Hits = local.tau_selected_sorted[0].tauID("byCombinedIsolationDeltaBetaCorrRaw3Hits");
+		tau0_byLooseCombinedIsolationDeltaBetaCorr3Hits = local.tau_selected_sorted[0].tauID("byLooseCombinedIsolationDeltaBetaCorr3Hits");
+		tau0_byMediumCombinedIsolationDeltaBetaCorr3Hits = local.tau_selected_sorted[0].tauID("byMediumCombinedIsolationDeltaBetaCorr3Hits");
+		tau0_byTightCombinedIsolationDeltaBetaCorr3Hits = local.tau_selected_sorted[0].tauID("byTightCombinedIsolationDeltaBetaCorr3Hits");
+		
+		tau0_byLooseCombinedIsolationDeltaBetaCorr3HitsdR03 = local.tau_selected_sorted[0].tauID("byLooseCombinedIsolationDeltaBetaCorr3HitsdR03");
+		tau0_byMediumCombinedIsolationDeltaBetaCorr3HitsdR03 = local.tau_selected_sorted[0].tauID("byMediumCombinedIsolationDeltaBetaCorr3HitsdR03");
+		tau0_byTightCombinedIsolationDeltaBetaCorr3HitsdR03 = local.tau_selected_sorted[0].tauID("byTightCombinedIsolationDeltaBetaCorr3HitsdR03");
+		
+		tau0_byLooseIsolationMVArun2v1DBdR03oldDMwLT = local.tau_selected_sorted[0].tauID("byLooseIsolationMVArun2v1DBdR03oldDMwLT");
+		tau0_byMediumIsolationMVArun2v1DBdR03oldDMwLT = local.tau_selected_sorted[0].tauID("byMediumIsolationMVArun2v1DBdR03oldDMwLT");
+		tau0_byTightIsolationMVArun2v1DBdR03oldDMwLT = local.tau_selected_sorted[0].tauID("byTightIsolationMVArun2v1DBdR03oldDMwLT");
+		tau0_byVTightIsolationMVArun2v1DBdR03oldDMwLT = local.tau_selected_sorted[0].tauID("byVTightIsolationMVArun2v1DBdR03oldDMwLT");
+
+		tau0_againstMuonLoose3 = local.tau_selected_sorted[0].tauID("againstMuonLoose3");
+		tau0_againstMuonTight3 = local.tau_selected_sorted[0].tauID("againstMuonTight3");
+
+		tau0_againstElectronVLooseMVA6 = local.tau_selected_sorted[0].tauID("againstElectronVLooseMVA6");
+		tau0_againstElectronLooseMVA6 = local.tau_selected_sorted[0].tauID("againstElectronLooseMVA6");
+		tau0_againstElectronMediumMVA6 = local.tau_selected_sorted[0].tauID("againstElectronMediumMVA6");
+		tau0_againstElectronTightMVA6 = local.tau_selected_sorted[0].tauID("againstElectronTightMVA6");
 	}
 	
 	if (local.tau_selected_sorted.size() > 1 ) {
@@ -77,6 +109,34 @@ void CU_ttH_EDA_Ntuple::fill_ntuple_taus(const CU_ttH_EDA_event_vars &local)
 		tau1_eta = local.tau_selected_sorted[1].eta();
 		tau1_phi = local.tau_selected_sorted[1].phi();
 		tau1_E = local.tau_selected_sorted[1].energy();
+		tau1_charge = local.tau_selected_sorted[1].charge();
+		tau1_dxy = local.tau_selected_sorted[1].dxy();
+		//tau1_dz = local.tau_selected_sorted[1].dz()   To be corrected
+
+		tau1_decayModeFindingOldDMs =  local.tau_selected_sorted[1].tauID("decayModeFinding");  // decayModeFindingOldDMs   need to check
+		tau1_decayModeFindingNewDMs =  local.tau_selected_sorted[1].tauID("decayModeFindingNewDMs");
+		
+		tau1_byCombinedIsolationDeltaBetaCorr3Hits = local.tau_selected_sorted[1].tauID("byCombinedIsolationDeltaBetaCorrRaw3Hits");
+		tau1_byLooseCombinedIsolationDeltaBetaCorr3Hits = local.tau_selected_sorted[1].tauID("byLooseCombinedIsolationDeltaBetaCorr3Hits");
+		tau1_byMediumCombinedIsolationDeltaBetaCorr3Hits = local.tau_selected_sorted[1].tauID("byMediumCombinedIsolationDeltaBetaCorr3Hits");
+		tau1_byTightCombinedIsolationDeltaBetaCorr3Hits = local.tau_selected_sorted[1].tauID("byTightCombinedIsolationDeltaBetaCorr3Hits");
+		
+		tau1_byLooseCombinedIsolationDeltaBetaCorr3HitsdR03 = local.tau_selected_sorted[1].tauID("byLooseCombinedIsolationDeltaBetaCorr3HitsdR03");
+		tau1_byMediumCombinedIsolationDeltaBetaCorr3HitsdR03 = local.tau_selected_sorted[1].tauID("byMediumCombinedIsolationDeltaBetaCorr3HitsdR03");
+		tau1_byTightCombinedIsolationDeltaBetaCorr3HitsdR03 = local.tau_selected_sorted[1].tauID("byTightCombinedIsolationDeltaBetaCorr3HitsdR03");
+		
+		tau1_byLooseIsolationMVArun2v1DBdR03oldDMwLT = local.tau_selected_sorted[1].tauID("byLooseIsolationMVArun2v1DBdR03oldDMwLT");
+		tau1_byMediumIsolationMVArun2v1DBdR03oldDMwLT = local.tau_selected_sorted[1].tauID("byMediumIsolationMVArun2v1DBdR03oldDMwLT");
+		tau1_byTightIsolationMVArun2v1DBdR03oldDMwLT = local.tau_selected_sorted[1].tauID("byTightIsolationMVArun2v1DBdR03oldDMwLT");
+		tau1_byVTightIsolationMVArun2v1DBdR03oldDMwLT = local.tau_selected_sorted[1].tauID("byVTightIsolationMVArun2v1DBdR03oldDMwLT");
+
+		tau1_againstMuonLoose3 = local.tau_selected_sorted[1].tauID("againstMuonLoose3");
+		tau1_againstMuonTight3 = local.tau_selected_sorted[1].tauID("againstMuonTight3");
+
+		tau1_againstElectronVLooseMVA6 = local.tau_selected_sorted[1].tauID("againstElectronVLooseMVA6");
+		tau1_againstElectronLooseMVA6 = local.tau_selected_sorted[1].tauID("againstElectronLooseMVA6");
+		tau1_againstElectronMediumMVA6 = local.tau_selected_sorted[1].tauID("againstElectronMediumMVA6");
+		tau1_againstElectronTightMVA6 = local.tau_selected_sorted[1].tauID("againstElectronTightMVA6");
 	}
 }
 
@@ -226,7 +286,6 @@ void CU_ttH_EDA_Ntuple::initialize()
 	tau0_againstElectronLooseMVA6 = -9999;
 	tau0_againstElectronMediumMVA6 = -9999;
 	tau0_againstElectronTightMVA6 = -9999;
-	tau0_againstElectronVTightMVA6 = -9999;
 	tau1_pt = -9999;
 	tau1_eta = -9999;
 	tau1_phi = -9999;
@@ -253,8 +312,7 @@ void CU_ttH_EDA_Ntuple::initialize()
 	tau1_againstElectronLooseMVA6 = -9999;
 	tau1_againstElectronMediumMVA6 = -9999;
 	tau1_againstElectronTightMVA6 = -9999;
-	tau1_againstElectronVTightMVA6 = -9999;
-	
+		
 	// jets
 	jet0_pt = -9999;
 	jet0_eta = -9999;
@@ -389,7 +447,6 @@ void CU_ttH_EDA_Ntuple::set_up_branches(TTree *tree)
 	tree->Branch("tau0_againstElectronLooseMVA6", &tau0_againstElectronLooseMVA6);
 	tree->Branch("tau0_againstElectronMediumMVA6", &tau0_againstElectronMediumMVA6);
 	tree->Branch("tau0_againstElectronTightMVA6", &tau0_againstElectronTightMVA6);
-	tree->Branch("tau0_againstElectronVTightMVA6", &tau0_againstElectronVTightMVA6);
 	tree->Branch("tau1_pt", &tau1_pt);
 	tree->Branch("tau1_eta", &tau1_eta);
 	tree->Branch("tau1_phi", &tau1_phi);
@@ -416,7 +473,7 @@ void CU_ttH_EDA_Ntuple::set_up_branches(TTree *tree)
 	tree->Branch("tau1_againstElectronLooseMVA6", &tau1_againstElectronLooseMVA6);
 	tree->Branch("tau1_againstElectronMediumMVA6", &tau1_againstElectronMediumMVA6);
 	tree->Branch("tau1_againstElectronTightMVA6", &tau1_againstElectronTightMVA6);
-	tree->Branch("tau1_againstElectronVTightMVA6", &tau1_againstElectronVTightMVA6);
+
 	// jets
 	tree->Branch("jet0_pt", &jet0_pt);
 	tree->Branch("jet0_eta", &jet0_eta);

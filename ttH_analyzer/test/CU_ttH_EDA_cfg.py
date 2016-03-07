@@ -21,7 +21,8 @@ process.ak4PFCHSL1Fastjet = cms.ESProducer(
 	'L1FastjetCorrectionESProducer',
 	level       = cms.string('L1FastJet'),
 	algorithm   = cms.string('AK4PFchs'),
-	srcRho      = cms.InputTag( 'fixedGridRhoFastjetAll' )
+	#srcRho      = cms.InputTag( 'fixedGridRhoFastjetAll' )
+        srcRho      = cms.InputTag( 'fixedGridRhoFastjetCentralNeutral' )
 )
 
 process.ak4PFchsL2Relative = ak4CaloL2Relative.clone( algorithm = 'AK4PFchs' )
