@@ -1,5 +1,11 @@
 import FWCore.ParameterSet.Config as cms
 
+from RecoJets.Configuration.RecoJets_cff import *
+from RecoJets.Configuration.RecoPFJets_cff import *
+from JetMETCorrections.Configuration.JetCorrectionProducersAllAlgos_cff import *
+from JetMETCorrections.Configuration.JetCorrectionServicesAllAlgos_cff import *
+from JetMETCorrections.Configuration.JetCorrectionServices_cff import *
+
 process = cms.Process("MAOD")
 
 # initialize MessageLogger and output report
@@ -15,25 +21,26 @@ process.maxEvents = cms.untracked.PSet(
 	input = cms.untracked.int32(5000)
 )
 
-from JetMETCorrections.Configuration.JetCorrectionServices_cff import *
-
 process.ak4PFCHSL1Fastjet = cms.ESProducer(
 	'L1FastjetCorrectionESProducer',
 	level       = cms.string('L1FastJet'),
 	algorithm   = cms.string('AK4PFchs'),
 	#srcRho      = cms.InputTag( 'fixedGridRhoFastjetAll' )
-        srcRho      = cms.InputTag( 'fixedGridRhoFastjetCentralNeutral' )
+        srcRho      = cms.InputTag( 'fixedGridRhoFastjetCentralNeutral' ),
+        useCondDB   = cms.untracked.bool(True)
 )
 
-process.ak4PFchsL2Relative = ak4CaloL2Relative.clone( algorithm = 'AK4PFchs' )
-process.ak4PFchsL3Absolute = ak4CaloL3Absolute.clone( algorithm = 'AK4PFchs' )
+#process.ak4PFchsL2Relative = ak4CaloL2Relative.clone( algorithm = 'AK4PFchs' )
+process.ak4PFchsL2Relative = ak5PFL2Relative.clone( algorithm = 'AK4PFchs' )
+#process.ak4PFchsL3Absolute = ak4CaloL3Absolute.clone( algorithm = 'AK4PFchs' )
+process.ak4PFchsL3Absolute = ak5PFL3Absolute.clone( algorithm = 'AK4PFchs' )
 
 process.ak4PFchsL1L2L3 = cms.ESProducer("JetCorrectionESChain",
 	correctors = cms.vstring(
 		'ak4PFCHSL1Fastjet', 
 		'ak4PFchsL2Relative', 
-		'ak4PFchsL3Absolute'
-	)
+		'ak4PFchsL3Absolute'),
+        useCondDB = cms.untracked.bool(True)
 )
 
 process.source = cms.Source("PoolSource",
@@ -42,55 +49,27 @@ process.source = cms.Source("PoolSource",
 	)
 )
 
-process.ttHtaus = cms.EDAnalyzer('CU_ttH_EDA',
-        # Analysis type choice: 'lepton+jet', 'dilepton', 'tau_ssleptons', 'ditaus_lepton'
-        analysis_type = cms.string("tau_ssleptons"),
-        # Generic
-        verbosity = cms.bool(False),
-        print_HLT_event_path = cms.bool(False),
-        HLT_config_tag = cms.string('HLT'),
-        filter_config_tag = cms.string('PAT'),
-        # Triggers
-        collect_trigger_stats = cms.bool(False),
-        ## Single lepton triggers:
-        HLT_electron_triggers = cms.vstring([
-            'HLT_Ele27_eta2p1_WP75_Gsf_v1'
-        ]),
-        HLT_muon_triggers = cms.vstring([
-            'HLT_IsoMu24_eta2p1_v1'
-        ]),
-        ## Dilepton triggers:
-        HLT_electron_electron_triggers = cms.vstring([
-            'HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_v1'
-        ]),
-        HLT_electron_muon_triggers = cms.vstring([
-            'HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v1',
-            'HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v1'
-        ]),
-        HLT_muon_muon_triggers = cms.vstring([
-            'HLT_Mu30_TkMu11_v1',
-            'HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v1',
-            'HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v1'
-        ]),
-        # Cuts
-        min_tight_lepton_pT = cms.double(20),
-        min_tau_pT = cms.double(20),
-        min_jet_pT = cms.double(30),
-        min_bjet_pT = cms.double(20),
-        max_jet_eta = cms.double(2.5),
-        max_bjet_eta = cms.double(2.5),
-        min_njets = cms.int32(2),
-        min_nbtags = cms.int32(1),
-        # Jets
-        jet_corrector = cms.string('ak4PFchsL1L2L3'),
-        # MiniAODhelper
-        using_real_data = cms.bool(False),
-        ## available choices '-': none, 'L': loose, 'M': medium, 'T': tight
-        b_tag_strength = cms.string('M')
-)
 
+# load the analysis:
+process.load("Analyzers.ttH_analyzer.ttHtaus_cfi")
+# LeptonID producer from ttH Multi-lepton group
+process.load("ttH.LeptonID.ttHLeptons_cfi")
+# new electron MVA developed by the EGamma POG 
+process.load("RecoEgamma.ElectronIdentification.ElectronMVAValueMapProducer_cfi")
+
+# re-define parameter sets here if necessary
+process.ttHLeptons.rhoParam = "fixedGridRhoFastjetCentralNeutral"
+# use leptons from LeptonID producer
+process.ttHtaus.input_tags.electrons = cms.InputTag("ttHLeptons")
+process.ttHtaus.input_tags.muons = cms.InputTag("ttHLeptons")
+
+    
 process.TFileService = cms.Service("TFileService",
 	fileName = cms.string('CU_ttH_EDA_output.root')
 )
 
-process.p = cms.Path(process.ttHtaus)
+process.p = cms.Path(
+    process.electronMVAValueMapProducer
+    * process.ttHLeptons
+    * process.ttHtaus
+)

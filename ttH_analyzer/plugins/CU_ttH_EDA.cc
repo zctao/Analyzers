@@ -142,9 +142,11 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 
 	/// Lepton selection
 	local.e_selected = miniAODhelper.GetSelectedElectrons(
-		*(handle.electrons), min_tight_lepton_pT, electronID::electronPhys14M);
+		//*(handle.electrons), min_tight_lepton_pT, electronID::electronPhys14M);
+		*(handle.electrons), min_tight_lepton_pT, electronID::electronPreselection);
 	local.mu_selected = miniAODhelper.GetSelectedMuons(
-		*(handle.muons), min_tight_lepton_pT, muonID::muonTight);
+	        //*(handle.muons), min_tight_lepton_pT, muonID::muonTight);
+		*(handle.muons), min_tight_lepton_pT, muonID::muonPreselection);
 	local.tau_selected = miniAODhelper.GetSelectedTaus(
 		*(handle.taus),	min_tau_pT, tau::loose);
 	
