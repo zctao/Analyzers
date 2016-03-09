@@ -48,6 +48,8 @@ CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig):
 	trigger_on_HLT_mumu (iConfig.getParameter<std::vector<string>>("HLT_muon_muon_triggers")),
 	// Cuts
 	min_tight_lepton_pT (iConfig.getParameter<double>("min_tight_lepton_pT")),
+	min_ele_pT (iConfig.getParameter<double>("min_ele_pT")),
+	min_mu_pT (iConfig.getParameter<double>("min_mu_pT")),
 	min_tau_pT (iConfig.getParameter<double>("min_tau_pT")),
 	min_jet_pT (iConfig.getParameter<double>("min_jet_pT")),
 	min_bjet_pT (iConfig.getParameter<double>("min_bjet_pT")),
@@ -141,14 +143,23 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	}
 
 	/// Lepton selection
-	local.e_selected = miniAODhelper.GetSelectedElectrons(
-		//*(handle.electrons), min_tight_lepton_pT, electronID::electronPhys14M);
-		*(handle.electrons), min_tight_lepton_pT, electronID::electronPreselection);
 	local.mu_selected = miniAODhelper.GetSelectedMuons(
-	        //*(handle.muons), min_tight_lepton_pT, muonID::muonTight);
-		*(handle.muons), min_tight_lepton_pT, muonID::muonPreselection);
-	local.tau_selected = miniAODhelper.GetSelectedTaus(
-		*(handle.taus),	min_tau_pT, tau::loose);
+		*(handle.muons), min_mu_pT, muonID::muonPreselection);
+	local.e_selected = miniAODhelper.GetSelectedElectrons(
+		*(handle.electrons), min_ele_pT, electronID::electronPreselection);
+	
+	// Should add tauID in leptonID package into MiniAODHelper
+	for (const auto& tau : *(handle.taus)) {
+		if (tau.userFloat("idPreselection")>0.5 and tau.pt()>min_tau_pT)
+			local.tau_selected.push_back(tau);
+	}
+	//local.tau_selected = miniAODhelper.GetSelectedTaus(
+	//	*(handle.taus),	min_tau_pT, tau::tauPreselection);
+
+	// remove overlap
+	local.e_selected = removeOverlapdR(local.e_selected, local.mu_selected, 0.05);
+	local.tau_selected = removeOverlapdR(local.tau_selected, local.mu_selected, 0.4);
+	local.tau_selected = removeOverlapdR(local.tau_selected, local.e_selected, 0.4);
 	
 	local.n_electrons = static_cast<int>(local.e_selected.size());
 	local.n_muons = static_cast<int>(local.mu_selected.size());
@@ -169,10 +180,15 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		miniAODhelper.GetCorrectedJets(local.jets_no_mu_e, iEvent, iSetup);
 	local.jets_selected = miniAODhelper.GetSelectedJets(
 		local.jets_corrected, min_jet_pT, max_jet_eta, jetID::jetLoose, '-');
+	// overlap removal by dR
+	local.jets_selected = removeOverlapdR(local.jets_selected, local.mu_selected, 0.4);
+	local.jets_selected = removeOverlapdR(local.jets_selected, local.e_selected, 0.4);
+	local.jets_selected = removeOverlapdR(local.jets_selected, local.tau_selected, 0.4);
+
 	local.jets_selected_tag = miniAODhelper.GetSelectedJets(
 		local.jets_corrected, min_bjet_pT, max_bjet_eta, jetID::jetLoose,
 		MAODHelper_b_tag_strength);
-
+		
 	local.n_jets = static_cast<int>(local.jets_selected.size());
 	local.n_btags = static_cast<int>(local.jets_selected_tag.size());
 

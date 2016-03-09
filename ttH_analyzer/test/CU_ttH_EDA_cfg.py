@@ -18,7 +18,7 @@ process.GlobalTag.globaltag = '76X_mcRun2_asymptotic_v12'
 process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
 
 process.maxEvents = cms.untracked.PSet(
-	input = cms.untracked.int32(5000)
+	input = cms.untracked.int32(-1)
 )
 
 process.ak4PFCHSL1Fastjet = cms.ESProducer(
@@ -66,7 +66,7 @@ process.ttHtaus.input_tags.taus = cms.InputTag("ttHLeptons")
 
     
 process.TFileService = cms.Service("TFileService",
-	fileName = cms.string('CU_ttH_EDA_output.root')
+	fileName = cms.string('ttHtausNtuple.root')
 )
 
 process.p = cms.Path(

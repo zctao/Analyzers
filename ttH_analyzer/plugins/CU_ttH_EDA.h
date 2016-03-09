@@ -187,6 +187,10 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 									  std::vector<pat::Jet> &,
 									  CU_ttH_EDA_event_vars &);
 
+	template <typename T1, typename T2>
+		std::vector<T1>
+		removeOverlapdR(const std::vector<T1>& v1, const std::vector<T2>& v2, double dR = 0.02);
+	
 	/*
 	* Variable section
 	*/
@@ -243,6 +247,8 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 
 	/// Cuts
 	float min_tight_lepton_pT;
+	float min_ele_pT;	
+	float min_mu_pT;
 	float min_tau_pT;
 	float min_jet_pT;
 	float min_bjet_pT;
@@ -307,5 +313,21 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	CU_ttH_EDA_Ntuple *ntuple;
 
 };
+
+template <typename T1, typename T2>
+std::vector<T1>
+CU_ttH_EDA::removeOverlapdR(const std::vector<T1> &v1, const std::vector<T2> &v2, double dR)
+{
+	std::vector<T1> res;
+	for (const auto& o1: v1) {
+		bool keep = true;
+		for (const auto& o2: v2)
+			if (miniAODhelper.DeltaR(&o1, &o2) < dR)
+				keep = false;
+		if (keep)
+			res.push_back(o1);
+	}
+	return res;
+}
 
 #endif

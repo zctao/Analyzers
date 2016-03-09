@@ -6,7 +6,7 @@
 import FWCore.ParameterSet.Config as cms
 
 ttHtaus =  cms.EDAnalyzer('CU_ttH_EDA',
-        # Analysis type choice: 'lepton+jet', 'dilepton', 'tau_ssleptons', 'ditaus_lepton'
+        # Analysis type choice: 'tau_ssleptons', 'ditaus_lepton'
         analysis_type = cms.string("tau_ssleptons"),
         # Generic
         verbosity = cms.bool(False),
@@ -37,10 +37,12 @@ ttHtaus =  cms.EDAnalyzer('CU_ttH_EDA',
         ]),
         # Cuts
         min_tight_lepton_pT = cms.double(20),
-        min_tau_pT = cms.double(20),
-        min_jet_pT = cms.double(30),
-        min_bjet_pT = cms.double(20),
-        max_jet_eta = cms.double(2.5),
+        min_ele_pT = cms.double(7.),
+        min_mu_pT = cms.double(5.),
+        min_tau_pT = cms.double(20.),
+        min_jet_pT = cms.double(25.),
+        min_bjet_pT = cms.double(20.),
+        max_jet_eta = cms.double(2.4),
         max_bjet_eta = cms.double(2.5),
         min_njets = cms.int32(2),
         min_nbtags = cms.int32(1),

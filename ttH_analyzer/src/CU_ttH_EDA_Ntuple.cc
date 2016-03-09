@@ -47,7 +47,7 @@ void CU_ttH_EDA_Ntuple::fill_ntuple_muons(const std::vector<pat::Muon>& muons)
 		mu0_sip3D = muons[0].userFloat("sip3D");
 		mu0_dxy = muons[0].userFloat("dxy");
 		mu0_dz = muons[0].userFloat("dz");
-		//mu0_segmentCompatibility = muons[0].userFloat("");
+		mu0_segmentCompatibility = muons[0].segmentCompatibility();
 		mu0_leptonMVA = muons[0].userFloat("leptonMVA");
 	}
 	
@@ -67,7 +67,7 @@ void CU_ttH_EDA_Ntuple::fill_ntuple_muons(const std::vector<pat::Muon>& muons)
 		mu1_sip3D = muons[1].userFloat("sip3D");
 		mu1_dxy = muons[1].userFloat("dxy");
 		mu1_dz = muons[1].userFloat("dz");
-		//mu1_segmentCompatibility = muons[1].userFloat("");
+		mu1_segmentCompatibility = muons[1].segmentCompatibility();
 		mu1_leptonMVA = muons[1].userFloat("leptonMVA");
 	}
 }
@@ -223,10 +223,8 @@ void CU_ttH_EDA_Ntuple::fill_ntuple_jets(const std::vector<pat::Jet>& jets)
 
 void CU_ttH_EDA_Ntuple::fill_ntuple_met(const pat::MET& met)
 {
-	double metx = met.px();
-	double mety = met.py();
-	PFMET = sqrt(metx*metx+mety*mety);
-	//PFMETphi = 
+	PFMET = sqrt(met.px()*met.px()+met.py()*met.py());
+	PFMETphi = met.phi();
 }
 
 void CU_ttH_EDA_Ntuple::initialize()
