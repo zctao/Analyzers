@@ -23,11 +23,11 @@ class CU_ttH_EDA_Ntuple //: public TClass
  private:
 	
 	// private member functions
-	void fill_ntuple_electrons(const CU_ttH_EDA_event_vars &);
-	void fill_ntuple_muons(const CU_ttH_EDA_event_vars &);
-	void fill_ntuple_taus(const CU_ttH_EDA_event_vars &);
-	void fill_ntuple_jets(const CU_ttH_EDA_event_vars &);
-	void fill_ntuple_met(const CU_ttH_EDA_event_vars &);
+	void fill_ntuple_electrons(const std::vector<pat::Electron> &);
+	void fill_ntuple_muons(const std::vector<pat::Muon> &);
+	void fill_ntuple_taus(const std::vector<pat::Tau> &);
+	void fill_ntuple_jets(const std::vector<pat::Jet> &);
+	void fill_ntuple_met(const pat::MET &);
 		
  public:
 	/// function member
