@@ -25,7 +25,7 @@ void CU_ttH_EDA_Ntuple::write_ntuple(const CU_ttH_EDA_event_vars &local)
 	fill_ntuple_muons(local.mu_selected_sorted);
 	fill_ntuple_taus(local.tau_selected_sorted);
 	fill_ntuple_jets(local.jets_selected_sorted);
-	fill_ntuple_met(local.MET_corrected);
+	fill_ntuple_met(local.pfMET);
 	
 }
 
@@ -39,8 +39,10 @@ void CU_ttH_EDA_Ntuple::fill_ntuple_muons(const std::vector<pat::Muon>& muons)
 		mu0_charge = muons[0].charge();
 		//mu0_jetNDauChargedMVASel = 
 		mu0_miniRelIso = muons[0].userFloat("miniIso");
-		mu0_miniIsoCharged = muons[0].userFloat("chargedRelIso");
-		mu0_miniIsoNeutral = muons[0].userFloat("neutralRelIso");
+		mu0_miniIsoCharged = muons[0].userFloat("miniAbsIsoCharged")/muons[0].pt();
+		mu0_miniIsoNeutral = muons[0].userFloat("miniAbsIsoNeutral")/muons[0].pt();
+		//mu0_miniIsoCharged = muons[0].userFloat("chargedRelIso");
+		//mu0_miniIsoNeutral = muons[0].userFloat("neutralRelIso");
 		mu0_jetPtRel = muons[0].userFloat("nearestJetPtRel");
 		mu0_jetPtRatio = muons[0].userFloat("nearestJetPtRatio");
 		mu0_jetCSV = muons[0].userFloat("nearestJetCsv");
@@ -59,8 +61,10 @@ void CU_ttH_EDA_Ntuple::fill_ntuple_muons(const std::vector<pat::Muon>& muons)
 		mu1_charge = muons[1].charge();
 		//mu1_jetNDauChargedMVASel = 
 		mu1_miniRelIso = muons[1].userFloat("miniIso");
-		mu1_miniIsoCharged = muons[1].userFloat("chargedRelIso");
-		mu1_miniIsoNeutral = muons[1].userFloat("neutralRelIso");
+		mu1_miniIsoCharged = muons[1].userFloat("miniAbsIsoCharged")/muons[1].pt();
+		mu1_miniIsoNeutral = muons[1].userFloat("miniAbsIsoNeutral")/muons[1].pt();
+		//mu1_miniIsoCharged = muons[1].userFloat("chargedRelIso");
+		//mu1_miniIsoNeutral = muons[1].userFloat("neutralRelIso");
 		mu1_jetPtRel = muons[1].userFloat("nearestJetPtRel");
 		mu1_jetPtRatio = muons[1].userFloat("nearestJetPtRatio");
 		mu1_jetCSV = muons[1].userFloat("nearestJetCsv");
@@ -82,8 +86,10 @@ void CU_ttH_EDA_Ntuple::fill_ntuple_electrons(const std::vector<pat::Electron>& 
 		ele0_charge = electrons[0].charge();
 		//ele0_jetNDauChargeMVASel
 		ele0_miniRelIso = electrons[0].userFloat("miniIso");
-		ele0_miniIsoCharged = electrons[0].userFloat("chargedRelIso");
-		ele0_miniIsoNeutral = electrons[0].userFloat("neutralRelIso");
+		ele0_miniIsoCharged = electrons[0].userFloat("miniAbsIsoCharged")/electrons[0].pt();
+		ele0_miniIsoNeutral = electrons[0].userFloat("miniAbsIsoNeutral")/electrons[0].pt();
+		//ele0_miniIsoCharged = electrons[0].userFloat("chargedRelIso");
+		//ele0_miniIsoNeutral = electrons[0].userFloat("neutralRelIso");
 		ele0_jetPtRel = electrons[0].userFloat("nearestJetPtRel");
 		ele0_jetPtRatio = electrons[0].userFloat("nearestJetPtRatio");
 		ele0_jetCSV = electrons[0].userFloat("nearestJetCsv");
@@ -102,8 +108,10 @@ void CU_ttH_EDA_Ntuple::fill_ntuple_electrons(const std::vector<pat::Electron>& 
 		ele1_charge = electrons[1].charge();
 		//ele1_jetNDauChargeMVASel
 		ele1_miniRelIso = electrons[1].userFloat("miniIso");
-		ele1_miniIsoCharged = electrons[1].userFloat("chargedRelIso");
-		ele1_miniIsoNeutral = electrons[1].userFloat("neutralRelIso");
+		ele1_miniIsoCharged = electrons[1].userFloat("miniAbsIsoCharged")/electrons[1].pt();
+		ele1_miniIsoNeutral = electrons[1].userFloat("miniAbsIsoNeutral")/electrons[1].pt();
+		//ele1_miniIsoCharged = electrons[1].userFloat("chargedRelIso");
+		//ele1_miniIsoNeutral = electrons[1].userFloat("neutralRelIso");
 		ele1_jetPtRel = electrons[1].userFloat("nearestJetPtRel");
 		ele1_jetPtRatio = electrons[1].userFloat("nearestJetPtRatio");
 		ele1_jetCSV = electrons[1].userFloat("nearestJetCsv");
@@ -534,6 +542,16 @@ void CU_ttH_EDA_Ntuple::set_up_branches(TTree *tree)
 	tree->Branch("jet1_phi", &jet1_phi);
 	tree->Branch("jet1_E", &jet1_E);
 	tree->Branch("jet1_CSV", &jet1_CSV);
+	tree->Branch("jet2_pt", &jet2_pt);
+	tree->Branch("jet2_eta", &jet2_eta);
+	tree->Branch("jet2_phi", &jet2_phi);
+	tree->Branch("jet2_E", &jet2_E);
+	tree->Branch("jet2_CSV", &jet2_CSV);
+	tree->Branch("jet3_pt", &jet3_pt);
+	tree->Branch("jet3_eta", &jet3_eta);
+	tree->Branch("jet3_phi", &jet3_phi);
+	tree->Branch("jet3_E", &jet3_E);
+	tree->Branch("jet3_CSV", &jet3_CSV);
 	// MET
 	tree->Branch("PFMET", &PFMET);
 	tree->Branch("PFMETphi", &PFMETphi);

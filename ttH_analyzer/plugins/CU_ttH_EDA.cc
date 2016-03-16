@@ -147,7 +147,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		*(handle.muons), min_mu_pT, muonID::muonPreselection);
 	local.e_selected = miniAODhelper.GetSelectedElectrons(
 		*(handle.electrons), min_ele_pT, electronID::electronPreselection);
-	
+
 	// Should add tauID in leptonID package into MiniAODHelper
 	for (const auto& tau : *(handle.taus)) {
 		if (tau.userFloat("idPreselection")>0.5 and tau.pt()>min_tau_pT)
@@ -178,8 +178,16 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		miniAODhelper.RemoveOverlaps(local.e_selected, local.jets_no_mu);
 	local.jets_corrected =
 		miniAODhelper.GetCorrectedJets(local.jets_no_mu_e, iEvent, iSetup);
+	/*
 	local.jets_selected = miniAODhelper.GetSelectedJets(
 		local.jets_corrected, min_jet_pT, max_jet_eta, jetID::jetLoose, '-');
+	*/
+	local.jets_selected = miniAODhelper.GetSelectedJets(
+		*(handle.jets), min_jet_pT, max_jet_eta, jetID::jetTight, '-');
+	// ???
+	// jetID::jetTight in MiniAODHelper (branch CMSSW_7_6_3, 03/15/2016) is actually loose WP suggested by Jet POG for 13TeV
+	// ???
+
 	// overlap removal by dR
 	local.jets_selected = removeOverlapdR(local.jets_selected, local.mu_selected, 0.4);
 	local.jets_selected = removeOverlapdR(local.jets_selected, local.e_selected, 0.4);
@@ -203,11 +211,16 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	//Top_tagger(handle.top_jets, local);
 	//Higgs_tagger(handle.subfilter_jets, local);
 
+	/// MET
+	local.pfMET = handle.METs->front();
+
+	/*
 	/// Get Corrected MET, !!!not yet used!!!
 	// may need to be placed in CU_ttH_EDA_event_vars
 	local.MET_corrected =
 		handle.METs->front(); // miniAODhelper.GetCorrectedMET( METs.at(0),
 							  // pfJets_forMET, iSysType );
+	*/
 	
 	/// Check tags, fill hists, print events
 	if (analysis_type == Analyze_lepton_jet) {

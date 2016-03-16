@@ -36,6 +36,7 @@ struct CU_ttH_EDA_event_vars {
 	int n_muons;
 	int n_taus;
 	int n_jets;
+	int n_jets_m;
 	int n_btags;
 	int n_ttags;
 	int n_Htags;
@@ -65,6 +66,7 @@ struct CU_ttH_EDA_event_vars {
 	std::vector<pat::Jet> jets_selected_tag_sorted;
 
 	/// Other quantities
+	pat::MET pfMET;
 	pat::MET MET_corrected;
 	double dimuon_mass;
 	double dielectron_mass;
