@@ -13,7 +13,7 @@
 #include <vector>
 
 void syncNtupleComparer(
-						bool preselection = false,
+						bool xsel = true,
 						const TString inputFile1 = "/afs/cern.ch/work/z/ztao/private/ttH/CMSSW_7_6_3_patch2/src/Analyzers/ttH_analyzer/test/ttHtausNtuple.root", 
 						const TString inputFile2 = "/afs/cern.ch/work/t/tstreble/public/syncNtuple_ttH_Htautau/syncNtuple.root",
 						const TString inputFile3 = "/afs/cern.ch/user/k/kaehatah/public/ntuples/ttHJetToTT_M125_13TeV_ntuples_sync.root",
@@ -87,11 +87,11 @@ void syncNtupleComparer(
 				forest.push_back(tree3);
 		}
 
-		if (tree4->GetBranch(bname) != nullptr and preselection) {
+		if (tree4->GetBranch(bname) != nullptr and xsel) {
 			
 			l->AddEntry(tree4, "ND", "l");
 			presel_cut = " && n_presel_jet >= 2 && (n_presel_mu + n_presel_ele) == 2 && n_presel_tau >= 1";
-			suffix = "_presel";
+			suffix = "_xsel";
 			
 			if ( tree4->GetEntries(bname+">-233") != 0)
 				forest.push_back(tree4);
