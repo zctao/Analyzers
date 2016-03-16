@@ -12,11 +12,13 @@
 #include <iostream>
 #include <vector>
 
-void syncNtupleComparer(//const TString inputFile1 = "/afs/cern.ch/work/z/ztao/private/ttH/CMSSW_7_6_3_patch2/src/Analyzers/ttH_analyzer/test/ttHtausNtuple.root", 
-						//const TString inputFile2 = "/afs/cern.ch/work/t/tstreble/public/syncNtuple_ttH_Htautau/syncNtuple.root"
-						const TString inputFile1 = "ttHtausNtuple.root",
-						const TString inputFile2 = "~/Desktop/Scratch/syncNtuple.root",
-						const TString inputFile3 = "~/Desktop/Scratch/ttHJetToTT_M125_13TeV_ntuples_sync.root"
+void syncNtupleComparer(
+			const TString inputFile1 = "/afs/cern.ch/work/z/ztao/private/ttH/CMSSW_7_6_3_patch2/src/Analyzers/ttH_analyzer/test/ttHtausNtuple.root", 
+			const TString inputFile2 = "/afs/cern.ch/work/t/tstreble/public/syncNtuple_ttH_Htautau/syncNtuple.root",
+			const TString inputFile3 = "/afs/cern.ch/user/k/kaehatah/public/ntuples/ttHJetToTT_M125_13TeV_ntuples_sync.root"
+			//const TString inputFile1 = "ttHtausNtuple.root",
+			//const TString inputFile2 = "~/Desktop/Scratch/syncNtuple.root",
+			//const TString inputFile3 = "~/Desktop/Scratch/ttHJetToTT_M125_13TeV_ntuples_sync.root"
 )
 {	
 	TFile* f1 = new TFile(inputFile1);
@@ -83,7 +85,8 @@ void syncNtupleComparer(//const TString inputFile1 = "/afs/cern.ch/work/z/ztao/p
 
 		l->Draw("same");
 		
-		c.SaveAs("./syncPlots/"+bname+".pdf");
+		//c.SaveAs("./syncPlots/"+bname+".pdf");
+		c.SaveAs("~ztao/www/syncPlots/"+bname+".png");
 	}
 
 }
