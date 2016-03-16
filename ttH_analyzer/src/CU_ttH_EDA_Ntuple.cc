@@ -39,10 +39,10 @@ void CU_ttH_EDA_Ntuple::fill_ntuple_muons(const std::vector<pat::Muon>& muons)
 		mu0_charge = muons[0].charge();
 		//mu0_jetNDauChargedMVASel = 
 		mu0_miniRelIso = muons[0].userFloat("miniIso");
-		mu0_miniIsoCharged = muons[0].userFloat("miniAbsIsoCharged")/muons[0].pt();
-		mu0_miniIsoNeutral = muons[0].userFloat("miniAbsIsoNeutral")/muons[0].pt();
-		//mu0_miniIsoCharged = muons[0].userFloat("chargedRelIso");
-		//mu0_miniIsoNeutral = muons[0].userFloat("neutralRelIso");
+		//mu0_miniIsoCharged = muons[0].userFloat("miniAbsIsoCharged");      always = 0   Need to check
+		//mu0_miniIsoNeutral = muons[0].userFloat("miniAbsIsoNeutralcorr");  always = 0   Need to check
+		mu0_miniIsoCharged = muons[0].userFloat("chargedRelIso") * muons[0].pt();
+		mu0_miniIsoNeutral = muons[0].userFloat("neutralRelIso") * muons[0].pt();
 		mu0_jetPtRel = muons[0].userFloat("nearestJetPtRel");
 		mu0_jetPtRatio = muons[0].userFloat("nearestJetPtRatio");
 		mu0_jetCSV = muons[0].userFloat("nearestJetCsv");
@@ -61,10 +61,10 @@ void CU_ttH_EDA_Ntuple::fill_ntuple_muons(const std::vector<pat::Muon>& muons)
 		mu1_charge = muons[1].charge();
 		//mu1_jetNDauChargedMVASel = 
 		mu1_miniRelIso = muons[1].userFloat("miniIso");
-		mu1_miniIsoCharged = muons[1].userFloat("miniAbsIsoCharged")/muons[1].pt();
-		mu1_miniIsoNeutral = muons[1].userFloat("miniAbsIsoNeutral")/muons[1].pt();
-		//mu1_miniIsoCharged = muons[1].userFloat("chargedRelIso");
-		//mu1_miniIsoNeutral = muons[1].userFloat("neutralRelIso");
+		//mu1_miniIsoCharged = muons[1].userFloat("miniAbsIsoCharged");      always = 0   Need to check
+		//mu1_miniIsoNeutral = muons[1].userFloat("miniAbsIsoNeutralcorr");  always = 0   Need to check
+		mu1_miniIsoCharged = muons[1].userFloat("chargedRelIso") * muons[1].pt();
+		mu1_miniIsoNeutral = muons[1].userFloat("neutralRelIso") * muons[1].pt();
 		mu1_jetPtRel = muons[1].userFloat("nearestJetPtRel");
 		mu1_jetPtRatio = muons[1].userFloat("nearestJetPtRatio");
 		mu1_jetCSV = muons[1].userFloat("nearestJetCsv");
@@ -86,17 +86,17 @@ void CU_ttH_EDA_Ntuple::fill_ntuple_electrons(const std::vector<pat::Electron>& 
 		ele0_charge = electrons[0].charge();
 		//ele0_jetNDauChargeMVASel
 		ele0_miniRelIso = electrons[0].userFloat("miniIso");
-		ele0_miniIsoCharged = electrons[0].userFloat("miniAbsIsoCharged")/electrons[0].pt();
-		ele0_miniIsoNeutral = electrons[0].userFloat("miniAbsIsoNeutral")/electrons[0].pt();
-		//ele0_miniIsoCharged = electrons[0].userFloat("chargedRelIso");
-		//ele0_miniIsoNeutral = electrons[0].userFloat("neutralRelIso");
+		//ele0_miniIsoCharged = electrons[0].userFloat("miniAbsIsoCharged");       always = 0   Need to check
+		//ele0_miniIsoNeutral = electrons[0].userFloat("miniAbsIsoNeutralcorr");   always = 0   Need to check
+		ele0_miniIsoCharged = electrons[0].userFloat("chargedRelIso") * electrons[0].pt();
+		ele0_miniIsoNeutral = electrons[0].userFloat("neutralRelIso") * electrons[0].pt();
 		ele0_jetPtRel = electrons[0].userFloat("nearestJetPtRel");
 		ele0_jetPtRatio = electrons[0].userFloat("nearestJetPtRatio");
-		ele0_jetCSV = electrons[0].userFloat("nearestJetCsv");
+		ele0_jetCSV = electrons[0].userFloat("nearestJetCsv");  // always = 0 need to check
 		ele0_sip3D = electrons[0].userFloat("sip3D");
 		ele0_dxy = electrons[0].userFloat("dxy");
 		ele0_dz = electrons[0].userFloat("dz");
-		ele0_ntMVAeleID = electrons[0].userFloat("eleMvaId"); //?
+		ele0_ntMVAeleID = electrons[0].userFloat("eleMvaId"); // non-triggering mva ID
 		ele0_leptonMVA = electrons[0].userFloat("leptonMVA");
 	}
 	
@@ -108,17 +108,17 @@ void CU_ttH_EDA_Ntuple::fill_ntuple_electrons(const std::vector<pat::Electron>& 
 		ele1_charge = electrons[1].charge();
 		//ele1_jetNDauChargeMVASel
 		ele1_miniRelIso = electrons[1].userFloat("miniIso");
-		ele1_miniIsoCharged = electrons[1].userFloat("miniAbsIsoCharged")/electrons[1].pt();
-		ele1_miniIsoNeutral = electrons[1].userFloat("miniAbsIsoNeutral")/electrons[1].pt();
-		//ele1_miniIsoCharged = electrons[1].userFloat("chargedRelIso");
-		//ele1_miniIsoNeutral = electrons[1].userFloat("neutralRelIso");
+		//ele1_miniIsoCharged = electrons[1].userFloat("miniAbsIsoCharged");      always = 0   Need to check
+		//ele1_miniIsoNeutral = electrons[1].userFloat("miniAbsIsoNeutralcorr");  always = 0   Need to check
+		ele1_miniIsoCharged = electrons[1].userFloat("chargedRelIso") * electrons[1].pt();
+		ele1_miniIsoNeutral = electrons[1].userFloat("neutralRelIso") * electrons[1].pt();
 		ele1_jetPtRel = electrons[1].userFloat("nearestJetPtRel");
 		ele1_jetPtRatio = electrons[1].userFloat("nearestJetPtRatio");
 		ele1_jetCSV = electrons[1].userFloat("nearestJetCsv");
 		ele1_sip3D = electrons[1].userFloat("sip3D");
 		ele1_dxy = electrons[1].userFloat("dxy");
 		ele1_dz = electrons[1].userFloat("dz");
-		ele1_ntMVAeleID = electrons[1].userFloat("eleMvaId"); //?
+		ele1_ntMVAeleID = electrons[1].userFloat("eleMvaId"); // non-triggering mva ID
 		ele1_leptonMVA = electrons[1].userFloat("leptonMVA");
 	}
 }
@@ -133,7 +133,7 @@ void CU_ttH_EDA_Ntuple::fill_ntuple_taus(const std::vector<pat::Tau>& taus)
 		tau0_charge = taus[0].charge();
 		tau0_dxy = taus[0].userFloat("dxy");
 		tau0_dz = taus[0].userFloat("dz");
-		tau0_decayModeFindingOldDMs =  taus[0].tauID("decayModeFinding");  // decayModeFindingOldDMs   need to check
+		tau0_decayModeFindingOldDMs =  taus[0].tauID("decayModeFinding");  // decayModeFindingOldDMs
 		tau0_decayModeFindingNewDMs =  taus[0].tauID("decayModeFindingNewDMs");
 		
 		tau0_byCombinedIsolationDeltaBetaCorr3Hits = taus[0].tauID("byCombinedIsolationDeltaBetaCorrRaw3Hits");
@@ -167,7 +167,7 @@ void CU_ttH_EDA_Ntuple::fill_ntuple_taus(const std::vector<pat::Tau>& taus)
 		tau1_charge = taus[1].charge();
 		tau1_dxy = taus[1].userFloat("dxy");
 		tau1_dz = taus[1].userFloat("dz");
-		tau1_decayModeFindingOldDMs =  taus[1].tauID("decayModeFinding");  // decayModeFindingOldDMs   need to check
+		tau1_decayModeFindingOldDMs =  taus[1].tauID("decayModeFinding");  // decayModeFindingOldDMs
 		tau1_decayModeFindingNewDMs =  taus[1].tauID("decayModeFindingNewDMs");
 		
 		tau1_byCombinedIsolationDeltaBetaCorr3Hits = taus[1].tauID("byCombinedIsolationDeltaBetaCorrRaw3Hits");

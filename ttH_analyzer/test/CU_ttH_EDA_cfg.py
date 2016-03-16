@@ -49,13 +49,12 @@ process.source = cms.Source("PoolSource",
 	)
 )
 
-
-# load the analysis:
-process.load("Analyzers.ttH_analyzer.ttHtaus_cfi")
 # LeptonID producer from ttH Multi-lepton group
 process.load("ttH.LeptonID.ttHLeptons_cfi")
 # new electron MVA developed by the EGamma POG 
 process.load("RecoEgamma.ElectronIdentification.ElectronMVAValueMapProducer_cfi")
+# load the analysis:
+process.load("Analyzers.ttH_analyzer.ttHtaus_cfi")
 
 # re-define parameter sets here if necessary
 process.ttHLeptons.rhoParam = "fixedGridRhoFastjetCentralNeutral"
