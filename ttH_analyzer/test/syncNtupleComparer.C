@@ -99,21 +99,10 @@ void syncNtupleComparer(
 		
 		for (auto const &tree : forest) {
 			
-			if (bname.Contains("_dxy") or bname.Contains("_dz")) {
-				if (tree == *forest.begin()) {
-					tree->Draw("abs("+bname+")", bname+">-233"+presel_cut);
-					TH1F *htemp = (TH1F*)gPad->GetPrimitive("htemp");
-					htemp->GetXaxis()->SetTitle("abs("+bname+")");
-				}
-				else
-					tree->Draw("abs("+bname+")", bname+">-233"+presel_cut, "same");
-			}
-			else {
-				if (tree == *forest.begin())
-					tree->Draw(bname, bname+">-233"+presel_cut);
-				else 
-					tree->Draw(bname, bname+">-233"+presel_cut, "same");
-			}
+			if (tree == *forest.begin())
+				tree->Draw(bname, bname+">-233"+presel_cut);
+			else
+				tree->Draw(bname, bname+">-233"+presel_cut, "same");
 			
 			gPad->Update();
 		}
