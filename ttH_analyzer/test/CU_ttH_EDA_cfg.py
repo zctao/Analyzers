@@ -45,7 +45,10 @@ process.ak4PFchsL1L2L3 = cms.ESProducer("JetCorrectionESChain",
 
 process.source = cms.Source("PoolSource",
 	fileNames = cms.untracked.vstring(
+        # signal sample
         '/store/mc/RunIIFall15MiniAODv2/ttHJetToTT_M125_13TeV_amcatnloFXFX_madspin_pythia8/MINIAODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v3/60000/0C6DA13E-38C8-E511-8F6E-00259055220A.root'
+        # tt+jet 
+        #'/store/mc/RunIIFall15MiniAODv2/TT_TuneCUETP8M1_13TeV-powheg-pythia8/MINIAODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12_ext3-v1/00000/00DF0A73-17C2-E511-B086-E41D2D08DE30.root'
 	)
 )
 
@@ -66,6 +69,7 @@ process.ttHtaus.input_tags.taus = cms.InputTag("ttHLeptons")
     
 process.TFileService = cms.Service("TFileService",
 	fileName = cms.string('ttHtausNtuple.root')
+        #fileName = cms.string('ttHtausNtuple_ttJets.root')
 )
 
 process.p = cms.Path(

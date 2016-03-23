@@ -13,9 +13,9 @@
 #include <vector>
 
 void syncNtupleComparer(
-						bool xsel = true,
+						bool xsel = false,
 						const TString inputFile1 = "/afs/cern.ch/work/z/ztao/private/ttH/CMSSW_7_6_3_patch2/src/Analyzers/ttH_analyzer/test/ttHtausNtuple.root", 
-						const TString inputFile2 = "/afs/cern.ch/work/t/tstreble/public/syncNtuple_ttH_Htautau/syncNtuple.root",
+						const TString inputFile2 = "/afs/cern.ch/work/t/tstreble/public/syncNtuple_ttH_Htautau/syncNtuple_ttH.root",
 						const TString inputFile3 = "/afs/cern.ch/user/k/kaehatah/public/ntuples/ttHJetToTT_M125_13TeV_ntuples_sync.root",
 						const TString inputFile4 = "/afs/cern.ch/user/m/matze/public/ttH/sync_ntuple.root"
 						//const TString inputFile1 = "ttHtausNtuple.root",
