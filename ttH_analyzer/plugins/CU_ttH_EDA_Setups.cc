@@ -314,7 +314,7 @@ void CU_ttH_EDA::Set_up_Tree()
 	//std::cout << "CanSplit() :" << ntuple->CanSplit() << std::endl;
 	//ntuple->Dump();
 	*/
-	ntuple->set_up_branches(eventTree);
+	tauNtuple->set_up_branches(eventTree);
 }
 
 #endif

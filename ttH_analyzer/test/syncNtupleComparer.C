@@ -11,6 +11,7 @@
 
 #include <iostream>
 #include <vector>
+#include <string>
 
 void syncNtupleComparer(
 						bool xsel = false,
@@ -23,7 +24,7 @@ void syncNtupleComparer(
 						//const TString inputFile3 = "~/Desktop/Scratch/ttHJetToTT_M125_13TeV_ntuples_sync.root",
 						//const TString inputFile4 = "~/Desktop/Scratch/sync_ntuple.root"
 )
-{	
+{
 	TFile* f1 = new TFile(inputFile1);
 	TFile* f2 = new TFile(inputFile2);
 	TFile* f3 = new TFile(inputFile3);
@@ -51,11 +52,18 @@ void syncNtupleComparer(
 	gStyle->SetOptTitle(0);
 
 	TObjArray *branches1 = tree1->GetListOfBranches ();
+
+	//std::vector<string> gname;
+	std::vector<int> nevt_mu;
+	std::vector<int> nevt_ele;
+	std::vector<int> nevt_tau;
+	std::vector<int> nevt_jet;
 	
 	for (const auto &branch : *branches1) {
 
 		TString presel_cut = "";
 		TString suffix = "";
+		//gname.clear();
 		
 		TString bname = branch->GetName();
 
@@ -97,7 +105,7 @@ void syncNtupleComparer(
 				forest.push_back(tree4);
 		}
 		
-		for (auto const &tree : forest) {
+		for (const auto &tree : forest) {
 			
 			if (tree == *forest.begin())
 				tree->Draw(bname, bname+">-233"+presel_cut);
@@ -105,6 +113,15 @@ void syncNtupleComparer(
 				tree->Draw(bname, bname+">-233"+presel_cut, "same");
 			
 			gPad->Update();
+
+			if (bname.EqualTo("n_presel_mu"))
+				nevt_mu.push_back(tree->GetEntries(bname+">0"));
+			if (bname.EqualTo("n_presel_ele"))
+				nevt_ele.push_back(tree->GetEntries(bname+">0"));
+			if (bname.EqualTo("n_presel_tau"))
+				nevt_tau.push_back(tree->GetEntries(bname+">0"));
+			if (bname.EqualTo("n_presel_jet"))
+				nevt_jet.push_back(tree->GetEntries(bname+">0"));
 		}
 
 		l->Draw("same");
@@ -114,5 +131,25 @@ void syncNtupleComparer(
 
 		delete l;
 	}
+
+	std::cout << "muon: ";
+	for (auto n: nevt_mu)
+		std::cout << n << "\t";
+	std::cout << std::endl;
+	
+	std::cout << "ele: ";
+	for (auto n: nevt_ele)
+		std::cout << n << "\t";
+	std::cout << std::endl;
+	
+	std::cout << "tau: ";
+	for (auto n: nevt_tau)
+		std::cout << n << "\t";
+	std::cout << std::endl;
+	
+	std::cout << "jet: ";
+	for (auto n: nevt_jet)
+		std::cout << n << "\t";
+	std::cout << std::endl;
 
 }

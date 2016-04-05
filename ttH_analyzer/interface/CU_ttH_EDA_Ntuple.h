@@ -27,7 +27,7 @@ class CU_ttH_EDA_Ntuple //: public TClass
 	void fill_ntuple_muons(const std::vector<pat::Muon> &);
 	void fill_ntuple_taus(const std::vector<pat::Tau> &);
 	void fill_ntuple_jets(const std::vector<pat::Jet> &);
-	void fill_ntuple_met(const pat::MET &);
+	//void fill_ntuple_met(const pat::MET &);
 		
  public:
 	/// function member
@@ -41,10 +41,28 @@ class CU_ttH_EDA_Ntuple //: public TClass
 	/// variables
 	// event variables
 	int nEvent;
+	int ls;   // luminosity section number
+	int run;  // run number
 	int n_presel_mu;
+	int n_cutsel_mu;
+	int n_mvasel_mu;
+	int n_fakeablesel_mu;
 	int n_presel_ele;
+	int n_cutsel_ele;
+	int n_mvasel_ele;
+	int n_fakeablesel_ele;
 	int n_presel_tau;
 	int n_presel_jet;
+	// event level MVA
+	double MVA_2lss_ttV;
+	double MVA_2lss_ttbar;
+	double MT_met_lep0;
+	int    n_jet25_recl;
+	double mindr_lep0_jet;
+	double mindr_lep1_jet;
+	double lep0_conePt;
+	double lep1_conePt;
+	double avg_dr_jet;
 	// muons
 	double mu0_pt;
 	double mu0_eta;
@@ -63,6 +81,11 @@ class CU_ttH_EDA_Ntuple //: public TClass
 	double mu0_dz;
 	double mu0_segmentCompatibility;
 	double mu0_leptonMVA;
+	double mu0_mediumID;
+	double mu0_dpt_div_pt;
+	int    mu0_iscutsel;
+	int    mu0_ismvasel;
+	int    mu0_isfakeablesel;
 	double mu1_pt;
 	double mu1_eta;
 	double mu1_phi;
@@ -80,6 +103,11 @@ class CU_ttH_EDA_Ntuple //: public TClass
 	double mu1_dz;
 	double mu1_segmentCompatibility;
 	double mu1_leptonMVA;
+	double mu1_mediumID;
+	double mu1_dpt_div_pt;
+	int    mu1_iscutsel;
+	int    mu1_ismvasel;
+	int    mu1_isfakeablesel;
 	
 	// electrons
 	double ele0_pt;
@@ -99,6 +127,12 @@ class CU_ttH_EDA_Ntuple //: public TClass
 	double ele0_dz;
 	double ele0_ntMVAeleID;
 	double ele0_leptonMVA;
+	int    ele0_isChargeConsistent;
+	int    ele0_passesConversionVeto;
+	int    ele0_nMissingHits;
+	int    ele0_iscutsel;
+	int    ele0_ismvasel;
+	int    ele0_isfakeablesel;
 	double ele1_pt;
 	double ele1_eta;
 	double ele1_phi;
@@ -115,7 +149,13 @@ class CU_ttH_EDA_Ntuple //: public TClass
 	double ele1_dxy;
 	double ele1_dz;
 	double ele1_ntMVAeleID;
-	double ele1_leptonMVA;	
+	double ele1_leptonMVA;
+	int    ele1_isChargeConsistent;
+	int    ele1_passesConversionVeto;
+	int    ele1_nMissingHits;
+	int    ele1_iscutsel;
+	int    ele1_ismvasel;
+	int    ele1_isfakeablesel;
 	
 	// taus
 	double tau0_pt;
@@ -194,6 +234,8 @@ class CU_ttH_EDA_Ntuple //: public TClass
 	// MET
 	double PFMET;
 	double PFMETphi;
+	double MHT;
+	double metLD;
 	
 	//ClassDef(CU_ttH_EDA_Ntuple,1);
 	

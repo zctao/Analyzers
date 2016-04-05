@@ -310,7 +310,7 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 
 	// tree and ntuple
 	TTree *eventTree;
-	CU_ttH_EDA_Ntuple *ntuple;
+	CU_ttH_EDA_Ntuple *tauNtuple;
 
 };
 

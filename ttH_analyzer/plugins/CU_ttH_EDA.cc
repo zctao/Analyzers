@@ -85,7 +85,7 @@ CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig):
 	Set_up_histograms();
 	Set_up_output_files();
 
-	ntuple = new CU_ttH_EDA_Ntuple();
+	tauNtuple = new CU_ttH_EDA_Ntuple();
 	Set_up_Tree();
 }
 
@@ -221,6 +221,12 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		handle.METs->front(); // miniAODhelper.GetCorrectedMET( METs.at(0),
 							  // pfJets_forMET, iSysType );
 	*/
+
+	// Produce sync ntuple
+	tauNtuple->initialize();
+	tauNtuple->write_ntuple(local);
+	
+	eventTree->Fill();
 	
 	/// Check tags, fill hists, print events
 	if (analysis_type == Analyze_lepton_jet) {
@@ -235,18 +241,16 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	}
 	
 	if (analysis_type == Analyze_tau_ssleptons) {
-	
+		// Event selection
+		
 	}
 
 	if (analysis_type == Analyze_ditaus_lepton) {
+		// Event selection
 
 	}
 
-	// Write ntuple and fill eventTree
-	ntuple->initialize();
-	ntuple->write_ntuple(local);
-	
-	eventTree->Fill();
+
 	
 }
 
