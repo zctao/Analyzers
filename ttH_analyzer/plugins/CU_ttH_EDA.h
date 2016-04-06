@@ -190,6 +190,12 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	template <typename T1, typename T2>
 		std::vector<T1>
 		removeOverlapdR(const std::vector<T1>& v1, const std::vector<T2>& v2, double dR = 0.02);
+
+	float getMHT(CU_ttH_EDA_event_vars &);
+	
+	// event selection
+	bool pass_event_sel_2ssl1tauh(CU_ttH_EDA_event_vars &);
+	bool pass_event_sel_1l2tauh(CU_ttH_EDA_event_vars &);
 	
 	/*
 	* Variable section
@@ -267,8 +273,6 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	int MAODHelper_sample_nr; // past insample_, in-development var. for
 							  // MAODHelper?
 	std::string MAODHelper_era;
-
-	
 
 	/// Histograms
 	TH1D *h_tth_syncex1_ele;

@@ -71,6 +71,9 @@ struct CU_ttH_EDA_event_vars {
 	double dielectron_mass;
 	double dilepton_mass;
 
+	double MHT;
+	double metLD;
+	
 	// Gen Particles
 	std::vector<reco::GenParticle> genHiggs;
 	std::vector<reco::GenParticle> genTops;

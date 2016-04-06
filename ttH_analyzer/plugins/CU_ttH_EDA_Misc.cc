@@ -871,4 +871,73 @@ void CU_ttH_EDA::printDecayChain(const reco::Candidate &p, int &index,
 	}
 }
 
+float CU_ttH_EDA::getMHT(CU_ttH_EDA_event_vars &local)
+{
+	float MHT_x = 0;
+	float MHT_y = 0;
+
+	for (auto & mu : local.mu_selected_sorted) {
+		MHT_x -= mu.px();
+		MHT_y -= mu.py();
+	}
+
+	for (auto & ele : local.e_selected_sorted) {
+		MHT_x -= ele.px();
+		MHT_y -= ele.py();
+	}
+
+	for (auto & tau : local.tau_selected_sorted) {
+		MHT_x -= tau.px();
+		MHT_y -= tau.py();
+	}
+
+	for (auto & jet : local.jets_selected_sorted) {
+		MHT_x -= jet.px();
+		MHT_y -= jet.py();
+	}
+
+	return sqrt(MHT_x * MHT_x + MHT_y * MHT_y);
+}
+
+bool CU_ttH_EDA::pass_event_sel_2ssl1tauh(CU_ttH_EDA_event_vars &local)
+{
+	int nbMedium = 0;   // csv > 0.800
+	int nbLoose = 0;    // csv > 0.460
+	for (auto & j : local.jets_selected_sorted) {
+		float csv = j.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
+		if (csv > 0.460) {
+			++nbLoose;
+			if (csv > 0.800)
+				++nbMedium;
+		}
+	}
+	
+	return (local.n_electrons + local.n_muons == 2 and
+			local.n_jets >= 4 and
+			local.metLD > 0.2 and
+			(nbLoose >=2 or nbMedium >= 1)
+			);
+}
+
+bool CU_ttH_EDA::pass_event_sel_1l2tauh(CU_ttH_EDA_event_vars &local)
+{
+	int nbMedium = 0;   // csv > 0.800
+	int nbLoose = 0;    // csv > 0.460
+	for (auto & j : local.jets_selected_sorted) {
+		float csv = j.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
+		if (csv > 0.460) {
+			++nbLoose;
+			if (csv > 0.800)
+				++nbMedium;
+		}
+	}
+	
+	return (
+			local.n_electrons + local.n_muons == 1 and
+			local.n_taus >= 2 and
+			local.n_jets >= 2 and
+			(nbLoose >=2 or nbMedium >= 1)
+			);
+}
+
 #endif

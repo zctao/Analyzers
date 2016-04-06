@@ -15,9 +15,6 @@ CU_ttH_EDA_Ntuple::~CU_ttH_EDA_Ntuple() {}
 
 void CU_ttH_EDA_Ntuple::write_ntuple(const CU_ttH_EDA_event_vars &local)
 {
-	float MHT_x = 0;
-	float MHT_y = 0;
-
 	// Event variales
 	nEvent = local.event_nr;
 	ls = local.lumisection_nr;
@@ -29,8 +26,6 @@ void CU_ttH_EDA_Ntuple::write_ntuple(const CU_ttH_EDA_event_vars &local)
 	n_cutsel_mu = 0;
 	n_mvasel_mu = 0;
 	for (auto & mu : local.mu_selected_sorted) {
-		MHT_x -= mu.px();
-		MHT_y -= mu.py();
 		if (mu.userFloat("idFakeable") > 0.5)
 			++n_fakeablesel_mu;
 		if (mu.userFloat("idCutBased") > 0.5)
@@ -46,8 +41,6 @@ void CU_ttH_EDA_Ntuple::write_ntuple(const CU_ttH_EDA_event_vars &local)
 	n_cutsel_ele = 0;
 	n_mvasel_ele = 0;
 	for (auto & ele : local.e_selected_sorted) {
-		MHT_x -= ele.px();
-		MHT_y -= ele.py();
 		if (ele.userFloat("idFakeable") > 0.5)
 			++n_fakeablesel_ele;
 		if (ele.userFloat("idCutBased") > 0.5)
@@ -68,17 +61,13 @@ void CU_ttH_EDA_Ntuple::write_ntuple(const CU_ttH_EDA_event_vars &local)
 	// MET/MHT
 	PFMET = sqrt(local.pfMET.px()*local.pfMET.px()+local.pfMET.py()*local.pfMET.py());
 	PFMETphi = local.pfMET.phi();
+	MHT = local.MHT;
+	metLD = local.metLD;
+}
 
-	for (auto & tau : local.tau_selected_sorted) {
-		MHT_x -= tau.px();
-		MHT_y -= tau.py();
-	}
-	for (auto & jet : local.jets_selected_sorted) {
-		MHT_x -= jet.px();
-		MHT_y -= jet.py();
-	}
-	MHT = sqrt(MHT_x * MHT_x + MHT_y * MHT_y);
-	metLD = 0.00397 * PFMET + 0.00265 * MHT;
+void CU_ttH_EDA_Ntuple::write_evtMVAvars(const CU_ttH_EDA_event_vars & local)
+{
+
 }
 
 void CU_ttH_EDA_Ntuple::fill_ntuple_muons(const std::vector<pat::Muon>& muons)
@@ -89,12 +78,12 @@ void CU_ttH_EDA_Ntuple::fill_ntuple_muons(const std::vector<pat::Muon>& muons)
 		mu0_phi = muons[0].phi();
 		mu0_E = muons[0].energy();
 		mu0_charge = muons[0].charge();
-		//mu0_jetNDauChargedMVASel = 
+		mu0_jetNDauChargedMVASel = muons[0].userFloat("nearestJetNDauCharged");
 		mu0_miniRelIso = muons[0].userFloat("miniIso");
-		//mu0_miniIsoCharged = muons[0].userFloat("miniAbsIsoCharged");      always = 0   Need to check
-		//mu0_miniIsoNeutral = muons[0].userFloat("miniAbsIsoNeutralcorr");  always = 0   Need to check
-		mu0_miniIsoCharged = muons[0].userFloat("chargedRelIso") * muons[0].pt();
-		mu0_miniIsoNeutral = muons[0].userFloat("neutralRelIso") * muons[0].pt();
+		mu0_miniIsoCharged = muons[0].userFloat("miniAbsIsoCharged");      //always = 0   Need to check
+		mu0_miniIsoNeutral = muons[0].userFloat("miniAbsIsoNeutralcorr");  //always = 0   Need to check
+		//mu0_miniIsoCharged = muons[0].userFloat("chargedRelIso") * muons[0].pt();
+		//mu0_miniIsoNeutral = muons[0].userFloat("neutralRelIso") * muons[0].pt();
 		mu0_jetPtRel = muons[0].userFloat("nearestJetPtRel");
 		mu0_jetPtRatio = muons[0].userFloat("nearestJetPtRatio");
 		mu0_jetCSV = muons[0].userFloat("nearestJetCsv");
@@ -116,12 +105,12 @@ void CU_ttH_EDA_Ntuple::fill_ntuple_muons(const std::vector<pat::Muon>& muons)
 		mu1_phi = muons[1].phi();
 		mu1_E = muons[1].energy();
 		mu1_charge = muons[1].charge();
-		//mu1_jetNDauChargedMVASel = 
+		mu1_jetNDauChargedMVASel = muons[1].userFloat("nearestJetNDauCharged");
 		mu1_miniRelIso = muons[1].userFloat("miniIso");
-		//mu1_miniIsoCharged = muons[1].userFloat("miniAbsIsoCharged");      always = 0   Need to check
-		//mu1_miniIsoNeutral = muons[1].userFloat("miniAbsIsoNeutralcorr");  always = 0   Need to check
-		mu1_miniIsoCharged = muons[1].userFloat("chargedRelIso") * muons[1].pt();
-		mu1_miniIsoNeutral = muons[1].userFloat("neutralRelIso") * muons[1].pt();
+		mu1_miniIsoCharged = muons[1].userFloat("miniAbsIsoCharged");      //always = 0   Need to check
+		mu1_miniIsoNeutral = muons[1].userFloat("miniAbsIsoNeutralcorr");  //always = 0   Need to check
+		//mu1_miniIsoCharged = muons[1].userFloat("chargedRelIso") * muons[1].pt();
+		//mu1_miniIsoNeutral = muons[1].userFloat("neutralRelIso") * muons[1].pt();
 		mu1_jetPtRel = muons[1].userFloat("nearestJetPtRel");
 		mu1_jetPtRatio = muons[1].userFloat("nearestJetPtRatio");
 		mu1_jetCSV = muons[1].userFloat("nearestJetCsv");
@@ -146,12 +135,12 @@ void CU_ttH_EDA_Ntuple::fill_ntuple_electrons(const std::vector<pat::Electron>& 
 		ele0_phi = electrons[0].phi();
 		ele0_E = electrons[0].energy();
 		ele0_charge = electrons[0].charge();
-		//ele0_jetNDauChargeMVASel
+		ele0_jetNDauChargedMVASel = electrons[0].userFloat("nearestJetNDauCharged");
 		ele0_miniRelIso = electrons[0].userFloat("miniIso");
-		//ele0_miniIsoCharged = electrons[0].userFloat("miniAbsIsoCharged");       always = 0   Need to check
-		//ele0_miniIsoNeutral = electrons[0].userFloat("miniAbsIsoNeutralcorr");   always = 0   Need to check
-		ele0_miniIsoCharged = electrons[0].userFloat("chargedRelIso") * electrons[0].pt();
-		ele0_miniIsoNeutral = electrons[0].userFloat("neutralRelIso") * electrons[0].pt();
+		ele0_miniIsoCharged = electrons[0].userFloat("miniAbsIsoCharged"); //     always = 0   Need to check
+		ele0_miniIsoNeutral = electrons[0].userFloat("miniAbsIsoNeutralcorr"); // always = 0   Need to check
+		//ele0_miniIsoCharged = electrons[0].userFloat("chargedRelIso") * electrons[0].pt();
+		//ele0_miniIsoNeutral = electrons[0].userFloat("neutralRelIso") * electrons[0].pt();
 		ele0_jetPtRel = electrons[0].userFloat("nearestJetPtRel");
 		ele0_jetPtRatio = electrons[0].userFloat("nearestJetPtRatio");
 		ele0_jetCSV = electrons[0].userFloat("nearestJetCsv");  // always = 0 need to check
@@ -174,12 +163,12 @@ void CU_ttH_EDA_Ntuple::fill_ntuple_electrons(const std::vector<pat::Electron>& 
 		ele1_phi = electrons[1].phi();
 		ele1_E = electrons[1].energy();
 		ele1_charge = electrons[1].charge();
-		//ele1_jetNDauChargeMVASel
+		ele1_jetNDauChargedMVASel = electrons[1].userFloat("nearestJetNDauCharged");
 		ele1_miniRelIso = electrons[1].userFloat("miniIso");
-		//ele1_miniIsoCharged = electrons[1].userFloat("miniAbsIsoCharged");      always = 0   Need to check
-		//ele1_miniIsoNeutral = electrons[1].userFloat("miniAbsIsoNeutralcorr");  always = 0   Need to check
-		ele1_miniIsoCharged = electrons[1].userFloat("chargedRelIso") * electrons[1].pt();
-		ele1_miniIsoNeutral = electrons[1].userFloat("neutralRelIso") * electrons[1].pt();
+		ele1_miniIsoCharged = electrons[1].userFloat("miniAbsIsoCharged");     // always = 0   Need to check
+		ele1_miniIsoNeutral = electrons[1].userFloat("miniAbsIsoNeutralcorr"); // always = 0   Need to check
+		//ele1_miniIsoCharged = electrons[1].userFloat("chargedRelIso") * electrons[1].pt();
+		//ele1_miniIsoNeutral = electrons[1].userFloat("neutralRelIso") * electrons[1].pt();
 		ele1_jetPtRel = electrons[1].userFloat("nearestJetPtRel");
 		ele1_jetPtRatio = electrons[1].userFloat("nearestJetPtRatio");
 		ele1_jetCSV = electrons[1].userFloat("nearestJetCsv");
@@ -707,7 +696,7 @@ void CU_ttH_EDA_Ntuple::set_up_branches(TTree *tree)
 	tree->Branch("MHT", &MHT);
 	tree->Branch("metLD", &metLD);
 }
-
+	
 //ClassImp(CU_ttH_EDA_Ntuple);
 
 #endif

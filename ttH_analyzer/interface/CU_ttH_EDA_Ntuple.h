@@ -37,6 +37,7 @@ class CU_ttH_EDA_Ntuple //: public TClass
 	void initialize();
 	void set_up_branches(TTree *);
 	void write_ntuple(const CU_ttH_EDA_event_vars &);
+	void write_evtMVAvars(const CU_ttH_EDA_event_vars &);
 	
 	/// variables
 	// event variables

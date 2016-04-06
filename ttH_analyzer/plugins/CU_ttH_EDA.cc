@@ -213,7 +213,13 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 
 	/// MET
 	local.pfMET = handle.METs->front();
-
+	// MHT
+	float mht = getMHT(local);
+	float met = sqrt(local.pfMET.px()*local.pfMET.px()+local.pfMET.py()*local.pfMET.py());
+	float metld = 0.00397 * met + 0.00265 * mht;
+	local.MHT = mht;
+	local.metLD = metld;
+	
 	/*
 	/// Get Corrected MET, !!!not yet used!!!
 	// may need to be placed in CU_ttH_EDA_event_vars
@@ -242,14 +248,16 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	
 	if (analysis_type == Analyze_tau_ssleptons) {
 		// Event selection
-		
+		if (pass_event_sel_2ssl1tauh(local)) {
+			tauNtuple->write_evtMVAvars(local);
+			
+		}
 	}
 
 	if (analysis_type == Analyze_ditaus_lepton) {
 		// Event selection
-
+		//if (pass_event_sel_1l12tauh(local))
 	}
-
 
 	
 }
