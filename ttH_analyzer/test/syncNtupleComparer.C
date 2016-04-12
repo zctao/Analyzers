@@ -13,18 +13,21 @@
 #include <vector>
 #include <string>
 
-void syncNtupleComparer(
-						bool xsel = false,
-						const TString inputFile1 = "/afs/cern.ch/work/z/ztao/private/ttH/CMSSW_7_6_3_patch2/src/Analyzers/ttH_analyzer/test/ttHtausNtuple.root", 
-						const TString inputFile2 = "/afs/cern.ch/work/t/tstreble/public/syncNtuple_ttH_Htautau/syncNtuple_ttH.root",
-						const TString inputFile3 = "/afs/cern.ch/user/k/kaehatah/public/ntuples/ttHJetToTT_M125_13TeV_ntuples_sync.root",
-						const TString inputFile4 = "/afs/cern.ch/user/m/matze/public/ttH/sync_ntuple.root"
-						//const TString inputFile1 = "ttHtausNtuple.root",
-						//const TString inputFile2 = "~/Desktop/Scratch/syncNtuple.root",
-						//const TString inputFile3 = "~/Desktop/Scratch/ttHJetToTT_M125_13TeV_ntuples_sync.root",
-						//const TString inputFile4 = "~/Desktop/Scratch/sync_ntuple.root"
-)
+void syncNtupleComparer(TString type)
 {
+	TString inputFile1, inputFile2, inputFile3, inputFile4;
+	if (type == "signal") {
+	    inputFile1 = "/afs/cern.ch/work/z/ztao/public/ttHTT_syncNtuple/ttHtausNtuple.root";
+		inputFile2 = "/afs/cern.ch/work/t/tstreble/public/syncNtuple_ttH_Htautau/syncNtuple_ttH.root";
+		inputFile3 = "/afs/cern.ch/user/k/kaehatah/public/ntuples/ttHJetToTT_M125_13TeV_ntuples_sync.root";	
+	}
+	else if (type == "ttbar") {
+		inputFile1 = "/afs/cern.ch/work/z/ztao/public/ttHTT_syncNtuple/ttJetsNtuple.root";
+		inputFile2 = "/afs/cern.ch/work/t/tstreble/public/syncNtuple_ttH_Htautau/syncNtuple_ttjets.root";
+		inputFile3 = "/afs/cern.ch/user/k/kaehatah/public/ntuples/ttJet_13TeV_ntuples_sync.root";
+	}
+	inputFile4 = "/afs/cern.ch/user/m/matze/public/ttH/sync_ntuple.root";
+
 	TFile* f1 = new TFile(inputFile1);
 	TFile* f2 = new TFile(inputFile2);
 	TFile* f3 = new TFile(inputFile3);
@@ -34,11 +37,15 @@ void syncNtupleComparer(
 		std::cout << "Cannot open the file ... " << std::endl;
 		return;
 	}
-	
+
 	TTree* tree1 = (TTree*) f1->Get("ttHtaus/eventTree");
 	TTree* tree2 = (TTree*) f2->Get("syncTree");
 	TTree* tree3 = (TTree*) f3->Get("tree");
-	TTree* tree4 = (TTree*) f4->Get("sync");
+	TTree* tree4;
+	if (type == "signal")
+		tree4 = (TTree*) f4->Get("ttH");
+	if (type == "ttbar")
+		tree4 = (TTree*) f4->Get("ttjets");
 
 	tree1->SetFillColor(5);
 	tree1->SetLineColor(0);
@@ -58,12 +65,8 @@ void syncNtupleComparer(
 	std::vector<int> nevt_ele;
 	std::vector<int> nevt_tau;
 	std::vector<int> nevt_jet;
-	
-	for (const auto &branch : *branches1) {
 
-		TString presel_cut = "";
-		TString suffix = "";
-		//gname.clear();
+	for (const auto &branch : *branches1) {
 		
 		TString bname = branch->GetName();
 
@@ -86,7 +89,7 @@ void syncNtupleComparer(
 			if ( tree2->GetEntries(bname+">-233") != 0)
 				forest.push_back(tree2);
 		}
-		
+
 		if (tree3->GetBranch(bname) != nullptr) {
 			
 			l->AddEntry(tree3, "Tallinn", "l");
@@ -95,22 +98,20 @@ void syncNtupleComparer(
 				forest.push_back(tree3);
 		}
 
-		if (tree4->GetBranch(bname) != nullptr and xsel) {
+		if (tree4->GetBranch(bname) != nullptr) {
 			
 			l->AddEntry(tree4, "ND", "l");
-			presel_cut = " && n_presel_jet >= 2 && (n_presel_mu + n_presel_ele) == 2 && n_presel_tau >= 1";
-			suffix = "_xsel";
 			
 			if ( tree4->GetEntries(bname+">-233") != 0)
 				forest.push_back(tree4);
 		}
-		
+
 		for (const auto &tree : forest) {
 			
 			if (tree == *forest.begin())
-				tree->Draw(bname, bname+">-233"+presel_cut);
+				tree->Draw(bname, bname+">-233");
 			else
-				tree->Draw(bname, bname+">-233"+presel_cut, "same");
+				tree->Draw(bname, bname+">-233", "same");
 			
 			gPad->Update();
 
@@ -127,7 +128,7 @@ void syncNtupleComparer(
 		l->Draw("same");
 
 		//c.SaveAs("./syncPlots/"+bname+".pdf");
-		c.SaveAs("~ztao/www/"+bname+suffix+".png");
+		c.SaveAs("~ztao/www/"+bname+type+".png");
 
 		delete l;
 	}
