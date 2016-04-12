@@ -2,30 +2,33 @@
 
 ## Installation
 
-* Setup CMSSW environment and get Analyzer repository
+Setup CMSSW environment and get Analyzer repository:
 
-   cmsrel CMSSW_7_6_3_patch2
-   cd CMSSW_7_6_3_patch2/src/
-   cmsenv
-   git cms-init
+	 cmsrel CMSSW_7_6_3_patch2
+     cd CMSSW_7_6_3_patch2/src/
+     cmsenv
+     git cms-init
 
-   git clone https://github.com/zctao/Analyzers.git
-   cd Analyzers
-   git checkout cmssw_7_6_X
-   cd ..
+     git clone https://github.com/zctao/Analyzers.git
+	 cd Analyzers
+   	 git checkout cmssw_7_6_X
+   	 cd ..
 
-* Get dependencies
+Get dependencies:
 
-   git clone https://github.com/cms-ttH/MiniAOD.git
-   Then either:
-   git checkout CMSSW_7_6_3  (compatibility with LeptonID package is not guaranteed)
-   or stay in the master branch, but need to delete plugins (not used for now anyway) in both MiniAODHelper and SkimDilep directories due to a bug
+	 git clone https://github.com/cms-ttH/MiniAOD.git
 
-   For ttH, H->tautau, get LeptonID package shared with ttH-Multilepton group:
+Then either:
 
-   git clone https://github.com/cms-ttH/ttH-LeptonID.git
+	 git checkout CMSSW_7_6_3
+	 (compatibility with LeptonID package is not guaranteed)
 
-* Compile
+or stay in the master branch, but need to delete plugins (not used for now anyway) in both MiniAODHelper and SkimDilep directories due to a bug
+
+For ttH, H->tautau, get LeptonID package shared with ttH-Multilepton group:
+	git clone https://github.com/cms-ttH/ttH-LeptonID.git
+
+Compile:
 
    scram b -j 16
 
