@@ -26,11 +26,12 @@ Then either:
 or stay in the master branch, but need to delete plugins (not used for now anyway) in both MiniAODHelper and SkimDilep directories due to a bug
 
 For ttH, H->tautau, get LeptonID package shared with ttH-Multilepton group:
-	git clone https://github.com/cms-ttH/ttH-LeptonID.git
+
+	 git clone https://github.com/cms-ttH/ttH-LeptonID.git
 
 Compile:
 
-   scram b -j 16
+     scram b -j 16
 
 ## Formatting
 
