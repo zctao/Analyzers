@@ -59,15 +59,78 @@ void CU_ttH_EDA_Ntuple::write_ntuple(const CU_ttH_EDA_event_vars &local)
 	fill_ntuple_jets(local.jets_selected_sorted);
 	
 	// MET/MHT
-	PFMET = sqrt(local.pfMET.px()*local.pfMET.px()+local.pfMET.py()*local.pfMET.py());
+	PFMET = local.pfMET.pt(); //sqrt(local.pfMET.px()*local.pfMET.px()+local.pfMET.py()*local.pfMET.py());
 	PFMETphi = local.pfMET.phi();
 	MHT = local.MHT;
 	metLD = local.metLD;
 }
 
-void CU_ttH_EDA_Ntuple::write_evtMVAvars(const CU_ttH_EDA_event_vars & local)
+void CU_ttH_EDA_Ntuple::write_evtMVAvars_2lss(const CU_ttH_EDA_event_vars & local)
 {
+	
+	// Get leading and sub-leading leptons
+	lep0_isfakeable = false;
+	lep1_isfakeable = false;
+    lep0_ptRatio = 1.;
+	lep1_ptRatio = 1.;
 
+	update_ldgLeps_vars(local.mu_selected_sorted);
+	update_ldgLeps_vars(local.e_selected_sorted);
+
+	// max eta of the leptons
+	if (local.n_muons + local.n_electrons >= 2)
+	  max_lep_eta = std::max(abs(lep0_p4.Eta()),abs(lep1_p4.Eta()));
+	else
+		max_lep_eta = -9999.;
+		
+	// cone pT of lepton
+	if (lep0_isfakeable) {		
+		lep0_conept = 0.85 * lep0_p4.Pt() / lep0_ptRatio;
+	}
+	else
+		lep0_conept = lep0_p4.Pt();
+
+	if (lep1_isfakeable) {
+		lep1_conept = 0.85 * lep1_p4.Pt() / lep1_ptRatio;
+	}
+	else
+		lep1_conept = lep1_p4.Pt();
+
+	// mindr_lep_jet	
+	mindr_lep0_jet = 23333.;  // initialize
+	mindr_lep1_jet = 23333.;  // initialize
+	for (auto & jet : local.jets_selected_sorted) {
+	  TLorentzVector jLV;
+	  jLV.SetPtEtaPhiE(jet.pt(), jet.eta(), jet.phi(), jet.energy());
+		if (lep0_p4.DeltaR(jLV) < mindr_lep0_jet)
+			mindr_lep0_jet = lep0_p4.DeltaR(jLV);
+		if (lep1_p4.DeltaR(jLV) < mindr_lep1_jet)
+			mindr_lep1_jet = lep1_p4.DeltaR(jLV);		
+	}
+	
+	// MT_met_lep0
+	double mass_lep0 = lep0_p4.M();
+	double Et_lep0 = sqrt(mass_lep0 * mass_lep0 + lep0_conept * lep0_conept);
+	double cosDphi = cos(local.pfMET.phi() - lep0_p4.Phi());
+	MT_met_lep0 =
+		sqrt(mass_lep0*mass_lep0 + 2*local.pfMET.pt()*(Et_lep0 - lep0_conept*cosDphi));
+	
+	// avg_dr_jet
+	double sum_dr_jet = 0;
+	int ncomb = 1;
+	if (local.n_jets>=2) {		
+		for (auto i = local.jets_selected_sorted.begin(); i != local.jets_selected_sorted.end()-1; ++i) {
+			for (auto j = i+1; j != local.jets_selected_sorted.end(); ++j) {
+			  double deta = i->eta() - j->eta();
+			  double dphi = i->phi() - j->phi();
+			  sum_dr_jet += sqrt(deta*deta + dphi*dphi);
+			}
+		}
+		
+		ncomb = (int) Comb(local.n_jets, 2);  // n*(n-1)/2
+		
+	}
+	avg_dr_jet = sum_dr_jet/ncomb;
 }
 
 void CU_ttH_EDA_Ntuple::fill_ntuple_muons(const std::vector<pat::Muon>& muons)
@@ -80,10 +143,8 @@ void CU_ttH_EDA_Ntuple::fill_ntuple_muons(const std::vector<pat::Muon>& muons)
 		mu0_charge = muons[0].charge();
 		mu0_jetNDauChargedMVASel = muons[0].userFloat("nearestJetNDauCharged");
 		mu0_miniRelIso = muons[0].userFloat("miniIso");
-		mu0_miniIsoCharged = muons[0].userFloat("miniAbsIsoCharged");      //always = 0   Need to check
-		mu0_miniIsoNeutral = muons[0].userFloat("miniAbsIsoNeutralcorr");  //always = 0   Need to check
-		//mu0_miniIsoCharged = muons[0].userFloat("chargedRelIso") * muons[0].pt();
-		//mu0_miniIsoNeutral = muons[0].userFloat("neutralRelIso") * muons[0].pt();
+		mu0_miniIsoCharged = muons[0].userFloat("miniAbsIsoCharged");
+		mu0_miniIsoNeutral = muons[0].userFloat("miniAbsIsoNeutralcorr");
 		mu0_jetPtRel = muons[0].userFloat("nearestJetPtRel");
 		mu0_jetPtRatio = muons[0].userFloat("nearestJetPtRatio");
 		mu0_jetCSV = muons[0].userFloat("nearestJetCsv");
@@ -107,10 +168,8 @@ void CU_ttH_EDA_Ntuple::fill_ntuple_muons(const std::vector<pat::Muon>& muons)
 		mu1_charge = muons[1].charge();
 		mu1_jetNDauChargedMVASel = muons[1].userFloat("nearestJetNDauCharged");
 		mu1_miniRelIso = muons[1].userFloat("miniIso");
-		mu1_miniIsoCharged = muons[1].userFloat("miniAbsIsoCharged");      //always = 0   Need to check
-		mu1_miniIsoNeutral = muons[1].userFloat("miniAbsIsoNeutralcorr");  //always = 0   Need to check
-		//mu1_miniIsoCharged = muons[1].userFloat("chargedRelIso") * muons[1].pt();
-		//mu1_miniIsoNeutral = muons[1].userFloat("neutralRelIso") * muons[1].pt();
+		mu1_miniIsoCharged = muons[1].userFloat("miniAbsIsoCharged");
+		mu1_miniIsoNeutral = muons[1].userFloat("miniAbsIsoNeutralcorr");
 		mu1_jetPtRel = muons[1].userFloat("nearestJetPtRel");
 		mu1_jetPtRatio = muons[1].userFloat("nearestJetPtRatio");
 		mu1_jetCSV = muons[1].userFloat("nearestJetCsv");
@@ -137,13 +196,11 @@ void CU_ttH_EDA_Ntuple::fill_ntuple_electrons(const std::vector<pat::Electron>& 
 		ele0_charge = electrons[0].charge();
 		ele0_jetNDauChargedMVASel = electrons[0].userFloat("nearestJetNDauCharged");
 		ele0_miniRelIso = electrons[0].userFloat("miniIso");
-		ele0_miniIsoCharged = electrons[0].userFloat("miniAbsIsoCharged"); //     always = 0   Need to check
-		ele0_miniIsoNeutral = electrons[0].userFloat("miniAbsIsoNeutralcorr"); // always = 0   Need to check
-		//ele0_miniIsoCharged = electrons[0].userFloat("chargedRelIso") * electrons[0].pt();
-		//ele0_miniIsoNeutral = electrons[0].userFloat("neutralRelIso") * electrons[0].pt();
+		ele0_miniIsoCharged = electrons[0].userFloat("miniAbsIsoCharged");
+		ele0_miniIsoNeutral = electrons[0].userFloat("miniAbsIsoNeutralcorr");
 		ele0_jetPtRel = electrons[0].userFloat("nearestJetPtRel");
 		ele0_jetPtRatio = electrons[0].userFloat("nearestJetPtRatio");
-		ele0_jetCSV = electrons[0].userFloat("nearestJetCsv");  // always = 0 need to check
+		ele0_jetCSV = electrons[0].userFloat("nearestJetCsv");
 		ele0_sip3D = electrons[0].userFloat("sip3D");
 		ele0_dxy = electrons[0].userFloat("dxy");
 		ele0_dz = electrons[0].userFloat("dz");
@@ -165,10 +222,8 @@ void CU_ttH_EDA_Ntuple::fill_ntuple_electrons(const std::vector<pat::Electron>& 
 		ele1_charge = electrons[1].charge();
 		ele1_jetNDauChargedMVASel = electrons[1].userFloat("nearestJetNDauCharged");
 		ele1_miniRelIso = electrons[1].userFloat("miniIso");
-		ele1_miniIsoCharged = electrons[1].userFloat("miniAbsIsoCharged");     // always = 0   Need to check
-		ele1_miniIsoNeutral = electrons[1].userFloat("miniAbsIsoNeutralcorr"); // always = 0   Need to check
-		//ele1_miniIsoCharged = electrons[1].userFloat("chargedRelIso") * electrons[1].pt();
-		//ele1_miniIsoNeutral = electrons[1].userFloat("neutralRelIso") * electrons[1].pt();
+		ele1_miniIsoCharged = electrons[1].userFloat("miniAbsIsoCharged");
+		ele1_miniIsoNeutral = electrons[1].userFloat("miniAbsIsoNeutralcorr");
 		ele1_jetPtRel = electrons[1].userFloat("nearestJetPtRel");
 		ele1_jetPtRatio = electrons[1].userFloat("nearestJetPtRatio");
 		ele1_jetCSV = electrons[1].userFloat("nearestJetCsv");
@@ -315,9 +370,10 @@ void CU_ttH_EDA_Ntuple::initialize()
 	n_jet25_recl = -9999;
 	mindr_lep0_jet = -9999.;
 	mindr_lep1_jet = -9999.;
-	lep0_conePt = -9999.;
-	lep1_conePt = -9999.;
+	lep0_conept = -9999.;
+	lep1_conept = -9999.;
 	avg_dr_jet = -9999.;
+	max_lep_eta = -9999.;
 
 	// muons
 	mu0_pt = -9999.;
@@ -517,11 +573,11 @@ void CU_ttH_EDA_Ntuple::set_up_branches(TTree *tree)
 	tree->Branch("MVA_2lss_ttV", &MVA_2lss_ttV);
 	tree->Branch("MVA_2lss_ttbar", &MVA_2lss_ttbar);
 	tree->Branch("MT_met_lep0", &MT_met_lep0);
-	tree->Branch("n_jet25_recl", &n_jet25_recl);
+	//tree->Branch("n_jet25_recl", &n_jet25_recl);
 	tree->Branch("mindr_lep0_jet", &mindr_lep0_jet);
 	tree->Branch("mindr_lep1_jet", &mindr_lep1_jet);
-	tree->Branch("lep0_conePt", &lep0_conePt);
-	tree->Branch("lep1_conePt", &lep1_conePt);
+	tree->Branch("lep0_conept", &lep0_conept);
+	tree->Branch("lep1_conept", &lep1_conept);
 	tree->Branch("avg_dr_jet", &avg_dr_jet);
 	// muons
 	tree->Branch("mu0_pt",                   &mu0_pt);
@@ -696,7 +752,20 @@ void CU_ttH_EDA_Ntuple::set_up_branches(TTree *tree)
 	tree->Branch("MHT", &MHT);
 	tree->Branch("metLD", &metLD);
 }
-	
+
+double CU_ttH_EDA_Ntuple::Comb(int n, int k) {  // return nCk
+	if (n < k or k < 0 or n < 0) {
+		std::cerr << "ERROR in Comb()! Illegal inputs!" << std::endl;
+		std::cerr << "n = " << n << std::endl;
+		return 0;
+	}
+	else if (k == 0) {
+		return 1;
+	}
+	else
+		return (n-k+1)*1./k * Comb(n, k-1);
+}
+
 //ClassImp(CU_ttH_EDA_Ntuple);
 
 #endif

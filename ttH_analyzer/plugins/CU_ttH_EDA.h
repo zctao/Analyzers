@@ -82,6 +82,9 @@
 /// Configuration reader
 #include "yaml-cpp/yaml.h"
 
+/// TMVA
+#include "TMVA/Reader.h"
+
 /*
  *
  * enum for analysis type.
@@ -194,8 +197,12 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	float getMHT(CU_ttH_EDA_event_vars &);
 	
 	// event selection
-	bool pass_event_sel_2ssl1tauh(CU_ttH_EDA_event_vars &);
+	bool pass_event_sel_2lss1tauh(CU_ttH_EDA_event_vars &);
 	bool pass_event_sel_1l2tauh(CU_ttH_EDA_event_vars &);
+
+	// MVA
+	void Set_up_MVA_2lss(TMVA::Reader *, const std::string);
+	double mva(CU_ttH_EDA_Ntuple &, TMVA::Reader *);
 	
 	/*
 	* Variable section
@@ -314,7 +321,19 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 
 	// tree and ntuple
 	TTree *eventTree;
-	CU_ttH_EDA_Ntuple *tauNtuple;
+	CU_ttH_EDA_Ntuple tauNtuple;
+
+	// TMVA Reader
+	TMVA::Reader *reader_2lss_ttV;
+	TMVA::Reader *reader_2lss_ttbar;
+	// MVA variables
+	float mvaMaxLepEta;
+	float mvaNJets25;
+	float mvaMinDrLep1J;
+	float mvaMinDrLep2J;
+	float mvaMET;
+	float mvaAvgDrJ;
+	float mvaMTMetLep1;
 
 };
 

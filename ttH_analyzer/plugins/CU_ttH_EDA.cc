@@ -85,8 +85,12 @@ CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig):
 	Set_up_histograms();
 	Set_up_output_files();
 
-	tauNtuple = new CU_ttH_EDA_Ntuple();
 	Set_up_Tree();
+
+    reader_2lss_ttV = new TMVA::Reader("!Color:!Silent");
+	reader_2lss_ttbar = new TMVA::Reader("!Color:!Silent");
+	//Set_up_MVA_2lss(reader_2lss_ttV, "2lss_ttV_BDTG");
+	Set_up_MVA_2lss(reader_2lss_ttbar, "2lss_ttbar_BDTG");
 }
 
 /// Destructor
@@ -96,6 +100,9 @@ CU_ttH_EDA::~CU_ttH_EDA()
 	// (e.g. close files, deallocate resources etc.)
 
 	Close_output_files();
+	
+	delete reader_2lss_ttV;
+	delete reader_2lss_ttbar;
 }
 
 // ------------ method called for each event  ------------
@@ -229,11 +236,9 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	*/
 
 	// Produce sync ntuple
-	tauNtuple->initialize();
-	tauNtuple->write_ntuple(local);
-	
-	eventTree->Fill();
-	
+	tauNtuple.initialize();
+	tauNtuple.write_ntuple(local);
+
 	/// Check tags, fill hists, print events
 	if (analysis_type == Analyze_lepton_jet) {
 		Check_Fill_Print_ej(local);
@@ -248,9 +253,10 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	
 	if (analysis_type == Analyze_tau_ssleptons) {
 		// Event selection
-		if (pass_event_sel_2ssl1tauh(local)) {
-			tauNtuple->write_evtMVAvars(local);
-			
+		if (pass_event_sel_2lss1tauh(local)) {
+			tauNtuple.write_evtMVAvars_2lss(local);
+			//tauNtuple.MVA_2lss_ttV = mva(tauNtuple,reader_2lss_ttV);
+			tauNtuple.MVA_2lss_ttbar = mva(tauNtuple,reader_2lss_ttbar);
 		}
 	}
 
@@ -259,6 +265,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		//if (pass_event_sel_1l12tauh(local))
 	}
 
+	eventTree->Fill();
 	
 }
 

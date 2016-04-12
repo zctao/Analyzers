@@ -314,7 +314,30 @@ void CU_ttH_EDA::Set_up_Tree()
 	//std::cout << "CanSplit() :" << ntuple->CanSplit() << std::endl;
 	//ntuple->Dump();
 	*/
-	tauNtuple->set_up_branches(eventTree);
+	tauNtuple.set_up_branches(eventTree);
+}
+
+void CU_ttH_EDA::Set_up_MVA_2lss(TMVA::Reader * reader, const std::string fname)
+{
+	reader->AddVariable("max_Lep_eta := max(abs(LepGood_eta[iF_Recl[0]]),abs(LepGood_eta[iF_Recl[1]]))", &mvaMaxLepEta);
+	reader->AddVariable("numJets_float := nJet25_Recl", &mvaNJets25);
+	reader->AddVariable("mindr_lep1_jet", &mvaMinDrLep1J);
+	reader->AddVariable("mindr_lep2_jet", &mvaMinDrLep2J);
+	reader->AddVariable("met := min(met_pt,400)", &mvaMET);
+	reader->AddVariable("avg_dr_jet", &mvaAvgDrJ);
+	reader->AddVariable("MT_met_lep1", &mvaMTMetLep1);
+
+	// Spectators in the MVA weights file, which are all zeros...
+	float iF0 = 0;
+	float iF1 = 0;
+	float iF2 = 0;
+	reader->AddSpectator("iF_Recl[0]", &iF0);
+	reader->AddSpectator("iF_Recl[1]", &iF1);
+	reader->AddSpectator("iF_Recl[2]", &iF2);
+
+	const std::string base = std::string(getenv("CMSSW_BASE")) + "/src/Analyzers/ttH_analyzer/data/";
+
+	reader->BookMVA("BDTG method", base + fname + ".weights.xml");
 }
 
 #endif
