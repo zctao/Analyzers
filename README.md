@@ -20,7 +20,9 @@ Get dependencies:
 
 Then switch to CMSSW_7_6_3 branch:
 
+     	 cd MiniAOD
 	 git checkout CMSSW_7_6_3
+	 cd ..
 
 For ttH, H->tautau, get LeptonID package shared with ttH-Multilepton group:
 
