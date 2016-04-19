@@ -27,6 +27,8 @@ Then switch to CMSSW_7_6_3 branch:
 For ttH, H->tautau, get LeptonID package shared with ttH-Multilepton group:
 
 	 git clone https://github.com/cms-ttH/ttH-LeptonID.git
+	 mkdir ttH
+	 mv ttH-LeptonID ttH/LeptonID
 
 Compile:
 
