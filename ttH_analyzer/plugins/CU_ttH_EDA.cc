@@ -150,10 +150,21 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	}
 
 	/// Lepton selection
-	local.mu_selected = miniAODhelper.GetSelectedMuons(
-		*(handle.muons), min_mu_pT, muonID::muonPreselection);
-	local.e_selected = miniAODhelper.GetSelectedElectrons(
-		*(handle.electrons), min_ele_pT, electronID::electronPreselection);
+	//local.mu_selected = miniAODhelper.GetSelectedMuons(
+	//	*(handle.muons), min_mu_pT, muonID::muonPreselection);
+	//local.e_selected = miniAODhelper.GetSelectedElectrons(
+	//	*(handle.electrons), min_ele_pT, electronID::electronPreselection);
+	
+	// Lepton selection in MiniAODHelper veto in barrel/endcap overlap region
+	// Use id directly from LeptonID package to include these for now for sync purpose
+	for (const auto& mu : *(handle.muons)){
+		if (mu.userFloat("idPreselection")>0.5 and mu.pt()>min_mu_pT)
+			local.mu_selected.push_back(mu);
+	}
+	for (const auto& ele : *(handle.electrons)) {
+		if (ele.userFloat("idPreselection")>0.5 and ele.pt()>min_ele_pT)
+			local.e_selected.push_back(ele);
+	}
 
 	// Should add tauID in leptonID package into MiniAODHelper
 	for (const auto& tau : *(handle.taus)) {
