@@ -106,6 +106,11 @@ void syncNtupleComparer(TString type)
 				forest.push_back(tree4);
 		}
 
+		if (forest.size() == 0) {
+			delete l;
+			continue;
+		}
+		
 		for (const auto &tree : forest) {
 			
 			if (tree == *forest.begin())
@@ -128,7 +133,7 @@ void syncNtupleComparer(TString type)
 		l->Draw("same");
 
 		//c.SaveAs("./syncPlots/"+bname+".pdf");
-		c.SaveAs("~ztao/www/"+bname+type+".png");
+		c.SaveAs("~ztao/www/"+bname+"_"+type+".png");
 
 		delete l;
 	}
