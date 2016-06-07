@@ -34,6 +34,8 @@
 CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig):
 	// Analysis type
 	config_analysis_type (iConfig.getParameter<string>("analysis_type")),
+	// Sync ntuple
+	produce_sync_ntuple (iConfig.getParameter<bool>("produce_sync_ntuple")),
 	// Generic
 	verbose_ (iConfig.getParameter<bool>("verbosity")),
 	dumpHLT_ (iConfig.getParameter<bool>("print_HLT_event_path")),
@@ -246,10 +248,6 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 							  // pfJets_forMET, iSysType );
 	*/
 
-	// Produce sync ntuple
-	tauNtuple.initialize();
-	tauNtuple.write_ntuple(local);
-
 	/// Check tags, fill hists, print events
 	if (analysis_type == Analyze_lepton_jet) {
 		Check_Fill_Print_ej(local);
@@ -263,8 +261,23 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	}
 	
 	if (analysis_type == Analyze_tau_ssleptons) {
+
+		tauNtuple.initialize();
+		
 		// Event selection
-		if (pass_event_sel_2lss1tauh(local)) {
+		bool pass_event_selection = pass_event_sel_2lss1tauh(local);
+
+		// Produce ntuples
+		if (produce_sync_ntuple) {
+			// no event selection is applied for sync ntuples
+			tauNtuple.write_ntuple(local);
+		}
+		else if (pass_event_selection) {
+			tauNtuple.write_ntuple(local);
+		}
+		
+		// event level variables
+		if (pass_event_selection) {
 			tauNtuple.write_evtMVAvars_2lss(local);
 			//tauNtuple.MVA_2lss_ttV = mva(tauNtuple,reader_2lss_ttV);
 			tauNtuple.MVA_2lss_ttbar = mva(tauNtuple,reader_2lss_ttbar);

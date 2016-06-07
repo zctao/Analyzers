@@ -68,8 +68,9 @@ process.ttHtaus.input_tags.taus = cms.InputTag("ttHLeptons")
 
     
 process.TFileService = cms.Service("TFileService",
-	fileName = cms.string('ttHtausNtuple.root')
-        #fileName = cms.string('ttHtausNtuple_ttJets.root')
+	#fileName = cms.string('testNtuple.root')
+	#fileName = cms.string('ttHtausNtuple.root')
+        fileName = cms.string('ttHtausNtuple_ttJets.root')
 )
 
 process.p = cms.Path(

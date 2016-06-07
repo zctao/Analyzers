@@ -8,6 +8,8 @@ import FWCore.ParameterSet.Config as cms
 ttHtaus =  cms.EDAnalyzer('CU_ttH_EDA',
         # Analysis type choice: 'tau_ssleptons', 'ditaus_lepton'
         analysis_type = cms.string("tau_ssleptons"),
+        # Sync ntuple
+        produce_sync_ntuple = cms.bool(True),
         # Generic
         verbosity = cms.bool(False),
         print_HLT_event_path = cms.bool(False),
