@@ -317,7 +317,7 @@ void CU_ttH_EDA::Set_up_Tree()
 	tauNtuple.set_up_branches(eventTree);
 }
 
-void CU_ttH_EDA::Set_up_MVA_2lss(TMVA::Reader * reader, const std::string fname)
+void CU_ttH_EDA::Set_up_MVA_2lss_ttbar(TMVA::Reader * reader)
 {
 	reader->AddVariable("max_Lep_eta := max(abs(LepGood_eta[iF_Recl[0]]),abs(LepGood_eta[iF_Recl[1]]))", &mvaMaxLepEta);
 	reader->AddVariable("numJets_float := nJet25_Recl", &mvaNJets25);
@@ -337,7 +337,30 @@ void CU_ttH_EDA::Set_up_MVA_2lss(TMVA::Reader * reader, const std::string fname)
 
 	const std::string base = std::string(getenv("CMSSW_BASE")) + "/src/Analyzers/ttH_analyzer/data/";
 
-	reader->BookMVA("BDTG method", base + fname + ".weights.xml");
+	reader->BookMVA("BDTG method", base + "2lss_ttbar_BDTG.weights.xml");
+}
+
+void CU_ttH_EDA::Set_up_MVA_2lss_ttV(TMVA::Reader * reader)
+{
+	reader->AddVariable("max_Lep_eta := max(abs(LepGood_eta[iF_Recl[0]]),abs(LepGood_eta[iF_Recl[1]]))", &mvaMaxLepEta);
+	reader->AddVariable("MT_met_lep1", &mvaMTMetLep1);
+	reader->AddVariable("numJets_float := nJet25_Recl", &mvaNJets25);
+	reader->AddVariable("mindr_lep1_jet", &mvaMinDrLep1J);
+	reader->AddVariable("mindr_lep2_jet", &mvaMinDrLep2J);
+	reader->AddVariable("LepGood_conePt[iF_Recl[0]]", &mvaLepGoodConePt0);
+	reader->AddVariable("LepGood_conePt[iF_Recl[1]]", &mvaLepGoodConePt1);
+
+	// Spectators
+	float iF0 = 0;
+	float iF1 = 0;
+	float iF2 = 0;
+	reader->AddSpectator("iF_Recl[0]", &iF0);
+	reader->AddSpectator("iF_Recl[1]", &iF1);
+	reader->AddSpectator("iF_Recl[2]", &iF2);
+
+	const std::string base = std::string(getenv("CMSSW_BASE")) + "/src/Analyzers/ttH_analyzer/data/";
+
+	reader->BookMVA("BDTG method", base + "2lss_ttV_BDTG.weights.xml");
 }
 
 #endif

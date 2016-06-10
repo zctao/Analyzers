@@ -949,6 +949,8 @@ double CU_ttH_EDA::mva(CU_ttH_EDA_Ntuple& ntuple, TMVA::Reader *reader)
 	mvaMET = std::min(ntuple.PFMET, 400.);
 	mvaAvgDrJ = ntuple.avg_dr_jet;
 	mvaMTMetLep1 = ntuple.MT_met_lep0;
+	mvaLepGoodConePt0 = ntuple.lep0_conept;
+	mvaLepGoodConePt1 = ntuple.lep1_conept;
 	
 	return reader->EvaluateMVA("BDTG method");
 }

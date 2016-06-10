@@ -91,8 +91,8 @@ CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig):
 
     reader_2lss_ttV = new TMVA::Reader("!Color:!Silent");
 	reader_2lss_ttbar = new TMVA::Reader("!Color:!Silent");
-	//Set_up_MVA_2lss(reader_2lss_ttV, "2lss_ttV_BDTG");
-	Set_up_MVA_2lss(reader_2lss_ttbar, "2lss_ttbar_BDTG");
+	Set_up_MVA_2lss_ttV(reader_2lss_ttV);
+	Set_up_MVA_2lss_ttbar(reader_2lss_ttbar);
 }
 
 /// Destructor

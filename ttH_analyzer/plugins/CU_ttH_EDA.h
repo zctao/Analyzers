@@ -201,7 +201,8 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	bool pass_event_sel_1l2tauh(CU_ttH_EDA_event_vars &);
 
 	// MVA
-	void Set_up_MVA_2lss(TMVA::Reader *, const std::string);
+	void Set_up_MVA_2lss_ttbar(TMVA::Reader *);
+	void Set_up_MVA_2lss_ttV(TMVA::Reader *);
 	double mva(CU_ttH_EDA_Ntuple &, TMVA::Reader *);
 	
 	/*
@@ -337,6 +338,8 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	float mvaMET;
 	float mvaAvgDrJ;
 	float mvaMTMetLep1;
+	float mvaLepGoodConePt0;
+	float mvaLepGoodConePt1;
 
 };
 
