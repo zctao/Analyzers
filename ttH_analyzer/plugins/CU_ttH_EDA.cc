@@ -271,25 +271,37 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		if (produce_sync_ntuple) {
 			// no event selection is applied for sync ntuples
 			tauNtuple.write_ntuple(local);
+			
+			// event level variables
+			if (pass_event_selection) {
+				tauNtuple.write_evtMVAvars_2lss(local);
+				tauNtuple.MVA_2lss_ttV = mva(tauNtuple,reader_2lss_ttV);
+				tauNtuple.MVA_2lss_ttbar = mva(tauNtuple,reader_2lss_ttbar);
+				// 2D hist
+				h_MVA_ttV_vs_ttbar->Fill(tauNtuple.MVA_2lss_ttbar,tauNtuple.MVA_2lss_ttV);
+			}
+
+			eventTree->Fill();
 		}
-		else if (pass_event_selection) {
-			tauNtuple.write_ntuple(local);
+		else {
+			if (pass_event_selection) {
+				tauNtuple.write_ntuple(local);
+				tauNtuple.write_evtMVAvars_2lss(local);
+				tauNtuple.MVA_2lss_ttV = mva(tauNtuple,reader_2lss_ttV);
+				tauNtuple.MVA_2lss_ttbar = mva(tauNtuple,reader_2lss_ttbar);
+				
+				h_MVA_ttV_vs_ttbar->Fill(tauNtuple.MVA_2lss_ttbar,tauNtuple.MVA_2lss_ttV);
+
+				eventTree->Fill();
+			}
 		}
 		
-		// event level variables
-		if (pass_event_selection) {
-			tauNtuple.write_evtMVAvars_2lss(local);
-			//tauNtuple.MVA_2lss_ttV = mva(tauNtuple,reader_2lss_ttV);
-			tauNtuple.MVA_2lss_ttbar = mva(tauNtuple,reader_2lss_ttbar);
-		}
 	}
 
 	if (analysis_type == Analyze_ditaus_lepton) {
 		// Event selection
 		//if (pass_event_sel_1l12tauh(local))
 	}
-
-	eventTree->Fill();
 	
 }
 

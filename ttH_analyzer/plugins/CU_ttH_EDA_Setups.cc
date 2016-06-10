@@ -144,7 +144,10 @@ void CU_ttH_EDA::Set_up_histograms()
 	}
 
 	if (analysis_type == Analyze_tau_ssleptons) {
-
+		h_MVA_ttV_vs_ttbar =
+			fs_->make<TH2D>("h_MVA_ttV_vs_ttbar", ";BDT", 10, 0, 1, 10, 0, 1);
+		h_MVA_ttV_vs_ttbar->GetXaxis()->SetTitle("ttbar");
+		h_MVA_ttV_vs_ttbar->GetYaxis()->SetTitle("ttV");
 	}
 
 	if (analysis_type == Analyze_ditaus_lepton) {
