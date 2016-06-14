@@ -204,6 +204,7 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	void Set_up_MVA_2lss_ttbar(TMVA::Reader *);
 	void Set_up_MVA_2lss_ttV(TMVA::Reader *);
 	double mva(CU_ttH_EDA_Ntuple &, TMVA::Reader *);
+	int partition2DBDT(double, double);
 	
 	/*
 	* Variable section
@@ -303,6 +304,7 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	TH1D *h_flt;
 
 	TH2D *h_MVA_ttV_vs_ttbar;
+	TH1D *h_MVA_shape;
 
 	// 	TH1D* h_electron_selection;
 	// 	TH1D* h_muon_selection;

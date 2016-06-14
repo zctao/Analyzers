@@ -955,4 +955,29 @@ double CU_ttH_EDA::mva(CU_ttH_EDA_Ntuple& ntuple, TMVA::Reader *reader)
 	return reader->EvaluateMVA("BDTG method");
 }
 
+int CU_ttH_EDA::partition2DBDT(double ttbar, double ttV)
+/*
+             bin 1       bin 2       bin 3       bin 4      bin 5       bin 6
+2lss(ttbar) (-1.0,-0.2] (-1.0,-0.2] (-0.2,0.3]  (-0.2,0.3] (0.3,1.0]   (0.3,1.0]
+2lss(ttV)   (-1.0,-0.1] (-0.1,1.0]  (-1.0,-0.1] (-0.1,1.0] (-1.0,-0.1] (-0.1,1.0]
+ */
+{
+	int x = -99;
+	int y = -99;
+	
+	if (ttbar > -1.0 and ttbar <= -0.2)
+		x = 1;
+	else if (ttbar > -0.2 and ttbar <= 0.3)
+		x = 2;
+	else if (ttbar > 0.3 and ttbar <= 1.0)
+		x = 3;
+
+	if (ttV > -1.0  and ttV <= -0.1)
+		y = 1;
+	else if (ttV > -0.1 and ttV <= 1.0)
+		y = 2;
+	
+	return 2*(x-1)+y;
+}
+
 #endif

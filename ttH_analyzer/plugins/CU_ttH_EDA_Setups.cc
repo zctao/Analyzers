@@ -148,6 +148,9 @@ void CU_ttH_EDA::Set_up_histograms()
 			fs_->make<TH2D>("h_MVA_ttV_vs_ttbar", ";BDT", 20, -1, 1, 20, -1, 1);
 		h_MVA_ttV_vs_ttbar->GetXaxis()->SetTitle("ttbar");
 		h_MVA_ttV_vs_ttbar->GetYaxis()->SetTitle("ttV");
+
+		h_MVA_shape =
+			fs_->make<TH1D>("h_MVA_shape","", 6, 0.5, 6.5);
 	}
 
 	if (analysis_type == Analyze_ditaus_lepton) {

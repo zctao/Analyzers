@@ -267,34 +267,24 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		// Event selection
 		bool pass_event_selection = pass_event_sel_2lss1tauh(local);
 
-		// Produce ntuples
-		if (produce_sync_ntuple) {
+		// event level variables
+		if (pass_event_selection) {
+			tauNtuple.write_evtMVAvars_2lss(local);
+			tauNtuple.MVA_2lss_ttV = mva(tauNtuple,reader_2lss_ttV);
+			tauNtuple.MVA_2lss_ttbar = mva(tauNtuple,reader_2lss_ttbar);
+			// 2D hist
+			h_MVA_ttV_vs_ttbar->Fill(tauNtuple.MVA_2lss_ttbar,tauNtuple.MVA_2lss_ttV);
+			// 1D shape
+			int bin = partition2DBDT(tauNtuple.MVA_2lss_ttbar,tauNtuple.MVA_2lss_ttV);
+			h_MVA_shape->Fill(bin);
+		}
+
+		if (produce_sync_ntuple or pass_event_selection) {
 			// no event selection is applied for sync ntuples
 			tauNtuple.write_ntuple(local);
-			
-			// event level variables
-			if (pass_event_selection) {
-				tauNtuple.write_evtMVAvars_2lss(local);
-				tauNtuple.MVA_2lss_ttV = mva(tauNtuple,reader_2lss_ttV);
-				tauNtuple.MVA_2lss_ttbar = mva(tauNtuple,reader_2lss_ttbar);
-				// 2D hist
-				h_MVA_ttV_vs_ttbar->Fill(tauNtuple.MVA_2lss_ttbar,tauNtuple.MVA_2lss_ttV);
-			}
-
 			eventTree->Fill();
 		}
-		else {
-			if (pass_event_selection) {
-				tauNtuple.write_ntuple(local);
-				tauNtuple.write_evtMVAvars_2lss(local);
-				tauNtuple.MVA_2lss_ttV = mva(tauNtuple,reader_2lss_ttV);
-				tauNtuple.MVA_2lss_ttbar = mva(tauNtuple,reader_2lss_ttbar);
-				
-				h_MVA_ttV_vs_ttbar->Fill(tauNtuple.MVA_2lss_ttbar,tauNtuple.MVA_2lss_ttV);
-
-				eventTree->Fill();
-			}
-		}
+		
 		
 	}
 
