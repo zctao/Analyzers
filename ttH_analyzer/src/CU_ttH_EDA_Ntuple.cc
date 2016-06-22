@@ -69,11 +69,7 @@ void CU_ttH_EDA_Ntuple::write_evtMVAvars_2lss(const CU_ttH_EDA_event_vars & loca
 {
 	
 	// Get leading and sub-leading leptons
-	lep0_isfakeable = false;
-	lep1_isfakeable = false;
-    lep0_ptRatio = 1.;
-	lep1_ptRatio = 1.;
-
+	// 
 	update_ldgLeps_vars(local.mu_selected_sorted);
 	update_ldgLeps_vars(local.e_selected_sorted);
 
@@ -374,6 +370,13 @@ void CU_ttH_EDA_Ntuple::initialize()
 	lep1_conept = -9999.;
 	avg_dr_jet = -9999.;
 	max_lep_eta = -9999.;
+
+	lep0_p4.SetPtEtaPhiE(0.,0.,0.,0.);
+	lep1_p4.SetPtEtaPhiE(0.,0,0.,0.);
+	lep0_isfakeable = false;
+	lep1_isfakeable = false;
+	lep0_ptRatio = 1.;
+	lep1_ptRatio = 1.;
 
 	// muons
 	mu0_pt = -9999.;
