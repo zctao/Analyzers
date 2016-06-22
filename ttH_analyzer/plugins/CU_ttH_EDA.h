@@ -10,6 +10,7 @@
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/EDAnalyzer.h"
 #include "FWCore/Framework/interface/Event.h"
+#include "FWCore/Framework/interface/ESHandle.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
@@ -60,6 +61,7 @@
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
 //#include "JetMETCorrections/JetCorrector/interface/JetCorrector.h"
+#include "JetMETCorrections/Objects/interface/JetCorrectionsRecord.h"
 
 #include "MiniAOD/MiniAODHelper/interface/MiniAODHelper.h"
 
@@ -275,7 +277,7 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	int min_njets;
 	int min_nbtags;
 
-	std::string jet_corrector;
+	//std::string jet_corrector;
 	
 	/// Selection helper
 	MiniAODHelper miniAODhelper;

@@ -48,8 +48,8 @@ ttHtaus =  cms.EDAnalyzer('CU_ttH_EDA',
         max_bjet_eta = cms.double(2.5),
         min_njets = cms.int32(2),
         min_nbtags = cms.int32(1),
-        # Jets
-        jet_corrector = cms.string('ak4PFchsL1L2L3'),
+        # JEC
+        #jet_corrector = cms.string('ak4PFchsL1L2L3'),
         # MiniAODhelper
         using_real_data = cms.bool(False),
         ## available choices '-': none, 'L': loose, 'M': medium, 'T': tight

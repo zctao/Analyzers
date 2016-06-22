@@ -59,8 +59,8 @@ CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig):
 	max_bjet_eta (iConfig.getParameter<double>("max_bjet_eta")),
 	min_njets (iConfig.getParameter<int>("min_njets")),
 	min_nbtags (iConfig.getParameter<int>("min_nbtags")),
-	// Jets
-	jet_corrector (iConfig.getParameter<string>("jet_corrector")),
+	// JEC
+	//jet_corrector (iConfig.getParameter<string>("jet_corrector")),
 	// miniAODhelper
 	isdata (iConfig.getParameter<bool>("using_real_data")),
 	MAODHelper_b_tag_strength (iConfig.getParameter<string>("b_tag_strength")[0])
@@ -83,6 +83,8 @@ CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig):
 	
 	// Load_configuration(static_cast<string>("Configs/config_analyzer.yaml"));
 
+	miniAODhelper.UseCorrectedJets();
+	
 	Set_up_tokens(iConfig.getParameter<edm::ParameterSet>("input_tags"));
 	Set_up_histograms();
 	Set_up_output_files();
@@ -140,9 +142,14 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	miniAODhelper.SetRho(*rho);
 
 	/// Get and set miniAODhelper's jet corrector from the event setup
-	miniAODhelper.SetJetCorrector(
-		JetCorrector::getJetCorrector(jet_corrector, iSetup));
+	//miniAODhelper.SetJetCorrector(
+	//	JetCorrector::getJetCorrector(jet_corrector, iSetup));
 
+	edm::ESHandle<JetCorrectorParametersCollection> JetCorParColl;
+	iSetup.get<JetCorrectionsRecord>().get("AK4PF",JetCorParColl);
+	const JetCorrectorParameters & JetCorPar = (*JetCorParColl)["Uncertainty"];
+	miniAODhelper.SetJetCorrectorUncertainty(JetCorPar);
+		
 	// 	weight_gen = event_gen_info.product()->weight();
 	local.weight = weight_sample * (handle.event_gen_info.product()->weight());
 

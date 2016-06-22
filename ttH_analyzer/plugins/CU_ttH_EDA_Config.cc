@@ -99,9 +99,9 @@ void CU_ttH_EDA::Load_configuration(string config_filename)
 	min_nbtags = config["Cuts"]["min_nbtags"].as<int>();
 	
 	/// Setting up jets
-	if (!config["Jets"]["jet_corrector"])
-		throw std::runtime_error(error_message);
-	jet_corrector = config["Jets"]["jet_corrector"].as<string>();
+	//if (!config["Jets"]["jet_corrector"])
+	//	throw std::runtime_error(error_message);
+	//jet_corrector = config["Jets"]["jet_corrector"].as<string>();
 
 	/// Setting up miniAODhelper
 	if (!config["miniAODhelper_parameters"]["using_real_data"])

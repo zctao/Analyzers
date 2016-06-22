@@ -61,25 +61,25 @@ process.patJetsReapplyJEC = patJetsUpdated.clone( #updatedPatJets.clone(
   )
 
 # Get jetCorrector in case needed
-from JetMETCorrections.Configuration.JetCorrectionServices_cff import *
-process.ak4PFCHSL1Fastjet = cms.ESProducer(
-        'L1FastjetCorrectionESProducer',
-        level       = cms.string('L1FastJet'),
-        algorithm   = cms.string('AK4PFchs'),
-        srcRho      = cms.InputTag('fixedGridRhoFastjetAll')
-)
-process.ak4PFchsL2Relative = ak4CaloL2Relative.clone(algorithm = 'AK4PFchs')
-process.ak4PFchsL3Absolute = ak4CaloL3Absolute.clone(algorithm = 'AK4PFchs')
-process.ak4PFchsL1L2L3 = cms.ESProducer("JetCorrectionESChain",
-        correctors = cms.vstring(
-            'ak4PFCHSL1Fastjet',
-            'ak4PFchsL2Relative',
-            'ak4PFchsL3Absolute')
-)
-
-if isData:
-    process.ak4PFchsResidual  = ak4CaloResidual.clone(algorithm = 'AK4PFchs')
-    process.ak4PFchsL1L2L3.correctors.append('ak4PFchsResidual')
+#from JetMETCorrections.Configuration.JetCorrectionServices_cff import *
+#process.ak4PFCHSL1Fastjet = cms.ESProducer(
+#        'L1FastjetCorrectionESProducer',
+#        level       = cms.string('L1FastJet'),
+#        algorithm   = cms.string('AK4PFchs'),
+#        srcRho      = cms.InputTag('fixedGridRhoFastjetAll')
+#)
+#process.ak4PFchsL2Relative = ak4CaloL2Relative.clone(algorithm = 'AK4PFchs')
+#process.ak4PFchsL3Absolute = ak4CaloL3Absolute.clone(algorithm = 'AK4PFchs')
+#process.ak4PFchsL1L2L3 = cms.ESProducer("JetCorrectionESChain",
+#        correctors = cms.vstring(
+#            'ak4PFCHSL1Fastjet',
+#            'ak4PFchsL2Relative',
+#            'ak4PFchsL3Absolute')
+#)
+#
+#if isData:
+#    process.ak4PFchsResidual  = ak4CaloResidual.clone(algorithm = 'AK4PFchs')
+#    process.ak4PFchsL1L2L3.correctors.append('ak4PFchsResidual')
 
 ### load the analysis
 # electron MVA developed by the EGamma POG
