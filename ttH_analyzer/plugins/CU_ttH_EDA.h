@@ -215,7 +215,7 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	// Analysis type
 	analysis_types analysis_type;
 	std::string config_analysis_type;
-
+	
 	// flag for sync ntuple
 	bool produce_sync_ntuple;
 	
@@ -277,7 +277,13 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	int min_njets;
 	int min_nbtags;
 
+	//JEC
 	//std::string jet_corrector;
+	std::string JECSysType;
+	std::map<std::string,sysType::sysType> systematics
+		= {{"NA", sysType::NA},
+		   {"JERUp", sysType::JERup},{"JERDown", sysType::JERdown},
+		   {"JESUp", sysType::JESup},{"JESDown", sysType::JESdown}};
 	
 	/// Selection helper
 	MiniAODHelper miniAODhelper;

@@ -60,6 +60,7 @@ CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig):
 	min_njets (iConfig.getParameter<int>("min_njets")),
 	min_nbtags (iConfig.getParameter<int>("min_nbtags")),
 	// JEC
+	JECSysType (iConfig.getParameter<string>("JECSysType")),
 	//jet_corrector (iConfig.getParameter<string>("jet_corrector")),
 	// miniAODhelper
 	isdata (iConfig.getParameter<bool>("using_real_data")),
@@ -78,7 +79,7 @@ CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig):
 	int_lumi = 10000;
 	weight_sample = int_lumi * total_xs / sample_n;
 
-	Load_configuration_set_type(config_analysis_type);
+	Load_configuration_set_type(config_analysis_type);	
 	Load_configuration_MAODH(isdata);
 	
 	// Load_configuration(static_cast<string>("Configs/config_analyzer.yaml"));
@@ -195,16 +196,18 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	local.tau_selected_sorted = miniAODhelper.GetSortedByPt(local.tau_selected);
 
 	/// Jet selection
-	local.jets_selected = miniAODhelper.GetSelectedJets(
-		*(handle.jets), min_jet_pT, max_jet_eta, jetID::jetTight, '-');
+	local.jets_corrected = miniAODhelper.GetCorrectedJets(
+														  *(handle.jets),iEvent,iSetup,systematics[JECSysType]);
+	local.jets_raw = miniAODhelper.GetSelectedJets(
+		local.jets_corrected, min_jet_pT, max_jet_eta, jetID::jetTight, '-');
 	// ???
 	// jetID::jetTight in MiniAODHelper (branch CMSSW_7_6_3, 03/15/2016) is actually loose WP suggested by Jet POG for 13TeV
 	// ???
 
 	// overlap removal by dR
-	local.jets_selected = removeOverlapdR(local.jets_selected, local.mu_selected, 0.4);
-	local.jets_selected = removeOverlapdR(local.jets_selected, local.e_selected, 0.4);
-	local.jets_selected = removeOverlapdR(local.jets_selected, local.tau_selected, 0.4);
+	local.jets_no_mu = removeOverlapdR(local.jets_raw, local.mu_selected, 0.4);
+	local.jets_no_mu_e = removeOverlapdR(local.jets_no_mu, local.e_selected, 0.4);
+	local.jets_selected = removeOverlapdR(local.jets_no_mu_e, local.tau_selected, 0.4);
 
 	local.jets_selected_tag = miniAODhelper.GetSelectedJets(
 		local.jets_selected, min_bjet_pT, max_bjet_eta, jetID::jetTight,
@@ -213,7 +216,6 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	local.n_jets = static_cast<int>(local.jets_selected.size());
 	local.n_btags = static_cast<int>(local.jets_selected_tag.size());
 
-	// jets_selected already sorted
 	/// Sort jets by pT
 	local.jets_selected_sorted =
 		miniAODhelper.GetSortedByPt(local.jets_selected);

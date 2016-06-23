@@ -80,13 +80,13 @@ void CU_ttH_EDA_Ntuple::write_evtMVAvars_2lss(const CU_ttH_EDA_event_vars & loca
 		max_lep_eta = -9999.;
 		
 	// cone pT of lepton
-	if (lep0_isfakeable) {		
+	if (lep0_isfakeable and lep0_ptRatio > 0) {		
 		lep0_conept = 0.85 * lep0_p4.Pt() / lep0_ptRatio;
 	}
 	else
 		lep0_conept = lep0_p4.Pt();
 
-	if (lep1_isfakeable) {
+	if (lep1_isfakeable and lep1_ptRatio > 0) {
 		lep1_conept = 0.85 * lep1_p4.Pt() / lep1_ptRatio;
 	}
 	else
@@ -154,6 +154,8 @@ void CU_ttH_EDA_Ntuple::fill_ntuple_muons(const std::vector<pat::Muon>& muons)
 		mu0_isfakeablesel = muons[0].userFloat("idFakeable") > 0.5;
 		mu0_iscutsel = muons[0].userFloat("idCutBased") > 0.5;
 		mu0_ismvasel = muons[0].userFloat("idMVABased") > 0.5;
+
+		if (mu0_isfakeablesel and mu0_jetPtRatio < 0 and mu0_jetPtRatio > -3) {std::cout << mu0_jetPtRatio << std::endl; std::cout << muons[0].userFloat("idFakeable")<< std::endl;std::cout << muons[0].userFloat("leptonMVA") << std::endl;}
 	}
 	
 	if (muons.size() > 1 ) {
@@ -375,8 +377,8 @@ void CU_ttH_EDA_Ntuple::initialize()
 	lep1_p4.SetPtEtaPhiE(0.,0,0.,0.);
 	lep0_isfakeable = false;
 	lep1_isfakeable = false;
-	lep0_ptRatio = 1.;
-	lep1_ptRatio = 1.;
+	lep0_ptRatio = -1.;
+	lep1_ptRatio = -1.;
 
 	// muons
 	mu0_pt = -9999.;

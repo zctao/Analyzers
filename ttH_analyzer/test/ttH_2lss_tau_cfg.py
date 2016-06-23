@@ -17,6 +17,12 @@ process.options = cms.untracked.PSet( allowUnscheduled = cms.untracked.bool(True
 isData = False
 isSignal = True
 
+sysJEC = False
+if sysJEC:
+    sysType = 'JESDown'
+else:
+    sysType = 'NA'
+
 ### Global tag
 process.load('Configuration.StandardSequences.Services_cff')
 process.load( "Configuration.StandardSequences.FrontierConditions_GlobalTag_cff" )
@@ -60,26 +66,6 @@ process.patJetsReapplyJEC = patJetsUpdated.clone( #updatedPatJets.clone(
   jetCorrFactorsSource = cms.VInputTag(cms.InputTag("patJetCorrFactorsReapplyJEC"))
   )
 
-# Get jetCorrector in case needed
-#from JetMETCorrections.Configuration.JetCorrectionServices_cff import *
-#process.ak4PFCHSL1Fastjet = cms.ESProducer(
-#        'L1FastjetCorrectionESProducer',
-#        level       = cms.string('L1FastJet'),
-#        algorithm   = cms.string('AK4PFchs'),
-#        srcRho      = cms.InputTag('fixedGridRhoFastjetAll')
-#)
-#process.ak4PFchsL2Relative = ak4CaloL2Relative.clone(algorithm = 'AK4PFchs')
-#process.ak4PFchsL3Absolute = ak4CaloL3Absolute.clone(algorithm = 'AK4PFchs')
-#process.ak4PFchsL1L2L3 = cms.ESProducer("JetCorrectionESChain",
-#        correctors = cms.vstring(
-#            'ak4PFCHSL1Fastjet',
-#            'ak4PFchsL2Relative',
-#            'ak4PFchsL3Absolute')
-#)
-#
-#if isData:
-#    process.ak4PFchsResidual  = ak4CaloResidual.clone(algorithm = 'AK4PFchs')
-#    process.ak4PFchsL1L2L3.correctors.append('ak4PFchsResidual')
 
 ### load the analysis
 # electron MVA developed by the EGamma POG
@@ -98,12 +84,19 @@ process.ttHtaus.input_tags.muons = cms.InputTag("ttHLeptons")
 process.ttHtaus.input_tags.taus = cms.InputTag("ttHLeptons")
 process.ttHtaus.input_tags.jets = cms.InputTag("patJetsReapplyJEC")
 process.ttHtaus.input_tags.rho = cms.InputTag("fixedGridRhoFastjetCentralNeutral")
+process.ttHtaus.JECSysType = cms.string(sysType)
 
 ### Outputs
 if isSignal:
-    out_file = 'testNtuple.root'
+    if sysJEC:
+        out_file = 'testNtuple_'+sysType+'.root'
+    else:
+        out_file = 'testNtuple.root'
 else:
-    out_file = 'testNtuple_bkg.root'
+    if sysJEC:
+        out_file = 'testNtuple_ttbar_'+sysType+'.root'
+    else:
+        out_file = 'testNtuple_ttbar.root'
 
 process.TFileService = cms.Service("TFileService",
                                    fileName = cms.string(out_file)
