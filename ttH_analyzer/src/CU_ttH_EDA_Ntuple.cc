@@ -155,8 +155,6 @@ void CU_ttH_EDA_Ntuple::fill_ntuple_muons(const std::vector<pat::Muon>& muons)
 		mu0_isfakeablesel = muons[0].userFloat("idFakeable") > 0.5;
 		mu0_iscutsel = muons[0].userFloat("idCutBased") > 0.5;
 		mu0_ismvasel = muons[0].userFloat("idMVABased") > 0.5;
-
-		if (mu0_isfakeablesel and mu0_jetPtRatio < 0 and mu0_jetPtRatio > -3) {std::cout << mu0_jetPtRatio << std::endl; std::cout << muons[0].userFloat("idFakeable")<< std::endl;std::cout << muons[0].userFloat("leptonMVA") << std::endl;}
 	}
 	
 	if (muons.size() > 1 ) {
