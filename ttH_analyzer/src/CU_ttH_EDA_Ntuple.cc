@@ -80,7 +80,8 @@ void CU_ttH_EDA_Ntuple::write_evtMVAvars_2lss(const CU_ttH_EDA_event_vars & loca
 		max_lep_eta = -9999.;
 		
 	// cone pT of lepton
-	if (lep0_isfakeable and lep0_ptRatio > 0) {		
+	if (lep0_isfakeable and lep0_ptRatio > 0) {
+		// lepton could be categorized as 'fakeable' but no ptRatio calculated (default value -1.) if e.g. dR(lep, jet)>0.5   NEED TO FOLLOW UP
 		lep0_conept = 0.85 * lep0_p4.Pt() / lep0_ptRatio;
 	}
 	else
