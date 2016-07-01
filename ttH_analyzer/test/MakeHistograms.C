@@ -19,68 +19,49 @@ using namespace std;
 //void drawStackHists();  // draw stack histograms after event selection
 //void drawCutflow();  // draw cutflow histogram taken from tree
 
-void MakeHistograms(
-					vector<const TString> sigs = {},
-					vector<const TString> bkgs = {},
-					vector<const TString> syst = {}
-)
+void MakeHistograms(vector<TString> sample_names = {"ttH_htt"})
 {
-	// List of histogram names
-	vector<TString> name_sigs = {"ttH_htt"};
-	vector<TString> name_bkgs = {};
-	vector<TString> name_syst = {};
+
+	TString fname_prefix = "testNtuple_";
+	TString sys_coname = "_CMS_ttHl_";
 	
-	// Open files
-	vector<TFile*> f_sigs;
-	for (auto sig : sigs) {
-		TFile* f_sig = new TFile(sig);
-		f_sigs.push_back(f_sig);
+	// List of btag systematics
+	TString BTagSysts [16] =
+		{"LFUp","LFDown","HFUp","HFDown",
+		 "HFStats1Up","HFStats1Down","HFStats2Up","HFStats2Down",
+		 "LFStats1Up","LFStats1Down","LFStats2Up","LFStats2Down",
+		 "cErr1Up","cErr1Down","cErr2Up","cErr2Down"};
+
+	// Histograms
+	vector<TH1D*> hists;
+	
+	for (auto & sname : sample_names) {
+		//Open files
+		TFile* f = new TFile(fname_prefix+sname+".root");
+		TFile* f_jesup = new TFile(fname_prefix+sname+"_JESUp.root");
+		TFile* f_jesdo = new TFile(fname_prefix+sname+"_JESUp.root");
+				
+		TH1D* h_central = (TH1D*)f->Get("ttHtaus/h_MVA_shape");
+		h_central->SetName("x_"+sname);
+		hists.push_back(h_central);
+				
+		TH1D* h_jesup = (TH1D*)f_jesup->Get("ttHtaus/h_MVA_shape");
+		h_jesup->SetName("x_" + sname + sys_coname + "JESUp");
+		hists.push_back(h_jesup);
+
+		TH1D* h_jesdo = (TH1D*)f_jesdo->Get("ttHtaus/h_MVA_shape");
+		h_jesdo->SetName("x_" + sname + sys_coname + "JESDown");
+		hists.push_back(h_jesdo);
+	
+		for (auto & bsys : BTagSysts) {
+			TH1D* h_ = (TH1D*)f->Get("ttHtaus/h_MVA_shape_"+bsys);
+			h_->SetName("x_" + sname + sys_coname + "_btag_" + bsys);
+			hists.push_back(h_);
+		}		
+		
 	}
 
-	vector<TFile*> f_bkgs;
-	for (auto bkg : bkgs) {
-	    TFile* f_bkg = new TFile(bkg);
-		f_bkgs.push_back(f_bkg);
-	}
-
-	vector<TFile*> f_syst;
-	for (auto & s : syst) {
-	    TFile* f_s = new TFile(s);
-		f_syst.push_back(f_s);
-	}
-
-	// Get Histograms from root files
-	vector<TH1D*> hist_sigs;
-	vector<TH1D*> hist_bkgs;
-	vector<TH1D*> hist_syst;
-
-	auto it_name_sig = name_sigs.begin();
-	for (auto f_sig : f_sigs) {
-		TH1D* h = (TH1D*)f_sig->Get("ttHtaus/h_MVA_shape");
-		TString hname = *it_name_sig;
-		h->SetName("x_"+hname);
-		hist_sigs.push_back(h);
-		++it_name_sig;
-	}
-
-	auto it_name_bkg = name_bkgs.begin();
-	for (auto f_bkg : f_bkgs) {
-		TH1D* h = (TH1D*)f_bkg->Get("ttHtaus/h_MVA_shape");
-		TString hname = *it_name_bkg;
-		h->SetName("x_"+hname);
-		hist_bkgs.push_back(h);
-		++it_name_bkg;
-	}
-
-	auto it_name_syst = name_syst.begin();
-	for (auto f_s : f_syst) {
-		TH1D* h = (TH1D*)f_s->Get("ttHtaus/h_MVA_shape");
-		TString hname = *it_name_syst;
-		h->SetName("x_"+hname);
-		hist_syst.push_back(h);
-		++it_name_syst;
-	}
-
+/*
 	// Get Ntuples
 	vector<TTree*> woods_sig;
 	for (auto f_sig : f_sigs) {
@@ -92,22 +73,14 @@ void MakeHistograms(
 	for (auto f_bkg : f_bkgs) {
 		TTree* tree_bkg = (TTree*) f_bkg->Get("ttHtaus/eventTree");
 		woods_bkg.push_back(tree_bkg);
-	}
-	
+	}	
+*/
 	
 	// Write to output root file
 	TFile *output_combine = new TFile("ttH_2lss_1tau_shape.root", "RECREATE");
 	//gDirectory->pwd();
 
-	for (auto & h : hist_sigs) {
-		h->Write();
-	}
-	
-	for (auto & h : hist_bkgs) {
-		h->Write();
-	}
-
-	for (auto & h : hist_syst) {
+	for (auto & h : hists) {
 		h->Write();
 	}
 	
