@@ -51,41 +51,6 @@ void CU_ttH_EDA::Close_output_files()
 
 void CU_ttH_EDA::Set_up_histograms()
 {
-	// 	h_electron_selection = fs_->make<TH1D>("h_electron_selection",
-	// ";electron cut", 12, 0 , 12 );
-	// 	h_muon_selection = fs_->make<TH1D>("h_muon_selection", ";muon cut", 12,
-	// 0 , 12 );
-	//
-	// 	h_electron_selection->GetXaxis()->SetBinLabel(1, "All");
-	// 	h_electron_selection->GetXaxis()->SetBinLabel(2, "p_{T}>20, |#eta|<2.4,
-	// !inCrack");
-	// 	h_electron_selection->GetXaxis()->SetBinLabel(3, "full5x5 #sigma_{i#eta
-	// i#eta}");
-	// 	h_electron_selection->GetXaxis()->SetBinLabel(4, "|#Delta #eta_{in}|");
-	// 	h_electron_selection->GetXaxis()->SetBinLabel(5, "|#Delta #phi_{in}|");
-	// 	h_electron_selection->GetXaxis()->SetBinLabel(6, "hOverE");
-	// 	h_electron_selection->GetXaxis()->SetBinLabel(7, "1/E - 1/p");
-	// 	h_electron_selection->GetXaxis()->SetBinLabel(8, "d0");
-	// 	h_electron_selection->GetXaxis()->SetBinLabel(9, "dZ");
-	// 	h_electron_selection->GetXaxis()->SetBinLabel(10,
-	// "expectedMissingInnerHits");
-	// 	h_electron_selection->GetXaxis()->SetBinLabel(11, "passConversionVeto");
-	// 	h_electron_selection->GetXaxis()->SetBinLabel(12, "relIso (#Delta Beta,
-	// 0.3)");
-	//
-	// 	h_muon_selection->GetXaxis()->SetBinLabel(1, "All");
-	// 	h_muon_selection->GetXaxis()->SetBinLabel(2, "p_{T}>20, |#eta|<2.4");
-	// 	h_muon_selection->GetXaxis()->SetBinLabel(3, "GlobalMuon ||
-	// TrackerMuon");
-	// 	h_muon_selection->GetXaxis()->SetBinLabel(4, "PFMuon");
-	// 	h_muon_selection->GetXaxis()->SetBinLabel(5, "#Chi^{2}");
-	// 	h_muon_selection->GetXaxis()->SetBinLabel(6, "validMuonHit");
-	// 	h_muon_selection->GetXaxis()->SetBinLabel(7, "validPixelHit");
-	// 	h_muon_selection->GetXaxis()->SetBinLabel(8, "trk layers w/meas");
-	// 	h_muon_selection->GetXaxis()->SetBinLabel(9, "matched stations");
-	// 	h_muon_selection->GetXaxis()->SetBinLabel(10, "d0");
-	// 	h_muon_selection->GetXaxis()->SetBinLabel(11, "dZ");
-	// 	h_muon_selection->GetXaxis()->SetBinLabel(12, "relIso < 0.1");
 
 	if (analysis_type == Analyze_lepton_jet) {
 		h_tth_syncex1_ele =
@@ -151,6 +116,21 @@ void CU_ttH_EDA::Set_up_histograms()
 
 		h_MVA_shape =
 			fs_->make<TH1D>("h_MVA_shape","", 6, 0.5, 6.5);
+
+		if (!isdata and doSystematics and JECSysType == "NA") {
+			for (int i = 0; i < 16 ; ++i) {
+				TString h2d_name = "h_MVA_ttV_vs_ttbar_" + sysList[i];
+				h_MVA_ttV_vs_ttbar_sys[i] =
+					fs_->make<TH2D>(h2d_name, ";BDT", 20, -1, 1, 20, -1, 1);
+				h_MVA_ttV_vs_ttbar_sys[i]->SetTitle("ttbar");
+				h_MVA_ttV_vs_ttbar_sys[i]->SetTitle("ttV");
+
+				TString h1d_name = "h_MVA_shape_" + sysList[i];
+				h_MVA_shape_sys[i] = fs_->make<TH1D>(h1d_name, "", 6, 0.5, 6.5);
+			}
+
+			setup_sysHist = true;
+		}
 	}
 
 	if (analysis_type == Analyze_ditaus_lepton) {
@@ -364,9 +344,77 @@ void CU_ttH_EDA::Set_up_MVA_2lss_ttV(TMVA::Reader * reader)
 	reader->AddSpectator("iF_Recl[1]", &iF1);
 	reader->AddSpectator("iF_Recl[2]", &iF2);
 
-	const std::string base = std::string(getenv("CMSSW_BASE")) + "/src/Analyzers/ttH_analyzer/data/";
+	const std::string base =
+		std::string(getenv("CMSSW_BASE")) + "/src/Analyzers/ttH_analyzer/data/";
 
 	reader->BookMVA("BDTG method", base + "2lss_ttV_BDTG.weights.xml");
+}
+
+void CU_ttH_EDA::Set_up_BTagCalibration_Readers()
+{
+	const std::string base =
+		std::string(getenv("CMSSW_BASE")) +  "/src/Analyzers/ttH_analyzer/data/";
+
+	BTagCalibration calib_csvv2("csvv2", base + "CSVv2.csv");  // for 76X
+
+	BTagCaliReaders["NA"] = new BTagCalibrationReader(&calib_csvv2,  // calibration instance
+									   BTagEntry::OP_RESHAPING, // operating point
+									   "iterativefit", // measurement type
+									   "central");  // systematics type
+	BTagCaliReaders["JESUp"] = 
+		new BTagCalibrationReader(&calib_csvv2,	BTagEntry::OP_RESHAPING,
+								  "iterativefit", "up_jes");
+	BTagCaliReaders["JESDown"] = 
+		new BTagCalibrationReader(&calib_csvv2, BTagEntry::OP_RESHAPING,
+								  "iterativefit", "down_jes");
+	BTagCaliReaders["LFUp"] =
+		new BTagCalibrationReader(&calib_csvv2, BTagEntry::OP_RESHAPING,
+								  "iterativefit", "up_lf");
+	BTagCaliReaders["LFDown"] =
+		new BTagCalibrationReader(&calib_csvv2, BTagEntry::OP_RESHAPING,
+								  "iterativefit", "down_lf");
+	BTagCaliReaders["HFUp"] =
+		new BTagCalibrationReader(&calib_csvv2, BTagEntry::OP_RESHAPING,
+								  "iterativefit", "up_hf");
+	BTagCaliReaders["HFDown"] =
+		new BTagCalibrationReader(&calib_csvv2, BTagEntry::OP_RESHAPING,
+								  "iterativefit", "down_hf");
+	BTagCaliReaders["HFStats1Up"] =
+		new BTagCalibrationReader(&calib_csvv2, BTagEntry::OP_RESHAPING,
+								  "iterativefit", "up_hfstats1");
+	BTagCaliReaders["HFStats1Down"] =
+		new BTagCalibrationReader(&calib_csvv2, BTagEntry::OP_RESHAPING,
+								  "iterativefit", "down_hfstats1");	
+	BTagCaliReaders["HFStats2Up"] =
+		new BTagCalibrationReader(&calib_csvv2, BTagEntry::OP_RESHAPING,
+								  "iterativefit", "up_hfstats2");
+	BTagCaliReaders["HFStats2Down"] =
+		new BTagCalibrationReader(&calib_csvv2, BTagEntry::OP_RESHAPING,
+								  "iterativefit", "down_hfstats2");	
+	BTagCaliReaders["LFStats1Up"] =
+		new BTagCalibrationReader(&calib_csvv2, BTagEntry::OP_RESHAPING,
+								  "iterativefit", "up_lfstats1");
+	BTagCaliReaders["LFStats1Down"] =
+		new BTagCalibrationReader(&calib_csvv2, BTagEntry::OP_RESHAPING,
+								  "iterativefit", "down_lfstats1");	
+	BTagCaliReaders["LFStats2Up"] =
+		new BTagCalibrationReader(&calib_csvv2, BTagEntry::OP_RESHAPING,
+								  "iterativefit", "up_lfstats2");
+	BTagCaliReaders["LFStats2Down"] =
+		new BTagCalibrationReader(&calib_csvv2, BTagEntry::OP_RESHAPING,
+								  "iterativefit", "down_lfstats2");
+	BTagCaliReaders["CFErr1Up"] =
+		new BTagCalibrationReader(&calib_csvv2, BTagEntry::OP_RESHAPING,
+								  "iterativefit", "up_cferr1");
+	BTagCaliReaders["CFErr1Down"] =
+		new BTagCalibrationReader(&calib_csvv2, BTagEntry::OP_RESHAPING,
+								  "iterativefit", "down_cferr1");
+	BTagCaliReaders["CFErr2Up"] =
+		new BTagCalibrationReader(&calib_csvv2, BTagEntry::OP_RESHAPING,
+								  "iterativefit", "up_cferr2");
+	BTagCaliReaders["CFErr2Down"] =
+		new BTagCalibrationReader(&calib_csvv2, BTagEntry::OP_RESHAPING,
+								  "iterativefit", "down_cferr2");	
 }
 
 #endif

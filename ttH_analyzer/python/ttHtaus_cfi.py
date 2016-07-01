@@ -9,7 +9,12 @@ ttHtaus =  cms.EDAnalyzer('CU_ttH_EDA',
         # Analysis type choice: 'tau_ssleptons', 'ditaus_lepton'
         analysis_type = cms.string("tau_ssleptons"),
         # Sync ntuple
-        produce_sync_ntuple = cms.bool(True),
+        produce_sync_ntuple = cms.bool(False),
+        # Systematics
+        do_systematics = cms.bool(False),
+        # Sample parameter
+        sample_xs = cms.double(1.),
+        int_lumi = cms.double(1.),
         # Generic
         verbosity = cms.bool(False),
         print_HLT_event_path = cms.bool(False),
@@ -53,11 +58,8 @@ ttHtaus =  cms.EDAnalyzer('CU_ttH_EDA',
         # systematic types:
         # 'NA', 'JERUp', 'JERDown', 'JESUp', 'JESDown'
         JECSysType = cms.string('NA'),
-        # MiniAODhelper
+        #
         using_real_data = cms.bool(False),
-        ## available choices '-': none, 'L': loose, 'M': medium, 'T': tight
-        b_tag_strength = cms.string('M'),
-                          
         # InputTags
         input_tags = cms.PSet(
             pv = cms.InputTag("offlineSlimmedPrimaryVertices"),

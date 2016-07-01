@@ -24,7 +24,10 @@
  */
 
 struct CU_ttH_EDA_event_vars {
-	double weight; // total event weight (there are partial weights)
+	double weight; // total event weight
+	double csv_weight;
+	//double pu_weight;
+	double gen_weight;
 
 	/// Common, run parameters
 	int run_nr;
@@ -73,13 +76,7 @@ struct CU_ttH_EDA_event_vars {
 
 	double MHT;
 	double metLD;
-	
-	// Gen Particles
-	std::vector<reco::GenParticle> genHiggs;
-	std::vector<reco::GenParticle> genTops;
-	reco::CandidateCollection genHiggs_daughters; // or edm::OwnVector<reco::Candidate>
-	reco::CandidateCollection genTop_daughters;
-	reco::CandidateCollection genW_daughters;
+
 };
 
 #endif

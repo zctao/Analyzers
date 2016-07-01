@@ -980,4 +980,70 @@ int CU_ttH_EDA::partition2DBDT(double ttbar, double ttV)
 	return 2*(x-1)+y;
 }
 
+double CU_ttH_EDA::getEvtCSVWeight(std::vector<pat::Jet> & jets, std::string & sys)
+{
+	double weight_evt = 1.;
+
+	for (auto & j : jets) {		
+		double w = getJetCSVWeight(j, sys);
+		weight_evt *= w;
+	}
+
+	return weight_evt;
+}
+
+double CU_ttH_EDA::getJetCSVWeight(pat::Jet & jet, std::string sys)
+{
+	double pt = jet.pt();
+	double eta = jet.eta();
+	double csv = jet.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
+	int flavor = jet.hadronFlavour();
+
+	if (!(pt > 20. and fabs(eta) < 2.4)) return 1.;
+
+	if (pt > 1000) pt = 999.;
+	if (csv < 0.) csv = -0.05;
+	if (csv > 1.) csv = 1.0;
+
+	BTagEntry::JetFlavor jf = BTagEntry::FLAV_UDSG;	
+	if ( abs(flavor) == 5 )
+		jf = BTagEntry::FLAV_B;
+	else if ( abs(flavor) == 4 )
+		jf = BTagEntry::FLAV_C;
+
+	double weight_jet = 1.;
+	
+	if (sys == "LFUp" or sys == "LFDown" or 
+	    sys == "HFStats1Up" or sys == "HFStats1Down" or
+	    sys == "HFStats2Up" or sys == "HFStats2Down") {
+	  
+	  if ( jf != BTagEntry::FLAV_B) sys = "NA";
+	}
+
+	if (sys == "HFUp" or sys == "HFDown" or
+	    sys == "LFStats1Up" or sys == "LFStats1Down" or
+	    sys == "LFStats2Up" or sys == "LFStats2Down") {
+
+	  if (jf != BTagEntry::FLAV_UDSG) sys = "NA";
+	}
+
+	if (sys == "CFErr1Up" or sys == "CFErr1Down" or
+	    sys == "CFErr2Up" or sys == "CFErr2Down") {
+
+	  if (jf != BTagEntry::FLAV_C) sys = "NA";
+	}
+
+	weight_jet = BTagCaliReaders[sys]->eval(jf, eta, pt, csv);
+
+	//assert(weight_jet > 0.);
+	// problems in CSVv2 file? negative weight e.g. line 1735 and 1736
+	// use csv_rwt_fit_hf/lf_76x_2016_02_08.root instead?
+	// for now:
+	if (weight_jet <= 0.) {
+		weight_jet = 1.;
+	}
+
+	return weight_jet;
+}
+
 #endif

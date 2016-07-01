@@ -14,14 +14,13 @@ process.option = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
 process.options = cms.untracked.PSet( allowUnscheduled = cms.untracked.bool(True) )
 
 ### Switches
+doSync = True;
 isData = False
-isSignal = True
-
-sysJEC = False
-if sysJEC:
-    sysType = 'JESDown'
-else:
-    sysType = 'NA'
+integrated_luminosity = 1.
+sample_name = 'signal'
+cross_section = 1.
+sysJECType = 'NA'   # 'NA', 'JESUp' or 'JESDown'
+doSystematics = True
 
 ### Global tag
 process.load('Configuration.StandardSequences.Services_cff')
@@ -39,13 +38,17 @@ process.maxEvents = cms.untracked.PSet(
 ### Inputs
 if isData:
     input_file = ''
-elif isSignal:
+elif sample_name == 'signal':
     # signal sample
-    input_file = '/store/mc/RunIIFall15MiniAODv2/ttHJetToTT_M125_13TeV_amcatnloFXFX_madspin_pythia8/MINIAODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v3/60000/0C6DA13E-38C8-E511-8F6E-00259055220A.root'
-else:
+    input_file = 'file:../data/local_tmp/signal.root'
+    #'/store/mc/RunIIFall15MiniAODv2/ttHJetToTT_M125_13TeV_amcatnloFXFX_madspin_pythia8/MINIAODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v3/60000/0C6DA13E-38C8-E511-8F6E-00259055220A.root'
+elif sample_name == 'ttbar':
     # tt+jet
-    input_file = '/store/mc/RunIIFall15MiniAODv2/TT_TuneCUETP8M1_13TeV-powheg-pythia8/MINIAODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12_ext3-v1/00000/00DF0A73-17C2-E511-B086-E41D2D08DE30.root'
-
+    input_file = 'file:../data/local_tmp/ttbar.root'
+    #'/store/mc/RunIIFall15MiniAODv2/TT_TuneCUETP8M1_13TeV-powheg-pythia8/MINIAODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12_ext3-v1/00000/00DF0A73-17C2-E511-B086-E41D2D08DE30.root'
+else:
+    input_file = ''
+    
 process.source = cms.Source("PoolSource",
 	fileNames = cms.untracked.vstring(input_file)
 )
@@ -79,28 +82,31 @@ process.load("Analyzers.ttH_analyzer.ttHtaus_cfi")
 ### Redefine parameter sets
 process.ttHLeptons.rhoParam = "fixedGridRhoFastjetCentralNeutral"
 process.ttHLeptons.jets = cms.InputTag("patJetsReapplyJEC") # use JEC's from tag
+
 process.ttHtaus.input_tags.electrons = cms.InputTag("ttHLeptons")
 process.ttHtaus.input_tags.muons = cms.InputTag("ttHLeptons")
 process.ttHtaus.input_tags.taus = cms.InputTag("ttHLeptons")
 process.ttHtaus.input_tags.jets = cms.InputTag("patJetsReapplyJEC")
 process.ttHtaus.input_tags.rho = cms.InputTag("fixedGridRhoFastjetCentralNeutral")
-process.ttHtaus.JECSysType = cms.string(sysType)
+
+process.ttHtaus.JECSysType = cms.string(sysJECType)
+process.ttHtaus.do_systematics = cms.bool(doSystematics)
+process.ttHtaus.produce_sync_ntuple = cms.bool(doSync)
+process.ttHtaus.sample_xs = cms.double(cross_section)
+process.ttHtaus.int_lumi = cms.double(integrated_luminosity)
+process.ttHtaus.using_real_data = cms.bool(isData)
 
 ### Outputs
-if isSignal:
-    if sysJEC:
-        out_file = 'testNtuple_'+sysType+'.root'
-    else:
-        out_file = 'testNtuple.root'
+if isData:
+    out_file = 'testNtuple_data.root'
+elif sysJECType == 'NA':
+    out_file = 'testNtuple_' + sample_name + '.root'
 else:
-    if sysJEC:
-        out_file = 'testNtuple_ttbar_'+sysType+'.root'
-    else:
-        out_file = 'testNtuple_ttbar.root'
+    out_file = 'testNtuple_' + sample_name + '_' + sysJECType + '.root'
+
 
 process.TFileService = cms.Service("TFileService",
                                    fileName = cms.string(out_file)
-
 )
 
 #Path

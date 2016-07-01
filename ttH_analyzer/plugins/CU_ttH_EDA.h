@@ -5,6 +5,7 @@
 #include <memory>
 #include <cstdio>	// printf, fprintf
 #include <stdexcept> // standard exceptions
+#include <map>
 
 /// CMSSW user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
@@ -59,6 +60,10 @@
 #include "HLTrigger/HLTcore/interface/HLTConfigProvider.h"
 
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
+
+/// BTag Calibration
+#include "CondFormats/BTauObjects/interface/BTagCalibration.h"
+#include "CondFormats/BTauObjects/interface/BTagCalibrationReader.h"
 
 //#include "JetMETCorrections/JetCorrector/interface/JetCorrector.h"
 #include "JetMETCorrections/Objects/interface/JetCorrectionsRecord.h"
@@ -142,8 +147,8 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	void Set_up_histograms();			 // at CU_ttH_EDA()
 	void Set_up_output_files();			 // at CU_ttH_EDA()
 	void Set_up_tokens(const edm::ParameterSet &);
-
 	void Set_up_Tree();
+	void Set_up_BTagCalibration_Readers();
 
 	int Set_up_Run_histograms_triggers(); // at beginRun(), after
 										  // Set_up_name_vectors()
@@ -207,6 +212,10 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	void Set_up_MVA_2lss_ttV(TMVA::Reader *);
 	double mva(CU_ttH_EDA_Ntuple &, TMVA::Reader *);
 	int partition2DBDT(double, double);
+
+	// csv reweighting
+	double getEvtCSVWeight(std::vector<pat::Jet> &, std::string &);
+	double getJetCSVWeight(pat::Jet &, std::string /*pass by copy*/);
 	
 	/*
 	* Variable section
@@ -218,7 +227,16 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	
 	// flag for sync ntuple
 	bool produce_sync_ntuple;
-	
+
+	bool doSystematics;
+
+	/// Common sample parameters
+	unsigned long event_count; // running event counter
+	double sample_xs;	  // cross section	
+	double int_lumi;	  // integrated luminosity
+	double sample_n;	  // total nr of events. Should be long if compatible
+	//double weight_sample; // int lumi * xs / sample_n
+
 	/// debug flags
 	bool verbose_;
 	bool dumpHLT_;
@@ -255,16 +273,7 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 
 	/// Output file is opened/closed through CMS py config
 	edm::Service<TFileService> fs_;
-
-	/// Common sample parameters
-	unsigned long event_count; // running event counter
-
-	double total_xs;	  // total cross section
-	double int_lumi;	  // integrated luminosity
-	double sample_n;	  // total nr of events. Should be long if compatible
-	double weight_sample; // int lumi * xs / sample_n
-	// double weight_gen;
-
+	
 	/// Cuts
 	float min_tight_lepton_pT;
 	float min_ele_pT;	
@@ -276,7 +285,7 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	float max_bjet_eta;
 	int min_njets;
 	int min_nbtags;
-
+	
 	//JEC
 	//std::string jet_corrector;
 	std::string JECSysType;
@@ -313,7 +322,10 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 
 	TH2D *h_MVA_ttV_vs_ttbar;
 	TH1D *h_MVA_shape;
-
+	TH2D *h_MVA_ttV_vs_ttbar_sys[16];
+	TH1D *h_MVA_shape_sys[16];
+	bool setup_sysHist = false;
+	
 	// 	TH1D* h_electron_selection;
 	// 	TH1D* h_muon_selection;
 
@@ -339,7 +351,7 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	TTree *eventTree;
 	CU_ttH_EDA_Ntuple tauNtuple;
 
-	// TMVA Reader
+	// TMVA Readers
 	TMVA::Reader *reader_2lss_ttV;
 	TMVA::Reader *reader_2lss_ttbar;
 	// MVA variables
@@ -352,6 +364,14 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	float mvaMTMetLep1;
 	float mvaLepGoodConePt0;
 	float mvaLepGoodConePt1;
+
+	std::string sysList[16] =
+		{"LFUp","LFDown","HFUp","HFDown",
+		 "HFStats1Up","HFStats1Down","HFStats2Up","HFStats2Down",
+		 "LFStats1Up","LFStats1Down","LFStats2Up","LFStats2Down",
+		 "CFErr1Up","CFErr1Down","CFErr2Up","CFErr2Down"};
+
+	std::map<std::string, BTagCalibrationReader*> BTagCaliReaders;
 
 };
 
