@@ -403,16 +403,16 @@ void CU_ttH_EDA::Set_up_BTagCalibration_Readers()
 	BTagCaliReaders["LFStats2Down"] =
 		new BTagCalibrationReader(&calib_csvv2, BTagEntry::OP_RESHAPING,
 								  "iterativefit", "down_lfstats2");
-	BTagCaliReaders["CFErr1Up"] =
+	BTagCaliReaders["cErr1Up"] =
 		new BTagCalibrationReader(&calib_csvv2, BTagEntry::OP_RESHAPING,
 								  "iterativefit", "up_cferr1");
-	BTagCaliReaders["CFErr1Down"] =
+	BTagCaliReaders["cErr1Down"] =
 		new BTagCalibrationReader(&calib_csvv2, BTagEntry::OP_RESHAPING,
 								  "iterativefit", "down_cferr1");
-	BTagCaliReaders["CFErr2Up"] =
+	BTagCaliReaders["cErr2Up"] =
 		new BTagCalibrationReader(&calib_csvv2, BTagEntry::OP_RESHAPING,
 								  "iterativefit", "up_cferr2");
-	BTagCaliReaders["CFErr2Down"] =
+	BTagCaliReaders["cErr2Down"] =
 		new BTagCalibrationReader(&calib_csvv2, BTagEntry::OP_RESHAPING,
 								  "iterativefit", "down_cferr2");	
 }

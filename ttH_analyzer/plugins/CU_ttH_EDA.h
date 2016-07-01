@@ -369,7 +369,7 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 		{"LFUp","LFDown","HFUp","HFDown",
 		 "HFStats1Up","HFStats1Down","HFStats2Up","HFStats2Down",
 		 "LFStats1Up","LFStats1Down","LFStats2Up","LFStats2Down",
-		 "CFErr1Up","CFErr1Down","CFErr2Up","CFErr2Down"};
+		 "cErr1Up","cErr1Down","cErr2Up","cErr2Down"};
 
 	std::map<std::string, BTagCalibrationReader*> BTagCaliReaders;
 

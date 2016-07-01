@@ -1027,8 +1027,8 @@ double CU_ttH_EDA::getJetCSVWeight(pat::Jet & jet, std::string sys)
 	  if (jf != BTagEntry::FLAV_UDSG) sys = "NA";
 	}
 
-	if (sys == "CFErr1Up" or sys == "CFErr1Down" or
-	    sys == "CFErr2Up" or sys == "CFErr2Down") {
+	if (sys == "cErr1Up" or sys == "cErr1Down" or
+	    sys == "cErr2Up" or sys == "cErr2Down") {
 
 	  if (jf != BTagEntry::FLAV_C) sys = "NA";
 	}

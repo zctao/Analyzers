@@ -17,7 +17,7 @@ process.options = cms.untracked.PSet( allowUnscheduled = cms.untracked.bool(True
 doSync = True;
 isData = False
 integrated_luminosity = 1.
-sample_name = 'signal'
+sample_name = 'ttH_htt'
 cross_section = 1.
 sysJECType = 'NA'   # 'NA', 'JESUp' or 'JESDown'
 doSystematics = True
@@ -38,9 +38,9 @@ process.maxEvents = cms.untracked.PSet(
 ### Inputs
 if isData:
     input_file = ''
-elif sample_name == 'signal':
+elif sample_name == 'ttH_htt':
     # signal sample
-    input_file = 'file:../data/local_tmp/signal.root'
+    input_file = 'file:../data/local_tmp/ttH_htt.root'
     #'/store/mc/RunIIFall15MiniAODv2/ttHJetToTT_M125_13TeV_amcatnloFXFX_madspin_pythia8/MINIAODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v3/60000/0C6DA13E-38C8-E511-8F6E-00259055220A.root'
 elif sample_name == 'ttbar':
     # tt+jet
