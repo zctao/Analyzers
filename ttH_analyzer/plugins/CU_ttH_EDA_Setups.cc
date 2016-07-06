@@ -417,4 +417,90 @@ void CU_ttH_EDA::Set_up_BTagCalibration_Readers()
 								  "iterativefit", "down_cferr2");	
 }
 
+void CU_ttH_EDA::Set_up_CSV_rootFile()
+{
+	std::string inputFileHF = "data/csv_rwt_fit_hf_76x_2016_02_08.root";
+	std::string inputFileLF = "data/csv_rwt_fit_lf_76x_2016_02_08.root";
+
+	TFile* f_CSVwgt_HF = new TFile ((std::string(getenv("CMSSW_BASE")) + "/src/Analyzers/ttH_analyzer/" + inputFileHF).c_str());
+	TFile* f_CSVwgt_LF = new TFile ((std::string(getenv("CMSSW_BASE")) + "/src/Analyzers/ttH_analyzer/" + inputFileLF).c_str());
+
+	fillCSVhistos(f_CSVwgt_HF, f_CSVwgt_LF);
+}
+
+void CU_ttH_EDA::fillCSVhistos(TFile* fileHF, TFile* fileLF)
+{
+	for( int iSys=0; iSys<9; iSys++ ){
+		for( int iPt=0; iPt<5; iPt++ ) h_csv_wgt_hf[iSys][iPt] = NULL;
+		for( int iPt=0; iPt<3; iPt++ ){
+			for( int iEta=0; iEta<3; iEta++ )h_csv_wgt_lf[iSys][iPt][iEta] = NULL;
+		}
+	}
+	for( int iSys=0; iSys<5; iSys++ ){
+		for( int iPt=0; iPt<5; iPt++ ) c_csv_wgt_hf[iSys][iPt] = NULL;
+	}
+
+	// CSV reweighting /// only care about the nominal ones
+	for( int iSys=0; iSys<9; iSys++ ){
+		TString syst_csv_suffix_hf = "final";
+		TString syst_csv_suffix_c = "final";
+		TString syst_csv_suffix_lf = "final";
+
+		switch( iSys ){
+		case 0:
+			// this is the nominal case
+			break;
+		case 1:
+			// JESUp
+			syst_csv_suffix_hf = "final_JESUp"; syst_csv_suffix_lf = "final_JESUp";
+			syst_csv_suffix_c  = "final_cErr1Up";
+			break;
+		case 2:
+			// JESDown
+			syst_csv_suffix_hf = "final_JESDown"; syst_csv_suffix_lf = "final_JESDown";
+			syst_csv_suffix_c  = "final_cErr1Down";
+			break;
+		case 3:
+			// purity up
+			syst_csv_suffix_hf = "final_LFUp"; syst_csv_suffix_lf = "final_HFUp";
+			syst_csv_suffix_c  = "final_cErr2Up";
+			break;
+		case 4:
+			// purity down
+			syst_csv_suffix_hf = "final_LFDown"; syst_csv_suffix_lf = "final_HFDown";
+			syst_csv_suffix_c  = "final_cErr2Down";
+			break;
+		case 5:
+			// stats1 up
+			syst_csv_suffix_hf = "final_Stats1Up"; syst_csv_suffix_lf = "final_Stats1Up";
+			break;
+		case 6:
+			// stats1 down
+			syst_csv_suffix_hf = "final_Stats1Down"; syst_csv_suffix_lf = "final_Stats1Down";
+			break;
+		case 7:
+			// stats2 up
+			syst_csv_suffix_hf = "final_Stats2Up"; syst_csv_suffix_lf = "final_Stats2Up";
+			break;
+		case 8:
+			// stats2 down
+			syst_csv_suffix_hf = "final_Stats2Down"; syst_csv_suffix_lf = "final_Stats2Down";
+			break;
+		}
+
+		for( int iPt=0; iPt<5; iPt++ ) h_csv_wgt_hf[iSys][iPt] = (TH1D*)fileHF->Get( Form("csv_ratio_Pt%i_Eta0_%s",iPt,syst_csv_suffix_hf.Data()) );
+		
+		if( iSys<5 ){
+			for( int iPt=0; iPt<5; iPt++ ) c_csv_wgt_hf[iSys][iPt] = (TH1D*)fileHF->Get( Form("c_csv_ratio_Pt%i_Eta0_%s",iPt,syst_csv_suffix_c.Data()) );
+		}
+		
+		for( int iPt=0; iPt<4; iPt++ ){
+			for( int iEta=0; iEta<3; iEta++ )h_csv_wgt_lf[iSys][iPt][iEta] = (TH1D*)fileLF->Get( Form("csv_ratio_Pt%i_Eta%i_%s",iPt,iEta,syst_csv_suffix_lf.Data()) );
+		}
+	}
+
+	return;
+}
+
 #endif
+	

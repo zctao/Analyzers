@@ -980,6 +980,97 @@ int CU_ttH_EDA::partition2DBDT(double ttbar, double ttV)
 	return 2*(x-1)+y;
 }
 
+double CU_ttH_EDA::getEvtCSVWeight(std::vector<pat::Jet> & jets, int iSys)//, double &csvWgtHF, double &csvWgtLF, double &csvWgtCF)
+{
+	int iSysHF = 0;
+	switch(iSys){
+	case 7:  iSysHF=1; break; //JESUp
+	case 8:  iSysHF=2; break; //JESDown
+	case 9:  iSysHF=3; break; //LFUp
+	case 10: iSysHF=4; break; //LFDown
+	case 13: iSysHF=5; break; //Stats1Up
+	case 14: iSysHF=6; break; //Stats1Down
+	case 15: iSysHF=7; break; //Stats2Up
+	case 16: iSysHF=8; break; //Stats2Down
+	default : iSysHF = 0; break; //NoSys
+	}
+
+	int iSysC = 0;
+	switch(iSys){
+	case 21: iSysC=1; break;
+	case 22: iSysC=2; break;
+	case 23: iSysC=3; break;
+	case 24: iSysC=4; break;
+	default : iSysC = 0; break;
+	}
+
+	int iSysLF = 0;
+	switch(iSys){
+	case 7:  iSysLF=1; break; //JESUp
+	case 8:  iSysLF=2; break; //JESDown
+	case 11: iSysLF=3; break; //HFUp
+	case 12: iSysLF=4; break; //HFDown
+	case 17: iSysLF=5; break; //Stats1Up
+	case 18: iSysLF=6; break; //Stats1Down
+	case 19: iSysLF=7; break; //Stats2Up
+	case 20: iSysLF=8; break; //Stats2Down
+	default : iSysLF = 0; break; //NoSys
+	}
+
+	double csvWgthf = 1.;
+	double csvWgtC  = 1.;
+	double csvWgtlf = 1.;
+
+	for (auto & jet : jets) {
+		double csv = jet.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
+		double jetPt = jet.pt();
+		double jetAbsEta = std::abs(jet.eta());
+		int flavor = jet.hadronFlavour();
+
+		int iPt = -1; int iEta = -1;
+		if (jetPt >=19.99 && jetPt<30) iPt = 0;
+		else if (jetPt >=30 && jetPt<40) iPt = 1;
+		else if (jetPt >=40 && jetPt<60) iPt = 2;
+		else if (jetPt >=60 && jetPt<100) iPt = 3;
+		else if (jetPt >=100) iPt = 4;
+
+		if (jetAbsEta >=0 &&  jetAbsEta<0.8 ) iEta = 0;
+		else if ( jetAbsEta>=0.8 && jetAbsEta<1.6 )  iEta = 1;
+		else if ( jetAbsEta>=1.6 && jetAbsEta<2.41 ) iEta = 2;
+
+		 if (iPt < 0 || iEta < 0) std::cout << "Error, couldn't find Pt, Eta bins for this b-flavor jet, jetPt = " << jetPt << ", jetAbsEta = " << jetAbsEta << std::endl;
+
+		 if (abs(flavor) == 5 ){
+			 int useCSVBin = (csv>=0.) ? h_csv_wgt_hf[iSysHF][iPt]->FindBin(csv) : 1;
+			 double iCSVWgtHF = h_csv_wgt_hf[iSysHF][iPt]->GetBinContent(useCSVBin);
+			 if( iCSVWgtHF!=0 ) csvWgthf *= iCSVWgtHF;
+			 assert(csvWgthf > 0.);
+		 }
+		 else if( abs(flavor) == 4 ){
+			 int useCSVBin = (csv>=0.) ? c_csv_wgt_hf[iSysC][iPt]->FindBin(csv) : 1;
+			 double iCSVWgtC = c_csv_wgt_hf[iSysC][iPt]->GetBinContent(useCSVBin);
+			 if( iCSVWgtC!=0 ) csvWgtC *= iCSVWgtC;
+			 assert(csvWgtC > 0.);
+		 }
+		 else {
+			 if (iPt >=3) iPt=3;       /// [30-40], [40-60] and [60-10000] only 3 Pt bins for lf
+			 int useCSVBin = (csv>=0.) ? h_csv_wgt_lf[iSysLF][iPt][iEta]->FindBin(csv) : 1;
+			 double iCSVWgtLF = h_csv_wgt_lf[iSysLF][iPt][iEta]->GetBinContent(useCSVBin);
+			 if( iCSVWgtLF!=0 ) csvWgtlf *= iCSVWgtLF;
+			 assert(csvWgtlf);
+		 }
+		 
+	}  // end of jet loop
+
+	double csvWgtTotal = csvWgthf * csvWgtC * csvWgtlf;
+
+	//csvWgtHF = csvWgthf;
+	//csvWgtLF = csvWgtlf;
+	//csvWgtCF = csvWgtC;
+	
+	return csvWgtTotal;
+}
+
 double CU_ttH_EDA::getEvtCSVWeight(std::vector<pat::Jet> & jets, std::string & sys)
 {
 	double weight_evt = 1.;

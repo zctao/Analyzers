@@ -149,6 +149,8 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	void Set_up_tokens(const edm::ParameterSet &);
 	void Set_up_Tree();
 	void Set_up_BTagCalibration_Readers();
+	void Set_up_CSV_rootFile();
+	void fillCSVhistos(TFile*, TFile*);
 
 	int Set_up_Run_histograms_triggers(); // at beginRun(), after
 										  // Set_up_name_vectors()
@@ -214,7 +216,8 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	int partition2DBDT(double, double);
 
 	// csv reweighting
-	double getEvtCSVWeight(std::vector<pat::Jet> &, std::string &);
+	double getEvtCSVWeight(std::vector<pat::Jet> &, int); // use root file
+	double getEvtCSVWeight(std::vector<pat::Jet> &, std::string &); // use csv file
 	double getJetCSVWeight(pat::Jet &, std::string /*pass by copy*/);
 	
 	/*
@@ -372,7 +375,19 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 		 "cErr1Up","cErr1Down","cErr2Up","cErr2Down"};
 
 	std::map<std::string, BTagCalibrationReader*> BTagCaliReaders;
-
+	// or read SF from root file
+	TH1D* h_csv_wgt_hf[9][5];
+	TH1D* c_csv_wgt_hf[9][5];
+	TH1D* h_csv_wgt_lf[9][4][3];
+	
+	// CSV reweight iSys map
+	std::map<std::string, int> csv_iSys
+		= {{"JESUp",7}, {"JESUp",8}, {"LFUp",9}, {"LFDown",10}, {"HFUp",11},
+		   {"HFDown",12}, {"HFStats1Up",13}, {"HFStats1Down",14},
+		   {"HFStats2Up",15}, {"HFStats2Down",16}, {"LFStats1Up",17},
+		   {"LFStats1Down",18}, {"LFStats2Up",19}, {"LFStats2Down",20},
+		   {"cErr1Up",21},{"cErr1Down",22},{"cErr2Up",23},{"cErr2Down",24}};
+	
 };
 
 template <typename T1, typename T2>

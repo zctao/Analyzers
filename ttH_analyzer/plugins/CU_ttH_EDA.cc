@@ -96,6 +96,7 @@ CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig):
 	Set_up_Tree();
 
 	Set_up_BTagCalibration_Readers();
+	Set_up_CSV_rootFile();
 
     reader_2lss_ttV = new TMVA::Reader("!Color:!Silent");
 	reader_2lss_ttbar = new TMVA::Reader("!Color:!Silent");
@@ -284,7 +285,8 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 				local.weight = 1.;
 			}
 			else {
-				local.csv_weight = getEvtCSVWeight(local.jets_selected, JECSysType);
+				//local.csv_weight = getEvtCSVWeight(local.jets_selected, JECSysType);
+				local.csv_weight = getEvtCSVWeight(local.jets_selected, csv_iSys[JECSysType]);
 				local.weight =
 					local.csv_weight * local.gen_weight;
 			}
@@ -300,7 +302,8 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 
 				for (int isys = 0; isys < 16; ++isys) {
 					double csv_weight_sys =
-						getEvtCSVWeight(local.jets_selected, sysList[isys]);
+						//getEvtCSVWeight(local.jets_selected, sysList[isys]);
+						getEvtCSVWeight(local.jets_selected, csv_iSys[sysList[isys]]);
 					double evt_weight_sys = csv_weight_sys * local.gen_weight;
 					// 2D
 					h_MVA_ttV_vs_ttbar_sys[isys]->Fill(tauNtuple.MVA_2lss_ttbar,
