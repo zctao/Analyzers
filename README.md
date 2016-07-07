@@ -10,25 +10,14 @@ Setup CMSSW environment and get Analyzer repository:
      git cms-init
 
      git clone https://github.com/zctao/Analyzers.git
-	 cd Analyzers
-   	 git checkout cmssw_7_6_X
-   	 cd ..
 
 Get dependencies:
 
 	 git clone https://github.com/cms-ttH/MiniAOD.git
 
-Then switch to CMSSW_7_6_3 branch:
-
-     	 cd MiniAOD
-	 git checkout CMSSW_7_6_3
-	 cd ..
-
 For ttH, H->tautau, get LeptonID package shared with ttH-Multilepton group:
 
-	 git clone https://github.com/cms-ttH/ttH-LeptonID.git
-	 mkdir ttH
-	 mv ttH-LeptonID ttH/LeptonID
+	 git clone https://github.com/cms-ttH/ttH-LeptonID.git ttH/LeptonID
 
 Compile:
 
