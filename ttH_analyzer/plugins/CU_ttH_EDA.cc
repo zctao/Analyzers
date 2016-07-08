@@ -177,71 +177,143 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	
 	// Lepton selection in MiniAODHelper veto in barrel/endcap overlap region
 	// Use id directly from LeptonID package to include these for now for sync purpose
+
+	/*
+	  Muons
+	*/
 	for (const auto& mu : *(handle.muons)){
-		if (mu.userFloat("idPreselection")>0.5 and mu.pt()>min_mu_pT)
-			local.mu_selected.push_back(mu);
+		if (mu.userFloat("idPreselection") > 0.5 and mu.pt() > min_mu_pT)
+			local.mu_preselected.push_back(mu);
 	}
-	for (const auto& ele : *(handle.electrons)) {
-		if (ele.userFloat("idPreselection")>0.5 and ele.pt()>min_ele_pT)
-			local.e_selected.push_back(ele);
+	// sort by pT
+	local.mu_preselected_sorted = miniAODhelper.GetSortedByPt(local.mu_preselected);
+	// loose, fakeable and tight
+	local.mu_loose = local.mu_preselected_sorted;
+	for (auto & mu : local.mu_loose) {
+		
+		if (mu.userFloat("idFakeable") > 0.5)
+			local.mu_fakeable.push_back(mu);
+		
+		if (mu.userFloat("idMVABased") > 0.5) {
+			local.mu_tight.push_back(mu);
+		}
+		
 	}
 
+	/*
+	  Electrons
+	*/
+	for (const auto& ele : *(handle.electrons)) {
+		if (ele.userFloat("idPreselection") > 0.5 and ele.pt() > min_ele_pT)
+			local.e_preselected.push_back(ele);
+	}
+	// remove overlap with muons
+	local.e_preselected =
+		removeOverlapdR(local.e_preselected, local.mu_loose, 0.05);
+	// sort by pT
+	local.e_preselected_sorted = miniAODhelper.GetSortedByPt(local.e_preselected);
+	// loose, fakeable and tight
+	local.e_loose = local.e_preselected_sorted;
+	for (auto & ele : local.e_loose) {
+		
+		if (ele.userFloat("idFakeable") > 0.5) {
+			local.e_fakeable.push_back(ele);
+		}
+			
+		if (ele.userFloat("idMVABased") > 0.5) {
+			local.e_tight.push_back(ele);
+		}
+			
+	}
+
+	/*
+	  Taus
+	*/
 	for (const auto& tau : *(handle.taus)) {
 		if (tau.userFloat("idPreselection")>0.5 and tau.pt()>min_tau_pT)
 			local.tau_selected.push_back(tau);
 	}
-
-	// remove overlap
-	local.e_selected = removeOverlapdR(local.e_selected, local.mu_selected, 0.05);
-	local.tau_selected = removeOverlapdR(local.tau_selected, local.mu_selected, 0.4);
-	local.tau_selected = removeOverlapdR(local.tau_selected, local.e_selected, 0.4);
-	
-	local.n_electrons = static_cast<int>(local.e_selected.size());
-	local.n_muons = static_cast<int>(local.mu_selected.size());
-	local.n_taus = static_cast<int>(local.tau_selected.size());
-
-	/// Sort leptons by pT
-	local.mu_selected_sorted = miniAODhelper.GetSortedByPt(local.mu_selected);
-	local.e_selected_sorted = miniAODhelper.GetSortedByPt(local.e_selected);
+	// remove overlap with muons and electrons
+	local.tau_selected =
+		removeOverlapdR(local.tau_selected, local.e_loose, 0.4);
+	local.tau_selected =
+		removeOverlapdR(local.tau_selected, local.mu_loose, 0.4);
+	// sort by pT
 	local.tau_selected_sorted = miniAODhelper.GetSortedByPt(local.tau_selected);
 
-	/// Jet selection
-	local.jets_corrected = miniAODhelper.GetCorrectedJets(
-														  *(handle.jets),iEvent,iSetup,systematics[JECSysType]);
+	
+	// number of selected leptons
+	local.n_electrons_loose = static_cast<int>(local.e_loose.size());
+	local.n_electrons_fakeable = static_cast<int>(local.e_fakeable.size());
+	local.n_electrons_tight = static_cast<int>(local.e_tight.size());
+	local.n_muons_loose = static_cast<int>(local.mu_loose.size());
+	local.n_muons_fakeable = static_cast<int>(local.mu_fakeable.size());
+	local.n_muons_tight = static_cast<int>(local.mu_tight.size());
+	local.n_taus = static_cast<int>(local.tau_selected.size());
+									
+	/*
+	  Jets selection
+	*/
+	local.jets_corrected =
+		miniAODhelper.GetCorrectedJets(*(handle.jets),iEvent,iSetup,systematics[JECSysType]);
 	local.jets_raw = miniAODhelper.GetSelectedJets(
-		local.jets_corrected, min_jet_pT, max_jet_eta, jetID::jetTight, '-');
-	// ???
-	// jetID::jetTight in MiniAODHelper (branch CMSSW_7_6_3, 03/15/2016) is actually loose WP suggested by Jet POG for 13TeV
-	// ???
+		local.jets_corrected, min_jet_pT, max_jet_eta, jetID::jetLoose, '-');
 
 	// overlap removal by dR
-	local.jets_no_mu = removeOverlapdR(local.jets_raw, local.mu_selected, 0.4);
-	local.jets_no_mu_e = removeOverlapdR(local.jets_no_mu, local.e_selected, 0.4);
+	local.jets_no_mu = removeOverlapdR(local.jets_raw, local.mu_fakeable, 0.4);
+	local.jets_no_mu_e = removeOverlapdR(local.jets_no_mu, local.e_fakeable, 0.4);
 	local.jets_selected = removeOverlapdR(local.jets_no_mu_e, local.tau_selected, 0.4);
-
-	local.jets_selected_tag = miniAODhelper.GetSelectedJets(
-		local.jets_selected, min_bjet_pT, max_bjet_eta, jetID::jetTight,
-		'L');
-		
-	local.n_jets = static_cast<int>(local.jets_selected.size());
-	local.n_btags = static_cast<int>(local.jets_selected_tag.size());
-
-	/// Sort jets by pT
+	// sort by pT
 	local.jets_selected_sorted =
 		miniAODhelper.GetSortedByPt(local.jets_selected);
-	local.jets_selected_tag_sorted =
-		miniAODhelper.GetSortedByPt(local.jets_selected_tag);
+
+	/*
+	  BTag
+	*/
+	local.jets_selected_btag_loose = miniAODhelper.GetSelectedJets(
+		local.jets_selected_sorted, min_bjet_pT, max_bjet_eta, jetID::jetLoose,
+		'L');
+	local.jets_selected_btag_medium = miniAODhelper.GetSelectedJets(
+	    local.jets_selected_btag_loose, min_bjet_pT, max_bjet_eta,
+		jetID::jetLoose, 'M');
+	// CSV WP definition in MiniAODHelper is different from AN-15-321(v4)
+		
+	local.n_jets = static_cast<int>(local.jets_selected.size());
+	local.n_btags_loose = static_cast<int>(local.jets_selected_btag_loose.size());
+	local.n_btags_medium = static_cast<int>(local.jets_selected_btag_medium.size());
+
+	bool do_AN321 = true;
+	if (do_AN321) {
+		// AN-15-321 CSV WP definition:
+		// Loose: csv > 0.605
+		// Medium: csv > 0.890
+		local.n_btags_loose = 0;
+		local.n_btags_medium = 0;
+		for (auto & bjet : local.jets_selected_btag_loose) {
+			float csv = bjet.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
+			if (csv > 0.605) {
+				++(local.n_btags_loose);
+				if (csv > 0.890)
+					++(local.n_btags_medium);
+			}
+		}
+	}
+
 
 	/// Top and Higgs tagging using collections through handles. adjusts
 	/// local.<tag>
 	//Top_tagger(handle.top_jets, local);
 	//Higgs_tagger(handle.subfilter_jets, local);
 
-	/// MET
+	/*
+	  MET
+	*/
+	// TODO: need to propagate JEC and uncertainties to MET
 	local.pfMET = handle.METs->front();
 	// MHT
 	float mht = getMHT(local);
-	float met = sqrt(local.pfMET.px()*local.pfMET.px()+local.pfMET.py()*local.pfMET.py());
+	float met = local.pfMET.pt();
+	assert(local.pfMET.pt()*local.pfMET.pt() == local.pfMET.px()*local.pfMET.px()+local.pfMET.py()*local.pfMET.py());
 	float metld = 0.00397 * met + 0.00265 * mht;
 	local.MHT = mht;
 	local.metLD = metld;
@@ -255,16 +327,16 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	*/
 
 	/// Check tags, fill hists, print events
-	if (analysis_type == Analyze_lepton_jet) {
-		Check_Fill_Print_ej(local);
-		Check_Fill_Print_muj(local);
-	}
+	//if (analysis_type == Analyze_lepton_jet) {
+	//	Check_Fill_Print_ej(local);
+	//	Check_Fill_Print_muj(local);
+	//}
 
-	if (analysis_type == Analyze_dilepton) {
-		Check_Fill_Print_dimuj(local);
-		Check_Fill_Print_dielej(local);
-		Check_Fill_Print_elemuj(local);
-	}
+	//if (analysis_type == Analyze_dilepton) {
+	//	Check_Fill_Print_dimuj(local);
+	//	Check_Fill_Print_dielej(local);
+	//	Check_Fill_Print_elemuj(local);
+	//}
 	
 	if (analysis_type == Analyze_tau_ssleptons) {
 

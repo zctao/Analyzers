@@ -50,6 +50,7 @@
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 #include "DataFormats/PatCandidates/interface/PackedGenParticle.h"
 #include "DataFormats/Candidate/interface/Candidate.h"
+#include "DataFormats/Math/interface/LorentzVector.h"
 
 #include "PhysicsTools/SelectorUtils/interface/JetIDSelectionFunctor.h"
 #include "PhysicsTools/SelectorUtils/interface/strbitset.h"
@@ -208,6 +209,9 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	// event selection
 	bool pass_event_sel_2lss1tauh(CU_ttH_EDA_event_vars &);
 	bool pass_event_sel_1l2tauh(CU_ttH_EDA_event_vars &);
+
+	bool passMuonTightCharge(pat::Muon);
+	bool passElectronCharge(pat::Electron);
 
 	// MVA
 	void Set_up_MVA_2lss_ttbar(TMVA::Reader *);

@@ -35,11 +35,20 @@ struct CU_ttH_EDA_event_vars {
 	int lumisection_nr;
 
 	/// Number of tags per event
-	int n_electrons;
-	int n_muons;
+	//int n_electrons;
+	int n_electrons_loose;
+	int n_electrons_fakeable;
+	int n_electrons_tight;
+	//int n_muons;
+	int n_muons_loose;
+	int n_muons_fakeable;
+	int n_muons_tight;
 	int n_taus;
 	int n_jets;
 	int n_btags;
+	int n_btags_loose;
+	int n_btags_medium;
+	
 	int n_ttags;
 	int n_Htags;
 
@@ -51,10 +60,16 @@ struct CU_ttH_EDA_event_vars {
 	bool pass_elemu;
 
 	/// Particle container vectors
-	std::vector<pat::Electron> e_selected;
-	std::vector<pat::Electron> e_selected_sorted;
-	std::vector<pat::Muon> mu_selected;
-	std::vector<pat::Muon> mu_selected_sorted;
+	std::vector<pat::Electron> e_preselected;
+	std::vector<pat::Electron> e_preselected_sorted;
+	std::vector<pat::Electron> e_loose;
+	std::vector<pat::Electron> e_fakeable;
+	std::vector<pat::Electron> e_tight;
+	std::vector<pat::Muon> mu_preselected;
+	std::vector<pat::Muon> mu_preselected_sorted;
+	std::vector<pat::Muon> mu_loose;
+	std::vector<pat::Muon> mu_fakeable;
+	std::vector<pat::Muon> mu_tight;
 	std::vector<pat::Tau> tau_selected;
 	std::vector<pat::Tau> tau_selected_sorted;
 	
@@ -64,9 +79,9 @@ struct CU_ttH_EDA_event_vars {
 	std::vector<pat::Jet> jets_corrected;
 	std::vector<pat::Jet> jets_selected;
 	std::vector<pat::Jet> jets_selected_sorted;
-	std::vector<pat::Jet> jets_selected_tag;
-	std::vector<pat::Jet> jets_selected_tag_sorted;
-
+	std::vector<pat::Jet> jets_selected_btag_loose;
+	std::vector<pat::Jet> jets_selected_btag_medium;
+	
 	/// Other quantities
 	pat::MET pfMET;
 	pat::MET MET_corrected;

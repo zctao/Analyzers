@@ -40,12 +40,12 @@ if isData:
     input_file = ''
 elif sample_name == 'ttH_htt':
     # signal sample
-    input_file = 'file:../data/local_tmp/ttH_htt.root'
-    #'/store/mc/RunIIFall15MiniAODv2/ttHJetToTT_M125_13TeV_amcatnloFXFX_madspin_pythia8/MINIAODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v3/60000/0C6DA13E-38C8-E511-8F6E-00259055220A.root'
+    input_file = '/store/mc/RunIIFall15MiniAODv2/ttHJetToTT_M125_13TeV_amcatnloFXFX_madspin_pythia8/MINIAODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v3/60000/0C6DA13E-38C8-E511-8F6E-00259055220A.root'
+    #input_file = 'file:../data/local_tmp/ttH_htt.root'
 elif sample_name == 'ttbar':
     # tt+jet
-    input_file = 'file:../data/local_tmp/ttbar.root'
-    #'/store/mc/RunIIFall15MiniAODv2/TT_TuneCUETP8M1_13TeV-powheg-pythia8/MINIAODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12_ext3-v1/00000/00DF0A73-17C2-E511-B086-E41D2D08DE30.root'
+    input_file = '/store/mc/RunIIFall15MiniAODv2/TT_TuneCUETP8M1_13TeV-powheg-pythia8/MINIAODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12_ext3-v1/00000/00DF0A73-17C2-E511-B086-E41D2D08DE30.root'
+    #input_file = 'file:../data/local_tmp/ttbar.root'
 else:
     input_file = ''
     

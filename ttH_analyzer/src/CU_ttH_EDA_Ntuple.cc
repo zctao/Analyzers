@@ -21,34 +21,26 @@ void CU_ttH_EDA_Ntuple::write_ntuple(const CU_ttH_EDA_event_vars &local)
 	run = local.run_nr;
 	
 	// Muons
-	n_presel_mu = local.n_muons;
-	n_fakeablesel_mu = 0;
+	n_presel_mu = local.n_muons_loose;
+	n_fakeablesel_mu = local.n_muons_fakeable;
+	n_mvasel_mu = local.n_muons_tight;
 	n_cutsel_mu = 0;
-	n_mvasel_mu = 0;
-	for (auto & mu : local.mu_selected_sorted) {
-		if (mu.userFloat("idFakeable") > 0.5)
-			++n_fakeablesel_mu;
+	for (auto & mu : local.mu_preselected_sorted) {
 		if (mu.userFloat("idCutBased") > 0.5)
 			++n_cutsel_mu;
-		if (mu.userFloat("idMVABased") > 0.5)
-			++n_mvasel_mu;
 	}
-	fill_ntuple_muons(local.mu_selected_sorted);
+	fill_ntuple_muons(local.mu_preselected_sorted);
 	
 	// Electrons
-	n_presel_ele = local.n_electrons;
-	n_fakeablesel_ele = 0;
+	n_presel_ele = local.n_electrons_loose;
+	n_fakeablesel_ele = local.n_electrons_fakeable;
+	n_mvasel_ele = local.n_electrons_tight;
 	n_cutsel_ele = 0;
-	n_mvasel_ele = 0;
-	for (auto & ele : local.e_selected_sorted) {
-		if (ele.userFloat("idFakeable") > 0.5)
-			++n_fakeablesel_ele;
+	for (auto & ele : local.e_preselected_sorted) {
 		if (ele.userFloat("idCutBased") > 0.5)
 			++n_cutsel_ele;
-		if (ele.userFloat("idMVABased") > 0.5)
-			++n_mvasel_ele;
 	}
-	fill_ntuple_electrons(local.e_selected_sorted);
+	fill_ntuple_electrons(local.e_preselected_sorted);
 		
 	// Taus
 	n_presel_tau = local.n_taus;
@@ -59,7 +51,7 @@ void CU_ttH_EDA_Ntuple::write_ntuple(const CU_ttH_EDA_event_vars &local)
 	fill_ntuple_jets(local.jets_selected_sorted);
 	
 	// MET/MHT
-	PFMET = local.pfMET.pt(); //sqrt(local.pfMET.px()*local.pfMET.px()+local.pfMET.py()*local.pfMET.py());
+	PFMET = local.pfMET.pt();
 	PFMETphi = local.pfMET.phi();
 	MHT = local.MHT;
 	metLD = local.metLD;
@@ -70,18 +62,18 @@ void CU_ttH_EDA_Ntuple::write_evtMVAvars_2lss(const CU_ttH_EDA_event_vars & loca
 	
 	// Get leading and sub-leading leptons
 	// 
-	update_ldgLeps_vars(local.mu_selected_sorted);
-	update_ldgLeps_vars(local.e_selected_sorted);
+	update_ldgLeps_vars(local.mu_tight);
+	update_ldgLeps_vars(local.e_tight);
 
 	// max eta of the leptons
-	if (local.n_muons + local.n_electrons >= 2)
-	  max_lep_eta = std::max(abs(lep0_p4.Eta()),abs(lep1_p4.Eta()));
+	if (local.n_muons_tight + local.n_electrons_tight >= 2)
+		max_lep_eta = std::max(abs(lep0_p4.Eta()),abs(lep1_p4.Eta()));
 	else
 		max_lep_eta = -9999.;
 		
 	// cone pT of lepton
 	if (lep0_isfakeable and lep0_ptRatio > 0) {
-		// lepton could be categorized as 'fakeable' but no ptRatio calculated (default value -1.) if e.g. dR(lep, jet)>0.5   NEED TO FOLLOW UP
+		// lepton could be categorized as 'fakeable' but no ptRatio calculated (default value -1.) if e.g. dR(lep, jet)>0.5   FOLLOW UP NEEDED
 		lep0_conept = 0.85 * lep0_p4.Pt() / lep0_ptRatio;
 	}
 	else
