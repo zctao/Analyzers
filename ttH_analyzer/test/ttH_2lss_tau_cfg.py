@@ -1,6 +1,7 @@
 ### CMSSW_7_6_3
 
 import FWCore.ParameterSet.Config as cms
+import FWCore.ParameterSet.VarParsing as VarParsing
 
 process = cms.Process("ttH")
 
@@ -13,44 +14,68 @@ process.option = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
 ### Run in unscheduled mode
 process.options = cms.untracked.PSet( allowUnscheduled = cms.untracked.bool(True) )
 
-### Switches
-doSync = True;
-isData = False
-integrated_luminosity = 1.
-sample_name = 'ttH_htt'
-cross_section = 1.
-sysJECType = 'NA'   # 'NA', 'JESUp' or 'JESDown'
-doSystematics = True
+### 
+options = VarParsing.VarParsing('analysis')
+
+options.register('doSync', False, 
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.bool,
+                 "Do synchronization or not")
+options.register('isData', False,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.bool,
+                 "Run on real data or not")
+options.register('IntLumi', 1.,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.float,
+                 "Integrated luminosity of the sample")
+options.register('SampleName','',  #'ttH_htt'
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 "Sample name") 
+options.register('CrossSection', 1.,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.float,
+                 "Cross section of the channel")
+options.register('sysJECType', 'NA',  # 'NA', 'JESUp' or 'JESDown'
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 "JEC Type")
+options.register('doSystematics', True,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.bool,
+                 "Include systematics or not")
+
+options.maxEvents = -1
+
+# get and parse the command line arguments
+options.parseArguments()
 
 ### Global tag
 process.load('Configuration.StandardSequences.Services_cff')
 process.load( "Configuration.StandardSequences.FrontierConditions_GlobalTag_cff" )
 
-if isData:
+if options.isData:
     process.GlobalTag.globaltag = '76X_dataRun2_v15'
 else:
     process.GlobalTag.globaltag = '76X_mcRun2_asymptotic_RunIIFall15DR76_v1'
 
 process.maxEvents = cms.untracked.PSet(
-	input = cms.untracked.int32(-1)
+	input = cms.untracked.int32(options.maxEvents)
 )
 
 ### Inputs
-if isData:
-    input_file = ''
-elif sample_name == 'ttH_htt':
-    # signal sample
-    input_file = '/store/mc/RunIIFall15MiniAODv2/ttHJetToTT_M125_13TeV_amcatnloFXFX_madspin_pythia8/MINIAODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v3/60000/0C6DA13E-38C8-E511-8F6E-00259055220A.root'
-    #input_file = 'file:../data/local_tmp/ttH_htt.root'
-elif sample_name == 'ttbar':
-    # tt+jet
-    input_file = '/store/mc/RunIIFall15MiniAODv2/TT_TuneCUETP8M1_13TeV-powheg-pythia8/MINIAODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12_ext3-v1/00000/00DF0A73-17C2-E511-B086-E41D2D08DE30.root'
-    #input_file = 'file:../data/local_tmp/ttbar.root'
-else:
-    input_file = ''
+#'ttH_htt' signal sample
+#'/store/mc/RunIIFall15MiniAODv2/ttHJetToTT_M125_13TeV_amcatnloFXFX_madspin_pythia8/MINIAODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v3/60000/0C6DA13E-38C8-E511-8F6E-00259055220A.root'
+#'file:/uscms/home/ztao/nobackup/data/ttH_76X/ttH_htt_sync.root'
+#'ttbar'  tt+jet
+#'/store/mc/RunIIFall15MiniAODv2/TT_TuneCUETP8M1_13TeV-powheg-pythia8/MINIAODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12_ext3-v1/00000/00DF0A73-17C2-E511-B086-E41D2D08DE30.root'
+#'file:../data/local_tmp/ttbar.root'
+
+options.inputFiles='file:/uscms/home/ztao/nobackup/data/ttH_76X/ttH_htt.root'
     
 process.source = cms.Source("PoolSource",
-	fileNames = cms.untracked.vstring(input_file)
+	fileNames = cms.untracked.vstring(options.inputFiles)
 )
 
 ### JEC
@@ -89,20 +114,20 @@ process.ttHtaus.input_tags.taus = cms.InputTag("ttHLeptons")
 process.ttHtaus.input_tags.jets = cms.InputTag("patJetsReapplyJEC")
 process.ttHtaus.input_tags.rho = cms.InputTag("fixedGridRhoFastjetCentralNeutral")
 
-process.ttHtaus.JECSysType = cms.string(sysJECType)
-process.ttHtaus.do_systematics = cms.bool(doSystematics)
-process.ttHtaus.produce_sync_ntuple = cms.bool(doSync)
-process.ttHtaus.sample_xs = cms.double(cross_section)
-process.ttHtaus.int_lumi = cms.double(integrated_luminosity)
-process.ttHtaus.using_real_data = cms.bool(isData)
+process.ttHtaus.JECSysType = cms.string(options.sysJECType)
+process.ttHtaus.do_systematics = cms.bool(options.doSystematics)
+process.ttHtaus.produce_sync_ntuple = cms.bool(options.doSync)
+process.ttHtaus.sample_xs = cms.double(options.CrossSection)
+process.ttHtaus.int_lumi = cms.double(options.IntLumi)
+process.ttHtaus.using_real_data = cms.bool(options.isData)
 
 ### Outputs
-if isData:
-    out_file = 'testNtuple_data.root'
-elif sysJECType == 'NA':
-    out_file = 'testNtuple_' + sample_name + '.root'
+if options.isData:
+    out_file = '/uscms/home/ztao/nobackup/testNtuple_data.root'
+elif options.sysJECType == 'NA':
+    out_file = '/uscms/home/ztao/nobackup/testNtuple_' + options.SampleName + '.root'
 else:
-    out_file = 'testNtuple_' + sample_name + '_' + sysJECType + '.root'
+    out_file = '/uscms/home/ztao/nobackup/testNtuple_' + options.SampleName + '_' + options.sysJECType + '.root'
 
 
 process.TFileService = cms.Service("TFileService",
