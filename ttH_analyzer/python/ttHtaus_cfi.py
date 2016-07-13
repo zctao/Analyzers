@@ -24,23 +24,23 @@ ttHtaus =  cms.EDAnalyzer('CU_ttH_EDA',
         collect_trigger_stats = cms.bool(False),
         ## Single lepton triggers:
         HLT_electron_triggers = cms.vstring([
-            'HLT_Ele27_eta2p1_WP75_Gsf_v1'
+            'HLT_Ele23_WPLoose_Gsf_v3'
         ]),
         HLT_muon_triggers = cms.vstring([
-            'HLT_IsoMu24_eta2p1_v1'
+            'HLT_IsoMu20_v2',
+            'HLT_IsoTkMu20_v4'
         ]),
         ## Dilepton triggers:
         HLT_electron_electron_triggers = cms.vstring([
-            'HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_v1'
+            'HLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v3'
         ]),
         HLT_electron_muon_triggers = cms.vstring([
-            'HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v1',
-            'HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v1'
+            'HLT_Mu17_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v3',
+            'HLT_Mu8_TrkIsoVVL_Ele17_CaloIdL_TrackIdL_IsoVL_v3'
         ]),
         HLT_muon_muon_triggers = cms.vstring([
-            'HLT_Mu30_TkMu11_v1',
-            'HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v1',
-            'HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v1'
+            'HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v2',
+            'HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v2'
         ]),
         # Cuts
         min_tight_lepton_pT = cms.double(20),
