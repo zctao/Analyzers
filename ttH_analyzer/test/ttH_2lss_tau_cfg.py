@@ -45,6 +45,10 @@ options.register('doSystematics', True,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.bool,
                  "Include systematics or not")
+options.register('OutputDir', '',  #'/uscms/home/ztao/nobackup/'
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 "output file directory")
 
 options.maxEvents = -1
 
@@ -123,11 +127,11 @@ process.ttHtaus.using_real_data = cms.bool(options.isData)
 
 ### Outputs
 if options.isData:
-    out_file = '/uscms/home/ztao/nobackup/testNtuple_data.root'
+    out_file = options.OutputDir + 'output_data.root'
 elif options.sysJECType == 'NA':
-    out_file = '/uscms/home/ztao/nobackup/testNtuple_' + options.SampleName + '.root'
+    out_file = options.OutputDir + 'output_' + options.SampleName + '.root'
 else:
-    out_file = '/uscms/home/ztao/nobackup/testNtuple_' + options.SampleName + '_' + options.sysJECType + '.root'
+    out_file = options.OutputDir + 'output_' + options.SampleName + '_' + options.sysJECType + '.root'
 
 
 process.TFileService = cms.Service("TFileService",
