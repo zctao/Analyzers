@@ -482,17 +482,19 @@ void CU_ttH_EDA::beginRun(const edm::Run &iRun, const edm::EventSetup &iSetup)
 void CU_ttH_EDA::endRun(const edm::Run &, const edm::EventSetup &)
 {
 	if (analysis_type == Analyze_tau_ssleptons) {
-		// Rescale histograms
-		h_MVA_ttV_vs_ttbar -> Scale(int_lumi * sample_xs / event_count);
-		h_MVA_shape -> Scale(int_lumi * sample_xs / event_count);
-
-		if (setup_sysHist) {
-			for (auto h : h_MVA_ttV_vs_ttbar_sys) {
-				h -> Scale(int_lumi * sample_xs / event_count);
-			}
-
-			for (auto h : h_MVA_shape_sys) {
-				h -> Scale(int_lumi * sample_xs / event_count);
+		if (not isdata) {
+			// Rescale histograms for MC
+			h_MVA_ttV_vs_ttbar -> Scale(int_lumi * sample_xs / event_count);
+			h_MVA_shape -> Scale(int_lumi * sample_xs / event_count);
+			
+			if (setup_sysHist) {
+				for (auto h : h_MVA_ttV_vs_ttbar_sys) {
+					h -> Scale(int_lumi * sample_xs / event_count);
+				}
+				
+				for (auto h : h_MVA_shape_sys) {
+					h -> Scale(int_lumi * sample_xs / event_count);
+				}
 			}
 		}
 	}
