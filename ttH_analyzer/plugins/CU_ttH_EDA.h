@@ -86,12 +86,11 @@
 #include "CU_ttH_EDA_Handles.h"
 
 #include "Analyzers/ttH_analyzer/interface/CU_ttH_EDA_Ntuple.h"
+#include "Analyzers/ttH_analyzer/interface/kinMVA_ttbar_2lss.h"
+#include "Analyzers/ttH_analyzer/interface/kinMVA_ttV_2lss.h"
 
 /// Configuration reader
 #include "yaml-cpp/yaml.h"
-
-/// TMVA
-#include "TMVA/Reader.h"
 
 /*
  *
@@ -210,13 +209,10 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	bool pass_event_sel_2lss1tauh(CU_ttH_EDA_event_vars &);
 	bool pass_event_sel_1l2tauh(CU_ttH_EDA_event_vars &);
 
-	bool passMuonTightCharge(pat::Muon);
-	bool passElectronCharge(pat::Electron);
+	bool passExtraforTight(pat::Muon);
+	bool passExtraforTight(pat::Electron);
 
 	// MVA
-	void Set_up_MVA_2lss_ttbar(TMVA::Reader *);
-	void Set_up_MVA_2lss_ttV(TMVA::Reader *);
-	double mva(CU_ttH_EDA_Ntuple &, TMVA::Reader *);
 	int partition2DBDT(double, double);
 
 	// csv reweighting
@@ -358,20 +354,10 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	TTree *eventTree;
 	CU_ttH_EDA_Ntuple tauNtuple;
 
-	// TMVA Readers
-	TMVA::Reader *reader_2lss_ttV;
-	TMVA::Reader *reader_2lss_ttbar;
-	// MVA variables
-	float mvaMaxLepEta;
-	float mvaNJets25;
-	float mvaMinDrLep1J;
-	float mvaMinDrLep2J;
-	float mvaMET;
-	float mvaAvgDrJ;
-	float mvaMTMetLep1;
-	float mvaLepGoodConePt0;
-	float mvaLepGoodConePt1;
-
+	// MVA
+	kinMVA_ttbar_2lss MVA_ttbar_vars;
+	kinMVA_ttV_2lss MVA_ttV_vars;
+	
 	std::string sysList[16] =
 		{"LFUp","LFDown","HFUp","HFDown",
 		 "HFStats1Up","HFStats1Down","HFStats2Up","HFStats2Down",

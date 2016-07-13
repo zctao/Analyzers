@@ -30,9 +30,7 @@ class CU_ttH_EDA_Ntuple //: public TClass
 	void fill_ntuple_taus(const std::vector<pat::Tau> &);
 	void fill_ntuple_jets(const std::vector<pat::Jet> &);
 	//void fill_ntuple_met(const pat::MET &);
-	double Comb(int, int);
-	template<typename T> void update_ldgLeps_vars(T&);
-
+	
 	// internal variables
 	TLorentzVector lep0_p4;
 	TLorentzVector lep1_p4;
@@ -49,8 +47,7 @@ class CU_ttH_EDA_Ntuple //: public TClass
 	void initialize();
 	void set_up_branches(TTree *);
 	void write_ntuple(const CU_ttH_EDA_event_vars &);
-	void write_evtMVAvars_2lss(const CU_ttH_EDA_event_vars &);
-
+	
 	/// variables
 	// event variables
 	int nEvent;
@@ -254,26 +251,6 @@ class CU_ttH_EDA_Ntuple //: public TClass
 	//ClassDef(CU_ttH_EDA_Ntuple,1);
 	
 };
-
-template<typename T>
-void CU_ttH_EDA_Ntuple::update_ldgLeps_vars(T& leptons)
-{
-	for (auto & l : leptons) {
-		if (l.pt() > lep0_p4.Pt()) {
-			lep1_p4 = lep0_p4;
-			lep1_isfakeable = lep0_isfakeable;
-			lep1_ptRatio = lep0_ptRatio;
-			lep0_p4.SetPtEtaPhiE(l.pt(), l.eta(), l.phi(), l.energy());
-			lep0_isfakeable = l.userFloat("idFakeable") > 0.5;
-			lep0_ptRatio = l.userFloat("nearestJetPtRatio");
-		}
-		else if (l.pt() > lep1_p4.Pt()) {
-			lep1_p4.SetPtEtaPhiE(l.pt(), l.eta(), l.phi(), l.energy());
-			lep1_isfakeable = l.userFloat("idFakeable") > 0.5;
-			lep1_ptRatio = l.userFloat("nearestJetPtRatio");
-		}
-	}
-}
 
 #endif
 	

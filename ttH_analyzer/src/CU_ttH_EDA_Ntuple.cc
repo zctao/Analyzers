@@ -57,71 +57,6 @@ void CU_ttH_EDA_Ntuple::write_ntuple(const CU_ttH_EDA_event_vars &local)
 	metLD = local.metLD;
 }
 
-void CU_ttH_EDA_Ntuple::write_evtMVAvars_2lss(const CU_ttH_EDA_event_vars & local)
-{
-	
-	// Get leading and sub-leading leptons
-	// 
-	update_ldgLeps_vars(local.mu_tight);
-	update_ldgLeps_vars(local.e_tight);
-
-	// max eta of the leptons
-	if (local.n_muons_tight + local.n_electrons_tight >= 2)
-		max_lep_eta = std::max(abs(lep0_p4.Eta()),abs(lep1_p4.Eta()));
-	else
-		max_lep_eta = -9999.;
-		
-	// cone pT of lepton
-	if (lep0_isfakeable and lep0_ptRatio > 0) {
-		// lepton could be categorized as 'fakeable' but no ptRatio calculated (default value -1.) if e.g. dR(lep, jet)>0.5   FOLLOW UP NEEDED
-		lep0_conept = 0.85 * lep0_p4.Pt() / lep0_ptRatio;
-	}
-	else
-		lep0_conept = lep0_p4.Pt();
-
-	if (lep1_isfakeable and lep1_ptRatio > 0) {
-		lep1_conept = 0.85 * lep1_p4.Pt() / lep1_ptRatio;
-	}
-	else
-		lep1_conept = lep1_p4.Pt();
-
-	// mindr_lep_jet	
-	mindr_lep0_jet = 23333.;  // initialize
-	mindr_lep1_jet = 23333.;  // initialize
-	for (auto & jet : local.jets_selected_sorted) {
-	  TLorentzVector jLV;
-	  jLV.SetPtEtaPhiE(jet.pt(), jet.eta(), jet.phi(), jet.energy());
-		if (lep0_p4.DeltaR(jLV) < mindr_lep0_jet)
-			mindr_lep0_jet = lep0_p4.DeltaR(jLV);
-		if (lep1_p4.DeltaR(jLV) < mindr_lep1_jet)
-			mindr_lep1_jet = lep1_p4.DeltaR(jLV);		
-	}
-	
-	// MT_met_lep0
-	double mass_lep0 = lep0_p4.M();
-	double Et_lep0 = sqrt(mass_lep0 * mass_lep0 + lep0_conept * lep0_conept);
-	double cosDphi = cos(local.pfMET.phi() - lep0_p4.Phi());
-	MT_met_lep0 =
-		sqrt(mass_lep0*mass_lep0 + 2*local.pfMET.pt()*(Et_lep0 - lep0_conept*cosDphi));
-	
-	// avg_dr_jet
-	double sum_dr_jet = 0;
-	int ncomb = 1;
-	if (local.n_jets>=2) {		
-		for (auto i = local.jets_selected_sorted.begin(); i != local.jets_selected_sorted.end()-1; ++i) {
-			for (auto j = i+1; j != local.jets_selected_sorted.end(); ++j) {
-			  double deta = i->eta() - j->eta();
-			  double dphi = i->phi() - j->phi();
-			  sum_dr_jet += sqrt(deta*deta + dphi*dphi);
-			}
-		}
-		
-		ncomb = (int) Comb(local.n_jets, 2);  // n*(n-1)/2
-		
-	}
-	avg_dr_jet = sum_dr_jet/ncomb;
-}
-
 void CU_ttH_EDA_Ntuple::fill_ntuple_muons(const std::vector<pat::Muon>& muons)
 {
 	if (muons.size() > 0) {
@@ -747,19 +682,6 @@ void CU_ttH_EDA_Ntuple::set_up_branches(TTree *tree)
 	tree->Branch("PFMETphi", &PFMETphi);
 	tree->Branch("MHT", &MHT);
 	tree->Branch("metLD", &metLD);
-}
-
-double CU_ttH_EDA_Ntuple::Comb(int n, int k) {  // return nCk
-	if (n < k or k < 0 or n < 0) {
-		std::cerr << "ERROR in Comb()! Illegal inputs!" << std::endl;
-		std::cerr << "n = " << n << std::endl;
-		return 0;
-	}
-	else if (k == 0) {
-		return 1;
-	}
-	else
-		return (n-k+1)*1./k * Comb(n, k-1);
 }
 
 //ClassImp(CU_ttH_EDA_Ntuple);

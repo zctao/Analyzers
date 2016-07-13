@@ -352,7 +352,7 @@ float CU_ttH_EDA::getMHT(CU_ttH_EDA_event_vars &local)
 	return sqrt(MHT_x * MHT_x + MHT_y * MHT_y);
 }
 
-bool CU_ttH_EDA::passMuonTightCharge(pat::Muon mu)
+bool CU_ttH_EDA::passExtraforTight(pat::Muon mu)
 {
 	if (mu.innerTrack().isAvailable()) {
 		if (mu.innerTrack()->ptError()/mu.innerTrack()->pt() < 0.2)
@@ -362,7 +362,7 @@ bool CU_ttH_EDA::passMuonTightCharge(pat::Muon mu)
 	return false;
 }
 
-bool CU_ttH_EDA::passElectronCharge(pat::Electron ele)
+bool CU_ttH_EDA::passExtraforTight(pat::Electron ele)
 {
 	return (
 			ele.userFloat("numMissingHits") == 0 and
@@ -394,7 +394,6 @@ bool CU_ttH_EDA::pass_event_sel_2lss1tauh(CU_ttH_EDA_event_vars &local)
 	}
 
 	bool passTwoSameSigh = false;
-	bool passTightQualityLep = false;
 	bool passLeptonPt = false;
 	bool passMetLD = false;
 	bool passZmassVeto = false;
@@ -404,25 +403,19 @@ bool CU_ttH_EDA::pass_event_sel_2lss1tauh(CU_ttH_EDA_event_vars &local)
 		passTwoSameSigh =
 			local.mu_tight[0].charge() * local.mu_tight[1].charge() > 0;
 
-		passTightQualityLep =
-			passMuonTightCharge(local.mu_tight[0]) and
-			passMuonTightCharge(local.mu_tight[1]);
-
 		passLeptonPt =
 			local.mu_tight[0].pt() > 20. and local.mu_tight[1].pt() > 10;
 		
 		passMetLD = true;
 		passZmassVeto = true;
+
+		local.hlt_sf = 1.0;
 	}
 
 	// emu
 	if (local.n_muons_tight == 1 and local.n_electrons_tight == 1) {
 		passTwoSameSigh =
 			local.mu_tight[0].charge() * local.e_tight[0].charge() > 0;
-
-		passTightQualityLep =
-			passMuonTightCharge(local.mu_tight[0]) and
-			passElectronCharge(local.e_tight[0]);
 
 		if (local.mu_tight[0].pt() > local.e_tight[0].pt()) {
 			passLeptonPt =
@@ -435,16 +428,14 @@ bool CU_ttH_EDA::pass_event_sel_2lss1tauh(CU_ttH_EDA_event_vars &local)
 		
 		passMetLD = true;
 		passZmassVeto = true;
+
+		local.hlt_sf = 0.98;
 	}
 
 	// ee
 	if (local.n_muons_tight == 0 and local.n_electrons_tight == 2) {
 		passTwoSameSigh =
 			local.e_tight[0].charge() * local.e_tight[1].charge() > 0;
-
-		passTightQualityLep =
-			passElectronCharge(local.e_tight[0]) and
-			passElectronCharge(local.e_tight[1]);
 
 		passLeptonPt =
 			local.e_tight[0].pt() > 20. and local.e_tight[1].pt() > 15.;
@@ -453,6 +444,11 @@ bool CU_ttH_EDA::pass_event_sel_2lss1tauh(CU_ttH_EDA_event_vars &local)
 
 		double eeInvMass = (local.e_tight[0].p4()+local.e_tight[1].p4()).mass();
 		passZmassVeto = eeInvMass < 91.2 - 10.0 or eeInvMass > 91.2 + 10.0;
+
+		if (local.e_tight[0].pt() <= 40.)
+			local.hlt_sf = 0.95;
+		else
+			local.hlt_sf = 0.99;
 	}
 
 
@@ -462,41 +458,17 @@ bool CU_ttH_EDA::pass_event_sel_2lss1tauh(CU_ttH_EDA_event_vars &local)
 	
 	
 	return (passTwoSameSigh and
-			passTightQualityLep and
 			passLeptonPt and
 			passMetLD and
 			passZmassVeto and
 			passNumTaus and
 			passNumJets and
 			passNumBtags);
-
-	/*
-	return (local.n_electrons + local.n_muons == 2 and
-			local.n_jets >= 4 and
-			local.metLD > 0.2 and
-			(local.n_ >=2 or nbMedium >= 1)
-			);
-	*/
 }
 
 bool CU_ttH_EDA::pass_event_sel_1l2tauh(CU_ttH_EDA_event_vars &local)
 {
 	return false;
-}
-
-double CU_ttH_EDA::mva(CU_ttH_EDA_Ntuple& ntuple, TMVA::Reader *reader)
-{
-	mvaMaxLepEta = ntuple.max_lep_eta;
-	mvaNJets25 = ntuple.n_presel_jet;  // what jet?
-	mvaMinDrLep1J = ntuple.mindr_lep0_jet;
-	mvaMinDrLep2J = ntuple.mindr_lep1_jet;
-	mvaMET = std::min(ntuple.PFMET, 400.);
-	mvaAvgDrJ = ntuple.avg_dr_jet;
-	mvaMTMetLep1 = ntuple.MT_met_lep0;
-	mvaLepGoodConePt0 = ntuple.lep0_conept;
-	mvaLepGoodConePt1 = ntuple.lep1_conept;
-	
-	return reader->EvaluateMVA("BDTG method");
 }
 
 int CU_ttH_EDA::partition2DBDT(double ttbar, double ttV)

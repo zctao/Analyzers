@@ -98,10 +98,11 @@ CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig):
 	Set_up_BTagCalibration_Readers();
 	Set_up_CSV_rootFile();
 
-    reader_2lss_ttV = new TMVA::Reader("!Color:!Silent");
-	reader_2lss_ttbar = new TMVA::Reader("!Color:!Silent");
-	Set_up_MVA_2lss_ttV(reader_2lss_ttV);
-	Set_up_MVA_2lss_ttbar(reader_2lss_ttbar);
+	
+    //reader_2lss_ttV = new TMVA::Reader("!Color:!Silent");
+	//reader_2lss_ttbar = new TMVA::Reader("!Color:!Silent");
+	//Set_up_MVA_2lss_ttV(reader_2lss_ttV);
+	//Set_up_MVA_2lss_ttbar(reader_2lss_ttbar);
 }
 
 /// Destructor
@@ -112,8 +113,8 @@ CU_ttH_EDA::~CU_ttH_EDA()
 
 	Close_output_files();
 	
-	delete reader_2lss_ttV;
-	delete reader_2lss_ttbar;
+	//	delete reader_2lss_ttV;
+	//	delete reader_2lss_ttbar;
 }
 
 // ------------ method called for each event  ------------
@@ -138,6 +139,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	local.csv_weight = 1.;
 	//local.pu_weight = 1.;
 	local.gen_weight = 1.;
+	local.hlt_sf = 1.;
 	
 	/// Create and set up edm:Handles in stack mem.
 	edm_Handles handle;
@@ -168,7 +170,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		h_hlt->Fill(0., 1);
 		h_flt->Fill(0., 1);
 	}
-
+	
 	/// Lepton selection
 	//local.mu_selected = miniAODhelper.GetSelectedMuons(
 	//	*(handle.muons), min_mu_pT, muonID::muonPreselection);
@@ -195,7 +197,8 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 			local.mu_fakeable.push_back(mu);
 		
 		if (mu.userFloat("idMVABased") > 0.5) {
-			local.mu_tight.push_back(mu);
+			if (passExtraforTight(mu))
+				local.mu_tight.push_back(mu);
 		}
 		
 	}
@@ -217,11 +220,13 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	for (auto & ele : local.e_loose) {
 		
 		if (ele.userFloat("idFakeable") > 0.5) {
-			local.e_fakeable.push_back(ele);
+			if (ele.userFloat("numMissingHits") == 0)
+				local.e_fakeable.push_back(ele);
 		}
 			
 		if (ele.userFloat("idMVABased") > 0.5) {
-			local.e_tight.push_back(ele);
+			if (passExtraforTight(ele))
+				local.e_tight.push_back(ele);
 		}
 			
 	}
@@ -313,7 +318,6 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	// MHT
 	float mht = getMHT(local);
 	float met = local.pfMET.pt();
-	assert(local.pfMET.pt()*local.pfMET.pt() == local.pfMET.px()*local.pfMET.px()+local.pfMET.py()*local.pfMET.py());
 	float metld = 0.00397 * met + 0.00265 * mht;
 	local.MHT = mht;
 	local.metLD = metld;
@@ -340,17 +344,35 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	
 	if (analysis_type == Analyze_tau_ssleptons) {
 
+		bool passHLT =
+			local.pass_single_e or local.pass_single_mu or local.pass_double_mu or
+			local.pass_double_e or local.pass_elemu;
+		// Check if all HLTs failed for debug purpose: assert(not passHLT);
+					
+		// Event selection
+		bool pass_event_selection = pass_event_sel_2lss1tauh(local) and passHLT;
+
 		tauNtuple.initialize();
 		
-		// Event selection
-		bool pass_event_selection = pass_event_sel_2lss1tauh(local);
-		
-		// event level variables
 		if (pass_event_selection) {
 			// MVA
-			tauNtuple.write_evtMVAvars_2lss(local);
-			tauNtuple.MVA_2lss_ttV = mva(tauNtuple,reader_2lss_ttV);
-			tauNtuple.MVA_2lss_ttbar = mva(tauNtuple,reader_2lss_ttbar);
+			MVA_ttbar_vars.Calculate_mvaVars(local);
+			MVA_ttV_vars.Calculate_mvaVars(local);
+
+			double mva_ttar = MVA_ttbar_vars.Get_mvaScore();
+			double mva_ttV = MVA_ttV_vars.Get_mvaScore();
+
+			// Write MVA variables to ntuple
+			tauNtuple.MVA_2lss_ttbar = mva_ttar;
+			tauNtuple.MVA_2lss_ttV = mva_ttV;		
+			tauNtuple.MT_met_lep0 = MVA_ttbar_vars.Get_MT_met_lep1();
+			tauNtuple.n_jet25_recl = MVA_ttbar_vars.Get_nJet25();
+			tauNtuple.mindr_lep0_jet = MVA_ttbar_vars.Get_mindr_lep1_jet();
+			tauNtuple.mindr_lep1_jet = MVA_ttbar_vars.Get_mindr_lep2_jet();
+			tauNtuple.avg_dr_jet = MVA_ttbar_vars.Get_avg_dr_jet();
+			tauNtuple.max_lep_eta = MVA_ttbar_vars.Get_max_lep_eta();
+			tauNtuple.lep0_conept = MVA_ttV_vars.Get_lep1_conePt();
+			tauNtuple.lep1_conept = MVA_ttV_vars.Get_lep2_conePt();
 
 			// weight
 			if (isdata) {
@@ -360,13 +382,13 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 				//local.csv_weight = getEvtCSVWeight(local.jets_selected, JECSysType);
 				local.csv_weight = getEvtCSVWeight(local.jets_selected, csv_iSys[JECSysType]);
 				local.weight =
-					local.csv_weight * local.gen_weight;
+					local.csv_weight * local.gen_weight * local.hlt_sf;
 			}
 			
 			// 2D hist
-			h_MVA_ttV_vs_ttbar->Fill(tauNtuple.MVA_2lss_ttbar,tauNtuple.MVA_2lss_ttV, local.weight);
+			h_MVA_ttV_vs_ttbar->Fill(mva_ttar, mva_ttV, local.weight);
 			// 1D shape
-			int bin = partition2DBDT(tauNtuple.MVA_2lss_ttbar,tauNtuple.MVA_2lss_ttV);
+			int bin = partition2DBDT(mva_ttar, mva_ttV);
 			h_MVA_shape->Fill(bin, local.weight);
 
 			// systematics
@@ -378,8 +400,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 						getEvtCSVWeight(local.jets_selected, csv_iSys[sysList[isys]]);
 					double evt_weight_sys = csv_weight_sys * local.gen_weight;
 					// 2D
-					h_MVA_ttV_vs_ttbar_sys[isys]->Fill(tauNtuple.MVA_2lss_ttbar,
-													   tauNtuple.MVA_2lss_ttV,
+					h_MVA_ttV_vs_ttbar_sys[isys]->Fill(mva_ttar, mva_ttV,
 													   evt_weight_sys);
 					// 1D shape
 					h_MVA_shape_sys[isys]->Fill(bin, evt_weight_sys);
