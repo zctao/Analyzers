@@ -4,9 +4,9 @@
 #include "CU_ttH_EDA_Handles.h"
 
 /// Set up handles with getByToken from edm::Event
-void Set_up_handles(const Event &iEvent, edm_Handles &handle, edm_Tokens &token)
-{
-	iEvent.getByToken(token.event_gen_info, handle.event_gen_info);
+void Set_up_handles(const Event &iEvent, edm_Handles &handle, edm_Tokens &token,
+					bool isdata)
+{		
 	iEvent.getByToken(token.triggerResults, handle.triggerResults);
 	iEvent.getByToken(token.filterResults, handle.filterResults);
 
@@ -22,7 +22,6 @@ void Set_up_handles(const Event &iEvent, edm_Handles &handle, edm_Tokens &token)
 	iEvent.getByToken(token.jets, handle.jets);
 	iEvent.getByToken(token.METs, handle.METs);
 
-	iEvent.getByToken(token.MC_particles, handle.MC_particles);
 	iEvent.getByToken(token.PF_candidates, handle.PF_candidates);
 
 	iEvent.getByToken(token.BS, handle.BS);
@@ -30,7 +29,11 @@ void Set_up_handles(const Event &iEvent, edm_Handles &handle, edm_Tokens &token)
 	//iEvent.getByToken(token.top_jets, handle.top_jets);
 	//iEvent.getByToken(token.subfilter_jets, handle.subfilter_jets);
 
-	iEvent.getByToken(token.MC_packed, handle.MC_packed);
+	if (!isdata) {
+		iEvent.getByToken(token.event_gen_info, handle.event_gen_info);
+		iEvent.getByToken(token.MC_particles, handle.MC_particles);
+		iEvent.getByToken(token.MC_packed, handle.MC_packed);
+	}
 }
 
 #endif

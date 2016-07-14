@@ -97,33 +97,33 @@ CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig):
 
 	Set_up_BTagCalibration_Readers();
 	Set_up_CSV_rootFile();
-
 	
     //reader_2lss_ttV = new TMVA::Reader("!Color:!Silent");
 	//reader_2lss_ttbar = new TMVA::Reader("!Color:!Silent");
 	//Set_up_MVA_2lss_ttV(reader_2lss_ttV);
 	//Set_up_MVA_2lss_ttbar(reader_2lss_ttbar);
+
 }
 
 /// Destructor
 CU_ttH_EDA::~CU_ttH_EDA()
 {
+
 	// do anything here that needs to be done at desctruction time
 	// (e.g. close files, deallocate resources etc.)
 
 	Close_output_files();
-	
-	//	delete reader_2lss_ttV;
-	//	delete reader_2lss_ttbar;
+
 }
 
 // ------------ method called for each event  ------------
 void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 						 const edm::EventSetup &iSetup)
 {
+	
 	using namespace edm;
 	++event_count;
-
+	
 	/// Declaring local struct for data readout and manipulations
 	CU_ttH_EDA_event_vars local;
 
@@ -134,6 +134,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	local.pass_double_e = false;
 	local.pass_elemu = false;
 	Update_common_vars(iEvent, local);
+	
 	//Initialize weights
 	local.weight = 1.;
 	local.csv_weight = 1.;
@@ -143,11 +144,12 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	
 	/// Create and set up edm:Handles in stack mem.
 	edm_Handles handle;
-	Set_up_handles(iEvent, handle, token);
-
+	Set_up_handles(iEvent, handle, token, isdata);
+	
 	/// Run checks on event containers via their handles
 	Check_triggers(handle.triggerResults, local);
 	Check_filters(handle.filterResults);
+	
 	Check_vertices_set_MAODhelper(handle.vertices);
 	// 	Check_beam_spot(BS);	// dumb implementation
 
@@ -163,8 +165,9 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	iSetup.get<JetCorrectionsRecord>().get("AK4PF",JetCorParColl);
 	const JetCorrectorParameters & JetCorPar = (*JetCorParColl)["Uncertainty"];
 	miniAODhelper.SetJetCorrectorUncertainty(JetCorPar);
-		
-	local.gen_weight = handle.event_gen_info.product()->weight();
+
+	if (not isdata)
+		local.gen_weight = handle.event_gen_info.product()->weight();
 
 	if (trigger_stats) {
 		h_hlt->Fill(0., 1);
@@ -429,6 +432,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 // ------------
 void CU_ttH_EDA::beginJob()
 {
+	
 	TH1::SetDefaultSumw2(true);
 	TH2::SetDefaultSumw2(true);
 
@@ -476,6 +480,7 @@ void CU_ttH_EDA::beginRun(const edm::Run &iRun, const edm::EventSetup &iSetup)
 			return;
 		}
 	}
+	
 }
 
 // ------------ method called when ending the processing of a run  ------------

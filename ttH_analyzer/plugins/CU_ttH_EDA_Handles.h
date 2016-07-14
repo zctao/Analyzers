@@ -128,6 +128,6 @@ struct edm_Tokens {
 };
 
 /// Set up handles with getByToken from edm::Event
-void Set_up_handles(const Event &, edm_Handles &, edm_Tokens &);
+void Set_up_handles(const Event &, edm_Handles &, edm_Tokens &, bool);
 
 #endif
