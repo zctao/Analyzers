@@ -442,10 +442,13 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	
 	if (analysis_type == Analyze_tau_ssleptons) {
 
-		bool passHLT =
-			local.pass_single_e or local.pass_single_mu or local.pass_double_mu or
-			local.pass_double_e or local.pass_elemu;
+		//bool passHLT =
+		//	local.pass_single_e or local.pass_single_mu or local.pass_double_mu or
+		//	local.pass_double_e or local.pass_elemu;
 		// Check if all HLTs failed for debug purpose: assert(not passHLT);
+
+		bool passHLT = true;
+		// A HLT Filter has been put before producer and analyzer in cms.Path
 					
 		// Event selection
 		bool pass_event_selection =

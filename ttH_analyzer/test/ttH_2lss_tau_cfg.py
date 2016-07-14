@@ -2,6 +2,7 @@
 
 import FWCore.ParameterSet.Config as cms
 import FWCore.ParameterSet.VarParsing as VarParsing
+import HLTrigger.HLTfilters.hltHighLevel_cfi
 
 process = cms.Process("ttH")
 
@@ -82,6 +83,24 @@ process.source = cms.Source("PoolSource",
 	fileNames = cms.untracked.vstring(options.inputFiles)
 )
 
+### HLT Filter
+process.HLTFilter = HLTrigger.HLTfilters.hltHighLevel_cfi.hltHighLevel.clone(
+    throw = cms.bool(False),
+    HLTPaths = [
+        # single lepton trigger
+        'HLT_Ele23_WPLoose_Gsf_v*',
+        'HLT_IsoMu20_v*',
+        'HLT_IsoTkMu20_v*',
+        # dilepton trigger
+        'HLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v*',
+        'HLT_Mu17_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v*',
+        'HLT_Mu8_TrkIsoVVL_Ele17_CaloIdL_TrackIdL_IsoVL_v*',
+        'HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v*',
+        'HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v*'
+        ]
+    )
+
+
 ### JEC
 from PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff import patJetCorrFactorsUpdated #updatedPatJetCorrFactors
 process.patJetCorrFactorsReapplyJEC = patJetCorrFactorsUpdated.clone(  #updatedPatJetCorrFactors.clone(
@@ -137,6 +156,7 @@ process.TFileService = cms.Service("TFileService",
 
 #Path
 process.p = cms.Path(
+    process.HLTFilter *
     process.patJetCorrFactorsReapplyJEC * process.patJetsReapplyJEC *
     process.electronMVAValueMapProducer *
     process.ttHLeptons *
