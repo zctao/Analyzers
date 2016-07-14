@@ -42,11 +42,23 @@ void kinMVA_ttV_2lss::Set_up_Reader(TMVA::Reader *reader)
 	reader->BookMVA("BDTG method", base + "2lss_ttV_BDTG.weights.xml");
 }
 
-void kinMVA_ttV_2lss::Calculate_mvaVars(const CU_ttH_EDA_event_vars& event)
+void kinMVA_ttV_2lss::Calculate_mvaVars(const CU_ttH_EDA_event_vars& event,
+										int sysType = 0)
 // call Calculate_MVAvars function every event after selection
 {
 	float lep1_eta, lep2_eta;
 	float lep1_phi, lep2_phi;
+
+	vector<pat::Jet> vjets;
+	if (sysType == 1) {        // JESUp
+		vjets = event.jets_selected_sorted_jesup;
+	}
+	else if (sysType == -1) {  // JESDown
+		vjets = event.jets_selected_sorted_jesdown;
+	}
+	else {                     // NA
+		vjets = event.jets_selected_sorted;
+	}
 	
 	assign_lep_kinVars(event, lep1_conePt, lep2_conePt, lep1_eta,
 					   lep2_eta, lep1_phi, lep2_phi);
@@ -55,13 +67,11 @@ void kinMVA_ttV_2lss::Calculate_mvaVars(const CU_ttH_EDA_event_vars& event)
 	
 	Set_MT_met_lep1(lep1_conePt, lep1_phi, event.pfMET);
 	
-	Set_mindr_lep_jet(mindr_lep1_jet, lep1_eta, lep1_phi,
-					  event.jets_selected_sorted);
+	Set_mindr_lep_jet(mindr_lep1_jet, lep1_eta, lep1_phi, vjets);
 	
-	Set_mindr_lep_jet(mindr_lep2_jet, lep2_eta, lep2_phi,
-					  event.jets_selected_sorted);
+	Set_mindr_lep_jet(mindr_lep2_jet, lep2_eta, lep2_phi, vjets);
 	
-	Set_nJet25(event.jets_selected_sorted);
+	Set_nJet25(vjets);
 }
 
 

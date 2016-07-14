@@ -65,7 +65,7 @@ CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig):
 	min_njets (iConfig.getParameter<int>("min_njets")),
 	min_nbtags (iConfig.getParameter<int>("min_nbtags")),
 	// JEC
-	JECSysType (iConfig.getParameter<string>("JECSysType")),
+	//JECSysType (iConfig.getParameter<string>("JECSysType")),
 	//jet_corrector (iConfig.getParameter<string>("jet_corrector")),
 	isdata (iConfig.getParameter<bool>("using_real_data"))
 {
@@ -263,14 +263,15 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	  Jets selection
 	*/
 	local.jets_corrected =
-		miniAODhelper.GetCorrectedJets(*(handle.jets),iEvent,iSetup,systematics[JECSysType]);
+		miniAODhelper.GetCorrectedJets(*(handle.jets),iEvent,iSetup,sysType::NA);
 	local.jets_raw = miniAODhelper.GetSelectedJets(
 		local.jets_corrected, min_jet_pT, max_jet_eta, jetID::jetLoose, '-');
-
+	
 	// overlap removal by dR
 	local.jets_no_mu = removeOverlapdR(local.jets_raw, local.mu_fakeable, 0.4);
 	local.jets_no_mu_e = removeOverlapdR(local.jets_no_mu, local.e_fakeable, 0.4);
 	local.jets_selected = removeOverlapdR(local.jets_no_mu_e, local.tau_selected, 0.4);
+	
 	// sort by pT
 	local.jets_selected_sorted =
 		miniAODhelper.GetSortedByPt(local.jets_selected);
@@ -284,29 +285,122 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	local.jets_selected_btag_medium = miniAODhelper.GetSelectedJets(
 	    local.jets_selected_btag_loose, min_bjet_pT, max_bjet_eta,
 		jetID::jetLoose, 'M');
-	// CSV WP definition in MiniAODHelper is different from AN-15-321(v4)
-		
+	// CSV WP definition in current MiniAODHelper is different from AN-15-321(v4)
+	// The latter is tighter.
+
 	local.n_jets = static_cast<int>(local.jets_selected.size());
 	local.n_btags_loose = static_cast<int>(local.jets_selected_btag_loose.size());
 	local.n_btags_medium = static_cast<int>(local.jets_selected_btag_medium.size());
 
+	
+	if (!isdata and doSystematics) {
+		
+	local.jets_corrected_jesup =
+		miniAODhelper.GetCorrectedJets(*(handle.jets),iEvent,iSetup,sysType::JESup);
+	local.jets_corrected_jesdown =
+		miniAODhelper.GetCorrectedJets(*(handle.jets),iEvent,iSetup,sysType::JESdown);
+	local.jets_raw_jesup = miniAODhelper.GetSelectedJets(
+	    local.jets_corrected_jesup, min_jet_pT, max_jet_eta, jetID::jetLoose, '-');
+	local.jets_raw_jesdown = miniAODhelper.GetSelectedJets(
+		local.jets_corrected_jesdown, min_jet_pT, max_jet_eta, jetID::jetLoose, '-');
+	// overlap removal by dR
+	local.jets_no_mu_jesup =
+		removeOverlapdR(local.jets_raw_jesup, local.mu_fakeable, 0.4);
+	local.jets_no_mu_e_jesup =
+		removeOverlapdR(local.jets_no_mu_jesup, local.e_fakeable, 0.4);
+	local.jets_selected_jesup =
+		removeOverlapdR(local.jets_no_mu_e_jesup, local.tau_selected, 0.4);
+
+	local.jets_no_mu_jesdown =
+		removeOverlapdR(local.jets_raw_jesdown, local.mu_fakeable, 0.4);
+	local.jets_no_mu_e_jesdown =
+		removeOverlapdR(local.jets_no_mu_jesdown, local.e_fakeable, 0.4);
+	local.jets_selected_jesdown =
+		removeOverlapdR(local.jets_no_mu_e_jesdown, local.tau_selected, 0.4);
+
+	// sort by pT
+	local.jets_selected_sorted_jesup =
+		miniAODhelper.GetSortedByPt(local.jets_selected_jesup);
+	local.jets_selected_sorted_jesdown =
+		miniAODhelper.GetSortedByPt(local.jets_selected_jesdown);
+
+	/*
+	  BTag
+	*/
+	local.jets_selected_btag_loose_jesup = miniAODhelper.GetSelectedJets(
+	    local.jets_selected_sorted_jesup, min_bjet_pT, max_bjet_eta,
+		jetID::jetLoose,'L');
+	local.jets_selected_btag_medium_jesup = miniAODhelper.GetSelectedJets(
+	    local.jets_selected_btag_loose_jesup, min_bjet_pT, max_bjet_eta,
+	    jetID::jetLoose, 'M');
+	
+	local.jets_selected_btag_loose_jesdown = miniAODhelper.GetSelectedJets(
+	    local.jets_selected_sorted_jesdown, min_bjet_pT, max_bjet_eta,
+		jetID::jetLoose, 'L');
+	local.jets_selected_btag_medium_jesdown = miniAODhelper.GetSelectedJets(
+	    local.jets_selected_btag_loose_jesdown, min_bjet_pT, max_bjet_eta,
+	    jetID::jetLoose, 'M');
+	
+	}
+
+	///////////////////////////////////////////////////////////
+	// hack for now to account for different csv wp definition
 	bool do_AN321 = true;
 	if (do_AN321) {
 		// AN-15-321 CSV WP definition:
 		// Loose: csv > 0.605
 		// Medium: csv > 0.890
-		local.n_btags_loose = 0;
-		local.n_btags_medium = 0;
-		for (auto & bjet : local.jets_selected_btag_loose) {
-			float csv = bjet.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
+		std::vector<pat::Jet> tmp_loose;
+		std::vector<pat::Jet> tmp_medium;
+		for (auto & j : local.jets_selected_btag_loose) {
+			float csv = j.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
 			if (csv > 0.605) {
-				++(local.n_btags_loose);
+				tmp_loose.push_back(j);
 				if (csv > 0.890)
-					++(local.n_btags_medium);
+					tmp_medium.push_back(j);
 			}
+		}
+		local.jets_selected_btag_loose.clear();
+		local.jets_selected_btag_medium.clear();
+		local.jets_selected_btag_loose = tmp_loose;
+		local.jets_selected_btag_medium = tmp_medium;
+
+		if (!isdata and doSystematics) {
+		
+		std::vector<pat::Jet> tmp_loose_jesup;
+		std::vector<pat::Jet> tmp_medium_jesup;
+		for (auto & j : local.jets_selected_btag_loose_jesup) {
+			float csv = j.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
+			if (csv > 0.605) {
+				tmp_loose_jesup.push_back(j);
+				if (csv > 0.890)
+					tmp_medium_jesup.push_back(j);
+			}
+		}
+		local.jets_selected_btag_loose_jesup.clear();
+		local.jets_selected_btag_medium_jesup.clear();
+		local.jets_selected_btag_loose_jesup = tmp_loose_jesup;
+		local.jets_selected_btag_medium_jesup = tmp_medium_jesup;
+
+		std::vector<pat::Jet> tmp_loose_jesdown;
+		std::vector<pat::Jet> tmp_medium_jesdown;
+		for (auto & j : local.jets_selected_btag_loose_jesdown) {
+			float csv = j.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
+			if (csv > 0.605) {
+				tmp_loose_jesdown.push_back(j);
+				if (csv > 0.890)
+					tmp_medium_jesdown.push_back(j);
+			}
+		}
+		local.jets_selected_btag_loose_jesdown.clear();
+		local.jets_selected_btag_medium_jesdown.clear();
+		local.jets_selected_btag_loose_jesdown = tmp_loose_jesdown;
+		local.jets_selected_btag_medium_jesdown = tmp_medium_jesdown;
+
 		}
 	}
 
+	///////////////////////////////////////////////////////////
 
 	/// Top and Higgs tagging using collections through handles. adjusts
 	/// local.<tag>
@@ -353,14 +447,15 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		// Check if all HLTs failed for debug purpose: assert(not passHLT);
 					
 		// Event selection
-		bool pass_event_selection = pass_event_sel_2lss1tauh(local) and passHLT;
+		bool pass_event_selection =
+			pass_event_sel_2lss1tauh(local, 0) and passHLT;
 
 		tauNtuple.initialize();
 		
 		if (pass_event_selection) {
 			// MVA
-			MVA_ttbar_vars.Calculate_mvaVars(local);
-			MVA_ttV_vars.Calculate_mvaVars(local);
+			MVA_ttbar_vars.Calculate_mvaVars(local, 0);
+			MVA_ttV_vars.Calculate_mvaVars(local, 0);
 
 			double mva_ttar = MVA_ttbar_vars.Get_mvaScore();
 			double mva_ttV = MVA_ttV_vars.Get_mvaScore();
@@ -382,8 +477,8 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 				local.weight = 1.;
 			}
 			else {
-				//local.csv_weight = getEvtCSVWeight(local.jets_selected, JECSysType);
-				local.csv_weight = getEvtCSVWeight(local.jets_selected, csv_iSys[JECSysType]);
+				//local.csv_weight = getEvtCSVWeight(local.jets_selected, "NA");
+				local.csv_weight = getEvtCSVWeight(local.jets_selected, csv_iSys["NA"]);
 				local.weight =
 					local.csv_weight * local.gen_weight * local.hlt_sf;
 			}
@@ -393,9 +488,9 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 			// 1D shape
 			int bin = partition2DBDT(mva_ttar, mva_ttV);
 			h_MVA_shape->Fill(bin, local.weight);
-
+			
 			// systematics
-			if (!isdata and doSystematics and JECSysType == "NA") {
+			if (!isdata and doSystematics) {
 
 				for (int isys = 0; isys < 16; ++isys) {
 					double csv_weight_sys =
@@ -411,16 +506,74 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 			}
 
 		}
-
+		
 		if (produce_sync_ntuple or pass_event_selection) {
 			// no event selection is applied for sync ntuples
 			tauNtuple.write_ntuple(local);
 			eventTree->Fill();
 		}
-		
+
+		////////////
+		if (!isdata and doSystematics) {
+
+			// JESUp
+			bool pass_event_selection_jesup =
+				pass_event_sel_2lss1tauh(local, 1) and passHLT;
+			
+			if (pass_event_selection_jesup) {
+				// MVA
+				MVA_ttbar_vars.Calculate_mvaVars(local, 1);
+				MVA_ttV_vars.Calculate_mvaVars(local, 1);
+				
+				double mva_ttbar_jesup = MVA_ttbar_vars.Get_mvaScore();
+				double mva_ttV_jesup = MVA_ttV_vars.Get_mvaScore();
+				
+				//csv_weight_jesup = getEvtCSVWeight(local.jets_selected,"JESUp");
+				double csv_weight_jesup =
+					getEvtCSVWeight(local.jets_selected_jesup, csv_iSys["JESUp"]);
+				double weight_jesup =
+					csv_weight_jesup * local.gen_weight * local.hlt_sf;
+				
+				// 2D hist
+				h_MVA_ttV_vs_ttbar_jesup->Fill(mva_ttbar_jesup, mva_ttV_jesup,
+											   weight_jesup);
+				// 1D shape
+				int bin_jesup = partition2DBDT(mva_ttar_jesup, mva_ttV_jesup);
+				h_MVA_shape_jesup->Fill(bin_jesup, weight_jesup);
+			}
+			
+			
+			// JESDown
+			bool pass_event_selection_jesdown =
+				pass_event_sel_2lss1tauh(local, -1) and passHLT;
+
+			if (pass_event_selection_jesdown) {
+				// MVA
+				MVA_ttbar_vars.Calculate_mvaVars(local, -1);
+				MVA_ttV_vars.Calculate_mvaVars(local, -1);
+				
+				double mva_ttbar_jesdown = MVA_ttbar_vars.Get_mvaScore();
+				double mva_ttV_jesdown = MVA_ttV_vars.Get_mvaScore();
+				
+				//csv_weight_jesdown = getEvtCSVWeight(local.jets_selected, "JESDown");
+				double csv_weight_jesdown =
+					getEvtCSVWeight(local.jets_selected_jesdown, csv_iSys["JESDown"]);
+				double weight_jesdown =
+					csv_weight_jesdown * local.gen_weight * local.hlt_sf;
+				
+				// 2D hist
+				h_MVA_ttV_vs_ttbar_jesdown->
+					Fill(mva_ttbar_jesdown, mva_ttV_jesdown, weight_jesdown);
+				// 1D shape
+				int bin_jesdown = partition2DBDT(mva_ttar_jesdown, mva_ttV_jesdown);
+				h_MVA_shape_jesdown->Fill(bin_jesdown, weight_jesdown);
+			}
+			
+		}
+		////////
 		
 	}
-
+	
 	if (analysis_type == Analyze_ditaus_lepton) {
 		// Event selection
 		//if (pass_event_sel_1l12tauh(local))

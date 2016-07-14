@@ -12,7 +12,7 @@ class kinMVA_ttbar_2lss : public kinMVA_2lss
 
 	void Set_up_Reader(TMVA::Reader*);
 
-	void Calculate_mvaVars(const CU_ttH_EDA_event_vars&);
+	void Calculate_mvaVars(const CU_ttH_EDA_event_vars&, int);
 
 	float Get_avg_dr_jet() {return avg_dr_jet;}
 	float Get_MET() {return MET;}

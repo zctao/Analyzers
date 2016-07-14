@@ -206,8 +206,8 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	float getMHT(CU_ttH_EDA_event_vars &);
 	
 	// event selection
-	bool pass_event_sel_2lss1tauh(CU_ttH_EDA_event_vars &);
-	bool pass_event_sel_1l2tauh(CU_ttH_EDA_event_vars &);
+	bool pass_event_sel_2lss1tauh(CU_ttH_EDA_event_vars &, int);
+	bool pass_event_sel_1l2tauh(CU_ttH_EDA_event_vars &, int);
 
 	bool passExtraforTight(pat::Muon);
 	bool passExtraforTight(pat::Electron);
@@ -291,11 +291,11 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	
 	//JEC
 	//std::string jet_corrector;
-	std::string JECSysType;
-	std::map<std::string,sysType::sysType> systematics
-		= {{"NA", sysType::NA},
-		   {"JERUp", sysType::JERup},{"JERDown", sysType::JERdown},
-		   {"JESUp", sysType::JESup},{"JESDown", sysType::JESdown}};
+	//std::string JECSysType;
+	//std::map<std::string,sysType::sysType> systematics
+	//	= {{"NA", sysType::NA},
+	//	   {"JERUp", sysType::JERup},{"JERDown", sysType::JERdown},
+	//	   {"JESUp", sysType::JESup},{"JESDown", sysType::JESdown}};
 	
 	/// Selection helper
 	MiniAODHelper miniAODhelper;
@@ -325,6 +325,10 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 
 	TH2D *h_MVA_ttV_vs_ttbar;
 	TH1D *h_MVA_shape;
+	TH2D *h_MVA_ttV_vs_ttbar_jesup;
+	TH1D *h_MVA_shape_jesup;
+	TH2D *h_MVA_ttV_vs_ttbar_jesdown;
+	TH1D *h_MVA_shape_jesdown;
 	TH2D *h_MVA_ttV_vs_ttbar_sys[16];
 	TH1D *h_MVA_shape_sys[16];
 	bool setup_sysHist = false;
@@ -372,11 +376,12 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	
 	// CSV reweight iSys map
 	std::map<std::string, int> csv_iSys
-		= {{"JESUp",7}, {"JESUp",8}, {"LFUp",9}, {"LFDown",10}, {"HFUp",11},
+		= {{"JESUp",7}, {"JESDown",8}, {"LFUp",9}, {"LFDown",10}, {"HFUp",11},
 		   {"HFDown",12}, {"HFStats1Up",13}, {"HFStats1Down",14},
 		   {"HFStats2Up",15}, {"HFStats2Down",16}, {"LFStats1Up",17},
 		   {"LFStats1Down",18}, {"LFStats2Up",19}, {"LFStats2Down",20},
-		   {"cErr1Up",21},{"cErr1Down",22},{"cErr2Up",23},{"cErr2Down",24}};
+		   {"cErr1Up",21},{"cErr1Down",22},{"cErr2Up",23},{"cErr2Down",24},
+		   {"NA"},0};
 	
 };
 

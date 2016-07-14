@@ -371,7 +371,7 @@ bool CU_ttH_EDA::passExtraforTight(pat::Electron ele)
 			);
 }
 
-bool CU_ttH_EDA::pass_event_sel_2lss1tauh(CU_ttH_EDA_event_vars &local)
+bool CU_ttH_EDA::pass_event_sel_2lss1tauh(CU_ttH_EDA_event_vars &local, int jecType)
 {
 
 	if (local.n_muons_tight + local.n_electrons_tight != 2)
@@ -451,10 +451,31 @@ bool CU_ttH_EDA::pass_event_sel_2lss1tauh(CU_ttH_EDA_event_vars &local)
 			local.hlt_sf = 0.99;
 	}
 
-
 	bool passNumTaus = local.n_taus >= 1;
-	bool passNumJets = local.n_jets >= 4;
-	bool passNumBtags = local.n_btags_loose >= 2 or local.n_btags_medium >= 1;
+
+	
+	int njets = 0;
+	int nbtags_loose = 0;
+	int nbtags_medium = 0;
+
+	if (jecType == 1) {       // JESUp
+		njets = jets_selected_jesup;
+		nbtags_loose = jets_selected_btag_loose_jesup;
+		nbtags_medium = jets_selected_btag_medium_jesup;
+	}
+	else if (jecType == -1) { // JESDown
+		njets = jets_selected_jesdown;
+		nbtags_loose = jets_selected_btag_loose_jesdown;
+		nbtags_medium = jets_selected_btag_medium_jesdown;
+	}
+	else {                    // NA
+		njets = jets_selected;
+		nbtags_loose = jets_selected_btag_loose;
+		nbtags_medium = jets_selected_btag_medium;
+	}
+	
+	bool passNumJets = njets >= 4;
+	bool passNumBtags = nbtags_loose >= 2 or nbtags_medium >= 1;
 	
 	
 	return (passTwoSameSigh and
@@ -466,7 +487,7 @@ bool CU_ttH_EDA::pass_event_sel_2lss1tauh(CU_ttH_EDA_event_vars &local)
 			passNumBtags);
 }
 
-bool CU_ttH_EDA::pass_event_sel_1l2tauh(CU_ttH_EDA_event_vars &local)
+bool CU_ttH_EDA::pass_event_sel_1l2tauh(CU_ttH_EDA_event_vars &local, int sys)
 {
 	return false;
 }

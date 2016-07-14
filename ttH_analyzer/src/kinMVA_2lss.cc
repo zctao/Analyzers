@@ -69,8 +69,7 @@ float kinMVA_2lss::Compute_lep_conePt(const pat::Muon& mu)
 	}
 
 	is_tight = is_tight and extra;
-
-
+	
 	
 	if ( is_tight)// or mu.userFloat("nearestJetPtRatio")<0.)
 		return mu.pt();
