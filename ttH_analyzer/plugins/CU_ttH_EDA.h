@@ -234,6 +234,7 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	bool doSystematics;
 
 	/// Common sample parameters
+	bool doScale;
 	unsigned long event_count; // running event counter
 	double sample_xs;	  // cross section	
 	double int_lumi;	  // integrated luminosity

@@ -25,6 +25,10 @@ options.register('isData', False,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.bool,
                  "Run on real data or not")
+options.register('doScale', False,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.bool,
+                 "Scale histogram or not")
 options.register('IntLumi', 1.,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.float,
@@ -116,6 +120,7 @@ process.ttHtaus.input_tags.rho = cms.InputTag("fixedGridRhoFastjetCentralNeutral
 
 process.ttHtaus.do_systematics = cms.bool(options.doSystematics)
 process.ttHtaus.produce_sync_ntuple = cms.bool(options.doSync)
+process.ttHtaus.doScale = cms.bool(options.doScale)
 process.ttHtaus.sample_xs = cms.double(options.CrossSection)
 process.ttHtaus.int_lumi = cms.double(options.IntLumi)
 process.ttHtaus.using_real_data = cms.bool(options.isData)

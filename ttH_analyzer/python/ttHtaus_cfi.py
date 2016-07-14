@@ -13,6 +13,7 @@ ttHtaus =  cms.EDAnalyzer('CU_ttH_EDA',
         # Systematics
         do_systematics = cms.bool(False),
         # Sample parameter
+        doScale = cms.bool(False),
         sample_xs = cms.double(1.),
         int_lumi = cms.double(1.),
         # Generic

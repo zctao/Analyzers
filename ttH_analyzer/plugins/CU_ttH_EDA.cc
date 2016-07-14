@@ -39,6 +39,7 @@ CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig):
 	// Systematics
 	doSystematics (iConfig.getParameter<bool>("do_systematics")),
 	// Sample parameter
+	doScale (iConfig.getParameter<bool>("doScale")),
 	sample_xs (iConfig.getParameter<double>("sample_xs")),
 	int_lumi (iConfig.getParameter<double>("int_lumi")),
 	// Generic
@@ -640,10 +641,16 @@ void CU_ttH_EDA::beginRun(const edm::Run &iRun, const edm::EventSetup &iSetup)
 void CU_ttH_EDA::endRun(const edm::Run &, const edm::EventSetup &)
 {
 	if (analysis_type == Analyze_tau_ssleptons) {
-		if (not isdata) {
+		if (not isdata and doScale) {
 			// Rescale histograms for MC
 			h_MVA_ttV_vs_ttbar -> Scale(int_lumi * sample_xs / event_count);
 			h_MVA_shape -> Scale(int_lumi * sample_xs / event_count);
+
+			h_MVA_ttV_vs_ttbar_jesup -> Scale(int_lumi * sample_xs / event_count);
+			h_MVA_shape_jesup -> Scale(int_lumi * sample_xs / event_count);
+
+			h_MVA_ttV_vs_ttbar_jesdown -> Scale(int_lumi * sample_xs / event_count);
+			h_MVA_shape_jesdown -> Scale(int_lumi * sample_xs / event_count);
 			
 			if (setup_sysHist) {
 				for (auto h : h_MVA_ttV_vs_ttbar_sys) {
@@ -655,6 +662,7 @@ void CU_ttH_EDA::endRun(const edm::Run &, const edm::EventSetup &)
 				}
 			}
 		}
+
 	}
 	
 	// report results of sync exercises
