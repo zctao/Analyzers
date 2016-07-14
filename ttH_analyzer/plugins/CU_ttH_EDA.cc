@@ -496,7 +496,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 					double csv_weight_sys =
 						//getEvtCSVWeight(local.jets_selected, sysList[isys]);
 						getEvtCSVWeight(local.jets_selected, csv_iSys[sysList[isys]]);
-					double evt_weight_sys = csv_weight_sys * local.gen_weight;
+					double evt_weight_sys = csv_weight_sys * local.gen_weight * local.hlt_sf;
 					// 2D
 					h_MVA_ttV_vs_ttbar_sys[isys]->Fill(mva_ttar, mva_ttV,
 													   evt_weight_sys);
@@ -538,7 +538,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 				h_MVA_ttV_vs_ttbar_jesup->Fill(mva_ttbar_jesup, mva_ttV_jesup,
 											   weight_jesup);
 				// 1D shape
-				int bin_jesup = partition2DBDT(mva_ttar_jesup, mva_ttV_jesup);
+				int bin_jesup = partition2DBDT(mva_ttbar_jesup, mva_ttV_jesup);
 				h_MVA_shape_jesup->Fill(bin_jesup, weight_jesup);
 			}
 			
@@ -565,7 +565,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 				h_MVA_ttV_vs_ttbar_jesdown->
 					Fill(mva_ttbar_jesdown, mva_ttV_jesdown, weight_jesdown);
 				// 1D shape
-				int bin_jesdown = partition2DBDT(mva_ttar_jesdown, mva_ttV_jesdown);
+				int bin_jesdown = partition2DBDT(mva_ttbar_jesdown, mva_ttV_jesdown);
 				h_MVA_shape_jesdown->Fill(bin_jesdown, weight_jesdown);
 			}
 			

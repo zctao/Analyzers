@@ -37,10 +37,6 @@ options.register('CrossSection', 1.,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.float,
                  "Cross section of the channel")
-options.register('sysJECType', 'NA',  # 'NA', 'JESUp' or 'JESDown'
-                 VarParsing.VarParsing.multiplicity.singleton,
-                 VarParsing.VarParsing.varType.string,
-                 "JEC Type")
 options.register('doSystematics', True,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.bool,
@@ -118,7 +114,6 @@ process.ttHtaus.input_tags.taus = cms.InputTag("ttHLeptons")
 process.ttHtaus.input_tags.jets = cms.InputTag("patJetsReapplyJEC")
 process.ttHtaus.input_tags.rho = cms.InputTag("fixedGridRhoFastjetCentralNeutral")
 
-process.ttHtaus.JECSysType = cms.string(options.sysJECType)
 process.ttHtaus.do_systematics = cms.bool(options.doSystematics)
 process.ttHtaus.produce_sync_ntuple = cms.bool(options.doSync)
 process.ttHtaus.sample_xs = cms.double(options.CrossSection)
@@ -128,11 +123,8 @@ process.ttHtaus.using_real_data = cms.bool(options.isData)
 ### Outputs
 if options.isData:
     out_file = options.OutputDir + 'output_data.root'
-elif options.sysJECType == 'NA':
-    out_file = options.OutputDir + 'output_' + options.SampleName + '.root'
 else:
-    out_file = options.OutputDir + 'output_' + options.SampleName + '_' + options.sysJECType + '.root'
-
+    out_file = options.OutputDir + 'output_' + options.SampleName + '.root'
 
 process.TFileService = cms.Service("TFileService",
                                    fileName = cms.string(out_file)

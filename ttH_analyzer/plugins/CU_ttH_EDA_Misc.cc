@@ -459,19 +459,19 @@ bool CU_ttH_EDA::pass_event_sel_2lss1tauh(CU_ttH_EDA_event_vars &local, int jecT
 	int nbtags_medium = 0;
 
 	if (jecType == 1) {       // JESUp
-		njets = jets_selected_jesup;
-		nbtags_loose = jets_selected_btag_loose_jesup;
-		nbtags_medium = jets_selected_btag_medium_jesup;
+		njets = local.jets_selected_jesup.size();
+		nbtags_loose = local.jets_selected_btag_loose_jesup.size();
+		nbtags_medium = local.jets_selected_btag_medium_jesup.size();
 	}
 	else if (jecType == -1) { // JESDown
-		njets = jets_selected_jesdown;
-		nbtags_loose = jets_selected_btag_loose_jesdown;
-		nbtags_medium = jets_selected_btag_medium_jesdown;
+		njets = local.jets_selected_jesdown.size();
+		nbtags_loose = local.jets_selected_btag_loose_jesdown.size();
+		nbtags_medium = local.jets_selected_btag_medium_jesdown.size();
 	}
 	else {                    // NA
-		njets = jets_selected;
-		nbtags_loose = jets_selected_btag_loose;
-		nbtags_medium = jets_selected_btag_medium;
+		njets = local.jets_selected.size();
+		nbtags_loose = local.jets_selected_btag_loose.size();
+		nbtags_medium = local.jets_selected_btag_medium.size();
 	}
 	
 	bool passNumJets = njets >= 4;

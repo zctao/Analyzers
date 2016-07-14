@@ -36,7 +36,7 @@ class kinMVA_2lss
 	float Compute_lep_conePt(const pat::Electron&);
 
 	virtual void Set_up_Reader(TMVA::Reader *) = 0;
-	virtual void Calculate_mvaVars(const CU_ttH_EDA_event_vars&) = 0;
+	virtual void Calculate_mvaVars(const CU_ttH_EDA_event_vars&, int) = 0;
 
 	double Get_mvaScore() {return reader->EvaluateMVA("BDTG method");}
 	

@@ -11,8 +11,7 @@ config.JobType.pyCfgParams = ['doSync=False',
                               'SampleName=ttH_htt',
                               'IntLumi=2.26',   #fb^-1
                               'CrossSection=258.6', #fb
-                              'sysJECType=NA',  # NA, JESUp, JESDown
-                              'doSystematics=True'] # True only for NA
+                              'doSystematics=True']
 #config.JobType.inputFiles
 
 config.Data.inputDataset = '/ttHJetToNonbb_M125_13TeV_amcatnloFXFX_madspin_pythia8_mWCutfix/RunIIFall15MiniAODv2-PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/MINIAODSIM'

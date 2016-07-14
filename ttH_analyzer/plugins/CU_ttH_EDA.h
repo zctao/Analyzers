@@ -381,7 +381,7 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 		   {"HFStats2Up",15}, {"HFStats2Down",16}, {"LFStats1Up",17},
 		   {"LFStats1Down",18}, {"LFStats2Up",19}, {"LFStats2Down",20},
 		   {"cErr1Up",21},{"cErr1Down",22},{"cErr2Up",23},{"cErr2Down",24},
-		   {"NA"},0};
+		   {"NA",0}};
 	
 };
 
