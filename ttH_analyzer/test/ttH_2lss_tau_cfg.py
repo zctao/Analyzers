@@ -69,6 +69,16 @@ process.maxEvents = cms.untracked.PSet(
 	input = cms.untracked.int32(options.maxEvents)
 )
 
+### Filters for running on collision data
+if options.isData:
+    # primary vertex filter
+    process.primaryVertexFilter = cms.EDFilter("GoodVertexFilter",
+                                               vertexCollection = cms.InputTag('offlineSlimmedPrimaryVertices'),
+                                               minimumNDOF = cms.uint32(4) ,
+                                               maxAbsZ = cms.double(24), 
+                                               maxd0 = cms.double(2) 
+    )
+
 ### Inputs
 #'ttH_htt' signal sample
 #'/store/mc/RunIIFall15MiniAODv2/ttHJetToTT_M125_13TeV_amcatnloFXFX_madspin_pythia8/MINIAODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v3/60000/0C6DA13E-38C8-E511-8F6E-00259055220A.root'
@@ -155,10 +165,24 @@ process.TFileService = cms.Service("TFileService",
 )
 
 #Path
-process.p = cms.Path(
-    process.HLTFilter *
-    process.patJetCorrFactorsReapplyJEC * process.patJetsReapplyJEC *
-    process.electronMVAValueMapProducer *
-    process.ttHLeptons *
-    process.ttHtaus
-)
+if options.isData:
+    process.p = cms.Path(
+        process.primaryVertexFilter *
+        process.HLTFilter *
+        process.patJetCorrFactorsReapplyJEC *
+        process.patJetsReapplyJEC *
+        process.electronMVAValueMapProducer *
+        process.ttHLeptons *
+        process.ttHtaus
+    )
+else:
+    process.p = cms.Path(
+        process.HLTFilter *
+        process.patJetCorrFactorsReapplyJEC * process.patJetsReapplyJEC *
+        process.electronMVAValueMapProducer *
+        process.ttHLeptons *
+        process.ttHtaus
+    )
+
+
+    
