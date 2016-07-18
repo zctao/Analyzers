@@ -26,7 +26,7 @@ options.register('isData', False,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.bool,
                  "Run on real data or not")
-options.register('doScale', False,
+options.register('doLumiScale', False,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.bool,
                  "Scale histogram or not")
@@ -93,23 +93,36 @@ process.source = cms.Source("PoolSource",
 	fileNames = cms.untracked.vstring(options.inputFiles)
 )
 
-### HLT Filter
-process.HLTFilter = HLTrigger.HLTfilters.hltHighLevel_cfi.hltHighLevel.clone(
-    throw = cms.bool(False),
-    HLTPaths = [
-        # single lepton trigger
-        'HLT_Ele23_WPLoose_Gsf_v*',
-        'HLT_IsoMu20_v*',
-        'HLT_IsoTkMu20_v*',
-        # dilepton trigger
-        'HLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v*',
-        'HLT_Mu17_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v*',
-        'HLT_Mu8_TrkIsoVVL_Ele17_CaloIdL_TrackIdL_IsoVL_v*',
-        'HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v*',
-        'HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v*'
-        ]
-    )
+### Event Counter
+#process.EventsCounter = cms.EDProducer("EventCountProducer")
 
+### HLT Filter
+#process.HLTFilter = HLTrigger.HLTfilters.hltHighLevel_cfi.hltHighLevel.clone(
+#    throw = cms.bool(False),
+#    HLTPaths = [
+#        # single lepton trigger
+#        'HLT_Ele23_WPLoose_Gsf_v*',
+#        'HLT_IsoMu20_v*',
+#        'HLT_IsoTkMu20_v*',
+#        # dilepton trigger
+#        'HLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v*',
+#        'HLT_Mu17_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v*',
+#        'HLT_Mu8_TrkIsoVVL_Ele17_CaloIdL_TrackIdL_IsoVL_v*',
+#        'HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v*',
+#        'HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v*'
+#        ]
+#    )
+
+### Higgs Decay Mode Filter for MC sample
+if "ttH_" in options.SampleName:  # 'ttH_htt', 'ttH_hww', 'ttH_hzz'
+    HFilterOn = True
+else:
+    HFilterOn = False
+
+process.HiggsDecayFilter = cms.EDFilter('MCHiggsDecayModeFilter',
+                                        DecayMode = cms.string(options.SampleName),
+                                        Enable = cms.bool(HFilterOn)
+    )
 
 ### JEC
 from PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff import patJetCorrFactorsUpdated #updatedPatJetCorrFactors
@@ -149,7 +162,7 @@ process.ttHtaus.input_tags.rho = cms.InputTag("fixedGridRhoFastjetCentralNeutral
 
 process.ttHtaus.do_systematics = cms.bool(options.doSystematics)
 process.ttHtaus.produce_sync_ntuple = cms.bool(options.doSync)
-process.ttHtaus.doScale = cms.bool(options.doScale)
+process.ttHtaus.doLumiScale = cms.bool(options.doLumiScale)
 process.ttHtaus.sample_xs = cms.double(options.CrossSection)
 process.ttHtaus.int_lumi = cms.double(options.IntLumi)
 process.ttHtaus.using_real_data = cms.bool(options.isData)
@@ -168,7 +181,7 @@ process.TFileService = cms.Service("TFileService",
 if options.isData:
     process.p = cms.Path(
         process.primaryVertexFilter *
-        process.HLTFilter *
+        #process.HLTFilter *
         process.patJetCorrFactorsReapplyJEC *
         process.patJetsReapplyJEC *
         process.electronMVAValueMapProducer *
@@ -177,7 +190,9 @@ if options.isData:
     )
 else:
     process.p = cms.Path(
-        process.HLTFilter *
+        #process.EventsCounter *
+        process.HiggsDecayFilter *
+        #process.HLTFilter *
         process.patJetCorrFactorsReapplyJEC * process.patJetsReapplyJEC *
         process.electronMVAValueMapProducer *
         process.ttHLeptons *

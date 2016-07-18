@@ -39,7 +39,7 @@ CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig):
 	// Systematics
 	doSystematics (iConfig.getParameter<bool>("do_systematics")),
 	// Sample parameter
-	doScale (iConfig.getParameter<bool>("doScale")),
+	doLumiScale (iConfig.getParameter<bool>("doLumiScale")),
 	sample_xs (iConfig.getParameter<double>("sample_xs")),
 	int_lumi (iConfig.getParameter<double>("int_lumi")),
 	// Generic
@@ -91,6 +91,7 @@ CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig):
 	miniAODhelper.UseCorrectedJets();
 	
 	Set_up_tokens(iConfig.getParameter<edm::ParameterSet>("input_tags"));
+		
 	Set_up_histograms();
 	Set_up_output_files();
 
@@ -441,13 +442,13 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	//}
 	
 	if (analysis_type == Analyze_tau_ssleptons) {
-
-		//bool passHLT =
-		//	local.pass_single_e or local.pass_single_mu or local.pass_double_mu or
-		//	local.pass_double_e or local.pass_elemu;
+		
+		bool passHLT =
+			local.pass_single_e or local.pass_single_mu or local.pass_double_mu or
+			local.pass_double_e or local.pass_elemu;
 		// Check if all HLTs failed for debug purpose: assert(not passHLT);
 
-		bool passHLT = true;
+		//bool passHLT = true;
 		// A HLT Filter has been put before producer and analyzer in cms.Path
 					
 		// Event selection
@@ -516,7 +517,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 			tauNtuple.write_ntuple(local);
 			eventTree->Fill();
 		}
-
+			
 		////////////
 		if (!isdata and doSystematics) {
 
@@ -598,7 +599,38 @@ void CU_ttH_EDA::beginJob()
 
 // ------------ method called once each job just after ending the event loop
 // ------------
-void CU_ttH_EDA::endJob() { return; }
+void CU_ttH_EDA::endJob() {
+	
+	if (analysis_type == Analyze_tau_ssleptons) {
+		std::cout << "Total number of samples: " << event_count << std::endl;
+		
+		if (not isdata and doLumiScale) {
+			
+			// Rescale histograms for MC
+			h_MVA_ttV_vs_ttbar -> Scale(int_lumi * sample_xs / event_count);
+			h_MVA_shape -> Scale(int_lumi * sample_xs / event_count);
+
+			h_MVA_ttV_vs_ttbar_jesup -> Scale(int_lumi * sample_xs / event_count);
+			h_MVA_shape_jesup -> Scale(int_lumi * sample_xs / event_count);
+
+			h_MVA_ttV_vs_ttbar_jesdown -> Scale(int_lumi * sample_xs / event_count);
+			h_MVA_shape_jesdown -> Scale(int_lumi * sample_xs / event_count);
+			
+			if (setup_sysHist) {
+				for (auto h : h_MVA_ttV_vs_ttbar_sys) {
+					h -> Scale(int_lumi * sample_xs / event_count);
+				}
+				
+				for (auto h : h_MVA_shape_sys) {
+					h -> Scale(int_lumi * sample_xs / event_count);
+				}
+			}
+		}
+
+	}
+
+	return;
+}
 
 // ------------ method called when starting to processes a run  ------------
 void CU_ttH_EDA::beginRun(const edm::Run &iRun, const edm::EventSetup &iSetup)
@@ -643,30 +675,6 @@ void CU_ttH_EDA::beginRun(const edm::Run &iRun, const edm::EventSetup &iSetup)
 // ------------ method called when ending the processing of a run  ------------
 void CU_ttH_EDA::endRun(const edm::Run &, const edm::EventSetup &)
 {
-	if (analysis_type == Analyze_tau_ssleptons) {
-		if (not isdata and doScale) {
-			// Rescale histograms for MC
-			h_MVA_ttV_vs_ttbar -> Scale(int_lumi * sample_xs / event_count);
-			h_MVA_shape -> Scale(int_lumi * sample_xs / event_count);
-
-			h_MVA_ttV_vs_ttbar_jesup -> Scale(int_lumi * sample_xs / event_count);
-			h_MVA_shape_jesup -> Scale(int_lumi * sample_xs / event_count);
-
-			h_MVA_ttV_vs_ttbar_jesdown -> Scale(int_lumi * sample_xs / event_count);
-			h_MVA_shape_jesdown -> Scale(int_lumi * sample_xs / event_count);
-			
-			if (setup_sysHist) {
-				for (auto h : h_MVA_ttV_vs_ttbar_sys) {
-					h -> Scale(int_lumi * sample_xs / event_count);
-				}
-				
-				for (auto h : h_MVA_shape_sys) {
-					h -> Scale(int_lumi * sample_xs / event_count);
-				}
-			}
-		}
-
-	}
 	
 	// report results of sync exercises
 	if (analysis_type == Analyze_lepton_jet) {
@@ -775,8 +783,8 @@ void CU_ttH_EDA::endRun(const edm::Run &, const edm::EventSetup &)
 // ------------ method called when starting to processes a luminosity block
 // ------------
 /*
-void CU_ttH_EDA::beginLuminosityBlock(edm::LuminosityBlock const&,
-edm::EventSetup const&)
+void CU_ttH_EDA::beginLuminosityBlock(const edm::LuminosityBlock &,
+const edm::EventSetup &)
 {
 }
 */
@@ -784,8 +792,7 @@ edm::EventSetup const&)
 // ------------ method called when ending the processing of a luminosity block
 // ------------
 /*
-void CU_ttH_EDA::endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup
-const&)
+void CU_ttH_EDA::endLuminosityBlock(const edm::LuminosityBlock & lumi, const edm::EventSetup & iConfig)
 {
 }
 */

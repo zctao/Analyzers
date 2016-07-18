@@ -51,6 +51,7 @@
 #include "DataFormats/PatCandidates/interface/PackedGenParticle.h"
 #include "DataFormats/Candidate/interface/Candidate.h"
 #include "DataFormats/Math/interface/LorentzVector.h"
+#include "DataFormats/Common/interface/MergeableCounter.h"
 
 #include "PhysicsTools/SelectorUtils/interface/JetIDSelectionFunctor.h"
 #include "PhysicsTools/SelectorUtils/interface/strbitset.h"
@@ -134,10 +135,10 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	void beginRun(const edm::Run &, const edm::EventSetup &) override;
 	void endRun(const edm::Run &, const edm::EventSetup &) override;
 
-	// 	virtual void beginLuminosityBlock(edm::LuminosityBlock const&,
-	// 		edm::EventSetup const&) override;
-	// 	virtual void endLuminosityBlock(edm::LuminosityBlock const&,
-	// 		edm::EventSetup const&) override;
+	// virtual void beginLuminosityBlock(const edm::LuminosityBlock &,
+	//								  const edm::EventSetup &) override;
+	// virtual void endLuminosityBlock(const edm::LuminosityBlock &,
+	//								const edm::EventSetup &) override;
 
 	/// One-time-run functions
 	void Close_output_files();		 // at ~CU_ttH_EDA()
@@ -234,13 +235,13 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	bool doSystematics;
 
 	/// Common sample parameters
-	bool doScale;
+	bool doLumiScale;
 	unsigned long event_count; // running event counter
 	double sample_xs;	  // cross section	
 	double int_lumi;	  // integrated luminosity
 	double sample_n;	  // total nr of events. Should be long if compatible
 	//double weight_sample; // int lumi * xs / sample_n
-
+	
 	/// debug flags
 	bool verbose_;
 	bool dumpHLT_;
