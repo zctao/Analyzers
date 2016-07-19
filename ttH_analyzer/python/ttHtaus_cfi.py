@@ -57,6 +57,7 @@ ttHtaus =  cms.EDAnalyzer('CU_ttH_EDA',
         # JEC
         #jet_corrector = cms.string('ak4PFchsL1L2L3'),
         using_real_data = cms.bool(False),
+        selection_region = cms.string('signal'),
         # InputTags
         input_tags = cms.PSet(
             pv = cms.InputTag("offlineSlimmedPrimaryVertices"),

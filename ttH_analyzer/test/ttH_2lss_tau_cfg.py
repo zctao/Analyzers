@@ -50,6 +50,10 @@ options.register('OutputDir', '',  #'/uscms/home/ztao/nobackup/'
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  "output file directory")
+options.register('selection_region', 'signal_2lss',
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 "Which selection region to apply: signal_2lss, control_2los, control_1lfakeable")
 
 options.maxEvents = -1
 
@@ -166,6 +170,7 @@ process.ttHtaus.doLumiScale = cms.bool(options.doLumiScale)
 process.ttHtaus.sample_xs = cms.double(options.CrossSection)
 process.ttHtaus.int_lumi = cms.double(options.IntLumi)
 process.ttHtaus.using_real_data = cms.bool(options.isData)
+process.ttHtaus.selection_region = cms.string(options.selection_region)
 
 ### Outputs
 if options.isData:

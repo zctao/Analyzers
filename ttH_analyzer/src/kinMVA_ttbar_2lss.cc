@@ -25,7 +25,7 @@ void kinMVA_ttbar_2lss::Set_up_Reader(TMVA::Reader * reader)
 	reader->AddVariable("numJets_float := nJet25_Recl", &nJet25);
 	reader->AddVariable("mindr_lep1_jet", &mindr_lep1_jet);
 	reader->AddVariable("mindr_lep2_jet", &mindr_lep2_jet);
-	reader->AddVariable("met := min(met_pt,400)", &MET);
+	reader->AddVariable("met := min(met_pt,400)", &met);
 	reader->AddVariable("avg_dr_jet", &avg_dr_jet);
 	reader->AddVariable("MT_met_lep1", &MT_met_lep1);
 
@@ -43,40 +43,31 @@ void kinMVA_ttbar_2lss::Set_up_Reader(TMVA::Reader * reader)
 	reader->BookMVA("BDTG method", base + "2lss_ttbar_BDTG.weights.xml");
 }
 
-void kinMVA_ttbar_2lss::Calculate_mvaVars(const CU_ttH_EDA_event_vars& event,
-										  int sysType = 0)
+void kinMVA_ttbar_2lss::Calculate_mvaVars(const std::vector<miniLepton>& leptons,
+										  const std::vector<pat::Tau>& taus,
+										  const std::vector<pat::Jet>& jets,
+										  const pat::MET& MET)
 // call Calculate_MVAvars function every event after selection
 {
-	float lep1_eta, lep2_eta;
-	float lep1_phi, lep2_phi;
 
-	vector<pat::Jet> vjets;
-	if (sysType == 1) {        // JESUp
-		vjets = event.jets_selected_sorted_jesup;
-	}
-	else if (sysType == -1) {  // JESDown
-		vjets = event.jets_selected_sorted_jesdown;
-	}
-	else {                     // NA
-		vjets = event.jets_selected_sorted;
-	}
+	// make sure there two and only two selected leptons
+	assert(leptons.size() == 2);
+	// input leptons should already be sorted by conept
+	assert(leptons[0].conePt() > leptons[1].conePt());
 	
-	assign_lep_kinVars(event, lep1_conePt, lep2_conePt, lep1_eta,
-					   lep2_eta, lep1_phi, lep2_phi);
-
-	Set_max_lep_eta(lep1_eta,lep2_eta);
+	Set_max_lep_eta(leptons[0].eta(),leptons[1].eta());
 	
-	Set_MT_met_lep1(lep1_conePt, lep1_phi, event.pfMET);
+	Set_MT_met_lep1(leptons[0].conePt(), leptons[0].phi(), MET);
 	
-	Set_mindr_lep_jet(mindr_lep1_jet, lep1_eta, lep1_phi, vjets);
+	mindr_lep1_jet = mindr_lep_jet(leptons[0].eta(), leptons[0].phi(), jets);
 	
-	Set_mindr_lep_jet(mindr_lep2_jet, lep2_eta, lep2_phi, vjets);
+	mindr_lep2_jet = mindr_lep_jet(leptons[1].eta(), leptons[1].phi(), jets);
 	
-	Set_nJet25(vjets);
+	Set_nJet25(jets);
 	
-	Set_MET(event.pfMET.pt());
+	Set_MET(MET.pt());
 	
-	Set_avg_dr_jet(vjets);
+	Set_avg_dr_jet(jets);
 	
 }
 

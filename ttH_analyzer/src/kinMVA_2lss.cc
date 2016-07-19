@@ -14,20 +14,20 @@ void kinMVA_2lss::Set_MT_met_lep1(double l1_conePt, double l1_phi,
 	MT_met_lep1 = sqrt( 2*l1_conePt*met.pt()*(1-cos(l1_phi-met.phi())) );	
 }
 
-void kinMVA_2lss::Set_mindr_lep_jet(float& mindr_LJ, float lep_eta,
-									float lep_phi, const vector<pat::Jet>& jets)
+float kinMVA_2lss::mindr_lep_jet(float lep_eta, float lep_phi,
+								 const vector<pat::Jet>& jets)
 {
 	assert(jets.size()>=1);  // at least one jet
 	
-	double mindr = 666.;
+	float mindr = 666.;
 
 	for (auto & j : jets) {
-		double dr = DeltaR(lep_eta, lep_phi, j.eta(), j.phi());
+		float dr = DeltaR(lep_eta, lep_phi, j.eta(), j.phi());
 		if ( dr < mindr)
 			mindr = dr;		
 	}
 
-	mindr_LJ = mindr;
+	return mindr;
 }
 
 void kinMVA_2lss::Set_nJet25(const vector<pat::Jet>& jets)
@@ -57,6 +57,7 @@ float kinMVA_2lss::Compute_lep_conePt(const T& lep)
 template float kinMVA_2lss::Compute_lep_conePt<pat::Muon>(const pat::Muon&, const vector<pat::Muon>&);
 template float kinMVA_2lss::Compute_lep_conePt<pat::Electron>(const pat::Electron&, const vector<pat::Electron>&);
 */
+/*
 float kinMVA_2lss::Compute_lep_conePt(const pat::Muon& mu)
 {
 	// All input leptons should pass fakeable selection
@@ -103,7 +104,8 @@ float kinMVA_2lss::Compute_lep_conePt(const pat::Electron& ele)
 	}
 	
 }
-
+*/
+/*
 void kinMVA_2lss::assign_lep_kinVars(const CU_ttH_EDA_event_vars& event,
 						float& lep1_conePt, float& lep2_conePt,
 						float& lep1_eta, float& lep2_eta,
@@ -154,5 +156,5 @@ void kinMVA_2lss::assign_lep_kinVars(const CU_ttH_EDA_event_vars& event,
 
 	assert(lep1_conePt >= lep2_conePt and lep2_conePt > 0.);
 }
-
+*/
 #endif

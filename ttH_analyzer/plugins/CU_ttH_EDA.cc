@@ -68,7 +68,8 @@ CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig):
 	// JEC
 	//JECSysType (iConfig.getParameter<string>("JECSysType")),
 	//jet_corrector (iConfig.getParameter<string>("jet_corrector")),
-	isdata (iConfig.getParameter<bool>("using_real_data"))
+	isdata (iConfig.getParameter<bool>("using_real_data")),
+	selection_region (iConfig.getParameter<string>("selection_region"))
 {
 	/*
 	 * now do whatever initialization is needed
@@ -195,17 +196,15 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	// sort by pT
 	local.mu_preselected_sorted = miniAODhelper.GetSortedByPt(local.mu_preselected);
 	// loose, fakeable and tight
-	local.mu_loose = local.mu_preselected_sorted;
-	for (auto & mu : local.mu_loose) {
-		
-		if (mu.userFloat("idFakeable") > 0.5)
+	// loose = preselected
+	for (auto & mu : local.mu_preselected_sorted) {
+		miniLepton lepton(mu);
+		if (lepton.passFakeableSel()) {
 			local.mu_fakeable.push_back(mu);
-		
-		if (mu.userFloat("idMVABased") > 0.5) {
-			if (passExtraforTight(mu))
-				local.mu_tight.push_back(mu);
+			local.leptons_selected.push_back(lepton);
 		}
-		
+		if (lepton.passTightSel())
+			local.mu_tight.push_back(mu);
 	}
 
 	/*
@@ -217,25 +216,24 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	}
 	// remove overlap with muons
 	local.e_preselected =
-		removeOverlapdR(local.e_preselected, local.mu_loose, 0.05);
+		removeOverlapdR(local.e_preselected, local.mu_preselected, 0.05);
 	// sort by pT
 	local.e_preselected_sorted = miniAODhelper.GetSortedByPt(local.e_preselected);
 	// loose, fakeable and tight
-	local.e_loose = local.e_preselected_sorted;
-	for (auto & ele : local.e_loose) {
-		
-		if (ele.userFloat("idFakeable") > 0.5) {
-			if (ele.userFloat("numMissingHits") == 0)
-				local.e_fakeable.push_back(ele);
+	// loose = preselected
+	for (auto & ele : local.e_preselected_sorted) {
+		miniLepton lepton(ele);
+		if (lepton.passFakeableSel()) {
+			local.e_fakeable.push_back(ele);
+			local.leptons_selected.push_back(lepton);
 		}
-			
-		if (ele.userFloat("idMVABased") > 0.5) {
-			if (passExtraforTight(ele))
-				local.e_tight.push_back(ele);
-		}
-			
+		if (lepton.passTightSel())
+			local.e_tight.push_back(ele);
 	}
 
+	local.leptons_selected_sorted = local.leptons_selected;
+	std::sort(local.leptons_selected_sorted.begin(), local.leptons_selected_sorted.end(), [] (miniLepton l1, miniLepton l2) { return ptr(l1)->conePt() > ptr(l2)->conePt();});
+	
 	/*
 	  Taus
 	*/
@@ -245,18 +243,18 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	}
 	// remove overlap with muons and electrons
 	local.tau_selected =
-		removeOverlapdR(local.tau_selected, local.e_loose, 0.4);
+		removeOverlapdR(local.tau_selected, local.e_preselected, 0.4);
 	local.tau_selected =
-		removeOverlapdR(local.tau_selected, local.mu_loose, 0.4);
+		removeOverlapdR(local.tau_selected, local.mu_preselected, 0.4);
 	// sort by pT
 	local.tau_selected_sorted = miniAODhelper.GetSortedByPt(local.tau_selected);
 
 	
 	// number of selected leptons
-	local.n_electrons_loose = static_cast<int>(local.e_loose.size());
+	local.n_electrons_loose = static_cast<int>(local.e_preselected.size());
 	local.n_electrons_fakeable = static_cast<int>(local.e_fakeable.size());
 	local.n_electrons_tight = static_cast<int>(local.e_tight.size());
-	local.n_muons_loose = static_cast<int>(local.mu_loose.size());
+	local.n_muons_loose = static_cast<int>(local.mu_preselected.size());
 	local.n_muons_fakeable = static_cast<int>(local.mu_fakeable.size());
 	local.n_muons_tight = static_cast<int>(local.mu_tight.size());
 	local.n_taus = static_cast<int>(local.tau_selected.size());
@@ -453,14 +451,20 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 					
 		// Event selection
 		bool pass_event_selection =
-			pass_event_sel_2lss1tauh(local, 0) and passHLT;
+			pass_event_sel_2lss1tauh(local, 0, selection_region) and passHLT;
 
 		tauNtuple.initialize();
 		
 		if (pass_event_selection) {
 			// MVA
-			MVA_ttbar_vars.Calculate_mvaVars(local, 0);
-			MVA_ttV_vars.Calculate_mvaVars(local, 0);
+			MVA_ttbar_vars.Calculate_mvaVars(local.leptons_selected_sorted,
+											 local.tau_selected_sorted,
+											 local.jets_selected_sorted,
+											 local.pfMET);
+			MVA_ttV_vars.Calculate_mvaVars(local.leptons_selected_sorted,
+										   local.tau_selected_sorted,
+										   local.jets_selected_sorted,
+										   local.pfMET);
 
 			double mva_ttar = MVA_ttbar_vars.Get_mvaScore();
 			double mva_ttV = MVA_ttV_vars.Get_mvaScore();
@@ -523,12 +527,18 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 
 			// JESUp
 			bool pass_event_selection_jesup =
-				pass_event_sel_2lss1tauh(local, 1) and passHLT;
+				pass_event_sel_2lss1tauh(local, 1, selection_region) and passHLT;
 			
 			if (pass_event_selection_jesup) {
 				// MVA
-				MVA_ttbar_vars.Calculate_mvaVars(local, 1);
-				MVA_ttV_vars.Calculate_mvaVars(local, 1);
+				MVA_ttbar_vars.Calculate_mvaVars(local.leptons_selected_sorted,
+												 local.tau_selected_sorted,
+												 local.jets_selected_sorted_jesup,
+												 local.pfMET);
+				MVA_ttV_vars.Calculate_mvaVars(local.leptons_selected_sorted,
+											   local.tau_selected_sorted,
+											   local.jets_selected_sorted_jesup,
+											   local.pfMET);
 				
 				double mva_ttbar_jesup = MVA_ttbar_vars.Get_mvaScore();
 				double mva_ttV_jesup = MVA_ttV_vars.Get_mvaScore();
@@ -550,12 +560,18 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 			
 			// JESDown
 			bool pass_event_selection_jesdown =
-				pass_event_sel_2lss1tauh(local, -1) and passHLT;
+				pass_event_sel_2lss1tauh(local, -1, selection_region) and passHLT;
 
 			if (pass_event_selection_jesdown) {
 				// MVA
-				MVA_ttbar_vars.Calculate_mvaVars(local, -1);
-				MVA_ttV_vars.Calculate_mvaVars(local, -1);
+				MVA_ttbar_vars.Calculate_mvaVars(local.leptons_selected_sorted,
+												 local.tau_selected_sorted,
+												 local.jets_selected_sorted_jesdown,
+												 local.pfMET);
+				MVA_ttV_vars.Calculate_mvaVars(local.leptons_selected_sorted,
+											   local.tau_selected_sorted,
+											   local.jets_selected_sorted_jesdown,
+											   local.pfMET);
 				
 				double mva_ttbar_jesdown = MVA_ttbar_vars.Get_mvaScore();
 				double mva_ttV_jesdown = MVA_ttV_vars.Get_mvaScore();

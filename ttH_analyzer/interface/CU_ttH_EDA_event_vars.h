@@ -15,6 +15,8 @@
 #include "DataFormats/PatCandidates/interface/Tau.h"
 #include "DataFormats/PatCandidates/interface/PackedCandidate.h"
 
+#include "Analyzers/ttH_analyzer/interface/miniLepton.h"
+
 #include <vector>
 
 /*
@@ -63,16 +65,17 @@ struct CU_ttH_EDA_event_vars {
 	/// Particle container vectors
 	std::vector<pat::Electron> e_preselected;
 	std::vector<pat::Electron> e_preselected_sorted;
-	std::vector<pat::Electron> e_loose;
 	std::vector<pat::Electron> e_fakeable;
 	std::vector<pat::Electron> e_tight;
 	std::vector<pat::Muon> mu_preselected;
 	std::vector<pat::Muon> mu_preselected_sorted;
-	std::vector<pat::Muon> mu_loose;
 	std::vector<pat::Muon> mu_fakeable;
 	std::vector<pat::Muon> mu_tight;
 	std::vector<pat::Tau> tau_selected;
 	std::vector<pat::Tau> tau_selected_sorted;
+
+	std::vector<miniLepton> leptons_selected;
+	std::vector<miniLepton> leptons_selected_sorted;  // by conePt
 	
 	std::vector<pat::Jet> jets_raw;
 	std::vector<pat::Jet> jets_no_mu;

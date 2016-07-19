@@ -86,6 +86,7 @@
 /// structs for holding multiple edm::Handle and EDGetTokenT
 #include "CU_ttH_EDA_Handles.h"
 
+#include "Analyzers/ttH_analyzer/interface/miniLepton.h"
 #include "Analyzers/ttH_analyzer/interface/CU_ttH_EDA_Ntuple.h"
 #include "Analyzers/ttH_analyzer/interface/kinMVA_ttbar_2lss.h"
 #include "Analyzers/ttH_analyzer/interface/kinMVA_ttV_2lss.h"
@@ -207,8 +208,8 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	float getMHT(CU_ttH_EDA_event_vars &);
 	
 	// event selection
-	bool pass_event_sel_2lss1tauh(CU_ttH_EDA_event_vars &, int);
-	bool pass_event_sel_1l2tauh(CU_ttH_EDA_event_vars &, int);
+	bool pass_event_sel_2lss1tauh(CU_ttH_EDA_event_vars &, int, const std::string&);
+	bool pass_event_sel_1l2tauh(CU_ttH_EDA_event_vars &, int, const std::string&);
 
 	bool passExtraforTight(pat::Muon);
 	bool passExtraforTight(pat::Electron);
@@ -307,6 +308,8 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	int MAODHelper_sample_nr; // past insample_, in-development var. for
 							  // MAODHelper?
 	std::string MAODHelper_era;
+
+	std::string selection_region;
 
 	/// Histograms
 	TH1D *h_tth_syncex1_ele;

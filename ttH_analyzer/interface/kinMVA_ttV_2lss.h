@@ -12,7 +12,17 @@ class kinMVA_ttV_2lss : public kinMVA_2lss
 
 	void Set_up_Reader(TMVA::Reader*);
 
-	void Calculate_mvaVars(const CU_ttH_EDA_event_vars&, int);
+	float Get_lep1_conePt() const {return lep1_conePt;}
+	float Get_lep2_conePt() const {return lep2_conePt;}
+
+	void Calculate_mvaVars(const std::vector<miniLepton>&,
+						   const std::vector<pat::Tau>&,
+						   const std::vector<pat::Jet>&,
+						   const pat::MET&);
+	
+ private:
+	float lep1_conePt;
+	float lep2_conePt;
 };
 
 #endif

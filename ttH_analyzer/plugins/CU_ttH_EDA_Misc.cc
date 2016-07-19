@@ -352,6 +352,7 @@ float CU_ttH_EDA::getMHT(CU_ttH_EDA_event_vars &local)
 	return sqrt(MHT_x * MHT_x + MHT_y * MHT_y);
 }
 
+/*
 bool CU_ttH_EDA::passExtraforTight(pat::Muon mu)
 {
 	if (mu.innerTrack().isAvailable()) {
@@ -370,91 +371,105 @@ bool CU_ttH_EDA::passExtraforTight(pat::Electron ele)
 			ele.isGsfCtfScPixChargeConsistent()
 			);
 }
+*/
 
-bool CU_ttH_EDA::pass_event_sel_2lss1tauh(CU_ttH_EDA_event_vars &local, int jecType)
+bool CU_ttH_EDA::pass_event_sel_2lss1tauh(CU_ttH_EDA_event_vars &local,
+										  int jecType,
+										  const std::string & selection_region)
 {
-
-	if (local.n_muons_tight + local.n_electrons_tight != 2)
-		return false;
-
-	// veto inv_mass of two loose leptons < 12 GeV
+	//////////////////////////
+    /// Lepton number
+	if (local.leptons_selected_sorted.size() != 2) return false;
+	
+	bool passLepSel = false;	 
+	// exactly two tight leptons
+	passLepSel =
+		local.leptons_selected_sorted[0].passTightSel() and
+		local.leptons_selected_sorted[1].passTightSel();
+	
+	if (selection_region == "control_1lfakeable") {
+		// at least one lepton fails tight selection
+		passLepSel = not passLepSel;
+	} 
+	
+	if (not passLepSel) return false;
+	
+	//////////////////////////
+	/// veto two loose leptons with invariant mass < 12 GeV
+	bool passPairMassVeto = true;
 	std::vector<math::XYZTLorentzVector> leptons_p4;
-	for (auto & mu : local.mu_loose) {
+	for (auto & mu : local.mu_preselected) {
 		leptons_p4.push_back(mu.p4());
 	}
-	for (auto & ele : local.e_loose) {
+	for (auto & ele : local.e_preselected) {
 		leptons_p4.push_back(ele.p4());
 	}
 
 	for (auto it = leptons_p4.begin(); it != leptons_p4.end()-1; ++it) {
 		for (auto it2 = it+1; it2 != leptons_p4.end(); ++it2) {
 			if ( (*it + *it2).mass() <  12. )
-				return false;
+				passPairMassVeto = false;
 		}
 	}
 
-	bool passTwoSameSigh = false;
-	bool passLeptonPt = false;
-	bool passMetLD = false;
-	bool passZmassVeto = false;
-	
-	// mumu
-	if (local.n_muons_tight == 2 and local.n_electrons_tight == 0) {
-		passTwoSameSigh =
-			local.mu_tight[0].charge() * local.mu_tight[1].charge() > 0;
+	if (not passPairMassVeto) return false;
 
-		passLeptonPt =
-			local.mu_tight[0].pt() > 20. and local.mu_tight[1].pt() > 10;
-		
-		passMetLD = true;
-		passZmassVeto = true;
+	//////////////////////////
+	/// Lepton charge
+	bool passLepCharge = false;
+	// same sign
+	if (local.leptons_selected_sorted[0].charge() *
+		local.leptons_selected_sorted[1].charge() > 0)
+		passLepCharge = true;
 
-		local.hlt_sf = 1.0;
-	}
+	if (selection_region == "control_2los")
+		passLepCharge = not passLepCharge;
 
-	// emu
-	if (local.n_muons_tight == 1 and local.n_electrons_tight == 1) {
-		passTwoSameSigh =
-			local.mu_tight[0].charge() * local.e_tight[0].charge() > 0;
+	if (not passLepCharge) return false;
 
-		if (local.mu_tight[0].pt() > local.e_tight[0].pt()) {
-			passLeptonPt =
-				local.mu_tight[0].pt() > 20. and local.e_tight[0].pt() >15.;
-		}
-		else {
-			passLeptonPt =
-				local.e_tight[0].pt() > 20. and local.mu_tight[0].pt() >10.;
-		}
-		
-		passMetLD = true;
-		passZmassVeto = true;
+	//////////////////////////
+	/// Lepton pt
+	float minpt_ldg = 20.;
+	float minpt_subldg = 10;
+	if (local.leptons_selected_sorted[1].Type() == LeptonType::kele)
+		minpt_subldg = 15.;
 
-		local.hlt_sf = 0.98;
-	}
+	bool passLeptonPt =
+		local.leptons_selected_sorted[0].conePt() > minpt_ldg and
+		local.leptons_selected_sorted[1].conePt() > minpt_subldg;
 
-	// ee
-	if (local.n_muons_tight == 0 and local.n_electrons_tight == 2) {
-		passTwoSameSigh =
-			local.e_tight[0].charge() * local.e_tight[1].charge() > 0;
+	if (not passLeptonPt) return false;
 
-		passLeptonPt =
-			local.e_tight[0].pt() > 20. and local.e_tight[1].pt() > 15.;
-		
+
+	//////////////////////////
+	/// ee only cuts	
+	bool passMetLD = true;
+	bool passZmassVeto = true;
+	if (local.leptons_selected_sorted[0].Type() == LeptonType::kele and
+		local.leptons_selected_sorted[1].Type() == LeptonType::kele) {
+		//////////////////////////
+		/// MetLD cut (ee only)
 		passMetLD = local.metLD > 0.2;
-
-		double eeInvMass = (local.e_tight[0].p4()+local.e_tight[1].p4()).mass();
-		passZmassVeto = eeInvMass < 91.2 - 10.0 or eeInvMass > 91.2 + 10.0;
-
-		if (local.e_tight[0].pt() <= 40.)
-			local.hlt_sf = 0.95;
-		else
-			local.hlt_sf = 0.99;
+		
+		//////////////////////////
+		/// Zmass Veto: 91.2 +/- 10
+		double eeInvMass =
+			(local.leptons_selected_sorted[0].p4() +
+			 local.leptons_selected_sorted[1].p4()).M();
+		passZmassVeto = eeInvMass < (91.2 - 10.0) or eeInvMass > (91.2 + 10.0);
 	}
 
-	bool passNumTaus = local.n_taus >= 1;
+	if (not passMetLD) return false;
+	if (not passZmassVeto) return false;
 
-	
-	int njets = 0;
+	//////////////////////////
+	/// number of taus
+	bool passNumTaus = local.n_taus >= 1;
+	if (not passNumTaus) return false;
+
+	//////////////////////////
+	/// number of jets and btags
+   	int njets = 0;
 	int nbtags_loose = 0;
 	int nbtags_medium = 0;
 
@@ -475,19 +490,29 @@ bool CU_ttH_EDA::pass_event_sel_2lss1tauh(CU_ttH_EDA_event_vars &local, int jecT
 	}
 	
 	bool passNumJets = njets >= 4;
+	if (not passNumJets) return false;
+	
 	bool passNumBtags = nbtags_loose >= 2 or nbtags_medium >= 1;
-	
-	
-	return (passTwoSameSigh and
-			passLeptonPt and
-			passMetLD and
-			passZmassVeto and
-			passNumTaus and
-			passNumJets and
-			passNumBtags);
+	if (not passNumBtags) return false;
+
+
+	/*
+	// mumu
+		local.hlt_sf = 1.0;
+	// emu
+		local.hlt_sf = 0.98;
+	// ee
+		if (local.e_tight[0].pt() <= 40.)
+			local.hlt_sf = 0.95;
+		else
+			local.hlt_sf = 0.99;
+		*/
+
+
+	return true;
 }
 
-bool CU_ttH_EDA::pass_event_sel_1l2tauh(CU_ttH_EDA_event_vars &local, int sys)
+bool CU_ttH_EDA::pass_event_sel_1l2tauh(CU_ttH_EDA_event_vars &local, int sys, const std::string& selection_region)
 {
 	return false;
 }

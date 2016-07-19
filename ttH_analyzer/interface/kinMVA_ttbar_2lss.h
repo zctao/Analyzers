@@ -12,17 +12,20 @@ class kinMVA_ttbar_2lss : public kinMVA_2lss
 
 	void Set_up_Reader(TMVA::Reader*);
 
-	void Calculate_mvaVars(const CU_ttH_EDA_event_vars&, int);
+	void Calculate_mvaVars(const std::vector<miniLepton>&,
+						   const std::vector<pat::Tau>&,
+						   const std::vector<pat::Jet>&,
+						   const pat::MET&);
 
-	float Get_avg_dr_jet() {return avg_dr_jet;}
-	float Get_MET() {return MET;}
+	float Get_avg_dr_jet() const {return avg_dr_jet;}
+	float Get_MET() const {return met;}
 
 	void Set_avg_dr_jet(const vector<pat::Jet>&);
-	void Set_MET(double pfmet) { MET = min(pfmet,400.);}
+	void Set_MET(double pfmet) { met = min(pfmet,400.);}
 	
  private:
 	float avg_dr_jet;
-	float MET;
+	float met;
 };
 
 #endif
