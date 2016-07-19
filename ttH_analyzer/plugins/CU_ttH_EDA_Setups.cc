@@ -147,6 +147,12 @@ void CU_ttH_EDA::Set_up_histograms()
 
 			setup_sysHist = true;
 		}
+
+		if (selection_region == "control_1lfakeable" and isdata) {
+			TFile* file_fr = new TFile((std::string(getenv("CMSSW_BASE")) + "/src/Analyzers/ttH_analyzer/data/FR_data_ttH_mva.root").c_str());
+			h_fakerate_el = (TH2F*) file_fr->Get("FR_mva075_el_data_comb");
+			h_fakerate_mu = (TH2F*) file_fr->Get("FR_mva075_mu_data_comb");
+		}
 	}
 
 	if (analysis_type == Analyze_ditaus_lepton) {

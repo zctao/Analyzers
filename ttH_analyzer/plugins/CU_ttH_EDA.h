@@ -74,7 +74,10 @@
 
 /// ROOT includes
 #include "TH1.h"
+#include "TH2.h"
 #include "TTree.h"
+#include "TAxis.h"
+#include "TFile.h"
 
 /// Higgs and top tagger
 //#include "MiniAOD/BoostedObjects/interface/HTTTopJet.h"
@@ -309,6 +312,7 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 							  // MAODHelper?
 	std::string MAODHelper_era;
 
+	bool isVV;
 	std::string selection_region;
 
 	/// Histograms
@@ -337,6 +341,10 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	TH2D *h_MVA_ttV_vs_ttbar_sys[16];
 	TH1D *h_MVA_shape_sys[16];
 	bool setup_sysHist = false;
+
+	// Fake lepton rate lookup histograms
+	TH2F *h_fakerate_el;
+	TH2F *h_fakerate_mu;
 	
 	// 	TH1D* h_electron_selection;
 	// 	TH1D* h_muon_selection;
@@ -387,6 +395,13 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 		   {"LFStats1Down",18}, {"LFStats2Up",19}, {"LFStats2Down",20},
 		   {"cErr1Up",21},{"cErr1Down",22},{"cErr2Up",23},{"cErr2Down",24},
 		   {"NA",0}};
+
+	// Electron Charge misId
+	float getEleChargeMisIDProb(const miniLepton&, bool);
+
+	// Lepton fake rate
+	float getFakeRate(const miniLepton& lepton);
+	float read2DHist(TH2*, float, float);
 	
 };
 

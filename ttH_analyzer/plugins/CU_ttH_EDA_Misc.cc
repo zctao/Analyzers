@@ -496,19 +496,6 @@ bool CU_ttH_EDA::pass_event_sel_2lss1tauh(CU_ttH_EDA_event_vars &local,
 	if (not passNumBtags) return false;
 
 
-	/*
-	// mumu
-		local.hlt_sf = 1.0;
-	// emu
-		local.hlt_sf = 0.98;
-	// ee
-		if (local.e_tight[0].pt() <= 40.)
-			local.hlt_sf = 0.95;
-		else
-			local.hlt_sf = 0.99;
-		*/
-
-
 	return true;
 }
 
@@ -697,6 +684,90 @@ double CU_ttH_EDA::getJetCSVWeight(pat::Jet & jet, std::string sys)
 	}
 
 	return weight_jet;
+}
+
+float CU_ttH_EDA::getEleChargeMisIDProb(const miniLepton& lepton, bool isdata)
+{
+	// muon
+	if (lepton.Type() == LeptonType::kmu) return 0.;
+
+	// electron
+	assert(lepton.Type() == LeptonType::kele);
+
+	if (isdata) {
+		if (abs(lepton.eta()) < 1.479) {
+			if (lepton.pt() >= 10 and lepton.pt() < 25)
+				return 0.000301;
+			else if (lepton.pt() < 50)
+				return 0.000287;
+			else
+				return 0.000293;
+		}
+		else if (abs(lepton.eta()) < 2.5) {
+			if (lepton.pt() >= 10 and lepton.pt() < 25)
+				return 0.001728;
+			else if (lepton.pt() < 50)
+				return 0.001974;
+			else
+				return 0.003457;
+		}
+
+		return 0.;
+	}
+	else {
+		if (abs(lepton.eta()) < 1.479) {
+			if (lepton.pt() >= 10 and lepton.pt() < 25)
+				return 0.000131;
+			else if (lepton.pt() < 50)
+				return 0.000255;
+			else
+				return 0.000340;
+		}
+		else if (abs(lepton.eta()) < 2.5) {
+			if (lepton.pt() >= 10 and lepton.pt() < 25)
+				return 0.000966;
+			else if (lepton.pt() < 50)
+				return 0.002160;
+			else
+				return 0.004170;
+		}
+
+		return 0.;
+	}
+
+	return 0.;
+	
+}
+
+float CU_ttH_EDA::read2DHist(TH2* h2d, float x, float y)
+{
+	TAxis* xaxis = h2d->GetXaxis();
+	int nbinx = xaxis->GetNbins();
+	int xbin = xaxis->FindBin(x);
+    if (xbin < 1) xbin = 1;
+	if (xbin > nbinx) xbin = nbinx;
+
+	TAxis* yaxis = h2d->GetYaxis();
+	int nbiny = yaxis->GetNbins();
+	int ybin = yaxis->FindBin(abs(y));
+    if (ybin < 1) ybin = 1;
+	if (ybin > nbiny) ybin = nbiny;
+
+	float result = h2d->GetBinContent(xbin, ybin);
+
+	return result;
+}
+
+float CU_ttH_EDA::getFakeRate(const miniLepton& lepton)
+{
+	float fakerate = 0;
+	
+	if (lepton.Type() == LeptonType::kele)
+		fakerate = read2DHist(h_fakerate_el, lepton.pt(), lepton.eta());
+	else if (lepton.Type() == LeptonType::kmu)
+		fakerate = read2DHist(h_fakerate_mu, lepton.pt(), lepton.eta());
+
+	return fakerate;
 }
 
 #endif

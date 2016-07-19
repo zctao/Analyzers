@@ -69,6 +69,7 @@ CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig):
 	//JECSysType (iConfig.getParameter<string>("JECSysType")),
 	//jet_corrector (iConfig.getParameter<string>("jet_corrector")),
 	isdata (iConfig.getParameter<bool>("using_real_data")),
+	isVV (iConfig.getParameter<bool>("isVV")),
 	selection_region (iConfig.getParameter<string>("selection_region"))
 {
 	/*
@@ -144,6 +145,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	//local.pu_weight = 1.;
 	local.gen_weight = 1.;
 	local.hlt_sf = 1.;
+	local.lepIDEff_sf = 1.;
 	
 	/// Create and set up edm:Handles in stack mem.
 	edm_Handles handle;
@@ -456,6 +458,8 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		tauNtuple.initialize();
 		
 		if (pass_event_selection) {
+			assert(local.leptons_selected_sorted.size() == 2);
+				
 			// MVA
 			MVA_ttbar_vars.Calculate_mvaVars(local.leptons_selected_sorted,
 											 local.tau_selected_sorted,
@@ -481,15 +485,62 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 			tauNtuple.lep0_conept = MVA_ttV_vars.Get_lep1_conePt();
 			tauNtuple.lep1_conept = MVA_ttV_vars.Get_lep2_conePt();
 
-			// weight
+			// weights and scale factors
 			if (isdata) {
 				local.weight = 1.;
+
+				//////////////////////////
+				// charge flip background (data driven)
+				if (selection_region == "control_2los") {
+					float P1_misCharge =
+						getEleChargeMisIDProb(local.leptons_selected_sorted[0],true);
+					float P2_misCharge =
+						getEleChargeMisIDProb(local.leptons_selected_sorted[1],true);
+
+					local.weight = P1_misCharge + P2_misCharge;
+				}
+
+				//////////////////////////
+				// fake lepton background (data drive)
+				if (selection_region == "control_1lfakeable") {
+					float f1 = getFakeRate(local.leptons_selected_sorted[0]);
+					float f2 = getFakeRate(local.leptons_selected_sorted[1]);
+
+					if (not local.leptons_selected_sorted[0].passTightSel()
+						and local.leptons_selected_sorted[1].passTightSel())
+						local.weight = f1/(1.-f1);
+					else if (local.leptons_selected_sorted[0].passTightSel() and
+							 not local.leptons_selected_sorted[1].passTightSel())
+						local.weight = f2/(1.-f2);
+					else if (not local.leptons_selected_sorted[0].passTightSel() and
+							 not local.leptons_selected_sorted[1].passTightSel())
+						local.weight = -f1*f2/((1.-f1)*(1.-f2));
+				}
 			}
 			else {
+				/// CSV weight
 				//local.csv_weight = getEvtCSVWeight(local.jets_selected, "NA");
 				local.csv_weight = getEvtCSVWeight(local.jets_selected, csv_iSys["NA"]);
+				/// HLT sf
+				auto lep1type = local.leptons_selected_sorted[0].Type();
+				auto lep2type = local.leptons_selected_sorted[1].Type();
+				if (lep1type == LeptonType::kmu and lep2type == LeptonType::kmu) {
+					local.hlt_sf = 1.0;
+				}
+				else if (lep1type == LeptonType::kele and lep2type == LeptonType::kele) {
+					if (local.leptons_selected_sorted[0].pt() <= 40.)
+						local.hlt_sf = 0.95;
+					else
+						local.hlt_sf = 0.99;
+				}
+				else {
+					local.hlt_sf = 0.98;
+				}
+				
+				// final event weight
 				local.weight =
-					local.csv_weight * local.gen_weight * local.hlt_sf;
+					local.csv_weight * local.gen_weight *
+					local.hlt_sf * local.lepIDEff_sf;
 			}
 			
 			// 2D hist
@@ -505,7 +556,9 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 					double csv_weight_sys =
 						//getEvtCSVWeight(local.jets_selected, sysList[isys]);
 						getEvtCSVWeight(local.jets_selected, csv_iSys[sysList[isys]]);
-					double evt_weight_sys = csv_weight_sys * local.gen_weight * local.hlt_sf;
+					double evt_weight_sys =
+						local.weight / local.csv_weight * csv_weight_sys;
+
 					// 2D
 					h_MVA_ttV_vs_ttbar_sys[isys]->Fill(mva_ttar, mva_ttV,
 													   evt_weight_sys);
@@ -547,7 +600,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 				double csv_weight_jesup =
 					getEvtCSVWeight(local.jets_selected_jesup, csv_iSys["JESUp"]);
 				double weight_jesup =
-					csv_weight_jesup * local.gen_weight * local.hlt_sf;
+					local.weight / local.csv_weight * csv_weight_jesup;
 				
 				// 2D hist
 				h_MVA_ttV_vs_ttbar_jesup->Fill(mva_ttbar_jesup, mva_ttV_jesup,
@@ -580,7 +633,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 				double csv_weight_jesdown =
 					getEvtCSVWeight(local.jets_selected_jesdown, csv_iSys["JESDown"]);
 				double weight_jesdown =
-					csv_weight_jesdown * local.gen_weight * local.hlt_sf;
+					local.weight / local.csv_weight * csv_weight_jesdown;
 				
 				// 2D hist
 				h_MVA_ttV_vs_ttbar_jesdown->

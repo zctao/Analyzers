@@ -31,6 +31,7 @@ struct CU_ttH_EDA_event_vars {
 	//double pu_weight;
 	double gen_weight;
 	double hlt_sf;
+	double lepIDEff_sf;
 
 	/// Common, run parameters
 	int run_nr;
