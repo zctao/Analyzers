@@ -332,6 +332,8 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	TH1D *h_hlt;
 	TH1D *h_flt;
 
+	TH1I *h_nProcessed;
+	
 	TH2D *h_MVA_ttV_vs_ttbar;
 	TH1D *h_MVA_shape;
 	TH2D *h_MVA_ttV_vs_ttbar_jesup;

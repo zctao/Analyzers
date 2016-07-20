@@ -127,6 +127,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	
 	using namespace edm;
 	++event_count;
+	h_nProcessed->Fill(1);
 	
 	/// Declaring local struct for data readout and manipulations
 	CU_ttH_EDA_event_vars local;
@@ -671,7 +672,7 @@ void CU_ttH_EDA::beginJob()
 void CU_ttH_EDA::endJob() {
 	
 	if (analysis_type == Analyze_tau_ssleptons) {
-		std::cout << "Total number of samples: " << event_count << std::endl;
+		//std::cout << "Total number of samples: " << event_count << std::endl;
 		
 		if (not isdata and doLumiScale) {
 			

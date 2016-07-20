@@ -50,7 +50,7 @@ options.register('OutputDir', '',  #'/uscms/home/ztao/nobackup/'
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  "output file directory")
-options.register('selection_region', 'signal_2lss',
+options.register('SelectionRegion', 'signal_2lss',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  "Which selection region to apply: signal_2lss, control_2los, control_1lfakeable")
@@ -60,6 +60,7 @@ options.register('isVV', False,
                  "sample is di-bosons or not")
 
 options.maxEvents = -1
+options.inputFiles='file:/uscms/home/ztao/nobackup/data/ttH_76X/ttH.root'
 
 # get and parse the command line arguments
 options.parseArguments()
@@ -95,8 +96,6 @@ if options.isData:
 #'/store/mc/RunIIFall15MiniAODv2/TT_TuneCUETP8M1_13TeV-powheg-pythia8/MINIAODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12_ext3-v1/00000/00DF0A73-17C2-E511-B086-E41D2D08DE30.root'
 #'file:../data/local_tmp/ttbar.root'
 
-options.inputFiles='file:/uscms/home/ztao/nobackup/data/ttH_76X/ttH_htt.root'
-    
 process.source = cms.Source("PoolSource",
 	fileNames = cms.untracked.vstring(options.inputFiles)
 )
@@ -174,14 +173,11 @@ process.ttHtaus.doLumiScale = cms.bool(options.doLumiScale)
 process.ttHtaus.sample_xs = cms.double(options.CrossSection)
 process.ttHtaus.int_lumi = cms.double(options.IntLumi)
 process.ttHtaus.using_real_data = cms.bool(options.isData)
-process.ttHtaus.selection_region = cms.string(options.selection_region)
-process.ttHtaus.isVV = cms.bool(options.isVV)
+process.ttHtaus.selection_region = cms.string(options.SelectionRegion)
+process.ttHtaus.isVV = cms.bool(False)
 
 ### Outputs
-if options.isData:
-    out_file = options.OutputDir + 'output_data.root'
-else:
-    out_file = options.OutputDir + 'output_' + options.SampleName + '.root'
+out_file = options.OutputDir + 'output_' + options.SampleName + '.root'
 
 process.TFileService = cms.Service("TFileService",
                                    fileName = cms.string(out_file)
