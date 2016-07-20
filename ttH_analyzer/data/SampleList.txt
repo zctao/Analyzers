@@ -117,13 +117,13 @@ flips_data_dieg_2015d
 --------------------------
 --------------------------
 fakes_data_dimu_2015c
-/DoubleMuon/Run2015C_25ns-16Dec2015-v1/MINIAOD
+'/DoubleMuon/Run2015C_25ns-16Dec2015-v1/MINIAOD'
 '254227-254914'
 ['isData=True','SampleName=fakes_data','doSystematics=False','SelectionRegion=control_1lfakeable']
 30
 --------------------------
 fakes_data_dimu_2015d
-/DoubleMuon/Run2015D-16Dec2015-v1/MINIAOD
+'/DoubleMuon/Run2015D-16Dec2015-v1/MINIAOD'
 '256630-260627'
 ['isData=True','SampleName=fakes_data','doSystematics=False','SelectionRegion=control_1lfakeable']
 30
