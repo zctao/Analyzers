@@ -26,10 +26,15 @@ config.Data.outLFNDirBase = '/store/user/ztao/ttH_76X'
 config.Site.storageSite = 'T3_US_FNALLPC'
 '''
 
-channels = ['ttH_htt', 'ttH_hww', 'ttH_hzz', 'ttW', 'ttZ', 'rares_TTTT', 'flips_data_dimu_2015c', 'fakes_data_mu_2015d', 'data_obs_dimu_2015d']
+channels = ['ttH_htt', 'ttH_hww', 'ttH_hzz', 
+            'ttW', 'ttZ', 'WZ', 
+            'rares_TTTT', 'rares_tZq', 'rares_WW', 'rares_WZZ', 
+            'flips_data_dimu_2015c', 'flips_data_dimu_2015d', 'flips_data_mu_2015c', 'flips_data_mu_2015d', 
+            'fakes_data_dimu_2015c', 'fakes_data_dimu_2015d', 'fakes_data_mu_2015c', 'fakes_data_mu_2015d'
+            'data_obs_dimu_2015c', 'data_obs_dimu_2015d', 'data_obs_mu_2015c', 'data_obs_mu_2015d']
 
 for ch in channels:
-    with open("SampleList.txt") as f:
+    with open("../data/SampleList.txt") as f:
         for line in f:
             if ch in line:
                 sample = f.next().strip()
