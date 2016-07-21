@@ -27,7 +27,7 @@ config.Site.storageSite = 'T3_US_FNALLPC'
 '''
 
 channels = ['ttH_htt', 'ttH_hww', 'ttH_hzz', 
-            'ttW', 'ttZ', 'WZ', 
+            'TTW', 'TTZ', 'WZ', 
             'rares_TTTT', 'rares_tZq', 'rares_WW', 'rares_WZZ', 
             'flips_data_dimu_2015c', 'flips_data_dimu_2015d', 'flips_data_mu_2015c', 'flips_data_mu_2015d', 
             'fakes_data_dimu_2015c', 'fakes_data_dimu_2015d', 'fakes_data_mu_2015c', 'fakes_data_mu_2015d',

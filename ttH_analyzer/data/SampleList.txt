@@ -17,12 +17,12 @@ ttH_hzz
 --------------------------
 # background samples
 --------------------------
-ttW
+TTW
 '/TTWJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-madspin-pythia8/RunIIFall15MiniAODv2-PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/MINIAODSIM'
 ['SampleName=ttW']
 10000
 --------------------------
-ttZ
+TTZ
 '/TTZToLLNuNu_M-10_TuneCUETP8M1_13TeV-amcatnlo-pythia8/RunIIFall15MiniAODv2-PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/MINIAODSIM'
 ['SampleName=ttZ']
 2000
