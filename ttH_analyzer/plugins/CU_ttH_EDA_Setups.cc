@@ -152,8 +152,13 @@ void CU_ttH_EDA::Set_up_histograms()
 
 		if (selection_region == "control_1lfakeable" and isdata) {
 			TFile* file_fr = new TFile((std::string(getenv("CMSSW_BASE")) + "/src/Analyzers/ttH_analyzer/data/FR_data_ttH_mva.root").c_str());
+			
 			h_fakerate_el = (TH2F*) file_fr->Get("FR_mva075_el_data_comb");
 			h_fakerate_mu = (TH2F*) file_fr->Get("FR_mva075_mu_data_comb");
+			h_fakerate_el -> SetDirectory(0);
+			h_fakerate_mu -> SetDirectory(0);
+
+			delete file_fr;
 		}
 	}
 
@@ -403,6 +408,9 @@ void CU_ttH_EDA::Set_up_CSV_rootFile()
 	TFile* f_CSVwgt_LF = new TFile ((std::string(getenv("CMSSW_BASE")) + "/src/Analyzers/ttH_analyzer/" + inputFileLF).c_str());
 
 	fillCSVhistos(f_CSVwgt_HF, f_CSVwgt_LF);
+
+	delete f_CSVwgt_HF;
+	delete f_CSVwgt_LF;
 }
 
 void CU_ttH_EDA::fillCSVhistos(TFile* fileHF, TFile* fileLF)
@@ -465,14 +473,23 @@ void CU_ttH_EDA::fillCSVhistos(TFile* fileHF, TFile* fileLF)
 			break;
 		}
 
-		for( int iPt=0; iPt<5; iPt++ ) h_csv_wgt_hf[iSys][iPt] = (TH1D*)fileHF->Get( Form("csv_ratio_Pt%i_Eta0_%s",iPt,syst_csv_suffix_hf.Data()) );
+		for( int iPt=0; iPt<5; iPt++ ) {
+			h_csv_wgt_hf[iSys][iPt] = (TH1D*)fileHF->Get( Form("csv_ratio_Pt%i_Eta0_%s",iPt,syst_csv_suffix_hf.Data()) );
+			h_csv_wgt_hf[iSys][iPt] -> SetDirectory(0);
+		}
 		
 		if( iSys<5 ){
-			for( int iPt=0; iPt<5; iPt++ ) c_csv_wgt_hf[iSys][iPt] = (TH1D*)fileHF->Get( Form("c_csv_ratio_Pt%i_Eta0_%s",iPt,syst_csv_suffix_c.Data()) );
+			for( int iPt=0; iPt<5; iPt++ ) {
+				c_csv_wgt_hf[iSys][iPt] = (TH1D*)fileHF->Get( Form("c_csv_ratio_Pt%i_Eta0_%s",iPt,syst_csv_suffix_c.Data()) );
+				c_csv_wgt_hf[iSys][iPt] -> SetDirectory(0);
+			}
 		}
 		
 		for( int iPt=0; iPt<4; iPt++ ){
-			for( int iEta=0; iEta<3; iEta++ )h_csv_wgt_lf[iSys][iPt][iEta] = (TH1D*)fileLF->Get( Form("csv_ratio_Pt%i_Eta%i_%s",iPt,iEta,syst_csv_suffix_lf.Data()) );
+			for( int iEta=0; iEta<3; iEta++ ) {
+				h_csv_wgt_lf[iSys][iPt][iEta] = (TH1D*)fileLF->Get( Form("csv_ratio_Pt%i_Eta%i_%s",iPt,iEta,syst_csv_suffix_lf.Data()) );
+				h_csv_wgt_lf[iSys][iPt][iEta] -> SetDirectory(0);
+			}
 		}
 	}
 

@@ -154,6 +154,7 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	void Set_up_tokens(const edm::ParameterSet &);
 	void Set_up_Tree();
 	void Set_up_BTagCalibration_Readers();
+	void Delete_BTagCalibration_Readers();
 	void Set_up_CSV_rootFile();
 	void fillCSVhistos(TFile*, TFile*);
 
@@ -372,10 +373,6 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	// tree and ntuple
 	TTree *eventTree;
 	CU_ttH_EDA_Ntuple tauNtuple;
-
-	// MVA
-	kinMVA_ttbar_2lss MVA_ttbar_vars;
-	kinMVA_ttV_2lss MVA_ttV_vars;
 	
 	std::string sysList[16] =
 		{"LFUp","LFDown","HFUp","HFDown",

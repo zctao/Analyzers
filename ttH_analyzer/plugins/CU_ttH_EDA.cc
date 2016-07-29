@@ -99,13 +99,8 @@ CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig):
 
 	Set_up_Tree();
 
-	Set_up_BTagCalibration_Readers();
+	//Set_up_BTagCalibration_Readers();
 	Set_up_CSV_rootFile();
-	
-    //reader_2lss_ttV = new TMVA::Reader("!Color:!Silent");
-	//reader_2lss_ttbar = new TMVA::Reader("!Color:!Silent");
-	//Set_up_MVA_2lss_ttV(reader_2lss_ttV);
-	//Set_up_MVA_2lss_ttbar(reader_2lss_ttbar);
 
 }
 
@@ -117,6 +112,7 @@ CU_ttH_EDA::~CU_ttH_EDA()
 	// (e.g. close files, deallocate resources etc.)
 
 	Close_output_files();
+	//Delete_BTagCalibration_Readers();
 
 }
 
@@ -443,6 +439,10 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	//}
 	
 	if (analysis_type == Analyze_tau_ssleptons) {
+
+		
+		kinMVA_ttbar_2lss MVA_ttbar_vars;
+		kinMVA_ttV_2lss MVA_ttV_vars;
 		
 		bool passHLT =
 			local.pass_single_e or local.pass_single_mu or local.pass_double_mu or

@@ -770,4 +770,27 @@ float CU_ttH_EDA::getFakeRate(const miniLepton& lepton)
 	return fakerate;
 }
 
+void CU_ttH_EDA::Delete_BTagCalibration_Readers()
+{
+	delete BTagCaliReaders["NA"];
+	delete BTagCaliReaders["JESUp"];
+	delete BTagCaliReaders["JESDown"];
+	delete BTagCaliReaders["LFUp"];
+	delete BTagCaliReaders["LFDown"];
+	delete BTagCaliReaders["HFUp"];
+	delete BTagCaliReaders["HFDown"];
+	delete BTagCaliReaders["HFStats1Up"];
+	delete BTagCaliReaders["HFStats1Down"];
+	delete BTagCaliReaders["HFStats2Up"];
+	delete BTagCaliReaders["HFStats2Down"];
+	delete BTagCaliReaders["LFStats1Up"];
+	delete BTagCaliReaders["LFStats1Down"];
+	delete BTagCaliReaders["LFStats2Up"];
+	delete BTagCaliReaders["LFStats2Down"];
+	delete BTagCaliReaders["cErr1Up"];
+	delete BTagCaliReaders["cErr1Down"];
+	delete BTagCaliReaders["cErr2Up"];
+	delete BTagCaliReaders["cErr2Down"];
+}
+
 #endif
