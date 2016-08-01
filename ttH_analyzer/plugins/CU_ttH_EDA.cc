@@ -439,10 +439,6 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	//}
 	
 	if (analysis_type == Analyze_tau_ssleptons) {
-
-		
-		kinMVA_ttbar_2lss MVA_ttbar_vars;
-		kinMVA_ttV_2lss MVA_ttV_vars;
 		
 		bool passHLT =
 			local.pass_single_e or local.pass_single_mu or local.pass_double_mu or

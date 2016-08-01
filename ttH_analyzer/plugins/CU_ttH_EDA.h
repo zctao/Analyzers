@@ -373,6 +373,10 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	// tree and ntuple
 	TTree *eventTree;
 	CU_ttH_EDA_Ntuple tauNtuple;
+
+	// MVA
+	kinMVA_ttbar_2lss MVA_ttbar_vars;
+	kinMVA_ttV_2lss MVA_ttV_vars;
 	
 	std::string sysList[16] =
 		{"LFUp","LFDown","HFUp","HFDown",

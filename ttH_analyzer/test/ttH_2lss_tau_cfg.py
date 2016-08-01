@@ -183,6 +183,10 @@ process.TFileService = cms.Service("TFileService",
                                    fileName = cms.string(out_file)
 )
 
+#process.SimpleMemoryCheck = cms.Service("SimpleMemoryCheck",
+#                                        ignoreTotal = cms.untracked.int32(1)
+#                                        )
+
 #Path
 if options.isData:
     process.p = cms.Path(
