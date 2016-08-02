@@ -27,15 +27,22 @@ const TString sys_coname = "_CMS_ttHl_";
 
 // data directories
 map<TString,TString> dir_map =
-	{{"ttH_htt", "~/Documents/ttH/Outputs/ttH/"},
-	 {"ttH_hww", "~/Documents/ttH/Outputs/ttH/"},
-	 {"ttH_hzz", "~/Documents/ttH/Outputs/ttH/"},
-	 {"TTW", "~/Documents/ttH/Outputs/ttH/"},
-	 {"TTZ", "~/Documents/ttH/Outputs/ttH/"},
-	 {"rares_TTTT", "~/Documents/ttH/Outputs/ttH/"},
-	 {"rares_WZZ", "~/Documents/ttH/Outputs/ttH/"},
-	 {"rares_tZq", "~/Documents/ttH/Outputs/ttH/"}
+	{{"ttH_htt", "~/Documents/ttH/Outputs/"},
+	 {"ttH_hww", "~/Documents/ttH/Outputs/"},
+	 {"ttH_hzz", "~/Documents/ttH/Outputs/"},
+	 {"TTW", "~/Documents/ttH/Outputs/"},
+	 {"TTZ", "~/Documents/ttH/Outputs/"},
+	 {"rares_TTTT", "~/Documents/ttH/Outputs/"},
+	 {"rares_WZZ", "~/Documents/ttH/Outputs/"},
+	 {"rares_tZq", "~/Documents/ttH/Outputs/"},
+	 {"rares_WW", "~/Documents/ttH/Outputs/"},
+	 {"data_obs", "~/Documents/ttH/Outputs/"},
+	 {"fakes_data", "~/Documents/ttH/Outputs/"},
+	 {"flips_data", "~/Documents/ttH/Outputs/"}
 	};
+
+const TString dataSamples [5] =
+	{"DoubleMuon", "SingleMuon", "DoubleEG", "SingleElectron", "MuonEG"};
 
 //const float lumi = (0.02 + 2.24) * 1000.; // 1/pb
 const float lumi = 2.17 * 1000.; // 1/pb
@@ -46,20 +53,23 @@ map<TString, float> xs_map =
 	 // Br(Hbb)=0.5824  Br(Htt)=0.06272  Br(HWW)=0.2137  Br(HZZ)=0.02619
 	 // xs(xx) = 0.212 * Br(Hxx)/(1-Br(Hbb))
 	 {"TTW", 0.2043}, {"TTZ", 0.2529}, {"WZ", 4.102},
-	 {"rares_TTTT", 0.009103}, {"rares_tZq", 0.0758}, //{"rares_WW", },
+	 {"rares_TTTT", 0.009103}, {"rares_tZq", 0.0758}, {"rares_WW", 1.64},
 	 {"rares_WZZ", 0.05565}};
 
 vector<TH1D*> getShapesMC(const TString, const TString);
 vector<TH1D*> getShapesData(const TString, const TString);
-vector<TH1D*> getShapesData(const TString, vector<const TString>);
+vector<TH1D*> getShapesData(const TString, vector<const TString>&);
 void ScaleHist(TH1D*, int, float, float);
 void ScaleHist(TH1D*, int, int);
+void fillHistoFromTree(TH1D*, vector<vector<int>>&, TTree*);
+int partition2DBDT(float, float);
 
-void makeDatacards(//vector<TString> channels = {"ttH_htt"})
+
+void makeDatacards(
 				   vector<TString> channels = {"ttH_htt", "ttH_hww", "ttH_hzz",
 						   "TTW", "TTZ",
 						   //"WZ",
-						   //"data_obs", "flips_data", "fakes_data",
+						   "data_obs", "flips_data", "fakes_data",
 						   "Rares"})
 {
 	vector<TH1D*> datacards;
@@ -68,13 +78,21 @@ void makeDatacards(//vector<TString> channels = {"ttH_htt"})
 		vector<TH1D*> shapes;
 		
 		if (channel.Contains("data")) {
-		    shapes = getShapesData(channel, dir_map[channel]);
+			
+			vector<const TString> data_dir;
+			for (auto & ds : dataSamples) {
+				data_dir.push_back(dir_map[channel] + ds +"/");
+			}
+			
+		    //shapes = getShapesData(channel, dir_map[channel]);
+			shapes = getShapesData(channel, data_dir);
 		}
 		else if (channel == "Rares") {
 			//{"rares_TTTT", "rares_WZZ",/*"rares_WW",*/ "rares_tZq"};
 		    vector<TH1D*> rare1 = getShapesMC("rares_TTTT",dir_map["rares_TTTT"]);
-			vector<TH1D*> rare2 = getShapesMC("rares_WZZ",dir_map["rares_WZZ"]);
+			vector<TH1D*> rare2 = getShapesMC("rares_WZZ", dir_map["rares_WZZ"]);
 			vector<TH1D*> rare3 = getShapesMC("rares_tZq",dir_map["rares_tZq"]);
+			vector<TH1D*> rare4 = getShapesMC("rares_WW", dir_map["rares_WW"]);
 
 			int nhist = rare1.size();
 			for (int i = 0; i < nhist; ++i) {
@@ -182,18 +200,27 @@ vector<TH1D*> getShapesData(const TString channel, const TString dir)
 	return hists;
 }
 
-vector<TH1D*> getShapesData(const TString channel, vector<const TString> dirs)
+vector<TH1D*> getShapesData(const TString channel, vector<const TString>& dirs)
 {
 	vector<TH1D*> hists;
-	// Open files
-	vector<TFile*> files;
 
+	vector<vector<int>> eventList;  // A set of vectors: (run, lumisection, event#)
+
+	TH1D* h_ = new TH1D("h_MVA_shape","", 6, 0.5, 6.5);
+	h_ -> Sumw2();
+	//TH1D* h_sys = ...
+	
+	// Open files
 	for (auto & dir : dirs) {
 		TFile* f_data = new TFile(dir + fname_prefix + channel + ".root");
-		files.push_back(f_data);
 
 		TTree* tree = (TTree*) f_data->Get("ttHtaus/eventTree");
+
+	    fillHistoFromTree(h_, eventList, tree);
 	}
+
+	h_->SetName("x_"+channel);
+	hists.push_back(h_);
 	
 	return hists;
 }
@@ -208,4 +235,76 @@ void ScaleHist(TH1D* h, int nsamples, int nevents) // WZ
 {
 	//h -> Sumw2();
 	h -> Scale( nevents * 0.0371 / nsamples);  // FIX NEEED HERE
+}
+
+void fillHistoFromTree(TH1D* h, vector<vector<int>>& eventList, TTree* tree)
+// Fill shape histogram from TTree entries.
+//Duplicate events characterized by (run, lumisection, event#) are only filled once
+{
+	
+	int run;
+	int ls;
+	int event;
+	double weight;
+	double mva_ttbar;
+	double mva_ttV;
+
+	tree->SetBranchAddress("nEvent", &event);
+	tree->SetBranchAddress("ls", &ls);
+	tree->SetBranchAddress("run", &run);
+	tree->SetBranchAddress("MVA_2lss_ttbar", &mva_ttbar);
+	tree->SetBranchAddress("MVA_2lss_ttV", &mva_ttV);
+	tree->SetBranchAddress("evtWeight", &weight);
+
+	int nEntries = tree->GetEntries();
+
+	//int newListSize = eventList.size()+nEntries;
+	
+	for (int i = 0; i < nEntries; ++i) {
+		tree->GetEntry(i);
+
+		vector<int> eventid = {run, ls, event};
+		if (run < 0 or ls < 0 or event < 0) continue;
+
+		bool alreadyIncluded =
+			find(eventList.begin(), eventList.end(), eventid) != eventList.end();
+		// better algorithm?
+		
+		if (not alreadyIncluded) {
+			
+			eventList.push_back(eventid);
+			//cout << "run, lumisection, event : " << eventid.at(2) << " "
+			//	 << eventid.at(1) << " " << eventid.at(0) << endl;
+
+			//fill histogram
+			int bin = partition2DBDT(mva_ttbar, mva_ttV);
+			h->Fill(bin, weight);
+		}
+	}
+
+}
+
+int partition2DBDT(float ttbar, float ttV)
+/*
+             bin 1       bin 2       bin 3       bin 4      bin 5       bin 6
+2lss(ttbar) (-1.0,-0.2] (-1.0,-0.2] (-0.2,0.3]  (-0.2,0.3] (0.3,1.0]   (0.3,1.0]
+2lss(ttV)   (-1.0,-0.1] (-0.1,1.0]  (-1.0,-0.1] (-0.1,1.0] (-1.0,-0.1] (-0.1,1.0]
+ */
+{
+	int x = -99;
+	int y = -99;
+	
+	if (ttbar > -1.0 and ttbar <= -0.2)
+		x = 1;
+	else if (ttbar > -0.2 and ttbar <= 0.3)
+		x = 2;
+	else if (ttbar > 0.3 and ttbar <= 1.0)
+		x = 3;
+
+	if (ttV > -1.0  and ttV <= -0.1)
+		y = 1;
+	else if (ttV > -0.1 and ttV <= 1.0)
+		y = 2;
+	
+	return 2*(x-1)+y;
 }

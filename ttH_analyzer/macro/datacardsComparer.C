@@ -13,7 +13,8 @@ void datacardsComparer(
 {
 	// List of histograms to compare:
 	vector<const TString> histList = {"ttH_htt", "ttH_hww", "ttH_hzz",
-									  "TTW", "TTZ", "Rares"};
+									  "TTW", "TTZ", "Rares",
+									  "data_obs", "fakes_data", "flips_data"};
 	
 	TFile* f[3];
 	f[0] = new TFile(rootfile0);
