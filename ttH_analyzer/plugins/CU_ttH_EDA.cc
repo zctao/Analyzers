@@ -498,7 +498,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 				}
 
 				//////////////////////////
-				// fake lepton background (data drive)
+				// fake lepton background (data driven)
 				if (selection_region == "control_1lfakeable") {
 					float f1 = getFakeRate(local.leptons_selected_sorted[0]);
 					float f2 = getFakeRate(local.leptons_selected_sorted[1]);

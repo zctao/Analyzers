@@ -388,8 +388,12 @@ bool CU_ttH_EDA::pass_event_sel_2lss1tauh(CU_ttH_EDA_event_vars &local,
 		local.leptons_selected_sorted[1].passTightSel();
 	
 	if (selection_region == "control_1lfakeable") {
-		// at least one lepton fails tight selection
-		passLepSel = not passLepSel;
+		// exactly one lepton fails tight selection
+		passLepSel =
+			(not local.leptons_selected_sorted[0].passTightSel() and
+			 local.leptons_selected_sorted[1].passTightSel() )
+			or (local.leptons_selected_sorted[0].passTightSel() and
+				not local.leptons_selected_sorted[1].passTightSel());
 	} 
 	
 	if (not passLepSel) return false;
@@ -490,9 +494,14 @@ bool CU_ttH_EDA::pass_event_sel_2lss1tauh(CU_ttH_EDA_event_vars &local,
 	}
 	
 	bool passNumJets = njets >= 4;
-	if (not passNumJets) return false;
-	
 	bool passNumBtags = nbtags_loose >= 2 or nbtags_medium >= 1;
+	
+	if (selection_region == "control_2los") {
+		passNumJets = njets >= 2;
+		passNumBtags = nbtags_medium >= 1;
+	}
+	
+	if (not passNumJets) return false;	
 	if (not passNumBtags) return false;
 
 
@@ -763,9 +772,9 @@ float CU_ttH_EDA::getFakeRate(const miniLepton& lepton)
 	float fakerate = 0;
 	
 	if (lepton.Type() == LeptonType::kele)
-		fakerate = read2DHist(h_fakerate_el, lepton.pt(), lepton.eta());
+		fakerate = read2DHist(h_fakerate_el, lepton.conePt(), lepton.eta());
 	else if (lepton.Type() == LeptonType::kmu)
-		fakerate = read2DHist(h_fakerate_mu, lepton.pt(), lepton.eta());
+		fakerate = read2DHist(h_fakerate_mu, lepton.conePt(), lepton.eta());
 
 	return fakerate;
 }
