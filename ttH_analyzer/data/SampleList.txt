@@ -101,7 +101,7 @@ flips_data_mueg_2015d
 '/MuonEG/Run2015D-16Dec2015-v1/MINIAOD'
 '256630-260627'
 ['isData=True','SampleName=flips_data','doSystematics=False','SelectionRegion=control_2los']
-20
+15
 --------------------------
 flips_data_mu_2015c
 '/SingleMuon/Run2015C_25ns-16Dec2015-v1/MINIAOD'
@@ -137,7 +137,7 @@ flips_data_dieg_2015d
 '/DoubleEG/Run2015D-16Dec2015-v2/MINIAOD'
 '256630-260627'
 ['isData=True','SampleName=flips_data','doSystematics=False','SelectionRegion=control_2los']
-20
+15
 --------------------------
 --------------------------
 fakes_data_dimu_2015c
@@ -162,7 +162,7 @@ fakes_data_mueg_2015d
 '/MuonEG/Run2015D-16Dec2015-v1/MINIAOD'
 '256630-260627'
 ['isData=True','SampleName=fakes_data','doSystematics=False','SelectionRegion=control_1lfakeable']
-20
+15
 --------------------------
 fakes_data_mu_2015c
 '/SingleMuon/Run2015C_25ns-16Dec2015-v1/MINIAOD'
@@ -198,7 +198,7 @@ fakes_data_dieg_2015d
 '/DoubleEG/Run2015D-16Dec2015-v2/MINIAOD'
 '256630-260627'
 ['isData=True','SampleName=fakes_data','doSystematics=False','SelectionRegion=control_1lfakeable']
-20
+15
 --------------------------
 ### Data in signal region ###
 --------------------------
