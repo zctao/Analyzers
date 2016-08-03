@@ -40,6 +40,7 @@ CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig):
 	doSystematics (iConfig.getParameter<bool>("do_systematics")),
 	// Sample parameter
 	doLumiScale (iConfig.getParameter<bool>("doLumiScale")),
+	sampleName (iConfig.getParameter<string>("sampleName")),
 	sample_xs (iConfig.getParameter<double>("sample_xs")),
 	int_lumi (iConfig.getParameter<double>("int_lumi")),
 	// Generic
@@ -69,7 +70,6 @@ CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig):
 	//JECSysType (iConfig.getParameter<string>("JECSysType")),
 	//jet_corrector (iConfig.getParameter<string>("jet_corrector")),
 	isdata (iConfig.getParameter<bool>("using_real_data")),
-	isVV (iConfig.getParameter<bool>("isVV")),
 	selection_region (iConfig.getParameter<string>("selection_region"))
 {
 	/*
@@ -124,6 +124,17 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	using namespace edm;
 	++event_count;
 	h_nProcessed->Fill(1);
+
+	/// Create and set up edm:Handles in stack mem.
+	edm_Handles handle;
+	Set_up_handles(iEvent, handle, token, isdata);
+	
+	// for signal sample, filter Higgs decay mode
+	if (sampleName.Contains("ttH_")) {
+		bool rightHiggsDecay = HiggsDecayFilter(*(handle.MC_particles), sampleName);
+		if (not rightHiggsDecay)
+			return;
+	}
 	
 	/// Declaring local struct for data readout and manipulations
 	CU_ttH_EDA_event_vars local;
@@ -143,10 +154,6 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	local.gen_weight = 1.;
 	local.hlt_sf = 1.;
 	local.lepIDEff_sf = 1.;
-	
-	/// Create and set up edm:Handles in stack mem.
-	edm_Handles handle;
-	Set_up_handles(iEvent, handle, token, isdata);
 	
 	/// Run checks on event containers via their handles
 	Check_triggers(handle.triggerResults, local);
@@ -536,8 +543,15 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 				
 				// final event weight
 				local.weight =
-					local.csv_weight * local.gen_weight *
+					local.csv_weight * //local.gen_weight *
 					local.hlt_sf * local.lepIDEff_sf;
+
+				if (local.weight < 0) {
+					std::cout << "csv_weight : " << local.csv_weight << std::endl;
+					std::cout << "gen_weight : " << local.gen_weight << std::endl;
+					std::cout << "hlt_sf : " << local.hlt_sf << std::endl;
+					std::cout << "lepIDEff_sf : " << local.lepIDEff_sf << std::endl;
+				}
 			}
 			
 			// 2D hist

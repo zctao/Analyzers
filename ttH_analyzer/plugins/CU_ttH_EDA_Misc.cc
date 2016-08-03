@@ -802,4 +802,33 @@ void CU_ttH_EDA::Delete_BTagCalibration_Readers()
 	delete BTagCaliReaders["cErr2Down"];
 }
 
+bool CU_ttH_EDA::HiggsDecayFilter(const std::vector<reco::GenParticle>& genParticles, const TString& decayMode)
+{
+	for (auto & p : genParticles) {
+		if (p.pdgId() != 25) continue;
+
+		int ndaugs = p.numberOfDaughters();
+		if (ndaugs != 2) continue;
+
+		const reco::Candidate *d1 = p.daughter(0);
+		const reco::Candidate *d2 = p.daughter(1);
+
+		if (abs(d1->pdgId()) != abs(d2->pdgId()) ) continue;
+
+		int daug_id = abs(d1->pdgId());
+
+		int required_id = 0;
+		if (decayMode == "ttH_htt")
+			required_id = 15;
+		else if (decayMode == "ttH_hww")
+			required_id = 24;
+		else if (decayMode == "ttH_hzz")
+			required_id = 23;
+
+		return daug_id == required_id;
+	}
+
+	return false;
+}
+
 #endif

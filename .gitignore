@@ -3,3 +3,6 @@
 .fuse_*
 #*#
 *.root
+crabConfig*.py
+ttH_analyzer/test/crab/
+crab.log

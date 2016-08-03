@@ -78,6 +78,7 @@
 #include "TTree.h"
 #include "TAxis.h"
 #include "TFile.h"
+#include "TString.h"
 
 /// Higgs and top tagger
 //#include "MiniAOD/BoostedObjects/interface/HTTTopJet.h"
@@ -195,6 +196,7 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 
 	void printDecayChain(const reco::Candidate &p, int &index, int mother_index,
 						 bool details);
+	bool HiggsDecayFilter(const std::vector<reco::GenParticle>&, const TString&);
 	
 	template <class lepton>
 	int Print_event_in_file1(FILE *, lepton &, std::vector<pat::Jet> &,
@@ -242,6 +244,7 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	/// Common sample parameters
 	bool doLumiScale;
 	unsigned long event_count; // running event counter
+	TString sampleName; 
 	double sample_xs;	  // cross section	
 	double int_lumi;	  // integrated luminosity
 	double sample_n;	  // total nr of events. Should be long if compatible
@@ -313,7 +316,6 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 							  // MAODHelper?
 	std::string MAODHelper_era;
 
-	bool isVV;
 	std::string selection_region;
 
 	/// Histograms

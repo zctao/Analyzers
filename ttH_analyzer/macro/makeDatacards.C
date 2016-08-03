@@ -41,10 +41,7 @@ map<TString,TString> dir_map =
 const float lumi = 2.17 * 1000.; // 1/pb
 
 map<TString, float> xs_map =
-	{{"ttH_htt", 0.0318}, {"ttH_hww", 0.108}, {"ttH_hzz", 0.0133}, // ttHnonbb xs
-	 // Hack for now. Need to get the total number of ttHnonbb sample
-	 // Br(Hbb)=0.5824  Br(Htt)=0.06272  Br(HWW)=0.2137  Br(HZZ)=0.02619
-	 // xs(xx) = 0.212 * Br(Hxx)/(1-Br(Hbb))
+	{{"ttH_htt", 0.212}, {"ttH_hww", 0.212}, {"ttH_hzz", 0.212}, // ttHnonbb xs
 	 {"TTW", 0.2043}, {"TTZ", 0.2529}, {"WZ", 4.102},
 	 {"rares_TTTT", 0.009103}, {"rares_tZq", 0.0758}, //{"rares_WW", },
 	 {"rares_WZZ", 0.05565}};

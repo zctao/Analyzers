@@ -54,10 +54,6 @@ options.register('SelectionRegion', 'signal_2lss',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  "Which selection region to apply: signal_2lss, control_2los, control_1lfakeable")
-options.register('isVV', False,
-                 VarParsing.VarParsing.multiplicity.singleton,
-                 VarParsing.VarParsing.varType.bool,
-                 "sample is di-bosons or not")
 
 options.maxEvents = -1
 options.inputFiles='file:/uscms/home/ztao/nobackup/data/ttH_76X/ttH.root'
@@ -121,15 +117,15 @@ process.source = cms.Source("PoolSource",
 #    )
 
 ### Higgs Decay Mode Filter for MC sample
-if "ttH_" in options.SampleName:  # 'ttH_htt', 'ttH_hww', 'ttH_hzz'
-    HFilterOn = True
-else:
-    HFilterOn = False
-
-process.HiggsDecayFilter = cms.EDFilter('MCHiggsDecayModeFilter',
-                                        DecayMode = cms.string(options.SampleName),
-                                        Enable = cms.bool(HFilterOn)
-    )
+#if "ttH_" in options.SampleName:  # 'ttH_htt', 'ttH_hww', 'ttH_hzz'
+#    HFilterOn = True
+#else:
+#    HFilterOn = False
+#
+#process.HiggsDecayFilter = cms.EDFilter('MCHiggsDecayModeFilter',
+#                                        DecayMode = cms.string(options.SampleName#),
+#                                        Enable = cms.bool(HFilterOn)
+#    )
 
 ### JEC
 from PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff import patJetCorrFactorsUpdated #updatedPatJetCorrFactors
@@ -170,11 +166,11 @@ process.ttHtaus.input_tags.rho = cms.InputTag("fixedGridRhoFastjetCentralNeutral
 process.ttHtaus.do_systematics = cms.bool(options.doSystematics)
 process.ttHtaus.produce_sync_ntuple = cms.bool(options.doSync)
 process.ttHtaus.doLumiScale = cms.bool(options.doLumiScale)
+process.ttHtaus.sampleName = cms.string(options.SampleName)
 process.ttHtaus.sample_xs = cms.double(options.CrossSection)
 process.ttHtaus.int_lumi = cms.double(options.IntLumi)
 process.ttHtaus.using_real_data = cms.bool(options.isData)
 process.ttHtaus.selection_region = cms.string(options.SelectionRegion)
-process.ttHtaus.isVV = cms.bool(False)
 
 ### Outputs
 out_file = options.OutputDir + 'output_' + options.SampleName + '.root'
@@ -201,7 +197,7 @@ if options.isData:
 else:
     process.p = cms.Path(
         #process.EventsCounter *
-        process.HiggsDecayFilter *
+        #process.HiggsDecayFilter *
         #process.HLTFilter *
         process.patJetCorrFactorsReapplyJEC * process.patJetsReapplyJEC *
         process.electronMVAValueMapProducer *
