@@ -171,7 +171,7 @@ vector<TH1D*> getShapesMC(const TString channel, const TString dir)
 	for (auto & bsys : BTagSysts) {
 		TH1D* h_ = (TH1D*)f->Get("ttHtaus/h_MVA_shape_"+bsys);
 		ScaleHist(h_, nsamples, lumi, xsection);
-		h_->SetName("x_" + channel + sys_coname + "_btag_" + bsys);
+		h_->SetName("x_" + channel + sys_coname + "btag_" + bsys);
 		hists.push_back(h_);
 	}
 
