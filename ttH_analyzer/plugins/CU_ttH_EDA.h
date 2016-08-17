@@ -64,8 +64,8 @@
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
 /// BTag Calibration
-#include "CondFormats/BTauObjects/interface/BTagCalibration.h"
-#include "CondFormats/BTauObjects/interface/BTagCalibrationReader.h"
+//#include "CondFormats/BTauObjects/interface/BTagCalibration.h"
+//#include "CondTools/BTau/interface/BTagCalibrationReader.h"
 
 //#include "JetMETCorrections/JetCorrector/interface/JetCorrector.h"
 #include "JetMETCorrections/Objects/interface/JetCorrectionsRecord.h"
@@ -154,8 +154,7 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	void Set_up_output_files();			 // at CU_ttH_EDA()
 	void Set_up_tokens(const edm::ParameterSet &);
 	void Set_up_Tree();
-	void Set_up_BTagCalibration_Readers();
-	void Delete_BTagCalibration_Readers();
+	//void Set_up_BTagCalibration_Readers();
 	void Set_up_CSV_rootFile();
 	void fillCSVhistos(TFile*, TFile*);
 
@@ -225,8 +224,8 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 
 	// csv reweighting
 	double getEvtCSVWeight(std::vector<pat::Jet> &, int); // use root file
-	double getEvtCSVWeight(std::vector<pat::Jet> &, std::string &); // use csv file
-	double getJetCSVWeight(pat::Jet &, std::string /*pass by copy*/);
+	//double getEvtCSVWeight(std::vector<pat::Jet> &, std::string &); // use csv file
+	//double getJetCSVWeight(pat::Jet &, std::string /*pass by copy*/);
 	
 	/*
 	* Variable section
@@ -386,7 +385,9 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 		 "LFStats1Up","LFStats1Down","LFStats2Up","LFStats2Down",
 		 "cErr1Up","cErr1Down","cErr2Up","cErr2Down"};
 
-	std::map<std::string, BTagCalibrationReader*> BTagCaliReaders;
+	//std::map<std::string, BTagCalibrationReader*> BTagCaliReaders;
+	//BTagCalibrationReader* BTagCaliReader;
+	
 	// or read SF from root file
 	TH1D* h_csv_wgt_hf[9][5];
 	TH1D* c_csv_wgt_hf[9][5];

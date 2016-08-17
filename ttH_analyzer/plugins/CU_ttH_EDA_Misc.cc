@@ -352,27 +352,6 @@ float CU_ttH_EDA::getMHT(CU_ttH_EDA_event_vars &local)
 	return sqrt(MHT_x * MHT_x + MHT_y * MHT_y);
 }
 
-/*
-bool CU_ttH_EDA::passExtraforTight(pat::Muon mu)
-{
-	if (mu.innerTrack().isAvailable()) {
-		if (mu.innerTrack()->ptError()/mu.innerTrack()->pt() < 0.2)
-			return true;
-	}
-
-	return false;
-}
-
-bool CU_ttH_EDA::passExtraforTight(pat::Electron ele)
-{
-	return (
-			ele.userFloat("numMissingHits") == 0 and
-			ele.passConversionVeto() and
-			ele.isGsfCtfScPixChargeConsistent()
-			);
-}
-*/
-
 bool CU_ttH_EDA::pass_event_sel_2lss1tauh(CU_ttH_EDA_event_vars &local,
 										  int jecType,
 										  const std::string & selection_region)
@@ -389,11 +368,7 @@ bool CU_ttH_EDA::pass_event_sel_2lss1tauh(CU_ttH_EDA_event_vars &local,
 	
 	if (selection_region == "control_1lfakeable") {
 		// exactly one lepton fails tight selection
-		passLepSel =
-			(not local.leptons_selected_sorted[0].passTightSel() and
-			 local.leptons_selected_sorted[1].passTightSel() )
-			or (local.leptons_selected_sorted[0].passTightSel() and
-				not local.leptons_selected_sorted[1].passTightSel());
+		passLepSel = not passLepSel;
 	} 
 	
 	if (not passLepSel) return false;
@@ -435,6 +410,8 @@ bool CU_ttH_EDA::pass_event_sel_2lss1tauh(CU_ttH_EDA_event_vars &local,
 	/// Lepton pt
 	float minpt_ldg = 20.;
 	float minpt_subldg = 10;
+	if (local.leptons_selected_sorted[0].Type() == LeptonType::kele)
+		minpt_ldg = 25.;
 	if (local.leptons_selected_sorted[1].Type() == LeptonType::kele)
 		minpt_subldg = 15.;
 
@@ -496,10 +473,10 @@ bool CU_ttH_EDA::pass_event_sel_2lss1tauh(CU_ttH_EDA_event_vars &local,
 	bool passNumJets = njets >= 4;
 	bool passNumBtags = nbtags_loose >= 2 or nbtags_medium >= 1;
 	
-	if (selection_region == "control_2los") {
-		passNumJets = njets >= 2;
-		passNumBtags = nbtags_medium >= 1;
-	}
+	//if (selection_region == "control_2los") {
+	//	passNumJets = njets >= 2;
+	//	passNumBtags = nbtags_medium >= 1;
+	//}
 	
 	if (not passNumJets) return false;	
 	if (not passNumBtags) return false;
@@ -629,6 +606,7 @@ double CU_ttH_EDA::getEvtCSVWeight(std::vector<pat::Jet> & jets, int iSys)//, do
 	return csvWgtTotal;
 }
 
+/*
 double CU_ttH_EDA::getEvtCSVWeight(std::vector<pat::Jet> & jets, std::string & sys)
 {
 	double weight_evt = 1.;
@@ -648,12 +626,6 @@ double CU_ttH_EDA::getJetCSVWeight(pat::Jet & jet, std::string sys)
 	double csv = jet.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
 	int flavor = jet.hadronFlavour();
 
-	if (!(pt > 20. and fabs(eta) < 2.4)) return 1.;
-
-	if (pt > 1000) pt = 999.;
-	if (csv < 0.) csv = -0.05;
-	if (csv > 1.) csv = 1.0;
-
 	BTagEntry::JetFlavor jf = BTagEntry::FLAV_UDSG;	
 	if ( abs(flavor) == 5 )
 		jf = BTagEntry::FLAV_B;
@@ -661,39 +633,58 @@ double CU_ttH_EDA::getJetCSVWeight(pat::Jet & jet, std::string sys)
 		jf = BTagEntry::FLAV_C;
 
 	double weight_jet = 1.;
-	
-	if (sys == "LFUp" or sys == "LFDown" or 
-	    sys == "HFStats1Up" or sys == "HFStats1Down" or
-	    sys == "HFStats2Up" or sys == "HFStats2Down") {
-	  
-	  if ( jf != BTagEntry::FLAV_B) sys = "NA";
-	}
 
-	if (sys == "HFUp" or sys == "HFDown" or
-	    sys == "LFStats1Up" or sys == "LFStats1Down" or
-	    sys == "LFStats2Up" or sys == "LFStats2Down") {
+	if (sys == "JESUp")
+		sys = "up_jes";
+	else if (sys == "JESDown")
+		sys = "down_jes";
+	else if (sys == "LFUp" and jf == BTagEntry::FLAV_B)
+		sys = "up_lf";
+	else if (sys == "LFDown" and jf == BTagEntry::FLAV_B)
+		sys = "down_lf";
+	else if (sys == "HFStats1Up" and jf == BTagEntry::FLAV_B)
+		sys = "up_hfstats1";
+	else if (sys == "HFStats1Down" and jf == BTagEntry::FLAV_B)
+		sys = "down_hfstats1";
+	else if (sys == "HFStats2Up" and jf == BTagEntry::FLAV_B)
+		sys = "up_hfstats2";
+	else if (sys == "HFStats2Down" and jf == BTagEntry::FLAV_B)
+		sys = "down_hfstats2";
+	else if (sys == "HFUp" and jf == BTagEntry::FLAV_UDSG)
+		sys = "up_hf";
+	else if (sys == "HFDown" and jf == BTagEntry::FLAV_UDSG)
+		sys = "down_hf";
+	else if (sys == "LFStats1Up" and jf == BTagEntry::FLAV_UDSG)
+		sys = "up_lfstats1";
+	else if (sys == "LFStats1Down" and jf == BTagEntry::FLAV_UDSG)
+		sys = "down_lfstats1";
+	else if (sys == "LFStats2Up" and jf == BTagEntry::FLAV_UDSG)
+		sys = "up_lfstats2";
+	else if (sys == "LFStats2Down" and jf == BTagEntry::FLAV_UDSG)
+		sys = "down_lfstats2";
+	else if (sys == "cErr1Up" and jf == BTagEntry::FLAV_C)
+		sys = "up_cferr1";
+	else if (sys == "cErr1Down" and jf == BTagEntry::FLAV_C)
+		sys = "down_cferr1";
+	else if (sys == "cErr2Up" and jf == BTagEntry::FLAV_C)
+		sys = "up_cferr2";
+	else if (sys == "cErr2Down" and jf == BTagEntry::FLAV_C)
+		sys = "down_cferr2";
+	else
+		sys = "central";
 
-	  if (jf != BTagEntry::FLAV_UDSG) sys = "NA";
-	}
+	weight_jet = BTagCaliReader->eval_auto_bounds(sys, jf, eta, pt, csv);
 
-	if (sys == "cErr1Up" or sys == "cErr1Down" or
-	    sys == "cErr2Up" or sys == "cErr2Down") {
-
-	  if (jf != BTagEntry::FLAV_C) sys = "NA";
-	}
-
-	weight_jet = BTagCaliReaders[sys]->eval(jf, eta, pt, csv);
-
-	//assert(weight_jet > 0.);
+	assert(weight_jet > 0.);
 	// problems in CSVv2 file? negative weight e.g. line 1735 and 1736
-	// use csv_rwt_fit_hf/lf_76x_2016_02_08.root instead?
 	// for now:
-	if (weight_jet <= 0.) {
-		weight_jet = 1.;
-	}
+	//if (weight_jet <= 0.) {
+	//	weight_jet = 1.;
+	//}
 
 	return weight_jet;
 }
+*/
 
 float CU_ttH_EDA::getEleChargeMisIDProb(const miniLepton& lepton, bool isdata)
 {
@@ -777,29 +768,6 @@ float CU_ttH_EDA::getFakeRate(const miniLepton& lepton)
 		fakerate = read2DHist(h_fakerate_mu, lepton.conePt(), lepton.eta());
 
 	return fakerate;
-}
-
-void CU_ttH_EDA::Delete_BTagCalibration_Readers()
-{
-	delete BTagCaliReaders["NA"];
-	delete BTagCaliReaders["JESUp"];
-	delete BTagCaliReaders["JESDown"];
-	delete BTagCaliReaders["LFUp"];
-	delete BTagCaliReaders["LFDown"];
-	delete BTagCaliReaders["HFUp"];
-	delete BTagCaliReaders["HFDown"];
-	delete BTagCaliReaders["HFStats1Up"];
-	delete BTagCaliReaders["HFStats1Down"];
-	delete BTagCaliReaders["HFStats2Up"];
-	delete BTagCaliReaders["HFStats2Down"];
-	delete BTagCaliReaders["LFStats1Up"];
-	delete BTagCaliReaders["LFStats1Down"];
-	delete BTagCaliReaders["LFStats2Up"];
-	delete BTagCaliReaders["LFStats2Down"];
-	delete BTagCaliReaders["cErr1Up"];
-	delete BTagCaliReaders["cErr1Down"];
-	delete BTagCaliReaders["cErr2Up"];
-	delete BTagCaliReaders["cErr2Down"];
 }
 
 bool CU_ttH_EDA::HiggsDecayFilter(const std::vector<reco::GenParticle>& genParticles, const TString& decayMode)

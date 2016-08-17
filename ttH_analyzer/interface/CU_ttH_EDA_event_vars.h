@@ -72,6 +72,7 @@ struct CU_ttH_EDA_event_vars {
 	std::vector<pat::Muon> mu_preselected_sorted;
 	std::vector<pat::Muon> mu_fakeable;
 	std::vector<pat::Muon> mu_tight;
+	std::vector<pat::Tau> tau_preselected;
 	std::vector<pat::Tau> tau_selected;
 	std::vector<pat::Tau> tau_selected_sorted;
 

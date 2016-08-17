@@ -332,77 +332,36 @@ void CU_ttH_EDA::Set_up_Tree()
 	tauNtuple.set_up_branches(eventTree);
 }
 
+/*
 void CU_ttH_EDA::Set_up_BTagCalibration_Readers()
 {
 	const std::string base =
 		std::string(getenv("CMSSW_BASE")) +  "/src/Analyzers/ttH_analyzer/data/";
 
-	BTagCalibration calib_csvv2("csvv2", base + "CSVv2.csv");  // for 76X
+	BTagCalibration calib_csvv2("csvv2", base + "CSVv2_ichep.csv");  // 80X
+	
+	BTagCaliReader = new BTagCalibrationReader(
+	    BTagEntry::OP_RESHAPING, // operating point
+		"central",
+		{"up_jes", "down_jes", "up_lf", "down_lf", "up_hf", "down_hf",
+		 "up_hfstats1", "down_hfstats1", "up_hfstats2", "down_hfstats2",
+		 "up_lfstats1", "down_lfstats1", "up_lfstats2", "down_lfstats2",
+		 "up_cferr1", "down_cferr1", "up_cferr2", "down_cferr2"}
+											   );
 
-	BTagCaliReaders["NA"] = new BTagCalibrationReader(&calib_csvv2,  // calibration instance
-									   BTagEntry::OP_RESHAPING, // operating point
-									   "iterativefit", // measurement type
-									   "central");  // systematics type
-	BTagCaliReaders["JESUp"] = 
-		new BTagCalibrationReader(&calib_csvv2,	BTagEntry::OP_RESHAPING,
-								  "iterativefit", "up_jes");
-	BTagCaliReaders["JESDown"] = 
-		new BTagCalibrationReader(&calib_csvv2, BTagEntry::OP_RESHAPING,
-								  "iterativefit", "down_jes");
-	BTagCaliReaders["LFUp"] =
-		new BTagCalibrationReader(&calib_csvv2, BTagEntry::OP_RESHAPING,
-								  "iterativefit", "up_lf");
-	BTagCaliReaders["LFDown"] =
-		new BTagCalibrationReader(&calib_csvv2, BTagEntry::OP_RESHAPING,
-								  "iterativefit", "down_lf");
-	BTagCaliReaders["HFUp"] =
-		new BTagCalibrationReader(&calib_csvv2, BTagEntry::OP_RESHAPING,
-								  "iterativefit", "up_hf");
-	BTagCaliReaders["HFDown"] =
-		new BTagCalibrationReader(&calib_csvv2, BTagEntry::OP_RESHAPING,
-								  "iterativefit", "down_hf");
-	BTagCaliReaders["HFStats1Up"] =
-		new BTagCalibrationReader(&calib_csvv2, BTagEntry::OP_RESHAPING,
-								  "iterativefit", "up_hfstats1");
-	BTagCaliReaders["HFStats1Down"] =
-		new BTagCalibrationReader(&calib_csvv2, BTagEntry::OP_RESHAPING,
-								  "iterativefit", "down_hfstats1");	
-	BTagCaliReaders["HFStats2Up"] =
-		new BTagCalibrationReader(&calib_csvv2, BTagEntry::OP_RESHAPING,
-								  "iterativefit", "up_hfstats2");
-	BTagCaliReaders["HFStats2Down"] =
-		new BTagCalibrationReader(&calib_csvv2, BTagEntry::OP_RESHAPING,
-								  "iterativefit", "down_hfstats2");	
-	BTagCaliReaders["LFStats1Up"] =
-		new BTagCalibrationReader(&calib_csvv2, BTagEntry::OP_RESHAPING,
-								  "iterativefit", "up_lfstats1");
-	BTagCaliReaders["LFStats1Down"] =
-		new BTagCalibrationReader(&calib_csvv2, BTagEntry::OP_RESHAPING,
-								  "iterativefit", "down_lfstats1");	
-	BTagCaliReaders["LFStats2Up"] =
-		new BTagCalibrationReader(&calib_csvv2, BTagEntry::OP_RESHAPING,
-								  "iterativefit", "up_lfstats2");
-	BTagCaliReaders["LFStats2Down"] =
-		new BTagCalibrationReader(&calib_csvv2, BTagEntry::OP_RESHAPING,
-								  "iterativefit", "down_lfstats2");
-	BTagCaliReaders["cErr1Up"] =
-		new BTagCalibrationReader(&calib_csvv2, BTagEntry::OP_RESHAPING,
-								  "iterativefit", "up_cferr1");
-	BTagCaliReaders["cErr1Down"] =
-		new BTagCalibrationReader(&calib_csvv2, BTagEntry::OP_RESHAPING,
-								  "iterativefit", "down_cferr1");
-	BTagCaliReaders["cErr2Up"] =
-		new BTagCalibrationReader(&calib_csvv2, BTagEntry::OP_RESHAPING,
-								  "iterativefit", "up_cferr2");
-	BTagCaliReaders["cErr2Down"] =
-		new BTagCalibrationReader(&calib_csvv2, BTagEntry::OP_RESHAPING,
-								  "iterativefit", "down_cferr2");	
+	BTagCaliReader->load(calib_csvv2,BTagEntry::FLAV_B,"iterativefit");
+	BTagCaliReader->load(calib_csvv2,BTagEntry::FLAV_C,"iterativefit");
+	BTagCaliReader->load(calib_csvv2,BTagEntry::FLAV_UDSG,"iterativefit");
+
 }
+*/
 
 void CU_ttH_EDA::Set_up_CSV_rootFile()
 {
-	std::string inputFileHF = "data/csv_rwt_fit_hf_76x_2016_02_08.root";
-	std::string inputFileLF = "data/csv_rwt_fit_lf_76x_2016_02_08.root";
+	//std::string inputFileHF = "data/csv_rwt_fit_hf_76x_2016_02_08.root";
+	//std::string inputFileLF = "data/csv_rwt_fit_lf_76x_2016_02_08.root";
+	std::string inputFileHF = "data/csv_rwt_fit_hf_v2_final_2016_08_5test.root";
+	std::string inputFileLF = "data/csv_rwt_fit_lf_v2_final_2016_08_5test.root";
 
 	TFile* f_CSVwgt_HF = new TFile ((std::string(getenv("CMSSW_BASE")) + "/src/Analyzers/ttH_analyzer/" + inputFileHF).c_str());
 	TFile* f_CSVwgt_LF = new TFile ((std::string(getenv("CMSSW_BASE")) + "/src/Analyzers/ttH_analyzer/" + inputFileLF).c_str());

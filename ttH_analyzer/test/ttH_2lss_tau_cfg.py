@@ -1,4 +1,4 @@
-### CMSSW_7_6_3
+### CMSSW_8_0_16
 
 import FWCore.ParameterSet.Config as cms
 import FWCore.ParameterSet.VarParsing as VarParsing
@@ -56,7 +56,7 @@ options.register('SelectionRegion', 'signal_2lss',
                  "Which selection region to apply: signal_2lss, control_2los, control_1lfakeable")
 
 options.maxEvents = -1
-options.inputFiles='file:/uscms/home/ztao/nobackup/data/ttH_76X/ttH.root'
+options.inputFiles='file:/uscms/home/ztao/nobackup/datasample/ttH_80X/ttHnonbb.root'
 
 # get and parse the command line arguments
 options.parseArguments()
@@ -66,9 +66,9 @@ process.load('Configuration.StandardSequences.Services_cff')
 process.load( "Configuration.StandardSequences.FrontierConditions_GlobalTag_cff" )
 
 if options.isData:
-    process.GlobalTag.globaltag = '76X_dataRun2_v15'
+    process.GlobalTag.globaltag = '80X_dataRun2_Prompt_ICHEP16JEC_v0'
 else:
-    process.GlobalTag.globaltag = '76X_mcRun2_asymptotic_RunIIFall15DR76_v1'
+    process.GlobalTag.globaltag = '80X_mcRun2_asymptotic_2016_miniAODv2_v1'
 
 process.maxEvents = cms.untracked.PSet(
 	input = cms.untracked.int32(options.maxEvents)
@@ -86,63 +86,21 @@ if options.isData:
 
 ### Inputs
 #'ttH_htt' signal sample
-#'/store/mc/RunIIFall15MiniAODv2/ttHJetToTT_M125_13TeV_amcatnloFXFX_madspin_pythia8/MINIAODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v3/60000/0C6DA13E-38C8-E511-8F6E-00259055220A.root'
-#'file:/uscms/home/ztao/nobackup/data/ttH_76X/ttH_htt_sync.root'
-#'ttbar'  tt+jet
-#'/store/mc/RunIIFall15MiniAODv2/TT_TuneCUETP8M1_13TeV-powheg-pythia8/MINIAODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12_ext3-v1/00000/00DF0A73-17C2-E511-B086-E41D2D08DE30.root'
-#'file:../data/local_tmp/ttbar.root'
+##'ttbar'  tt+jet
 
 process.source = cms.Source("PoolSource",
 	fileNames = cms.untracked.vstring(options.inputFiles)
 )
 
-### Event Counter
-#process.EventsCounter = cms.EDProducer("EventCountProducer")
-
-### HLT Filter
-#process.HLTFilter = HLTrigger.HLTfilters.hltHighLevel_cfi.hltHighLevel.clone(
-#    throw = cms.bool(False),
-#    HLTPaths = [
-#        # single lepton trigger
-#        'HLT_Ele23_WPLoose_Gsf_v*',
-#        'HLT_IsoMu20_v*',
-#        'HLT_IsoTkMu20_v*',
-#        # dilepton trigger
-#        'HLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v*',
-#        'HLT_Mu17_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v*',
-#        'HLT_Mu8_TrkIsoVVL_Ele17_CaloIdL_TrackIdL_IsoVL_v*',
-#        'HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v*',
-#        'HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v*'
-#        ]
-#    )
-
-### Higgs Decay Mode Filter for MC sample
-#if "ttH_" in options.SampleName:  # 'ttH_htt', 'ttH_hww', 'ttH_hzz'
-#    HFilterOn = True
-#else:
-#    HFilterOn = False
-#
-#process.HiggsDecayFilter = cms.EDFilter('MCHiggsDecayModeFilter',
-#                                        DecayMode = cms.string(options.SampleName#),
-#                                        Enable = cms.bool(HFilterOn)
-#    )
-
 ### JEC
-from PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff import patJetCorrFactorsUpdated #updatedPatJetCorrFactors
-process.patJetCorrFactorsReapplyJEC = patJetCorrFactorsUpdated.clone(  #updatedPatJetCorrFactors.clone(
-  src = cms.InputTag("slimmedJets"),
-  levels = ['L1FastJet', 
-        'L2Relative', 
-        'L3Absolute',
-        'L2L3Residual'],
-  payload = 'AK4PFchs' ) 
+from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
 
-from PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff import patJetsUpdated #updatedPatJets
-process.patJetsReapplyJEC = patJetsUpdated.clone( #updatedPatJets.clone(
-  jetSource = cms.InputTag("slimmedJets"),
-  jetCorrFactorsSource = cms.VInputTag(cms.InputTag("patJetCorrFactorsReapplyJEC"))
-  )
-
+updateJetCollection(
+    process,
+    jetSource = cms.InputTag('slimmedJets'),
+    labelName = 'UpdatedJEC',
+    jetCorrections = ('AK4PFchs', cms.vstring(['L1FastJet', 'L2Relative', 'L3Absolute','L2L3Residual']), 'None')
+)
 
 ### load the analysis
 # electron MVA developed by the EGamma POG
@@ -155,12 +113,12 @@ process.load("Analyzers.ttH_analyzer.ttHtaus_cfi")
 
 ### Redefine parameter sets
 process.ttHLeptons.rhoParam = "fixedGridRhoFastjetCentralNeutral"
-process.ttHLeptons.jets = cms.InputTag("patJetsReapplyJEC") # use JEC's from tag
+process.ttHLeptons.jets = cms.InputTag("updatedPatJetsUpdatedJEC") # use JEC's from tag
 
 process.ttHtaus.input_tags.electrons = cms.InputTag("ttHLeptons")
 process.ttHtaus.input_tags.muons = cms.InputTag("ttHLeptons")
 process.ttHtaus.input_tags.taus = cms.InputTag("ttHLeptons")
-process.ttHtaus.input_tags.jets = cms.InputTag("patJetsReapplyJEC")
+process.ttHtaus.input_tags.jets = cms.InputTag("updatedPatJetsUpdatedJEC")
 process.ttHtaus.input_tags.rho = cms.InputTag("fixedGridRhoFastjetCentralNeutral")
 
 process.ttHtaus.do_systematics = cms.bool(options.doSystematics)
@@ -187,19 +145,15 @@ process.TFileService = cms.Service("TFileService",
 if options.isData:
     process.p = cms.Path(
         process.primaryVertexFilter *
-        #process.HLTFilter *
-        process.patJetCorrFactorsReapplyJEC *
-        process.patJetsReapplyJEC *
+        process.patJetCorrFactorsUpdatedJEC *
+        process.updatedPatJetsUpdatedJEC *
         process.electronMVAValueMapProducer *
         process.ttHLeptons *
         process.ttHtaus
     )
 else:
     process.p = cms.Path(
-        #process.EventsCounter *
-        #process.HiggsDecayFilter *
-        #process.HLTFilter *
-        process.patJetCorrFactorsReapplyJEC * process.patJetsReapplyJEC *
+        process.patJetCorrFactorsUpdatedJEC * process.updatedPatJetsUpdatedJEC *
         process.electronMVAValueMapProducer *
         process.ttHLeptons *
         process.ttHtaus

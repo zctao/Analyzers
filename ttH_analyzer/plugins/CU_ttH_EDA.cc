@@ -112,8 +112,8 @@ CU_ttH_EDA::~CU_ttH_EDA()
 	// (e.g. close files, deallocate resources etc.)
 
 	Close_output_files();
-	//Delete_BTagCalibration_Readers();
-
+	
+	//delete BTagCaliReader;
 }
 
 // ------------ method called for each event  ------------
@@ -245,6 +245,8 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	*/
 	for (const auto& tau : *(handle.taus)) {
 		if (tau.userFloat("idPreselection")>0.5 and tau.pt()>min_tau_pT)
+			local.tau_preselected.push_back(tau);  // for cleaning
+		if (tau.userFloat("idSelection")>0.5 and tau.pt()>min_tau_pT)
 			local.tau_selected.push_back(tau);
 	}
 	// remove overlap with muons and electrons
@@ -276,7 +278,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	// overlap removal by dR
 	local.jets_no_mu = removeOverlapdR(local.jets_raw, local.mu_fakeable, 0.4);
 	local.jets_no_mu_e = removeOverlapdR(local.jets_no_mu, local.e_fakeable, 0.4);
-	local.jets_selected = removeOverlapdR(local.jets_no_mu_e, local.tau_selected, 0.4);
+	local.jets_selected = removeOverlapdR(local.jets_no_mu_e, local.tau_preselected, 0.4);
 	
 	// sort by pT
 	local.jets_selected_sorted =
@@ -291,8 +293,6 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	local.jets_selected_btag_medium = miniAODhelper.GetSelectedJets(
 	    local.jets_selected_btag_loose, min_bjet_pT, max_bjet_eta,
 		jetID::jetLoose, 'M');
-	// CSV WP definition in current MiniAODHelper is different from AN-15-321(v4)
-	// The latter is tighter.
 
 	local.n_jets = static_cast<int>(local.jets_selected.size());
 	local.n_btags_loose = static_cast<int>(local.jets_selected_btag_loose.size());
@@ -315,14 +315,14 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	local.jets_no_mu_e_jesup =
 		removeOverlapdR(local.jets_no_mu_jesup, local.e_fakeable, 0.4);
 	local.jets_selected_jesup =
-		removeOverlapdR(local.jets_no_mu_e_jesup, local.tau_selected, 0.4);
+		removeOverlapdR(local.jets_no_mu_e_jesup, local.tau_preselected, 0.4);
 
 	local.jets_no_mu_jesdown =
 		removeOverlapdR(local.jets_raw_jesdown, local.mu_fakeable, 0.4);
 	local.jets_no_mu_e_jesdown =
 		removeOverlapdR(local.jets_no_mu_jesdown, local.e_fakeable, 0.4);
 	local.jets_selected_jesdown =
-		removeOverlapdR(local.jets_no_mu_e_jesdown, local.tau_selected, 0.4);
+		removeOverlapdR(local.jets_no_mu_e_jesdown, local.tau_preselected, 0.4);
 
 	// sort by pT
 	local.jets_selected_sorted_jesup =
@@ -347,63 +347,6 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	    local.jets_selected_btag_loose_jesdown, min_bjet_pT, max_bjet_eta,
 	    jetID::jetLoose, 'M');
 	
-	}
-
-	///////////////////////////////////////////////////////////
-	// hack for now to account for different csv wp definition
-	bool do_AN321 = true;
-	if (do_AN321) {
-		// AN-15-321 CSV WP definition:
-		// Loose: csv > 0.605
-		// Medium: csv > 0.890
-		std::vector<pat::Jet> tmp_loose;
-		std::vector<pat::Jet> tmp_medium;
-		for (auto & j : local.jets_selected_btag_loose) {
-			float csv = j.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
-			if (csv > 0.605) {
-				tmp_loose.push_back(j);
-				if (csv > 0.890)
-					tmp_medium.push_back(j);
-			}
-		}
-		local.jets_selected_btag_loose.clear();
-		local.jets_selected_btag_medium.clear();
-		local.jets_selected_btag_loose = tmp_loose;
-		local.jets_selected_btag_medium = tmp_medium;
-
-		if (!isdata and doSystematics) {
-		
-		std::vector<pat::Jet> tmp_loose_jesup;
-		std::vector<pat::Jet> tmp_medium_jesup;
-		for (auto & j : local.jets_selected_btag_loose_jesup) {
-			float csv = j.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
-			if (csv > 0.605) {
-				tmp_loose_jesup.push_back(j);
-				if (csv > 0.890)
-					tmp_medium_jesup.push_back(j);
-			}
-		}
-		local.jets_selected_btag_loose_jesup.clear();
-		local.jets_selected_btag_medium_jesup.clear();
-		local.jets_selected_btag_loose_jesup = tmp_loose_jesup;
-		local.jets_selected_btag_medium_jesup = tmp_medium_jesup;
-
-		std::vector<pat::Jet> tmp_loose_jesdown;
-		std::vector<pat::Jet> tmp_medium_jesdown;
-		for (auto & j : local.jets_selected_btag_loose_jesdown) {
-			float csv = j.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
-			if (csv > 0.605) {
-				tmp_loose_jesdown.push_back(j);
-				if (csv > 0.890)
-					tmp_medium_jesdown.push_back(j);
-			}
-		}
-		local.jets_selected_btag_loose_jesdown.clear();
-		local.jets_selected_btag_medium_jesdown.clear();
-		local.jets_selected_btag_loose_jesdown = tmp_loose_jesdown;
-		local.jets_selected_btag_medium_jesdown = tmp_medium_jesdown;
-
-		}
 	}
 
 	///////////////////////////////////////////////////////////
@@ -546,12 +489,12 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 					local.csv_weight * //local.gen_weight *
 					local.hlt_sf * local.lepIDEff_sf;
 
-				if (local.weight < 0) {
-					std::cout << "csv_weight : " << local.csv_weight << std::endl;
-					std::cout << "gen_weight : " << local.gen_weight << std::endl;
-					std::cout << "hlt_sf : " << local.hlt_sf << std::endl;
-					std::cout << "lepIDEff_sf : " << local.lepIDEff_sf << std::endl;
-				}
+				//if (local.weight < 0) {
+				//	std::cout << "csv_weight : " << local.csv_weight << std::endl;
+				//	std::cout << "gen_weight : " << local.gen_weight << std::endl;
+				//	std::cout << "hlt_sf : " << local.hlt_sf << std::endl;
+				//	std::cout << "lepIDEff_sf : " << local.lepIDEff_sf << std::endl;
+				//}
 			}
 			
 			// 2D hist
@@ -607,8 +550,8 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 				double mva_ttbar_jesup = MVA_ttbar_vars.Get_mvaScore();
 				double mva_ttV_jesup = MVA_ttV_vars.Get_mvaScore();
 				
-				//csv_weight_jesup = getEvtCSVWeight(local.jets_selected,"JESUp");
 				double csv_weight_jesup =
+					//getEvtCSVWeight(local.jets_selected,"JESUp");
 					getEvtCSVWeight(local.jets_selected_jesup, csv_iSys["JESUp"]);
 				double weight_jesup =
 					local.weight / local.csv_weight * csv_weight_jesup;
@@ -640,8 +583,8 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 				double mva_ttbar_jesdown = MVA_ttbar_vars.Get_mvaScore();
 				double mva_ttV_jesdown = MVA_ttV_vars.Get_mvaScore();
 				
-				//csv_weight_jesdown = getEvtCSVWeight(local.jets_selected, "JESDown");
 				double csv_weight_jesdown =
+					//getEvtCSVWeight(local.jets_selected, "JESDown");
 					getEvtCSVWeight(local.jets_selected_jesdown, csv_iSys["JESDown"]);
 				double weight_jesdown =
 					local.weight / local.csv_weight * csv_weight_jesdown;
