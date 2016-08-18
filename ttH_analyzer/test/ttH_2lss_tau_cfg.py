@@ -129,6 +129,9 @@ process.ttHtaus.sample_xs = cms.double(options.CrossSection)
 process.ttHtaus.int_lumi = cms.double(options.IntLumi)
 process.ttHtaus.using_real_data = cms.bool(options.isData)
 process.ttHtaus.selection_region = cms.string(options.SelectionRegion)
+# for reHLT
+#process.ttHtaus.HLT_config_tag = cms.string("HLT2")
+#process.ttHtaus.filter_config_tag = cms.string("HLT2")
 
 ### Outputs
 out_file = options.OutputDir + 'output_' + options.SampleName + '.root'

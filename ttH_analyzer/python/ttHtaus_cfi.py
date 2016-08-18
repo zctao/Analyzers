@@ -21,8 +21,8 @@ ttHtaus =  cms.EDAnalyzer('CU_ttH_EDA',
         verbosity = cms.bool(False),
         # Triggers
         print_HLT_event_path = cms.bool(False),
-        HLT_config_tag = cms.string('HLT2'),
-        filter_config_tag = cms.string('HLT2'),
+        HLT_config_tag = cms.string('HLT'),
+        filter_config_tag = cms.string('HLT'),
         collect_trigger_stats = cms.bool(False),
         ## Single lepton triggers:
         HLT_electron_triggers = cms.vstring([

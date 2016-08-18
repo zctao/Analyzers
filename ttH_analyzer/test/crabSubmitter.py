@@ -21,13 +21,15 @@ config.Data.unitsPerJob = %(unit)s
 %(runrange)s
 config.Data.ignoreLocality = True
 config.Data.publication = False
-config.Data.outLFNDirBase = '/store/user/ztao/ttH_76X'
+config.Data.outLFNDirBase = '/store/user/ztao/ttH_80X'
 
 config.Site.storageSite = 'T3_US_FNALLPC'
 '''
 
 channels = [#'ttH_htt', 'ttH_hww', 'ttH_hzz', 
-            #'TTW', 'TTZ', 'WZ', 
+            #'TTW', 'TTZ',
+            #'WZ',
+            #'TTJets',
             #'rares_TTTT', 'rares_tZq', 'rares_WW', 'rares_WZZ', 
             #'flips_data_dimu_2015c', 'flips_data_dimu_2015d',
             #'flips_data_mu_2015c', 'flips_data_mu_2015d',
@@ -71,4 +73,4 @@ for ch in channels:
         vd['splitting'] = 'EventAwareLumiBased'
 
     open('crabConfig_'+ch+'.py','wt').write(string % vd)
-    os.system('crab submit -c crabConfig_'+ch+'.py')
+    #os.system('crab submit -c crabConfig_'+ch+'.py')
