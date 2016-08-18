@@ -117,7 +117,7 @@ void CU_ttH_EDA::Set_up_histograms()
 		h_MVA_ttV_vs_ttbar->GetYaxis()->SetTitle("ttV");
 
 		h_MVA_shape =
-			fs_->make<TH1D>("h_MVA_shape","", 6, 0.5, 6.5);
+			fs_->make<TH1D>("h_MVA_shape","", 7, 0.5, 7.5);
 
 		if (!isdata and doSystematics) {
 			h_MVA_ttV_vs_ttbar_jesup =
@@ -126,7 +126,7 @@ void CU_ttH_EDA::Set_up_histograms()
 			h_MVA_ttV_vs_ttbar_jesup->GetYaxis()->SetTitle("ttV");
 			
 			h_MVA_shape_jesup =
-				fs_->make<TH1D>("h_MVA_shape_JESUp","", 6, 0.5, 6.5);
+				fs_->make<TH1D>("h_MVA_shape_JESUp","", 7, 0.5, 7.5);
 
 			h_MVA_ttV_vs_ttbar_jesdown =
 				fs_->make<TH2D>("h_MVA_ttV_vs_ttbar_JESDown", ";BDT", 20, -1, 1, 20, -1, 1);
@@ -134,7 +134,7 @@ void CU_ttH_EDA::Set_up_histograms()
 			h_MVA_ttV_vs_ttbar_jesdown->GetYaxis()->SetTitle("ttV");
 			
 			h_MVA_shape_jesdown =
-				fs_->make<TH1D>("h_MVA_shape_JESDown","", 6, 0.5, 6.5);
+				fs_->make<TH1D>("h_MVA_shape_JESDown","", 7, 0.5, 7.5);
 			
 			for (int i = 0; i < 16 ; ++i) {
 				TString h2d_name = "h_MVA_ttV_vs_ttbar_" + sysList[i];
@@ -144,7 +144,7 @@ void CU_ttH_EDA::Set_up_histograms()
 				h_MVA_ttV_vs_ttbar_sys[i]->SetTitle("ttV");
 
 				TString h1d_name = "h_MVA_shape_" + sysList[i];
-				h_MVA_shape_sys[i] = fs_->make<TH1D>(h1d_name, "", 6, 0.5, 6.5);
+				h_MVA_shape_sys[i] = fs_->make<TH1D>(h1d_name, "", 7, 0.5, 7.5);
 			}
 
 			setup_sysHist = true;

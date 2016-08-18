@@ -47,6 +47,7 @@ struct CU_ttH_EDA_event_vars {
 	int n_muons_loose;
 	int n_muons_fakeable;
 	int n_muons_tight;
+	int n_taus_pre;
 	int n_taus;
 	int n_jets;
 	int n_btags;

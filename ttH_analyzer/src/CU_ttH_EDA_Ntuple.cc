@@ -30,7 +30,8 @@ void CU_ttH_EDA_Ntuple::write_ntuple(const CU_ttH_EDA_event_vars &local)
 		if (mu.userFloat("idCutBased") > 0.5)
 			++n_cutsel_mu;
 	}
-	fill_ntuple_muons(local.mu_preselected_sorted);
+	//fill_ntuple_muons(local.mu_preselected_sorted);
+	fill_ntuple_muons(local.mu_fakeable);
 	
 	// Electrons
 	n_presel_ele = local.n_electrons_loose;
@@ -41,10 +42,12 @@ void CU_ttH_EDA_Ntuple::write_ntuple(const CU_ttH_EDA_event_vars &local)
 		if (ele.userFloat("idCutBased") > 0.5)
 			++n_cutsel_ele;
 	}
-	fill_ntuple_electrons(local.e_preselected_sorted);
+	//fill_ntuple_electrons(local.e_preselected_sorted);
+	fill_ntuple_electrons(local.e_fakeable);
 		
 	// Taus
-	n_presel_tau = local.n_taus;
+	n_presel_tau = local.n_taus_pre;
+	n_tau = local.n_taus;
 	fill_ntuple_taus(local.tau_selected_sorted);
 
 	// Jets
@@ -176,6 +179,7 @@ void CU_ttH_EDA_Ntuple::fill_ntuple_taus(const std::vector<pat::Tau>& taus)
 		tau0_charge = taus[0].charge();
 		tau0_dxy = taus[0].userFloat("dxy");
 		tau0_dz = taus[0].userFloat("dz");
+		tau0_decayMode = taus[0].decayMode();
 		tau0_decayModeFindingOldDMs =  taus[0].tauID("decayModeFinding");  // decayModeFindingOldDMs
 		tau0_decayModeFindingNewDMs =  taus[0].tauID("decayModeFindingNewDMs");
 		
@@ -184,9 +188,9 @@ void CU_ttH_EDA_Ntuple::fill_ntuple_taus(const std::vector<pat::Tau>& taus)
 		tau0_byMediumCombinedIsolationDeltaBetaCorr3Hits = taus[0].tauID("byMediumCombinedIsolationDeltaBetaCorr3Hits");
 		tau0_byTightCombinedIsolationDeltaBetaCorr3Hits = taus[0].tauID("byTightCombinedIsolationDeltaBetaCorr3Hits");
 		
-		tau0_byLooseCombinedIsolationDeltaBetaCorr3HitsdR03 = taus[0].tauID("byLooseCombinedIsolationDeltaBetaCorr3HitsdR03");
-		tau0_byMediumCombinedIsolationDeltaBetaCorr3HitsdR03 = taus[0].tauID("byMediumCombinedIsolationDeltaBetaCorr3HitsdR03");
-		tau0_byTightCombinedIsolationDeltaBetaCorr3HitsdR03 = taus[0].tauID("byTightCombinedIsolationDeltaBetaCorr3HitsdR03");
+		//tau0_byLooseCombinedIsolationDeltaBetaCorr3HitsdR03 = taus[0].tauID("byLooseCombinedIsolationDeltaBetaCorr3HitsdR03");
+		//tau0_byMediumCombinedIsolationDeltaBetaCorr3HitsdR03 = taus[0].tauID("byMediumCombinedIsolationDeltaBetaCorr3HitsdR03");
+		//tau0_byTightCombinedIsolationDeltaBetaCorr3HitsdR03 = taus[0].tauID("byTightCombinedIsolationDeltaBetaCorr3HitsdR03");
 		
 		tau0_byLooseIsolationMVArun2v1DBdR03oldDMwLT = taus[0].tauID("byLooseIsolationMVArun2v1DBdR03oldDMwLT");
 		tau0_byMediumIsolationMVArun2v1DBdR03oldDMwLT = taus[0].tauID("byMediumIsolationMVArun2v1DBdR03oldDMwLT");
@@ -210,6 +214,7 @@ void CU_ttH_EDA_Ntuple::fill_ntuple_taus(const std::vector<pat::Tau>& taus)
 		tau1_charge = taus[1].charge();
 		tau1_dxy = taus[1].userFloat("dxy");
 		tau1_dz = taus[1].userFloat("dz");
+		tau1_decayMode = taus[1].decayMode();
 		tau1_decayModeFindingOldDMs =  taus[1].tauID("decayModeFinding");  // decayModeFindingOldDMs
 		tau1_decayModeFindingNewDMs =  taus[1].tauID("decayModeFindingNewDMs");
 		
@@ -218,9 +223,9 @@ void CU_ttH_EDA_Ntuple::fill_ntuple_taus(const std::vector<pat::Tau>& taus)
 		tau1_byMediumCombinedIsolationDeltaBetaCorr3Hits = taus[1].tauID("byMediumCombinedIsolationDeltaBetaCorr3Hits");
 		tau1_byTightCombinedIsolationDeltaBetaCorr3Hits = taus[1].tauID("byTightCombinedIsolationDeltaBetaCorr3Hits");
 		
-		tau1_byLooseCombinedIsolationDeltaBetaCorr3HitsdR03 = taus[1].tauID("byLooseCombinedIsolationDeltaBetaCorr3HitsdR03");
-		tau1_byMediumCombinedIsolationDeltaBetaCorr3HitsdR03 = taus[1].tauID("byMediumCombinedIsolationDeltaBetaCorr3HitsdR03");
-		tau1_byTightCombinedIsolationDeltaBetaCorr3HitsdR03 = taus[1].tauID("byTightCombinedIsolationDeltaBetaCorr3HitsdR03");
+		//tau1_byLooseCombinedIsolationDeltaBetaCorr3HitsdR03 = taus[1].tauID("byLooseCombinedIsolationDeltaBetaCorr3HitsdR03");
+		//tau1_byMediumCombinedIsolationDeltaBetaCorr3HitsdR03 = taus[1].tauID("byMediumCombinedIsolationDeltaBetaCorr3HitsdR03");
+		//tau1_byTightCombinedIsolationDeltaBetaCorr3HitsdR03 = taus[1].tauID("byTightCombinedIsolationDeltaBetaCorr3HitsdR03");
 		
 		tau1_byLooseIsolationMVArun2v1DBdR03oldDMwLT = taus[1].tauID("byLooseIsolationMVArun2v1DBdR03oldDMwLT");
 		tau1_byMediumIsolationMVArun2v1DBdR03oldDMwLT = taus[1].tauID("byMediumIsolationMVArun2v1DBdR03oldDMwLT");
@@ -288,6 +293,7 @@ void CU_ttH_EDA_Ntuple::initialize()
 	n_mvasel_ele = -9999;
 	n_fakeablesel_ele = -9999;
 	n_presel_tau = -9999;
+	n_tau = -9999;
 	n_presel_jet = -9999;
 
 	MVA_2lss_ttV = -9999.;
@@ -410,6 +416,7 @@ void CU_ttH_EDA_Ntuple::initialize()
 	tau0_charge = -9999;
 	tau0_dxy = -9999.;
 	tau0_dz = -9999.;
+	tau0_decayMode = -9999;
 	tau0_decayModeFindingOldDMs = -9999;
 	tau0_decayModeFindingNewDMs = -9999;
 	tau0_byCombinedIsolationDeltaBetaCorr3Hits = -9999.;
@@ -436,6 +443,7 @@ void CU_ttH_EDA_Ntuple::initialize()
 	tau1_charge = -9999;
 	tau1_dxy = -9999.;
 	tau1_dz = -9999.;
+	tau1_decayMode = -9999;
 	tau1_decayModeFindingOldDMs = -9999;
 	tau1_decayModeFindingNewDMs = -9999;
 	tau1_byCombinedIsolationDeltaBetaCorr3Hits = -9999.;
@@ -503,6 +511,7 @@ void CU_ttH_EDA_Ntuple::set_up_branches(TTree *tree)
 	tree->Branch("n_mvasel_ele", &n_mvasel_ele);
 	tree->Branch("n_fakeablesel_ele", &n_fakeablesel_ele);
 	tree->Branch("n_presel_tau", &n_presel_tau);
+	tree->Branch("n_tau", &n_tau);
 	tree->Branch("n_presel_jet", &n_presel_jet);
 	tree->Branch("MVA_2lss_ttV", &MVA_2lss_ttV);
 	tree->Branch("MVA_2lss_ttbar", &MVA_2lss_ttbar);
@@ -613,6 +622,7 @@ void CU_ttH_EDA_Ntuple::set_up_branches(TTree *tree)
 	tree->Branch("tau0_charge", &tau0_charge);
 	tree->Branch("tau0_dxy", &tau0_dxy);
 	tree->Branch("tau0_dz", &tau0_dz);
+	tree->Branch("tau0_decayMode", &tau0_decayMode);
 	tree->Branch("tau0_decayModeFindingOldDMs", &tau0_decayModeFindingOldDMs);
 	tree->Branch("tau0_decayModeFindingNewDMs", &tau0_decayModeFindingNewDMs);
 	tree->Branch("tau0_byCombinedIsolationDeltaBetaCorr3Hits", &tau0_byCombinedIsolationDeltaBetaCorr3Hits);
@@ -639,6 +649,7 @@ void CU_ttH_EDA_Ntuple::set_up_branches(TTree *tree)
 	tree->Branch("tau1_charge", &tau1_charge);
 	tree->Branch("tau1_dxy", &tau1_dxy);
 	tree->Branch("tau1_dz", &tau1_dz);
+	tree->Branch("tau1_decayMode", &tau1_decayMode);
 	tree->Branch("tau1_decayModeFindingOldDMs", &tau1_decayModeFindingOldDMs);
 	tree->Branch("tau1_decayModeFindingNewDMs", &tau1_decayModeFindingNewDMs);
 	tree->Branch("tau1_byCombinedIsolationDeltaBetaCorr3Hits", &tau1_byCombinedIsolationDeltaBetaCorr3Hits);

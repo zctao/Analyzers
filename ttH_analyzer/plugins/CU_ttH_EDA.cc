@@ -265,6 +265,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	local.n_muons_loose = static_cast<int>(local.mu_preselected.size());
 	local.n_muons_fakeable = static_cast<int>(local.mu_fakeable.size());
 	local.n_muons_tight = static_cast<int>(local.mu_tight.size());
+	local.n_taus_pre = static_cast<int>(local.tau_preselected.size());
 	local.n_taus = static_cast<int>(local.tau_selected.size());
 									
 	/*
@@ -472,16 +473,13 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 				auto lep1type = local.leptons_selected_sorted[0].Type();
 				auto lep2type = local.leptons_selected_sorted[1].Type();
 				if (lep1type == LeptonType::kmu and lep2type == LeptonType::kmu) {
-					local.hlt_sf = 1.0;
+					local.hlt_sf = 1.01;
 				}
 				else if (lep1type == LeptonType::kele and lep2type == LeptonType::kele) {
-					if (local.leptons_selected_sorted[0].pt() <= 40.)
-						local.hlt_sf = 0.95;
-					else
-						local.hlt_sf = 0.99;
+					local.hlt_sf = 1.02;
 				}
 				else {
-					local.hlt_sf = 0.98;
+					local.hlt_sf = 1.02;
 				}
 				
 				// final event weight

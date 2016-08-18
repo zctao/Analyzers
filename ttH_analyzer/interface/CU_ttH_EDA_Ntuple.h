@@ -63,6 +63,7 @@ class CU_ttH_EDA_Ntuple //: public TClass
 	int n_mvasel_ele;
 	int n_fakeablesel_ele;
 	int n_presel_tau;
+	int n_tau;
 	int n_presel_jet;
 	// event level MVA
 	double MVA_2lss_ttV;
@@ -177,6 +178,7 @@ class CU_ttH_EDA_Ntuple //: public TClass
 	int    tau0_charge;
 	double tau0_dxy;
 	double tau0_dz;
+	int    tau0_decayMode;
 	int    tau0_decayModeFindingOldDMs;
 	int    tau0_decayModeFindingNewDMs;
 	double tau0_byCombinedIsolationDeltaBetaCorr3Hits;
@@ -203,6 +205,7 @@ class CU_ttH_EDA_Ntuple //: public TClass
 	int    tau1_charge;
 	double tau1_dxy;
 	double tau1_dz;
+	int    tau1_decayMode;
 	int    tau1_decayModeFindingOldDMs;
 	int    tau1_decayModeFindingNewDMs;
 	double tau1_byCombinedIsolationDeltaBetaCorr3Hits;
