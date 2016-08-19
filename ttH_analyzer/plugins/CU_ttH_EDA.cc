@@ -46,6 +46,7 @@ CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig):
 	// Generic
 	verbose_ (iConfig.getParameter<bool>("verbosity")),
 	dumpHLT_ (iConfig.getParameter<bool>("print_HLT_event_path")),
+	hltcut_off (iConfig.getParameter<bool>("turn_off_HLT_cut")),
 	hltTag (iConfig.getParameter<string>("HLT_config_tag")),
 	filterTag (iConfig.getParameter<string>("filter_config_tag")),
 	// Triggers
@@ -398,6 +399,8 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 
 		//bool passHLT = true;
 		// A HLT Filter has been put before producer and analyzer in cms.Path
+
+		if (hltcut_off) passHLT = true;
 					
 		// Event selection
 		bool pass_event_selection =

@@ -256,6 +256,7 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	edm_Tokens token; // common tokens for all events
 
 	/// Triggers, paths: configs filled/updated via run
+	bool hltcut_off;
 	HLTConfigProvider hlt_config;
 	HLTConfigProvider filter_config;
 

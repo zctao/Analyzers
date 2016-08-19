@@ -21,6 +21,7 @@ ttHtaus =  cms.EDAnalyzer('CU_ttH_EDA',
         verbosity = cms.bool(False),
         # Triggers
         print_HLT_event_path = cms.bool(False),
+        turn_off_HLT_cut = cms.bool(False),
         HLT_config_tag = cms.string('HLT'),
         filter_config_tag = cms.string('HLT'),
         collect_trigger_stats = cms.bool(False),
