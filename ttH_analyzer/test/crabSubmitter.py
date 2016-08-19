@@ -72,5 +72,5 @@ for ch in channels:
         vd['runrange'] = ''
         vd['splitting'] = 'EventAwareLumiBased'
 
-    open('crabConfig_'+ch+'.py','wt').write(string % vd)
-    #os.system('crab submit -c crabConfig_'+ch+'.py')
+    open('crab/crabConfig_'+ch+'.py','wt').write(string % vd)
+    os.system('crab submit -c crab/crabConfig_'+ch+'.py')
