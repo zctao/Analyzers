@@ -39,10 +39,17 @@ void drawHistograms(TString plotname,
 		h->SetLineColor(iColor++);
 	}
 
-	// TODO: Set axis maximum
-	
+	// Set axis maximum
+	double ymax = 0;
+	for (int ih = 0; ih < nhists; ++ih) {
+		if (hists[ih]->GetMaximum()>ymax)
+			ymax = hists[ih]->GetMaximum();
+	}
+
+	hists[0]->SetMaximum(ymax*1.2);
+	hists[0]->GetXaxis()->SetTitle(plotname);
 	hists[0]->Draw();
-	/*
+	
 	TLegend *l = new TLegend(0.6,0.7,0.8,0.8);
 	for (int ih = 0; ih < nhists; ++ih) {
 		l->AddEntry(hists[ih], channels[ih], "l");
@@ -50,10 +57,10 @@ void drawHistograms(TString plotname,
 	}
 
 	l->Draw("same");
-	*/
+	
 	c.SaveAs(plotname+".pdf");
 
-	//delete l;
+	delete l;
    
 }
 

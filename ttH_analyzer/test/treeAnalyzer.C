@@ -18,7 +18,8 @@ void fillHistofromTree(TTree*,TH1D*,TH1D*,TH1D*,TH1D*,TH1D*,TH1D*,TH1D*,TH1D*,
 
 void treeAnalyzer
 (
- vector<TString> samples = {"ttH_htt","ttH_hww","ttH_hzz", "TTW", "TTZ", "TTJets"},
+ //vector<TString> samples = {"ttH_htt","ttH_hww","ttH_hzz", "TTW", "TTZ", "TTJets"},
+ vector<TString> samples = {"ttH", "TTW", "TTZ", "TTJets"},
  TString directory = "/Users/ztao/Documents/ttH/Outputs/80X/"
  )
 {
@@ -58,7 +59,7 @@ void treeAnalyzer
 		TH1D* h_lep0_conept = new TH1D("h_lep0_conept", "", 10, 0, 250);
 		TH1D* h_lep1_conept = new TH1D("h_lep1_conept", "", 10, 0, 150);
 		TH1D* h_avg_dr_jet = new TH1D("h_avg_dr_jet", "", 10, 0, 4);
-		TH1D* h_tau_daceymode = new TH1D("h_tau_decaymode", "", 18, 0, 18);
+		TH1D* h_tau_decaymode = new TH1D("h_tau_decaymode", "", 18, 0, 18);
 		TH1D* h_dr_lep0_tau = new TH1D("h_dr_lep0_tau", "", 10, 0., 4.);
 		TH1D* h_dr_lep1_tau = new TH1D("h_dr_lep1_tau", "", 10, 0., 4.);
 		TH1D* h_mass_lep0_tau = new TH1D("h_mass_lep0_tau", "", 10, 0., 400.);
@@ -298,7 +299,7 @@ void fillHistofromTree(TTree* tree,
 		double dR_lep0_tau = lep0.DeltaR(tau);
 		double dR_lep1_tau = lep1.DeltaR(tau);
 		double mass_lep0_tau = (lep0+tau).M();
-		double mass_lep1_tau = (lep1_tau).M();
+		double mass_lep1_tau = (lep1+tau).M();
 
 		h_tau_decaymode -> Fill(tau_decayMode);
 		h_dr_lep0_tau -> Fill(dR_lep0_tau);
