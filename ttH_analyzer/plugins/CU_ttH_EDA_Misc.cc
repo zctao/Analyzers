@@ -828,4 +828,94 @@ bool CU_ttH_EDA::HiggsDecayFilter(const std::vector<reco::GenParticle>& genParti
 	return false;
 }
 
+std::vector<const reco::GenParticle*> CU_ttH_EDA::GetMatchedGenParticles(const pat::Tau& tau, const std::vector<reco::GenParticle>& genParticles, float dR)
+{
+	std::vector<const reco::GenParticle*> matchedGen;
+		
+	for (auto & p : genParticles) {
+		float deta = tau.eta()-p.eta();
+		float dphi = tau.phi()-p.phi();
+		float dr = std::sqrt(deta*deta+dphi*dphi);
+
+		if (dr <= dR)
+			matchedGen.push_back(&p);
+	}
+
+	return matchedGen;
+}
+
+int CU_ttH_EDA::MCBkgCategorizer(std::vector<const reco::GenParticle*> matchedGen)
+{
+	//bool foundPi0 = false;
+	bool foundB = false;
+	bool foundC = false;
+	bool foundLJ = false;
+	bool founde = false;
+	bool foundmu = false;
+	
+	
+	for (auto & p : matchedGen) {
+		
+		int id = std::abs(p->pdgId())%1000;  // last 3 digits of pdgId
+		
+		if (id==15) {
+			auto m = p->mother(0);
+			while (std::abs(m->pdgId())==15) {
+				m=m->mother(0);
+			}
+			if (std::abs(m->pdgId())==25)
+				return 0;  // tau from Higgs decay!
+			else if (std::abs(m->pdgId())==23)
+				return 1;  // tau from Z decay
+			else if (std::abs(m->pdgId())==24) {
+				auto grm = m->mother(0);
+				while (std::abs(grm->pdgId())==24)
+					grm = grm->mother(0);
+				if (std::abs(grm->pdgId())==6)
+					return 2;  // tau from top -> W
+				else
+					return 3;  // tau from other W
+			}
+			else {
+				std::cout << m->pdgId() << std::endl;
+				std::cout << m->daughter(0)->pdgId() << std::endl;
+				return 4;   //  tau from mystery
+			}
+		}
+		else {
+		    if (id == 5 or (id >= 500 and id <600))
+				foundB =  true;
+			if (id == 4 or (id >=400 and id < 500))
+				foundC = true;
+			if (id == 1 or id == 2 or id == 3 or id == 21 or
+				(id >= 100 and id < 400))
+				foundLJ = true;
+			//if (id == 111)
+			//	foundPi0 = true;
+			if (id == 11)
+				founde = true;
+			if (id == 13)
+				foundmu = true;			
+		}
+	}
+
+	
+	if (foundB) {
+		//assert(foundC);
+		return 5;    // misID associate with heavy jet
+	}
+	if (foundC)
+		return 5;
+	
+	if (founde and not foundLJ)
+		return 6;   // misID associate with electron
+	if (foundmu and not foundLJ)
+		return 7;   // misID associate with muon
+
+	if (foundLJ and not founde and not foundmu)
+		return 8;  // misID light jet
+
+	return 9;
+}
+
 #endif

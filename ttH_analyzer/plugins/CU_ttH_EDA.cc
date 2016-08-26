@@ -38,6 +38,8 @@ CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig):
 	produce_sync_ntuple (iConfig.getParameter<bool>("produce_sync_ntuple")),
 	// Systematics
 	doSystematics (iConfig.getParameter<bool>("do_systematics")),
+	//
+	AnalyzeMCBkg (iConfig.getParameter<bool>("analyze_mc_background")),
 	// Sample parameter
 	doLumiScale (iConfig.getParameter<bool>("doLumiScale")),
 	sampleName (iConfig.getParameter<string>("sampleName")),
@@ -103,6 +105,8 @@ CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig):
 	//Set_up_BTagCalibration_Readers();
 	Set_up_CSV_rootFile();
 
+	//nGenTau=0;
+
 }
 
 /// Destructor
@@ -115,6 +119,8 @@ CU_ttH_EDA::~CU_ttH_EDA()
 	Close_output_files();
 	
 	//delete BTagCaliReader;
+
+	//std::cout << "nGenTau : " << nGenTau << std::endl;
 }
 
 // ------------ method called for each event  ------------
@@ -410,6 +416,71 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		
 		if (pass_event_selection) {
 			assert(local.leptons_selected_sorted.size() == 2);
+
+			if (AnalyzeMCBkg) {
+
+				/*
+				for (auto tau : local.tau_selected_sorted) {
+			    
+					std::cout << "<<<<<<< tau >>>>>>>" << std::endl;
+					auto associatedGenParticles = tau.genParticleRefs();
+					for (auto p : associatedGenParticles) {
+						if (not p) {
+							std::cout << "NULL" << std::endl;
+							continue;
+						}
+						if (std::abs(p->pdgId())==15) {
+							std::cout << "Found Gen Tau !!!" << std::endl;
+							nGenTau++;
+							std::cout << "status : " << p->status() << std::endl;
+							auto m=p->mother(0);
+							while (std::abs(m->pdgId())==15) {
+								m=m->mother(0);
+							}
+							std::cout << "Its mother : " << m->pdgId() << std::endl;
+						}
+						else {
+							std::cout << p->pdgId() << std::endl;
+						}
+					}
+					
+				}
+				*/
+
+				for (auto & tau : local.tau_selected_sorted) {
+					auto MatchedGen =
+						GetMatchedGenParticles(tau,
+											   *(handle.MC_particles), 0.3);
+					/*
+					std::cout << "tau :" << "\t"
+							  << "pt="<<tau.pt() << "\t"
+							  << "eta="<<tau.eta() << "\t"
+							  << "phi="<<tau.phi() << "\t"
+							  << "decayMode="<<tau.decayMode()
+							  << std::endl;
+					std::cout << "matched genParticles : " << std::endl;
+					std::cout <<"#"<<"\t"<<"pdgId"<<"\t"<<"dR"<<"\t"<<
+						"status"<<"\t"<<"pt"<<"\t"<<"mother"<<std::endl;
+					int igen = 0;
+					for (auto & p : MatchedGen) {
+						float deta = tau.eta() - p->eta();
+						float dphi = tau.phi() - p->phi();
+						float dr = std::sqrt(deta*deta+dphi*dphi);
+						
+						std::cout << igen++ << "\t" <<
+							p->pdgId()<<"\t"<<dr<<"\t"<<
+							p->status()<<"\t"<<p->pt()<<"\t"<<
+							p->mother(0)->pdgId() <<std::endl;
+					}
+					*/
+					
+					int cate = MCBkgCategorizer(MatchedGen);
+					
+					h_mcbkg_category->Fill(cate, tau.decayMode());
+				}
+							
+				return;
+			}
 				
 			// MVA
 			MVA_ttbar_vars.Calculate_mvaVars(local.leptons_selected_sorted,

@@ -12,6 +12,8 @@ ttHtaus =  cms.EDAnalyzer('CU_ttH_EDA',
         produce_sync_ntuple = cms.bool(False),
         # Systematics
         do_systematics = cms.bool(False),
+        # Analyze MC background
+        analyze_mc_background = cms.bool(False),
         # Sample parameter
         doLumiScale = cms.bool(False),
         sampleName = cms.string(''),

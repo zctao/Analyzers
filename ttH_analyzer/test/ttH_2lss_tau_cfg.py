@@ -58,6 +58,10 @@ options.register('TurnOffHLTCut', False,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.bool,
                  "Turn off HLT path check in event selection")
+options.register('AnalyzeMCBkg', False,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.bool,
+                 "For selected MC background samples")
 
 options.maxEvents = -1
 options.inputFiles='file:/uscms/home/ztao/nobackup/datasample/ttH_80X/ttHnonbb.root'
@@ -134,6 +138,7 @@ process.ttHtaus.int_lumi = cms.double(options.IntLumi)
 process.ttHtaus.using_real_data = cms.bool(options.isData)
 process.ttHtaus.selection_region = cms.string(options.SelectionRegion)
 process.ttHtaus.turn_off_HLT_cut = cms.bool(options.TurnOffHLTCut)
+process.ttHtaus.analyze_mc_background = cms.bool(options.AnalyzeMCBkg)
 # for reHLT
 #process.ttHtaus.HLT_config_tag = cms.string("HLT2")
 #process.ttHtaus.filter_config_tag = cms.string("HLT2")

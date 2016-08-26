@@ -226,6 +226,10 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	double getEvtCSVWeight(std::vector<pat::Jet> &, int); // use root file
 	//double getEvtCSVWeight(std::vector<pat::Jet> &, std::string &); // use csv file
 	//double getJetCSVWeight(pat::Jet &, std::string /*pass by copy*/);
+
+	// GenParticle
+	std::vector<const reco::GenParticle*> GetMatchedGenParticles(const pat::Tau&, const std::vector<reco::GenParticle>&,float);
+	int MCBkgCategorizer(std::vector<const reco::GenParticle*>);
 	
 	/*
 	* Variable section
@@ -239,6 +243,7 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	bool produce_sync_ntuple;
 
 	bool doSystematics;
+	bool AnalyzeMCBkg;
 
 	/// Common sample parameters
 	bool doLumiScale;
@@ -307,6 +312,8 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	//	   {"JERUp", sysType::JERup},{"JERDown", sysType::JERdown},
 	//	   {"JESUp", sysType::JESup},{"JESDown", sysType::JESdown}};
 	
+	int nGenTau;
+
 	/// Selection helper
 	MiniAODHelper miniAODhelper;
 
@@ -350,6 +357,9 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	// Fake lepton rate lookup histograms
 	TH2F *h_fakerate_el;
 	TH2F *h_fakerate_mu;
+
+	// MC background
+	TH2D *h_mcbkg_category;
 	
 	// 	TH1D* h_electron_selection;
 	// 	TH1D* h_muon_selection;

@@ -150,6 +150,13 @@ void CU_ttH_EDA::Set_up_histograms()
 			setup_sysHist = true;
 		}
 
+		if (AnalyzeMCBkg) {
+			h_mcbkg_category =
+				fs_->make<TH2D>("h_mcbkg_category", "", 10, 0, 10, 15, 0, 15);
+			h_mcbkg_category -> GetXaxis()->SetTitle("category");
+			h_mcbkg_category -> GetYaxis()->SetTitle("tau decay mode");
+		}
+
 		if (selection_region == "control_1lfakeable" and isdata) {
 			TFile* file_fr = new TFile((std::string(getenv("CMSSW_BASE")) + "/src/Analyzers/ttH_analyzer/data/FR_data_ttH_mva.root").c_str());
 			
