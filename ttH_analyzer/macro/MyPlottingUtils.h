@@ -48,15 +48,15 @@ void drawHistograms(TString plotname,
 
 	hists[0]->SetMaximum(ymax*1.2);
 	hists[0]->GetXaxis()->SetTitle(plotname);
-	hists[0]->Draw();
+	hists[0]->Draw("E");
 	
 	TLegend *l = new TLegend(0.6,0.7,0.8,0.8);
 	for (int ih = 0; ih < nhists; ++ih) {
 		l->AddEntry(hists[ih], channels[ih], "l");
-		hists[ih]->Draw("same");
+		hists[ih]->Draw("same E");
 	}
 
-	l->Draw("same");
+	l->Draw("sam");
 	
 	c.SaveAs(plotname+".pdf");
 

@@ -6,3 +6,8 @@
 crabConfig*.py
 ttH_analyzer/test/crab/
 crab.log
+
+*.pdf
+*_C.d
+*_C.so
+*.pcm
