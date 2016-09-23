@@ -15,7 +15,7 @@ void drawHistograms(TString plotname,
 {
 
 	int nhists = hists.size();
-
+	
 	assert(hists.size() == channels.size());
 	
 	if (scales.size()==0) { // default 1
@@ -23,7 +23,7 @@ void drawHistograms(TString plotname,
 			scales.push_back(1.);
 	}
 	assert(scales.size() == hists.size());
-
+	
 	// Scale
 	for (int ih = 0; ih < nhists; ++ih) {
 		double norm = hists[ih]->Integral();
@@ -33,30 +33,31 @@ void drawHistograms(TString plotname,
 	
 	TCanvas c;
 	gStyle->SetOptStat(0);
-
-	int iColor = 2;
+	
+	int iColor = 1;
 	for (auto& h : hists) {
 		h->SetLineColor(iColor++);
 	}
-
+	
 	// Set axis maximum
 	double ymax = 0;
+
 	for (int ih = 0; ih < nhists; ++ih) {
 		if (hists[ih]->GetMaximum()>ymax)
 			ymax = hists[ih]->GetMaximum();
 	}
-
+	
 	hists[0]->SetMaximum(ymax*1.2);
 	hists[0]->GetXaxis()->SetTitle(plotname);
-	hists[0]->Draw("E");
+	hists[0]->Draw("E1");
 	
 	TLegend *l = new TLegend(0.6,0.7,0.8,0.8);
 	for (int ih = 0; ih < nhists; ++ih) {
 		l->AddEntry(hists[ih], channels[ih], "l");
-		hists[ih]->Draw("same E");
+		hists[ih]->Draw("same E1");
 	}
 
-	l->Draw("sam");
+	l->Draw("same");
 	
 	c.SaveAs(plotname+".pdf");
 

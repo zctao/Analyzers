@@ -14,13 +14,12 @@
 
 using namespace std;
 
-void fillHistofromTree(TTree*,
+int fillHistofromTree(TTree*,
 					   TH1D*,TH1D*,TH1D*,TH1D*,TH1D*,TH1D*,TH1D*,TH1D*,
 					   TH1D*,TH1D*,TH1D*,TH1D*,TH1D*);
-float combineHistofromTrees(vector<TTree*>, vector<int>, vector<TString>,
-						   TH1D*,TH1D*,TH1D*,TH1D*,TH1D*,TH1D*,TH1D*,TH1D*,
-						   TH1D*,TH1D*,TH1D*,TH1D*,TH1D*);
-TString getCommonPrefix(TString, TString);
+vector<TH1D*> combineHistofromTrees(vector<TTree*>, vector<int>, vector<TString>);
+TString getCommonPrefix(TString, TString, char);
+void scale_histograms(TH1D*,int,float,float);
 
 float LUMI = 12.9 * 1000;  // 1/pb
 
@@ -33,6 +32,9 @@ void treeAnalyzer
  )
 {
 
+	int nchannels = samples.size();
+	vector<TString> channels;
+
 	// define histograms
 	vector<TH1D*> hists_MVA_2lss_ttV;
 	vector<TH1D*> hists_MVA_2lss_ttbar;
@@ -42,51 +44,27 @@ void treeAnalyzer
 	vector<TH1D*> hists_lep0_conept;
 	vector<TH1D*> hists_lep1_conept;
 	vector<TH1D*> hists_avg_dr_jet;
-
 	vector<TH1D*> hists_tau_decaymode;
 	vector<TH1D*> hists_dr_lep0_tau;
 	vector<TH1D*> hists_dr_lep1_tau;
 	vector<TH1D*> hists_mass_lep0_tau;
 	vector<TH1D*> hists_mass_lep1_tau;
 
-	int nchannels = samples.size();
-
-	vector<TString> channels;
-
-	// Setup histograms
-	for (int i = 0; i < nchannels; i++) {
-		
-		TH1D* h_MVA_2lss_ttV = new TH1D("h_MVA_2lss_ttV", "", 10, -1.0, 1.0);
-		TH1D* h_MVA_2lss_ttbar = new TH1D("h_MVA_2lss_ttbar", "", 10, -1.0, 1.0);
-		TH1D* h_MT_met_lep0 = new TH1D("h_MT_met_lep0", "", 10, 0, 400);
-		TH1D* h_mindr_lep0_jet = new TH1D("h_mindr_lep0_jet", "", 10, 0, 4);
-		TH1D* h_mindr_lep1_jet = new TH1D("h_mindr_lep1_jet", "", 10, 0, 4);
-		TH1D* h_lep0_conept = new TH1D("h_lep0_conept", "", 10, 0, 250);
-		TH1D* h_lep1_conept = new TH1D("h_lep1_conept", "", 10, 0, 150);
-		TH1D* h_avg_dr_jet = new TH1D("h_avg_dr_jet", "", 10, 0, 4);
-		TH1D* h_tau_decaymode = new TH1D("h_tau_decaymode", "", 18, 0, 18);
-		TH1D* h_dr_lep0_tau = new TH1D("h_dr_lep0_tau", "", 10, 0., 4.);
-		TH1D* h_dr_lep1_tau = new TH1D("h_dr_lep1_tau", "", 10, 0., 4.);
-		TH1D* h_mass_lep0_tau = new TH1D("h_mass_lep0_tau", "", 10, 0., 400.);
-		TH1D* h_mass_lep1_tau = new TH1D("h_mass_lep1_tau", "", 10, 0., 400.);
-
-		hists_MVA_2lss_ttV.push_back(h_MVA_2lss_ttV);
-		hists_MVA_2lss_ttbar.push_back(h_MVA_2lss_ttbar);
-		hists_MT_met_lep0.push_back(h_MT_met_lep0);
-		hists_mindr_lep0_jet.push_back(h_mindr_lep0_jet);
-		hists_mindr_lep1_jet.push_back(h_mindr_lep1_jet);
-		hists_lep0_conept.push_back(h_lep0_conept);
-		hists_lep1_conept.push_back(h_lep1_conept);
-		hists_avg_dr_jet.push_back(h_avg_dr_jet);
-		hists_tau_decaymode.push_back(h_tau_decaymode);
-		hists_dr_lep0_tau.push_back(h_dr_lep0_tau);
-		hists_dr_lep1_tau.push_back(h_dr_lep1_tau);
-		hists_mass_lep0_tau.push_back(h_mass_lep0_tau);
-		hists_mass_lep1_tau.push_back(h_mass_lep1_tau);
-				
-	}
-
-
+	// reserve space
+	hists_MVA_2lss_ttV.resize(nchannels);
+	hists_MVA_2lss_ttbar.resize(nchannels);
+	hists_MT_met_lep0.resize(nchannels);
+	hists_mindr_lep0_jet.resize(nchannels);
+	hists_mindr_lep1_jet.resize(nchannels);
+	hists_lep0_conept.resize(nchannels);
+	hists_lep1_conept.resize(nchannels);
+	hists_avg_dr_jet.resize(nchannels);
+	hists_tau_decaymode.resize(nchannels);
+	hists_dr_lep0_tau.resize(nchannels);
+	hists_dr_lep1_tau.resize(nchannels);
+	hists_mass_lep0_tau.resize(nchannels);
+	hists_mass_lep1_tau.resize(nchannels);
+	
 	// Fill histograms
 	
 	for (int i = 0; i < nchannels; i++) {
@@ -96,12 +74,13 @@ void treeAnalyzer
 		// Get channel name
 		assert(snames.size()>0);
 		if (snames.size()>1) {
-			TString prefix = getCommonPrefix(snames[0],snames[1]);
+			TString prefix = getCommonPrefix(snames[0],snames[1], '_');
 			channels.push_back(prefix);
 		}
 		else
 			channels.push_back(snames[0]);
-		
+
+		cout << "channel : " << channels[i] << endl;
 		
 		vector<TTree*> trees;
 		vector<int> nProcessed;
@@ -117,28 +96,29 @@ void treeAnalyzer
 			nProcessed.push_back(nentries);
 		}
 
-		float yields = combineHistofromTrees(trees, nProcessed, snames,
-											 hists_MVA_2lss_ttV[i],
-											 hists_MVA_2lss_ttbar[i],
-											 hists_MT_met_lep0[i],
-											 hists_avg_dr_jet[i],
-											 hists_mindr_lep0_jet[i],
-											 hists_mindr_lep1_jet[i],
-											 hists_lep0_conept[i],
-											 hists_lep1_conept[i],
-											 hists_tau_decaymode[i],
-											 hists_dr_lep0_tau[i],
-											 hists_dr_lep1_tau[i],
-											 hists_mass_lep0_tau[i],
-											 hists_mass_lep1_tau[i]
-											 );
-
+		vector<TH1D*> histo_set = combineHistofromTrees(trees, nProcessed, snames);
+		
 		// delete trees
 		for (auto& t : trees)
 			delete t;
-
-		cout << channels[i] << " " << yields << endl;
 		
+		float yields = histo_set[0]->Integral();
+		cout << "yields : " << yields << endl;
+
+		hists_MVA_2lss_ttV[i] = histo_set[0];
+		hists_MVA_2lss_ttbar[i] = histo_set[1];
+		hists_MT_met_lep0[i] = histo_set[2];
+		hists_avg_dr_jet[i] = histo_set[3];
+		hists_mindr_lep0_jet[i] = histo_set[4];
+		hists_mindr_lep1_jet[i] = histo_set[5];
+		hists_lep0_conept[i] = histo_set[6];
+		hists_lep1_conept[i] = histo_set[7];
+		hists_tau_decaymode[i] = histo_set[8];
+		hists_dr_lep0_tau[i] = histo_set[9];
+		hists_dr_lep1_tau[i] = histo_set[10];
+		hists_mass_lep0_tau[i] = histo_set[11];
+		hists_mass_lep1_tau[i] = histo_set[12];
+			
 	}
 	
 	// Draw histograms
@@ -174,7 +154,7 @@ void treeAnalyzer
 }
 
 
-void fillHistofromTree(TTree* tree,
+int fillHistofromTree(TTree* tree,
 					   TH1D* h_MVA_2lss_ttV,
 					   TH1D* h_MVA_2lss_ttbar,
 					   TH1D* h_MT_met_lep0,
@@ -191,7 +171,7 @@ void fillHistofromTree(TTree* tree,
 					   )
 {
 	int nEntries = tree->GetEntries();
-
+	
 	double evtWeight;
 	double MVA_2lss_ttV;
 	double MVA_2lss_ttbar;
@@ -291,7 +271,7 @@ void fillHistofromTree(TTree* tree,
 	tree->SetBranchAddress("tau0_dz", &tau_dz);
 	tree->SetBranchAddress("tau0_charge", &tau_charge);
 	tree->SetBranchAddress("tau0_decayMode", &tau_decayMode);
-
+	
 	for (int ievt = 0; ievt < nEntries; ++ievt) {
 		tree->GetEntry(ievt);
 
@@ -343,39 +323,29 @@ void fillHistofromTree(TTree* tree,
 		h_mass_lep1_tau -> Fill(mass_lep1_tau);
 		
 	}
+	
+	return nEntries;
 }
 
-TString getCommonPrefix(TString s1, TString s2)
+TString getCommonPrefix(TString s1, TString s2, char stopper)
 {
 	int nsize = min(s1.Sizeof(),s2.Sizeof());
 
 	TString os = "";
 
 	for (int i = 0; i < nsize; i++) {
-		if (s1[i]==s2[i]) {
+		if (s1[i]==stopper)
+			return os;	
+		if (s1[i]==s2[i])
 			os.Append(s1[i]);
-		}
 	}
 
 	return os;
 }
 
-float combineHistofromTrees(vector<TTree*> trees,
-						   vector<int> nProcessed,
-						   vector<TString> samples,
-						   TH1D* h_MVA_2lss_ttV,
-						   TH1D* h_MVA_2lss_ttbar,
-						   TH1D* h_MT_met_lep0,
-						   TH1D* h_avg_dr_jet,
-						   TH1D* h_mindr_lep0_jet,
-						   TH1D* h_mindr_lep1_jet,
-						   TH1D* h_lep0_conept,
-						   TH1D* h_lep1_conept,
-						   TH1D* h_tau_decaymode,
-						   TH1D* h_dr_lep0_tau,
-						   TH1D* h_dr_lep1_tau,
-						   TH1D* h_mass_lep0_tau,
-						   TH1D* h_mass_lep1_tau
+vector<TH1D*> combineHistofromTrees(vector<TTree*> trees,
+							vector<int> nProcessed,
+							vector<TString> samples
 						   )
 {
 	assert(trees.size()==nProcessed.size());
@@ -384,145 +354,166 @@ float combineHistofromTrees(vector<TTree*> trees,
 	// number of samples to combine
 	int nsample = trees.size();
 
-	vector<TH1D*> vectmp_h_MVA_2lss_ttV;
-	vector<TH1D*> vectmp_h_MVA_2lss_ttbar;
-	vector<TH1D*> vectmp_h_MT_met_lep0;
-	vector<TH1D*> vectmp_h_avg_dr_jet;
-	vector<TH1D*> vectmp_h_mindr_lep0_jet;
-	vector<TH1D*> vectmp_h_mindr_lep1_jet;
-	vector<TH1D*> vectmp_h_lep0_conept;
-	vector<TH1D*> vectmp_h_lep1_conept;
-	vector<TH1D*> vectmp_h_tau_decaymode;
-	vector<TH1D*> vectmp_h_dr_lep0_tau;
-	vector<TH1D*> vectmp_h_dr_lep1_tau;
-	vector<TH1D*> vectmp_h_mass_lep0_tau;
-	vector<TH1D*> vectmp_h_mass_lep1_tau;
+	vector<TH1D*> vec_h_MVA_2lss_ttV;
+	vector<TH1D*> vec_h_MVA_2lss_ttbar;
+	vector<TH1D*> vec_h_MT_met_lep0;
+	vector<TH1D*> vec_h_avg_dr_jet;
+	vector<TH1D*> vec_h_mindr_lep0_jet;
+	vector<TH1D*> vec_h_mindr_lep1_jet;
+	vector<TH1D*> vec_h_lep0_conept;
+	vector<TH1D*> vec_h_lep1_conept;
+	vector<TH1D*> vec_h_tau_decaymode;
+	vector<TH1D*> vec_h_dr_lep0_tau;
+	vector<TH1D*> vec_h_dr_lep1_tau;
+	vector<TH1D*> vec_h_mass_lep0_tau;
+	vector<TH1D*> vec_h_mass_lep1_tau;
 
-    vectmp_h_MVA_2lss_ttV.reserve(nsample);
-	vectmp_h_MVA_2lss_ttbar.reserve(nsample);
-    vectmp_h_MT_met_lep0.reserve(nsample);
-	vectmp_h_avg_dr_jet.reserve(nsample);
-	vectmp_h_mindr_lep0_jet.reserve(nsample);
-    vectmp_h_mindr_lep1_jet.reserve(nsample);
-	vectmp_h_lep0_conept.reserve(nsample);
-    vectmp_h_lep1_conept.reserve(nsample);
-	vectmp_h_tau_decaymode.reserve(nsample);
-	vectmp_h_dr_lep0_tau.reserve(nsample);
-	vectmp_h_dr_lep1_tau.reserve(nsample);
-	vectmp_h_mass_lep0_tau.reserve(nsample);
-	vectmp_h_mass_lep1_tau.reserve(nsample);
+    vec_h_MVA_2lss_ttV.resize(nsample+1);
+	vec_h_MVA_2lss_ttbar.resize(nsample+1);
+    vec_h_MT_met_lep0.resize(nsample+1);
+	vec_h_avg_dr_jet.resize(nsample+1);
+	vec_h_mindr_lep0_jet.resize(nsample+1);
+    vec_h_mindr_lep1_jet.resize(nsample+1);
+	vec_h_lep0_conept.resize(nsample+1);
+    vec_h_lep1_conept.resize(nsample+1);
+	vec_h_tau_decaymode.resize(nsample+1);
+	vec_h_dr_lep0_tau.resize(nsample+1);
+	vec_h_dr_lep1_tau.resize(nsample+1);
+	vec_h_mass_lep0_tau.resize(nsample+1);
+	vec_h_mass_lep1_tau.resize(nsample+1);
 
-	for (int i = 0; i < nsample; i++) {
-		// setup histograms		
-		vectmp_h_MVA_2lss_ttV[i] = (TH1D*)h_MVA_2lss_ttV->Clone();
-	    vectmp_h_MVA_2lss_ttbar[i] = (TH1D*)h_MVA_2lss_ttbar->Clone();
-		vectmp_h_MT_met_lep0[i] = (TH1D*)h_MT_met_lep0->Clone();
-		vectmp_h_avg_dr_jet[i] = (TH1D*)h_avg_dr_jet->Clone();
-		vectmp_h_mindr_lep0_jet[i] = (TH1D*)h_mindr_lep0_jet->Clone();
-		vectmp_h_mindr_lep1_jet[i] = (TH1D*)h_mindr_lep1_jet->Clone();
-		vectmp_h_lep0_conept[i] = (TH1D*)h_lep0_conept->Clone();
-		vectmp_h_lep1_conept[i] = (TH1D*)h_lep1_conept->Clone();
-		vectmp_h_tau_decaymode[i] = (TH1D*)h_tau_decaymode->Clone();
-		vectmp_h_dr_lep0_tau[i] = (TH1D*)h_dr_lep0_tau->Clone();
-		vectmp_h_dr_lep1_tau[i] = (TH1D*)h_dr_lep1_tau->Clone();
-		vectmp_h_mass_lep0_tau[i] = (TH1D*)h_mass_lep0_tau->Clone();
-		vectmp_h_mass_lep1_tau[i] = (TH1D*)h_mass_lep1_tau->Clone();
+	for (int i = 0; i < nsample+1; i++) {
+		
+		// setup histograms
+		vec_h_MVA_2lss_ttV[i] =
+			new TH1D(Form("h_MVA_2lss_ttV_%d",i), "", 10, -1.0, 1.0);
+	    vec_h_MVA_2lss_ttbar[i] =
+			new TH1D(Form("h_MVA_2lss_ttbar_%d",i), "", 10, -1.0, 1.0);
+		vec_h_MT_met_lep0[i] =
+			new TH1D(Form("h_MT_met_lep0_%d",i), "", 10, 0, 400);
+		vec_h_avg_dr_jet[i] =
+			new TH1D(Form("h_avg_dr_jet_%d",i), "", 10, 0, 4);
+		vec_h_mindr_lep0_jet[i] =
+			new TH1D(Form("h_mindr_lep0_jet_%d",i), "", 10, 0, 4);
+		vec_h_mindr_lep1_jet[i] =
+			new TH1D(Form("h_mindr_lep1_jet_%d",i), "", 10, 0, 4);
+		vec_h_lep0_conept[i] =
+			new TH1D(Form("h_lep0_conept_%d",i), "", 10, 0, 250);
+		vec_h_lep1_conept[i] =
+			new TH1D(Form("h_lep1_conept_%d",i), "", 10, 0, 150);
+		vec_h_tau_decaymode[i] =
+			new TH1D(Form("h_tau_decaymode_%d",i), "", 18, 0, 18);
+		vec_h_dr_lep0_tau[i] =
+			new TH1D(Form("h_dr_lep0_tau_%d",i), "", 10, 0., 4.);
+		vec_h_dr_lep1_tau[i] =
+			new TH1D(Form("h_dr_lep1_tau_%d",i), "", 10, 0., 4.);
+		vec_h_mass_lep0_tau[i] =
+			new TH1D(Form("h_mass_lep0_tau_%d",i), "", 10, 0., 400.);
+		vec_h_mass_lep1_tau[i] =
+			new TH1D(Form("h_mass_lep1_tau_%d",i), "", 10, 0., 400.);
+	}
 
+
+	cout << "sample tree nEntries :";
+	
+	for (int i = 0; i< nsample; i++){
+		
 		// fill histograms
-		fillHistofromTree(trees[i],
-						  vectmp_h_MVA_2lss_ttV[i],
-						  vectmp_h_MVA_2lss_ttbar[i],
-						  vectmp_h_MT_met_lep0[i],
-						  vectmp_h_avg_dr_jet[i],
-						  vectmp_h_mindr_lep0_jet[i],
-						  vectmp_h_mindr_lep1_jet[i],
-						  vectmp_h_lep0_conept[i],
-						  vectmp_h_lep1_conept[i],
-						  vectmp_h_tau_decaymode[i],
-						  vectmp_h_dr_lep0_tau[i],
-						  vectmp_h_dr_lep1_tau[i],
-						  vectmp_h_mass_lep0_tau[i],
-						  vectmp_h_mass_lep1_tau[i]
+		int nentries = fillHistofromTree(trees[i],
+						  vec_h_MVA_2lss_ttV[i],
+						  vec_h_MVA_2lss_ttbar[i],
+						  vec_h_MT_met_lep0[i],
+						  vec_h_avg_dr_jet[i],
+						  vec_h_mindr_lep0_jet[i],
+						  vec_h_mindr_lep1_jet[i],
+						  vec_h_lep0_conept[i],
+						  vec_h_lep1_conept[i],
+						  vec_h_tau_decaymode[i],
+						  vec_h_dr_lep0_tau[i],
+						  vec_h_dr_lep1_tau[i],
+						  vec_h_mass_lep0_tau[i],
+						  vec_h_mass_lep1_tau[i]
 						  );
-
+		
+		cout << " " << nentries;
+		
 		// scale histograms
 		float xs = xsection::xsection[string(samples[i])];
+
+		scale_histograms(vec_h_MVA_2lss_ttV[i],nProcessed[i], xs, LUMI);
+		scale_histograms(vec_h_MVA_2lss_ttbar[i],nProcessed[i], xs, LUMI);
+		scale_histograms(vec_h_MT_met_lep0[i],nProcessed[i], xs, LUMI);
+		scale_histograms(vec_h_avg_dr_jet[i],nProcessed[i], xs, LUMI);
+		scale_histograms(vec_h_mindr_lep0_jet[i],nProcessed[i], xs, LUMI);
+		scale_histograms(vec_h_mindr_lep1_jet[i],nProcessed[i], xs, LUMI);
+		scale_histograms(vec_h_lep0_conept[i],nProcessed[i], xs, LUMI);
+		scale_histograms(vec_h_lep1_conept[i],nProcessed[i], xs, LUMI);
+		scale_histograms(vec_h_tau_decaymode[i],nProcessed[i], xs, LUMI);
+		scale_histograms(vec_h_dr_lep0_tau[i],nProcessed[i], xs, LUMI);
+		scale_histograms(vec_h_dr_lep1_tau[i],nProcessed[i], xs, LUMI);
+		scale_histograms(vec_h_mass_lep0_tau[i],nProcessed[i], xs, LUMI);
+		scale_histograms(vec_h_mass_lep1_tau[i],nProcessed[i], xs, LUMI);
 		
-		vectmp_h_MVA_2lss_ttV[i] -> Sumw2();
-		vectmp_h_MVA_2lss_ttbar[i] -> Sumw2();
-		vectmp_h_MT_met_lep0[i] -> Sumw2();
-		vectmp_h_avg_dr_jet[i] -> Sumw2();
-		vectmp_h_mindr_lep0_jet[i] -> Sumw2();
-		vectmp_h_mindr_lep1_jet[i] -> Sumw2();
-		vectmp_h_lep0_conept[i] -> Sumw2();
-		vectmp_h_lep1_conept[i] -> Sumw2();
-		vectmp_h_tau_decaymode[i] -> Sumw2();
-		vectmp_h_dr_lep0_tau[i] -> Sumw2();
-		vectmp_h_dr_lep1_tau[i] -> Sumw2();
-		vectmp_h_mass_lep0_tau[i] -> Sumw2();
-		vectmp_h_mass_lep1_tau[i]	-> Sumw2();
-			
-		vectmp_h_MVA_2lss_ttV[i]
-			-> Scale(LUMI * xs / nProcessed[i]);
-		vectmp_h_MVA_2lss_ttbar[i]
-			-> Scale(LUMI * xs / nProcessed[i]);
-		vectmp_h_MT_met_lep0[i]
-			-> Scale(LUMI * xs / nProcessed[i]);
-		vectmp_h_avg_dr_jet[i]
-			-> Scale(LUMI * xs / nProcessed[i]);
-		vectmp_h_mindr_lep0_jet[i]
-			-> Scale(LUMI * xs / nProcessed[i]);
-		vectmp_h_mindr_lep1_jet[i]
-			-> Scale(LUMI * xs / nProcessed[i]);
-		vectmp_h_lep0_conept[i]
-			-> Scale(LUMI * xs / nProcessed[i]);
-		vectmp_h_lep1_conept[i]
-			-> Scale(LUMI * xs / nProcessed[i]);
-		vectmp_h_tau_decaymode[i]
-			-> Scale(LUMI * xs / nProcessed[i]);
-		vectmp_h_dr_lep0_tau[i]
-			-> Scale(LUMI * xs / nProcessed[i]);
-		vectmp_h_dr_lep1_tau[i]
-			-> Scale(LUMI * xs / nProcessed[i]);
-		vectmp_h_mass_lep0_tau[i]
-			-> Scale(LUMI * xs / nProcessed[i]);
-		vectmp_h_mass_lep1_tau[i]
-			-> Scale(LUMI * xs / nProcessed[i]);
 	}
 
+	cout << endl;
+	
 	// add up histograms
 	for (int i = 0; i < nsample; i++) {
-		h_MVA_2lss_ttV->Add(vectmp_h_MVA_2lss_ttV[i]);
-		h_MVA_2lss_ttbar->Add(vectmp_h_MVA_2lss_ttbar[i]);
-		h_MT_met_lep0->Add(vectmp_h_MT_met_lep0[i]);
-		h_avg_dr_jet->Add(vectmp_h_avg_dr_jet[i]);
-		h_mindr_lep0_jet->Add(vectmp_h_mindr_lep0_jet[i]);
-		h_mindr_lep1_jet->Add(vectmp_h_mindr_lep1_jet[i]);
-		h_lep0_conept->Add(vectmp_h_lep0_conept[i]);
-		h_lep1_conept->Add(vectmp_h_lep1_conept[i]);
-		h_tau_decaymode->Add(vectmp_h_tau_decaymode[i]);
-		h_dr_lep0_tau->Add(vectmp_h_dr_lep0_tau[i]);
-		h_dr_lep1_tau->Add(vectmp_h_dr_lep1_tau[i]);
-		h_mass_lep0_tau->Add(vectmp_h_mass_lep0_tau[i]);
-		h_mass_lep1_tau->Add(vectmp_h_mass_lep1_tau[i]);
-	}
-
-	// delete histograms
-	for (int i = 0; i < nsample; i++) {
-		delete vectmp_h_MVA_2lss_ttV[i];
-		delete vectmp_h_MVA_2lss_ttbar[i];
-		delete vectmp_h_MT_met_lep0[i];
-		delete vectmp_h_avg_dr_jet[i];
-		delete vectmp_h_mindr_lep0_jet[i];
-		delete vectmp_h_mindr_lep1_jet[i];
-		delete vectmp_h_lep0_conept[i];
-		delete vectmp_h_lep1_conept[i];
-		delete vectmp_h_tau_decaymode[i];
-		delete vectmp_h_dr_lep0_tau[i];
-		delete vectmp_h_dr_lep1_tau[i];
-		delete vectmp_h_mass_lep0_tau[i];
-		delete vectmp_h_mass_lep1_tau[i];
+		vec_h_MVA_2lss_ttV[nsample]->Add(vec_h_MVA_2lss_ttV[i]);
+		vec_h_MVA_2lss_ttbar[nsample]->Add(vec_h_MVA_2lss_ttbar[i]);
+		vec_h_MT_met_lep0[nsample]->Add(vec_h_MT_met_lep0[i]);
+		vec_h_avg_dr_jet[nsample]->Add(vec_h_avg_dr_jet[i]);
+		vec_h_mindr_lep0_jet[nsample]->Add(vec_h_mindr_lep0_jet[i]);
+		vec_h_mindr_lep1_jet[nsample]->Add(vec_h_mindr_lep1_jet[i]);
+		vec_h_lep0_conept[nsample]->Add(vec_h_lep0_conept[i]);
+		vec_h_lep1_conept[nsample]->Add(vec_h_lep1_conept[i]);
+		vec_h_tau_decaymode[nsample]->Add(vec_h_tau_decaymode[i]);
+		vec_h_dr_lep0_tau[nsample]->Add(vec_h_dr_lep0_tau[i]);
+		vec_h_dr_lep1_tau[nsample]->Add(vec_h_dr_lep1_tau[i]);
+		vec_h_mass_lep0_tau[nsample]->Add(vec_h_mass_lep0_tau[i]);
+		vec_h_mass_lep1_tau[nsample]->Add(vec_h_mass_lep1_tau[i]);
 	}
 	
-	return h_MVA_2lss_ttV->Integral();
+	// free memory
+	for (int i = 0; i < nsample; i++) {
+		delete vec_h_MVA_2lss_ttV[i];
+		delete vec_h_MVA_2lss_ttbar[i];
+		delete vec_h_MT_met_lep0[i];
+		delete vec_h_avg_dr_jet[i];
+		delete vec_h_mindr_lep0_jet[i];
+		delete vec_h_mindr_lep1_jet[i];
+		delete vec_h_lep0_conept[i];
+		delete vec_h_lep1_conept[i];
+		delete vec_h_tau_decaymode[i];
+		delete vec_h_dr_lep0_tau[i];
+		delete vec_h_dr_lep1_tau[i];
+		delete vec_h_mass_lep0_tau[i];
+		delete vec_h_mass_lep1_tau[i];
+	}
+	
+	vector<TH1D*> histograms;
+	
+	histograms.push_back(vec_h_MVA_2lss_ttV[nsample]);
+	histograms.push_back(vec_h_MVA_2lss_ttbar[nsample]);
+	histograms.push_back(vec_h_MT_met_lep0[nsample]);
+	histograms.push_back(vec_h_avg_dr_jet[nsample]);
+	histograms.push_back(vec_h_mindr_lep0_jet[nsample]);
+	histograms.push_back(vec_h_mindr_lep1_jet[nsample]);
+	histograms.push_back(vec_h_lep0_conept[nsample]);
+	histograms.push_back(vec_h_lep1_conept[nsample]);
+	histograms.push_back(vec_h_tau_decaymode[nsample]);
+	histograms.push_back(vec_h_dr_lep0_tau[nsample]);
+	histograms.push_back(vec_h_dr_lep1_tau[nsample]);
+	histograms.push_back(vec_h_mass_lep0_tau[nsample]);
+	histograms.push_back(vec_h_mass_lep1_tau[nsample]);
+	
+	return histograms;
+}
+
+void scale_histograms(TH1D* h,
+					 int nProcessed, float xsection, float lumi)
+{
+	h -> Sumw2();
+	h -> Scale(lumi * xsection / nProcessed);
 }
