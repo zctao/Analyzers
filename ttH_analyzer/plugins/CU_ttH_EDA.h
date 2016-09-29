@@ -108,8 +108,19 @@
 enum analysis_types {
 	Analyze_lepton_jet,
 	Analyze_dilepton,
-	Analyze_ditaus_lepton,
-	Analyze_tau_ssleptons
+	Analyze_1l2tau,
+	Analyze_2lss1tau,
+	Analyze_3l
+};
+
+// enum for event selection region
+enum Selection_types {
+	Signal_2lss1tau,
+	Signal_1l2tau,
+	Signal_3l,
+	Control_2los1tau,
+	Control_1lfakeable,
+	Control_WZ
 };
 
  /*
@@ -146,14 +157,13 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	//								const edm::EventSetup &) override;
 
 	/// One-time-run functions
-	void Close_output_files();		 // at ~CU_ttH_EDA()
 	void Load_configuration(string); // at CU_ttH_EDA(), runs _MAODH()
 	void Load_configuration_set_type(const string &); // sets analysis_type
 	void Load_configuration_MAODH(bool); // runs miniAODhelper.SetUp
 	void Set_up_histograms();			 // at CU_ttH_EDA()
-	void Set_up_output_files();			 // at CU_ttH_EDA()
 	void Set_up_tokens(const edm::ParameterSet &);
 	void Set_up_Tree();
+	void Set_up_selection_region(const string &);
 	//void Set_up_BTagCalibration_Readers();
 	void Set_up_CSV_rootFile();
 	void fillCSVhistos(TFile*, TFile*);
@@ -179,32 +189,9 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	bool Check_triggers_iterator(const vector<string> &,
 								 edm::Handle<edm::TriggerResults>);
 
-	/// Taggers. Returns 1 in case of an error
-	//int Higgs_tagger(Handle<boosted::SubFilterJetCollection>,
-	//				 CU_ttH_EDA_event_vars &); // FIXME: uses b-tag medium WP
-	//int Top_tagger(Handle<boosted::HTTTopJetCollection>,
-	//				   CU_ttH_EDA_event_vars &);
-	//TopTagger toptagger;
-
-	/// Other functions
-	void Check_Fill_Print_ej(CU_ttH_EDA_event_vars &);
-	void Check_Fill_Print_muj(CU_ttH_EDA_event_vars &);
-	void Check_Fill_Print_dimuj(CU_ttH_EDA_event_vars &);
-	void Check_Fill_Print_dielej(CU_ttH_EDA_event_vars &);
-	void Check_Fill_Print_elemuj(CU_ttH_EDA_event_vars &);
-
 	void printDecayChain(const reco::Candidate &p, int &index, int mother_index,
 						 bool details);
 	bool HiggsDecayFilter(const std::vector<reco::GenParticle>&, const TString&);
-	
-	template <class lepton>
-	int Print_event_in_file1(FILE *, lepton &, std::vector<pat::Jet> &,
-							 CU_ttH_EDA_event_vars &);
-	template <class lep1, class lep2>
-	// template<class lepton2>
-	int Print_event_in_file1_dilepton(FILE *, lep1 &, lep2 &, double,
-									  std::vector<pat::Jet> &,
-									  CU_ttH_EDA_event_vars &);
 
 	template <typename T1, typename T2>
 		std::vector<T1>
@@ -213,11 +200,8 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	float getMHT(CU_ttH_EDA_event_vars &);
 	
 	// event selection
-	bool pass_event_sel_2lss1tauh(CU_ttH_EDA_event_vars &, int, const std::string&);
-	bool pass_event_sel_1l2tauh(CU_ttH_EDA_event_vars &, int, const std::string&);
-
-	bool passExtraforTight(pat::Muon);
-	bool passExtraforTight(pat::Electron);
+	bool pass_event_sel_2l(CU_ttH_EDA_event_vars &, int, Selection_types);
+	bool pass_event_sel_3l(CU_ttH_EDA_event_vars &, int, Selection_types);
 
 	// MVA
 	int partition2DBDT(double, double);
@@ -316,22 +300,11 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 							  // MAODHelper?
 	std::string MAODHelper_era;
 
+	// event selection region
 	std::string selection_region;
-
-	/// Histograms
-	TH1D *h_tth_syncex1_ele;
-	TH1D *h_tth_syncex1_mu;
-	TH1D *h_tth_syncex1_dimu;
-	TH1D *h_tth_syncex1_diele;
-	TH1D *h_tth_syncex1_elemu;
-
-	TH1D *h_tth_syncex_dimutauh;
-	TH1D *h_tth_syncex_dieletauh;
-	TH1D *h_tth_syncex_elemutauh;
+    Selection_types selection_type;
 	
-	TH1D *h_tth_syncex_eleditauh;
-	TH1D *h_tth_syncex_muditauh;
-
+	/// Histograms
 	TH1D *h_hlt;
 	TH1D *h_flt;
 
@@ -350,31 +323,11 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	// Fake lepton rate lookup histograms
 	TH2F *h_fakerate_el;
 	TH2F *h_fakerate_mu;
-	
-	// 	TH1D* h_electron_selection;
-	// 	TH1D* h_muon_selection;
 
-	/// Write-out files
-	FILE *events_e_cut1, *events_e_cut2, *events_e_cut3, *events_e_cut4,
-		*events_e_cut5, *events_e_cut6, *events_e_cut7;
-
-	FILE *events_mu_cut1, *events_mu_cut2, *events_mu_cut3, *events_mu_cut4,
-		*events_mu_cut5, *events_mu_cut6, *events_mu_cut7;
-
-	FILE *events_dimu_cut1, *events_dimu_cut2, *events_dimu_cut3,
-		*events_dimu_cut4, *events_dimu_cut5, *events_dimu_cut6,
-		*events_dimu_cut7;
-
-	FILE *events_diele_cut1, *events_diele_cut2, *events_diele_cut3,
-		*events_diele_cut4, *events_diele_cut5, *events_diele_cut6,
-		*events_diele_cut7;
-
-	FILE *events_elemu_cut1, *events_elemu_cut2, *events_elemu_cut3,
-		*events_elemu_cut4, *events_elemu_cut5;
 
 	// tree and ntuple
 	TTree *eventTree;
-	CU_ttH_EDA_Ntuple tauNtuple;
+	CU_ttH_EDA_Ntuple evtNtuple;
 
 	// MVA
 	kinMVA_ttbar_2lss MVA_ttbar_vars;

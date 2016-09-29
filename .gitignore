@@ -11,3 +11,6 @@ crab.log
 *_C.d
 *_C.so
 *.pcm
+
+*.txt
+*.log

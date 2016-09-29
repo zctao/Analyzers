@@ -50,10 +50,10 @@ options.register('OutputDir', '',  #'/uscms/home/ztao/nobackup/'
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  "output file directory")
-options.register('SelectionRegion', 'signal_2lss',
+options.register('SelectionRegion', 'signal_2lss1tau',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
-                 "Which selection region to apply: signal_2lss, control_2los, control_1lfakeable")
+                 "Which selection region to apply: signal_2lss1tau, control_2los1tau, control_1lfakeable", "control_WZ")
 options.register('TurnOffHLTCut', False,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.bool,

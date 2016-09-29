@@ -54,6 +54,7 @@ class CU_ttH_EDA_Ntuple //: public TClass
 	int ls;   // luminosity section number
 	int run;  // run number
 	double evtWeight;
+	double genWeight;
 	int n_presel_mu;
 	int n_cutsel_mu;
 	int n_mvasel_mu;

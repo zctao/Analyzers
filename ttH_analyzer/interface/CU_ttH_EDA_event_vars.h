@@ -77,9 +77,10 @@ struct CU_ttH_EDA_event_vars {
 	std::vector<pat::Tau> tau_selected;
 	std::vector<pat::Tau> tau_selected_sorted;
 
-	std::vector<miniLepton> leptons_selected;
-	std::vector<miniLepton> leptons_selected_sorted;  // by conePt
-	
+	std::vector<miniLepton> leptons_loose;
+	std::vector<miniLepton> leptons_selected;  // sorted by conePt
+	std::vector<miniLepton> leptons_tight;     // sorted by pt
+		
 	std::vector<pat::Jet> jets_raw;
 	std::vector<pat::Jet> jets_no_mu;
 	std::vector<pat::Jet> jets_no_mu_e;

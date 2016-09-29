@@ -204,102 +204,6 @@ int CU_ttH_EDA::Check_vertices_set_MAODhelper(
 	return 0;
 }
 
-/*
-/// Taggers
-int CU_ttH_EDA::Higgs_tagger(
-	Handle<boosted::SubFilterJetCollection> subfilter_jets,
-	CU_ttH_EDA_event_vars &local)
-{
-	local.n_Htags = 0;
-
-	if (!subfilter_jets.isValid())
-		return 1;
-
-	boosted::SubFilterJetCollection subfilterjets =
-		BoostedUtils::GetSortedByPt(*subfilter_jets);
-
-	for (boosted::SubFilterJetCollection::iterator higgsJet =
-			 subfilterjets.begin();
-		 higgsJet != subfilterjets.end(); ++higgsJet) {
-		// pt and eta requirements for top jet
-		if (higgsJet->fatjet.pt() <= 250. || abs(higgsJet->fatjet.eta()) >= 1.8)
-			continue;
-
-		int numBtagFiltJets = 0;
-		std::vector<pat::Jet> filterjets = higgsJet->filterjets;
-		int numFiltJets = filterjets.size();
-		for (int ijet = 0; ijet < numFiltJets; ++ijet) {
-			if (verbose_) {
-				printf("\t\t filt jet %2d:\t pT = %.1f,\t eta = %.2f,\t phi = "
-					   "%.2f,\t CSVv2 = %+5.3f,\t CSVv1 = %+5.3f \n",
-					   ijet, filterjets[ijet].pt(), filterjets[ijet].eta(),
-					   filterjets[ijet].phi(),
-					   filterjets[ijet].bDiscriminator(
-						   "combinedInclusiveSecondaryVertexV2BJetTags"),
-					   filterjets[ijet].bDiscriminator(
-						   "combinedSecondaryVertexBJetTags"));
-			}
-
-			if (filterjets[ijet].pt() <= 20. ||
-				abs(filterjets[ijet].eta()) >= 2.5)
-				continue;
-
-			// b-tag medium WP
-			if (filterjets[ijet].bDiscriminator(
-					"combinedInclusiveSecondaryVertexV2BJetTags") < 0.814)
-				continue;
-
-			++numBtagFiltJets;
-		}
-
-		if (verbose_) {
-			printf("\t Higgs jet %2d:\t pT = %.1f,\t eta = %.2f,\t phi = "
-				   "%.2f,\t numFiltJets = %2d,\t numBtagFiltJets = %2d\n",
-				   int(higgsJet - subfilterjets.begin()), higgsJet->fatjet.pt(),
-				   higgsJet->fatjet.eta(), higgsJet->fatjet.phi(), numFiltJets,
-				   numBtagFiltJets);
-		}
-
-		if (numBtagFiltJets >= 2)
-			++local.n_Htags;
-	}
-
-	return 0;
-}
-
-int CU_ttH_EDA::Top_tagger(Handle<boosted::HTTTopJetCollection> top_jets,
-						   CU_ttH_EDA_event_vars &local)
-{
-	local.n_ttags = 0;
-
-	if (!top_jets.isValid())
-		return 1;
-
-	boosted::HTTTopJetCollection heptopjets =
-		BoostedUtils::GetSortedByPt(*top_jets);
-
-	for (boosted::HTTTopJetCollection::iterator topJet = heptopjets.begin();
-		 topJet != heptopjets.end(); ++topJet) {
-		// pt and eta requirements on top jet
-		if (topJet->fatjet.pt() <= 250. || abs(topJet->fatjet.eta()) >= 1.8)
-			continue;
-
-		// pt and eta requirements on subjets
-		if (topJet->nonW.pt() <= 20 || abs(topJet->nonW.eta()) >= 2.5 ||
-			topJet->W1.pt() <= 20 || abs(topJet->W1.eta()) >= 2.5 ||
-			topJet->W2.pt() <= 20 || abs(topJet->W2.eta()) >= 2.5)
-			continue;
-
-		// must be top-tagged
-		if (toptagger.GetTopTaggerOutput(*topJet)<=-1) 
-			continue;
-
-		++local.n_ttags;
-	}
-
-	return 0;
-}
-*/
 
 /// Other functions
 
@@ -352,82 +256,76 @@ float CU_ttH_EDA::getMHT(CU_ttH_EDA_event_vars &local)
 	return sqrt(MHT_x * MHT_x + MHT_y * MHT_y);
 }
 
-bool CU_ttH_EDA::pass_event_sel_2lss1tauh(CU_ttH_EDA_event_vars &local,
-										  int jecType,
-										  const std::string & selection_region)
+bool CU_ttH_EDA::pass_event_sel_2l(CU_ttH_EDA_event_vars &local,
+								   int jecType,
+								   Selection_types selection_region)
 {
 	//////////////////////////
     /// Lepton number
-	if (local.leptons_selected_sorted.size() != 2) return false;
+	if (local.leptons_selected.size() != 2) return false;
 	
 	bool passLepSel = false;	 
 	// exactly two tight leptons
 	passLepSel =
-		local.leptons_selected_sorted[0].passTightSel() and
-		local.leptons_selected_sorted[1].passTightSel();
+		local.leptons_selected[0].passTightSel() and
+		local.leptons_selected[1].passTightSel();
 	
-	if (selection_region == "control_1lfakeable") {
-		// exactly one lepton fails tight selection
+	if (selection_region == Control_1lfakeable) {
+		// at least one lepton fails tight selection
 		passLepSel = not passLepSel;
 	} 
 	
 	if (not passLepSel) return false;
+
+	//////////////////////////
+	/// Lepton pt
+	float minpt_ldg = 20.;
+	float minpt_subldg = 10;
+	if (local.leptons_selected[0].Type() == LeptonType::kele)
+		minpt_ldg = 25.;
+	if (local.leptons_selected[1].Type() == LeptonType::kele)
+		minpt_subldg = 15.;
+
+	bool passLeptonPt =
+		local.leptons_selected[0].conePt() > minpt_ldg and
+		local.leptons_selected[1].conePt() > minpt_subldg;
+
+	if (not passLeptonPt) return false;
 	
 	//////////////////////////
 	/// veto two loose leptons with invariant mass < 12 GeV
 	bool passPairMassVeto = true;
-	std::vector<math::XYZTLorentzVector> leptons_p4;
-	for (auto & mu : local.mu_preselected) {
-		leptons_p4.push_back(mu.p4());
-	}
-	for (auto & ele : local.e_preselected) {
-		leptons_p4.push_back(ele.p4());
-	}
-
-	for (auto it = leptons_p4.begin(); it != leptons_p4.end()-1; ++it) {
-		for (auto it2 = it+1; it2 != leptons_p4.end(); ++it2) {
-			if ( (*it + *it2).mass() <  12. )
+	
+	for (auto it = local.leptons_loose.begin(); it != local.leptons_loose.end()-1; ++it) {
+		for (auto it2 = it+1; it2 != local.leptons_loose.end(); ++it2) {
+			if ((it->p4() + it2->p4()).M() < 12.) {
 				passPairMassVeto = false;
+				break;
+			}
 		}
+		if (not passPairMassVeto) break;
 	}
-
 	if (not passPairMassVeto) return false;
 
 	//////////////////////////
 	/// Lepton charge
 	bool passLepCharge = false;
 	// same sign
-	if (local.leptons_selected_sorted[0].charge() *
-		local.leptons_selected_sorted[1].charge() > 0)
+	if (local.leptons_selected[0].charge() *
+		local.leptons_selected[1].charge() > 0)
 		passLepCharge = true;
 
-	if (selection_region == "control_2los")
+	if (selection_region == Control_2los1tau)
 		passLepCharge = not passLepCharge;
 
 	if (not passLepCharge) return false;
 
 	//////////////////////////
-	/// Lepton pt
-	float minpt_ldg = 20.;
-	float minpt_subldg = 10;
-	if (local.leptons_selected_sorted[0].Type() == LeptonType::kele)
-		minpt_ldg = 25.;
-	if (local.leptons_selected_sorted[1].Type() == LeptonType::kele)
-		minpt_subldg = 15.;
-
-	bool passLeptonPt =
-		local.leptons_selected_sorted[0].conePt() > minpt_ldg and
-		local.leptons_selected_sorted[1].conePt() > minpt_subldg;
-
-	if (not passLeptonPt) return false;
-
-
-	//////////////////////////
 	/// ee only cuts	
 	bool passMetLD = true;
 	bool passZmassVeto = true;
-	if (local.leptons_selected_sorted[0].Type() == LeptonType::kele and
-		local.leptons_selected_sorted[1].Type() == LeptonType::kele) {
+	if (local.leptons_selected[0].Type() == LeptonType::kele and
+		local.leptons_selected[1].Type() == LeptonType::kele) {
 		//////////////////////////
 		/// MetLD cut (ee only)
 		passMetLD = local.metLD > 0.2;
@@ -435,8 +333,8 @@ bool CU_ttH_EDA::pass_event_sel_2lss1tauh(CU_ttH_EDA_event_vars &local,
 		//////////////////////////
 		/// Zmass Veto: 91.2 +/- 10
 		double eeInvMass =
-			(local.leptons_selected_sorted[0].p4() +
-			 local.leptons_selected_sorted[1].p4()).M();
+			(local.leptons_selected[0].p4() +
+			 local.leptons_selected[1].p4()).M();
 		passZmassVeto = eeInvMass < (91.2 - 10.0) or eeInvMass > (91.2 + 10.0);
 	}
 
@@ -473,23 +371,132 @@ bool CU_ttH_EDA::pass_event_sel_2lss1tauh(CU_ttH_EDA_event_vars &local,
 	bool passNumJets = njets >= 4;
 	bool passNumBtags = nbtags_loose >= 2 or nbtags_medium >= 1;
 	
-	//if (selection_region == "control_2los") {
-	//	passNumJets = njets >= 2;
-	//	passNumBtags = nbtags_medium >= 1;
-	//}
-	
 	if (not passNumJets) return false;	
 	if (not passNumBtags) return false;
-
 
 	return true;
 }
 
-bool CU_ttH_EDA::pass_event_sel_1l2tauh(CU_ttH_EDA_event_vars &local, int sys, const std::string& selection_region)
+bool CU_ttH_EDA::pass_event_sel_3l(CU_ttH_EDA_event_vars &local,
+								   int jecType,
+								   Selection_types selection_region)
 {
-	return false;
-}
+	//////////////////////////
+    /// Lepton number
+	// at least three tight leptons
+	if (local.leptons_tight.size() < 3) return false;
 
+	//////////////////////////
+	/// Lepton pt
+	float minpt_ldg = 20.;
+	float minpt_subldg = 10.;
+	
+	bool passLeptonPt =
+		local.leptons_tight[0].conePt() > minpt_ldg and
+		local.leptons_tight[1].conePt() > minpt_subldg  and
+		local.leptons_tight[2].conePt() > minpt_subldg;
+
+	if (not passLeptonPt) return false;
+
+	//////////////////////////
+	/// veto two loose leptons with invariant mass < 12 GeV
+	bool passPairMassVeto = true;
+	
+	for (auto it = local.leptons_loose.begin(); it != local.leptons_loose.end()-1; ++it) {
+		for (auto it2 = it+1; it2 != local.leptons_loose.end(); ++it2) {
+			if ((it->p4() + it2->p4()).M() < 12.) {
+				passPairMassVeto = false;
+				break;
+			}
+		}
+		if (not passPairMassVeto) break;
+	}
+	if (not passPairMassVeto) return false;
+
+	
+	bool hasSFOSpair = false;
+	//////////////////////////
+	/// veto loose lepton pair with invariant mass closer than 10 GeV to Z mass
+	bool passZmassVeto = true;
+		
+	for (auto it = local.leptons_loose.begin(); it != local.leptons_loose.end()-1; ++it) {
+		for (auto it2 = it+1; it2 != local.leptons_loose.end(); ++it2) {
+			// same flavor
+			if (it->Type() != it2->Type()) continue;
+			// opposite charge
+			if ((it->charge()) * (it2->charge()) >= 0) continue;
+
+			hasSFOSpair = true;		
+			float invMass = (it->p4() + it2->p4()).M();
+			
+			if (invMass > (91.2-10.0) and invMass < (91.2+10.0)) {
+				passZmassVeto = false;
+				break;
+			}
+		}
+		if (not passZmassVeto) break;
+	}
+
+	if (selection_region == Control_WZ)
+		passZmassVeto = not passZmassVeto;
+
+	if (not passZmassVeto) return false;
+
+	
+	/// number of jets and btags
+	int njets = 0;
+	int nbtags_loose = 0;
+	int nbtags_medium = 0;
+
+	if (jecType == 1) {       // JESUp
+		njets = local.jets_selected_jesup.size();
+		nbtags_loose = local.jets_selected_btag_loose_jesup.size();
+		nbtags_medium = local.jets_selected_btag_medium_jesup.size();
+	}
+	else if (jecType == -1) { // JESDown
+		njets = local.jets_selected_jesdown.size();
+		nbtags_loose = local.jets_selected_btag_loose_jesdown.size();
+		nbtags_medium = local.jets_selected_btag_medium_jesdown.size();
+	}
+	else {                    // NA
+		njets = local.jets_selected.size();
+		nbtags_loose = local.jets_selected_btag_loose.size();
+		nbtags_medium = local.jets_selected_btag_medium.size();
+	}
+	
+	//////////////////////////
+	/// metLD cut
+	float metLDcut = hasSFOSpair ? 0.3 : 0.2;
+	bool passMetLD = (njets >= 4) or (local.metLD >= metLDcut);
+
+	if (not passMetLD) return false;
+
+	//////////////////////////
+	/// charge
+	bool passCharge = false;
+	
+	int total_charge =
+		local.leptons_tight[0].charge() +
+		local.leptons_tight[1].charge() +
+		local.leptons_tight[2].charge();
+
+	if (abs(total_charge) == 1) passCharge = true;
+
+	if (not passCharge) return false;
+	
+	//////////////////////////
+	/// number of jets and btags
+	bool passNumJets = njets >= 2;
+	bool passNumBtags = nbtags_loose >= 2 or nbtags_medium >= 1;
+	if (selection_region == Control_WZ) {
+		passNumBtags = not passNumBtags;  // inconsistent between AN and twiki
+	}
+
+	if (not passNumJets) return false;
+	if (not passNumBtags) return false;
+
+	return true;
+}
 
 int CU_ttH_EDA::partition2DBDT(double ttbar, double ttV)
 /*

@@ -20,6 +20,7 @@ void CU_ttH_EDA_Ntuple::write_ntuple(const CU_ttH_EDA_event_vars &local)
 	ls = local.lumisection_nr;
 	run = local.run_nr;
 	evtWeight = local.weight;
+	genWeight = local.gen_weight;
 	
 	// Muons
 	n_presel_mu = local.n_muons_loose;
@@ -284,6 +285,7 @@ void CU_ttH_EDA_Ntuple::initialize()
 	ls = -9999;
 	run = -9999;
 	evtWeight = -9999.;
+	genWeight = -9999.;
 	n_presel_mu = -9999;
 	n_cutsel_mu = -9999;
 	n_mvasel_mu = -9999;
@@ -502,6 +504,7 @@ void CU_ttH_EDA_Ntuple::set_up_branches(TTree *tree)
 	tree->Branch("ls", &ls);
 	tree->Branch("run", &run);
 	tree->Branch("evtWeight", &evtWeight);
+	tree->Branch("genWeight", &genWeight);
 	tree->Branch("n_presel_mu", &n_presel_mu);
 	tree->Branch("n_cutsel_mu", &n_cutsel_mu);
 	tree->Branch("n_mvasel_mu", &n_mvasel_mu);

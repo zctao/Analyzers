@@ -6,8 +6,8 @@
 import FWCore.ParameterSet.Config as cms
 
 ttHtaus =  cms.EDAnalyzer('CU_ttH_EDA',
-        # Analysis type choice: 'tau_ssleptons', 'ditaus_lepton'
-        analysis_type = cms.string("tau_ssleptons"),
+        # Analysis type choice: '2lss1tau', '3leptons'
+        analysis_type = cms.string("2lss1tau"),
         # Sync ntuple
         produce_sync_ntuple = cms.bool(False),
         # Systematics
