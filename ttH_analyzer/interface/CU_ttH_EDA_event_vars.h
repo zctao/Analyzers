@@ -78,7 +78,7 @@ struct CU_ttH_EDA_event_vars {
 	std::vector<pat::Tau> tau_selected_sorted;
 
 	std::vector<miniLepton> leptons_loose;
-	std::vector<miniLepton> leptons_selected;  // sorted by conePt
+	std::vector<miniLepton> leptons_fakeable;  // sorted by conePt
 	std::vector<miniLepton> leptons_tight;     // sorted by pt
 		
 	std::vector<pat::Jet> jets_raw;
@@ -89,24 +89,6 @@ struct CU_ttH_EDA_event_vars {
 	std::vector<pat::Jet> jets_selected_sorted;
 	std::vector<pat::Jet> jets_selected_btag_loose;
 	std::vector<pat::Jet> jets_selected_btag_medium;
-
-	std::vector<pat::Jet> jets_corrected_jesup;
-	std::vector<pat::Jet> jets_raw_jesup;
-	std::vector<pat::Jet> jets_no_mu_jesup;
-	std::vector<pat::Jet> jets_no_mu_e_jesup;
-	std::vector<pat::Jet> jets_selected_jesup;
-	std::vector<pat::Jet> jets_selected_sorted_jesup;
-	std::vector<pat::Jet> jets_selected_btag_loose_jesup;
-	std::vector<pat::Jet> jets_selected_btag_medium_jesup;
-	
-	std::vector<pat::Jet> jets_corrected_jesdown;
-	std::vector<pat::Jet> jets_raw_jesdown;
-	std::vector<pat::Jet> jets_no_mu_jesdown;
-	std::vector<pat::Jet> jets_no_mu_e_jesdown;
-	std::vector<pat::Jet> jets_selected_jesdown;
-	std::vector<pat::Jet> jets_selected_sorted_jesdown;
-	std::vector<pat::Jet> jets_selected_btag_loose_jesdown;
-	std::vector<pat::Jet> jets_selected_btag_medium_jesdown;
 	
 	/// Other quantities
 	pat::MET pfMET;

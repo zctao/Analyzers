@@ -7,47 +7,54 @@
 void CU_ttH_EDA::Set_up_histograms()
 {
 
+	// categories
+	TString lep_cat[3] = {"mumu", "ee", "emu"};
+	TString btag_cat[2] = {"loose", "medium"};
+	
 	if (analysis_type == Analyze_2lss1tau) {
 		h_nProcessed = fs_->make<TH1I>("h_nProcessed","",1,0,1);
-		
-		h_MVA_ttV_vs_ttbar =
-			fs_->make<TH2D>("h_MVA_ttV_vs_ttbar", ";BDT", 20, -1, 1, 20, -1, 1);
-		h_MVA_ttV_vs_ttbar->GetXaxis()->SetTitle("ttbar");
-		h_MVA_ttV_vs_ttbar->GetYaxis()->SetTitle("ttV");
 
-		h_MVA_shape =
-			fs_->make<TH1D>("h_MVA_shape","", 7, 0.5, 7.5);
-
-		if (!isdata and doSystematics) {
-			h_MVA_ttV_vs_ttbar_jesup =
-				fs_->make<TH2D>("h_MVA_ttV_vs_ttbar_JESUp", ";BDT", 20, -1, 1, 20, -1, 1);
-			h_MVA_ttV_vs_ttbar_jesup->GetXaxis()->SetTitle("ttbar");
-			h_MVA_ttV_vs_ttbar_jesup->GetYaxis()->SetTitle("ttV");
-			
-			h_MVA_shape_jesup =
-				fs_->make<TH1D>("h_MVA_shape_JESUp","", 7, 0.5, 7.5);
-
-			h_MVA_ttV_vs_ttbar_jesdown =
-				fs_->make<TH2D>("h_MVA_ttV_vs_ttbar_JESDown", ";BDT", 20, -1, 1, 20, -1, 1);
-			h_MVA_ttV_vs_ttbar_jesdown->GetXaxis()->SetTitle("ttbar");
-			h_MVA_ttV_vs_ttbar_jesdown->GetYaxis()->SetTitle("ttV");
-			
-			h_MVA_shape_jesdown =
-				fs_->make<TH1D>("h_MVA_shape_JESDown","", 7, 0.5, 7.5);
-			
-			for (int i = 0; i < 16 ; ++i) {
-				TString h2d_name = "h_MVA_ttV_vs_ttbar_" + sysList[i];
-				h_MVA_ttV_vs_ttbar_sys[i] =
+		for (int il = 0; il < 3; il++) {
+			for (int ib = 0; ib <1; ib++) {
+				TString h2d_name =
+					"h_MVA_ttV_vs_ttbar_"+lep_cat[il]+"_"+btag_cat[ib];
+				
+				h_MVA_ttV_vs_ttbar[il][ib] =
 					fs_->make<TH2D>(h2d_name, ";BDT", 20, -1, 1, 20, -1, 1);
-				h_MVA_ttV_vs_ttbar_sys[i]->SetTitle("ttbar");
-				h_MVA_ttV_vs_ttbar_sys[i]->SetTitle("ttV");
+				h_MVA_ttV_vs_ttbar[il][ib]->GetXaxis()->SetTitle("ttbar");
+				h_MVA_ttV_vs_ttbar[il][ib]->GetYaxis()->SetTitle("ttV");
 
-				TString h1d_name = "h_MVA_shape_" + sysList[i];
-				h_MVA_shape_sys[i] = fs_->make<TH1D>(h1d_name, "", 7, 0.5, 7.5);
+				TString hshape_name = 
+					"h_MVA_shape_"+lep_cat[il]+"_"+btag_cat[ib];
+				
+				h_MVA_shape[il][ib] =
+					fs_->make<TH1D>(hshape_name, "", 7, 0.5, 7.5);
+
+				// systemtics
+				if (!isdata and doSystematics) {
+
+					for (int icsv=0; icsv < 16; ++icsv) {
+						TString h2d_csv_name =
+							"h_MVA_ttV_vs_ttbar_"+lep_cat[il]+"_"+btag_cat[ib]+"_"
+							+sysList[icsv];
+						h_MVA_ttV_vs_ttbar_sys[il][ib][icsv] =
+							fs_->make<TH2D>(h2d_csv_name,";BDT",20,-1,1,20,-1,1);
+						h_MVA_ttV_vs_ttbar_sys[il][ib][icsv]->SetTitle("ttbar");
+						h_MVA_ttV_vs_ttbar_sys[il][ib][icsv]->SetTitle("ttV");
+
+						TString hshape_csv_name =
+							"h_MVA_shape_"+lep_cat[il]+"_"+btag_cat[ib]+"_"
+							+sysList[icsv];
+
+						h_MVA_shape_sys[il][ib][icsv] =
+							fs_->make<TH1D>(hshape_csv_name, "", 7, 0.5, 7.5);
+					}
+
+					setup_sysHist = true;
+				}
 			}
-
-			setup_sysHist = true;
 		}
+
 
 		if (selection_type == Control_1lfakeable and isdata) {
 			TFile* file_fr = new TFile((std::string(getenv("CMSSW_BASE")) + "/src/Analyzers/ttH_analyzer/data/FR_data_ttH_mva.root").c_str());
@@ -62,7 +69,11 @@ void CU_ttH_EDA::Set_up_histograms()
 	}
 
 	if (analysis_type == Analyze_3l) {
-
+		h_mTWl = fs_->make<TH1D>("h_mTWl","", 10, 0, 300);
+		h_met = fs_->make<TH1D>("h_met", "", 8, 0, 200);
+		h_nJets = fs_->make<TH1D>("h_nJets", "", 8, 0, 8);
+		h_lep_charge = fs_->make<TH1D>("h_lep_charge", "", 10, -5, 5);
+		h_mZ = fs_->make<TH1D>("h_mZ", "", 15, 60, 120);
 	}
 }
 

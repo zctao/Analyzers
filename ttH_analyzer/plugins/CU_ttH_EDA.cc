@@ -68,7 +68,7 @@ CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig):
 	min_njets (iConfig.getParameter<int>("min_njets")),
 	min_nbtags (iConfig.getParameter<int>("min_nbtags")),
 	// JEC
-	//JECSysType (iConfig.getParameter<string>("JECSysType")),
+	JECType (iConfig.getParameter<string>("JECType")),
 	//jet_corrector (iConfig.getParameter<string>("jet_corrector")),
 	isdata (iConfig.getParameter<bool>("using_real_data")),
 	selection_region (iConfig.getParameter<string>("selection_region"))
@@ -80,11 +80,6 @@ CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig):
 	/// temporary mock-up parameters
 	MAODHelper_era = "2015_74x";
 	MAODHelper_sample_nr = 2500;
-
-	//total_xs = 831.76;
-	//sample_n = 25446993;
-	//int_lumi = 10000;
-	//weight_sample = int_lumi * total_xs / sample_n;
 
 	Load_configuration_set_type(config_analysis_type);	
 	Load_configuration_MAODH(isdata);
@@ -182,15 +177,6 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		h_hlt->Fill(0., 1);
 		h_flt->Fill(0., 1);
 	}
-	
-	/// Lepton selection
-	//local.mu_selected = miniAODhelper.GetSelectedMuons(
-	//	*(handle.muons), min_mu_pT, muonID::muonPreselection);
-	//local.e_selected = miniAODhelper.GetSelectedElectrons(
-	//	*(handle.electrons), min_ele_pT, electronID::electronPreselection);
-	
-	// Lepton selection in MiniAODHelper veto in barrel/endcap overlap region
-	// Use id directly from LeptonID package to include these for now for sync purpose
 
 	/*
 	  Muons
@@ -209,7 +195,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		
 		if (lepton.passFakeableSel()) {
 			local.mu_fakeable.push_back(mu);
-			local.leptons_selected.push_back(lepton);
+			local.leptons_fakeable.push_back(lepton);
 		
 			if (lepton.passTightSel()) {
 				local.mu_tight.push_back(mu);
@@ -238,7 +224,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		
 		if (lepton.passFakeableSel()) {
 			local.e_fakeable.push_back(ele);
-			local.leptons_selected.push_back(lepton);
+			local.leptons_fakeable.push_back(lepton);
 		
 			if (lepton.passTightSel()) {
 				local.e_tight.push_back(ele);
@@ -247,7 +233,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		}
 	}
 
-	std::sort(local.leptons_selected.begin(), local.leptons_selected.end(), [] (miniLepton l1, miniLepton l2) { return ptr(l1)->conePt() > ptr(l2)->conePt();});
+	std::sort(local.leptons_fakeable.begin(), local.leptons_fakeable.end(), [] (miniLepton l1, miniLepton l2) { return ptr(l1)->conePt() > ptr(l2)->conePt();});
 	std::sort(local.leptons_tight.begin(), local.leptons_tight.end(), [] (miniLepton l1, miniLepton l2) { return ptr(l1)->conePt() > ptr(l2)->conePt();});
 	
 	/*
@@ -282,7 +268,8 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	  Jets selection
 	*/
 	local.jets_corrected =
-		miniAODhelper.GetCorrectedJets(*(handle.jets),iEvent,iSetup,sysType::NA);
+		miniAODhelper.GetCorrectedJets(*(handle.jets),
+									   iEvent,iSetup, JECTypes[JECType]);
 	local.jets_raw = miniAODhelper.GetSelectedJets(
 		local.jets_corrected, min_jet_pT, max_jet_eta, jetID::jetLoose, '-');
 	
@@ -309,63 +296,6 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	local.n_btags_loose = static_cast<int>(local.jets_selected_btag_loose.size());
 	local.n_btags_medium = static_cast<int>(local.jets_selected_btag_medium.size());
 
-	
-	if (!isdata and doSystematics) {
-		
-	local.jets_corrected_jesup =
-		miniAODhelper.GetCorrectedJets(*(handle.jets),iEvent,iSetup,sysType::JESup);
-	local.jets_corrected_jesdown =
-		miniAODhelper.GetCorrectedJets(*(handle.jets),iEvent,iSetup,sysType::JESdown);
-	local.jets_raw_jesup = miniAODhelper.GetSelectedJets(
-	    local.jets_corrected_jesup, min_jet_pT, max_jet_eta, jetID::jetLoose, '-');
-	local.jets_raw_jesdown = miniAODhelper.GetSelectedJets(
-		local.jets_corrected_jesdown, min_jet_pT, max_jet_eta, jetID::jetLoose, '-');
-	// overlap removal by dR
-	local.jets_no_mu_jesup =
-		removeOverlapdR(local.jets_raw_jesup, local.mu_fakeable, 0.4);
-	local.jets_no_mu_e_jesup =
-		removeOverlapdR(local.jets_no_mu_jesup, local.e_fakeable, 0.4);
-	local.jets_selected_jesup =
-		removeOverlapdR(local.jets_no_mu_e_jesup, local.tau_preselected, 0.4);
-
-	local.jets_no_mu_jesdown =
-		removeOverlapdR(local.jets_raw_jesdown, local.mu_fakeable, 0.4);
-	local.jets_no_mu_e_jesdown =
-		removeOverlapdR(local.jets_no_mu_jesdown, local.e_fakeable, 0.4);
-	local.jets_selected_jesdown =
-		removeOverlapdR(local.jets_no_mu_e_jesdown, local.tau_preselected, 0.4);
-
-	// sort by pT
-	local.jets_selected_sorted_jesup =
-		miniAODhelper.GetSortedByPt(local.jets_selected_jesup);
-	local.jets_selected_sorted_jesdown =
-		miniAODhelper.GetSortedByPt(local.jets_selected_jesdown);
-
-	/*
-	  BTag
-	*/
-	local.jets_selected_btag_loose_jesup = miniAODhelper.GetSelectedJets(
-	    local.jets_selected_sorted_jesup, min_bjet_pT, max_bjet_eta,
-		jetID::jetLoose,'L');
-	local.jets_selected_btag_medium_jesup = miniAODhelper.GetSelectedJets(
-	    local.jets_selected_btag_loose_jesup, min_bjet_pT, max_bjet_eta,
-	    jetID::jetLoose, 'M');
-	
-	local.jets_selected_btag_loose_jesdown = miniAODhelper.GetSelectedJets(
-	    local.jets_selected_sorted_jesdown, min_bjet_pT, max_bjet_eta,
-		jetID::jetLoose, 'L');
-	local.jets_selected_btag_medium_jesdown = miniAODhelper.GetSelectedJets(
-	    local.jets_selected_btag_loose_jesdown, min_bjet_pT, max_bjet_eta,
-	    jetID::jetLoose, 'M');
-	
-	}
-
-	///////////////////////////////////////////////////////////
-
-	/// Top and Higgs tagging using collections through handles. adjusts
-	/// local.<tag>
-	//Top_tagger(handle.top_jets, local);
-	//Higgs_tagger(handle.subfilter_jets, local);
 
 	/*
 	  MET
@@ -398,19 +328,20 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 					
 		// Event selection
 		bool pass_event_selection =
-			pass_event_sel_2l(local, 0, selection_type) and passHLT;
+			pass_event_sel_2l(local, selection_type)
+			and passHLT;
 
 		evtNtuple.initialize();
 		
 		if (pass_event_selection) {
-			assert(local.leptons_selected.size() == 2);
+			assert(local.leptons_fakeable.size() == 2);
 				
 			// MVA
-			MVA_ttbar_vars.Calculate_mvaVars(local.leptons_selected,
+			MVA_ttbar_vars.Calculate_mvaVars(local.leptons_fakeable,
 											 local.tau_selected_sorted,
 											 local.jets_selected_sorted,
 											 local.pfMET);
-			MVA_ttV_vars.Calculate_mvaVars(local.leptons_selected,
+			MVA_ttV_vars.Calculate_mvaVars(local.leptons_fakeable,
 										   local.tau_selected_sorted,
 										   local.jets_selected_sorted,
 										   local.pfMET);
@@ -430,6 +361,9 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 			evtNtuple.lep0_conept = MVA_ttV_vars.Get_lep1_conePt();
 			evtNtuple.lep1_conept = MVA_ttV_vars.Get_lep2_conePt();
 
+			auto lep1type = local.leptons_fakeable[0].Type();
+			auto lep2type = local.leptons_fakeable[1].Type();
+			
 			// weights and scale factors
 			if (isdata) {
 				local.weight = 1.;
@@ -438,9 +372,9 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 				// charge flip background (data driven)
 				if (selection_type == Control_2los1tau) {
 					float P1_misCharge =
-						getEleChargeMisIDProb(local.leptons_selected[0],true);
+						getEleChargeMisIDProb(local.leptons_fakeable[0],true);
 					float P2_misCharge =
-						getEleChargeMisIDProb(local.leptons_selected[1],true);
+						getEleChargeMisIDProb(local.leptons_fakeable[1],true);
 
 					local.weight = P1_misCharge + P2_misCharge;
 				}
@@ -448,17 +382,17 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 				//////////////////////////
 				// fake lepton background (data driven)
 				if (selection_type == Control_1lfakeable) {
-					float f1 = getFakeRate(local.leptons_selected[0]);
-					float f2 = getFakeRate(local.leptons_selected[1]);
+					float f1 = getFakeRate(local.leptons_fakeable[0]);
+					float f2 = getFakeRate(local.leptons_fakeable[1]);
 
-					if (not local.leptons_selected[0].passTightSel()
-						and local.leptons_selected[1].passTightSel())
+					if (not local.leptons_fakeable[0].passTightSel()
+						and local.leptons_fakeable[1].passTightSel())
 						local.weight = f1/(1.-f1);
-					else if (local.leptons_selected[0].passTightSel() and
-							 not local.leptons_selected[1].passTightSel())
+					else if (local.leptons_fakeable[0].passTightSel() and
+							 not local.leptons_fakeable[1].passTightSel())
 						local.weight = f2/(1.-f2);
-					else if (not local.leptons_selected[0].passTightSel() and
-							 not local.leptons_selected[1].passTightSel())
+					else if (not local.leptons_fakeable[0].passTightSel() and
+							 not local.leptons_fakeable[1].passTightSel())
 						local.weight = -f1*f2/((1.-f1)*(1.-f2));
 				}
 			}
@@ -467,8 +401,6 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 				//local.csv_weight = getEvtCSVWeight(local.jets_selected, "NA");
 				local.csv_weight = getEvtCSVWeight(local.jets_selected, csv_iSys["NA"]);
 				/// HLT sf
-				auto lep1type = local.leptons_selected[0].Type();
-				auto lep2type = local.leptons_selected[1].Type();
 				if (lep1type == LeptonType::kmu and lep2type == LeptonType::kmu) {
 					local.hlt_sf = 1.01;
 				}
@@ -491,12 +423,31 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 				//	std::cout << "lepIDEff_sf : " << local.lepIDEff_sf << std::endl;
 				//}
 			}
+
+			// determine event category
+			int ilep = -1;
+			int ibtag = -1;
+			
+			if (lep1type==LeptonType::kmu and lep2type==LeptonType::kmu)
+				ilep = 0;  // mumu
+			else if (lep1type==LeptonType::kele and lep2type==LeptonType::kele)
+				ilep = 1;  // ee
+			else
+				ilep = 2;  // emu
+
+			if (local.jets_selected_btag_medium.size()>=2)
+				ibtag = 1;  // b-tight
+			else
+				ibtag = 0;  // b-loose
 			
 			// 2D hist
-			h_MVA_ttV_vs_ttbar->Fill(mva_ttar, mva_ttV, local.weight);
+			h_MVA_ttV_vs_ttbar[ilep][ibtag]
+				->Fill(mva_ttar, mva_ttV, local.weight);
+			
 			// 1D shape
 			int bin = partition2DBDT(mva_ttar, mva_ttV);
-			h_MVA_shape->Fill(bin, local.weight);
+			h_MVA_shape[ilep][ibtag]
+				->Fill(bin, local.weight);
 			
 			// systematics
 			if (!isdata and doSystematics) {
@@ -509,10 +460,11 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 						local.weight / local.csv_weight * csv_weight_sys;
 
 					// 2D
-					h_MVA_ttV_vs_ttbar_sys[isys]->Fill(mva_ttar, mva_ttV,
-													   evt_weight_sys);
+					h_MVA_ttV_vs_ttbar_sys[ilep][ibtag][isys]
+						->Fill(mva_ttar, mva_ttV,evt_weight_sys);
 					// 1D shape
-					h_MVA_shape_sys[isys]->Fill(bin, evt_weight_sys);
+					h_MVA_shape_sys[ilep][ibtag][isys]
+						->Fill(bin, evt_weight_sys);
 				}
 			}
 
@@ -523,77 +475,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 			evtNtuple.write_ntuple(local);
 			eventTree->Fill();
 		}
-			
-		////////////
-		if (!isdata and doSystematics) {
-
-			// JESUp
-			bool pass_event_selection_jesup =
-				pass_event_sel_2l(local, 1, selection_type) and passHLT;
-			
-			if (pass_event_selection_jesup) {
-				// MVA
-				MVA_ttbar_vars.Calculate_mvaVars(local.leptons_selected,
-												 local.tau_selected_sorted,
-												 local.jets_selected_sorted_jesup,
-												 local.pfMET);
-				MVA_ttV_vars.Calculate_mvaVars(local.leptons_selected,
-											   local.tau_selected_sorted,
-											   local.jets_selected_sorted_jesup,
-											   local.pfMET);
-				
-				double mva_ttbar_jesup = MVA_ttbar_vars.Get_mvaScore();
-				double mva_ttV_jesup = MVA_ttV_vars.Get_mvaScore();
-				
-				double csv_weight_jesup =
-					//getEvtCSVWeight(local.jets_selected,"JESUp");
-					getEvtCSVWeight(local.jets_selected_jesup, csv_iSys["JESUp"]);
-				double weight_jesup =
-					local.weight / local.csv_weight * csv_weight_jesup;
-				
-				// 2D hist
-				h_MVA_ttV_vs_ttbar_jesup->Fill(mva_ttbar_jesup, mva_ttV_jesup,
-											   weight_jesup);
-				// 1D shape
-				int bin_jesup = partition2DBDT(mva_ttbar_jesup, mva_ttV_jesup);
-				h_MVA_shape_jesup->Fill(bin_jesup, weight_jesup);
-			}
-			
-			
-			// JESDown
-			bool pass_event_selection_jesdown =
-				pass_event_sel_2l(local, -1, selection_type) and passHLT;
-
-			if (pass_event_selection_jesdown) {
-				// MVA
-				MVA_ttbar_vars.Calculate_mvaVars(local.leptons_selected,
-												 local.tau_selected_sorted,
-												 local.jets_selected_sorted_jesdown,
-												 local.pfMET);
-				MVA_ttV_vars.Calculate_mvaVars(local.leptons_selected,
-											   local.tau_selected_sorted,
-											   local.jets_selected_sorted_jesdown,
-											   local.pfMET);
-				
-				double mva_ttbar_jesdown = MVA_ttbar_vars.Get_mvaScore();
-				double mva_ttV_jesdown = MVA_ttV_vars.Get_mvaScore();
-				
-				double csv_weight_jesdown =
-					//getEvtCSVWeight(local.jets_selected, "JESDown");
-					getEvtCSVWeight(local.jets_selected_jesdown, csv_iSys["JESDown"]);
-				double weight_jesdown =
-					local.weight / local.csv_weight * csv_weight_jesdown;
-				
-				// 2D hist
-				h_MVA_ttV_vs_ttbar_jesdown->
-					Fill(mva_ttbar_jesdown, mva_ttV_jesdown, weight_jesdown);
-				// 1D shape
-				int bin_jesdown = partition2DBDT(mva_ttbar_jesdown, mva_ttV_jesdown);
-				h_MVA_shape_jesdown->Fill(bin_jesdown, weight_jesdown);
-			}
-			
-		}
-		
+					
 	} // end of analysis_type == Analyze_2lss1tau
 	
 	if (analysis_type == Analyze_3l) {
@@ -605,7 +487,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		
 		// Event selection
 		bool pass_event_selection = 
-			pass_event_sel_3l(local, 0, selection_type) and passHLT;
+			pass_event_sel_3l(local, selection_type) and passHLT;
 
 		evtNtuple.initialize();
 
@@ -660,16 +542,11 @@ void CU_ttH_EDA::endJob() {
 		//std::cout << "Total number of samples: " << event_count << std::endl;
 		
 		if (not isdata and doLumiScale) {
-			
+			/*
 			// Rescale histograms for MC
 			h_MVA_ttV_vs_ttbar -> Scale(int_lumi * sample_xs / event_count);
 			h_MVA_shape -> Scale(int_lumi * sample_xs / event_count);
 
-			h_MVA_ttV_vs_ttbar_jesup -> Scale(int_lumi * sample_xs / event_count);
-			h_MVA_shape_jesup -> Scale(int_lumi * sample_xs / event_count);
-
-			h_MVA_ttV_vs_ttbar_jesdown -> Scale(int_lumi * sample_xs / event_count);
-			h_MVA_shape_jesdown -> Scale(int_lumi * sample_xs / event_count);
 			
 			if (setup_sysHist) {
 				for (auto h : h_MVA_ttV_vs_ttbar_sys) {
@@ -680,6 +557,7 @@ void CU_ttH_EDA::endJob() {
 					h -> Scale(int_lumi * sample_xs / event_count);
 				}
 			}
+			*/
 		}
 
 	}

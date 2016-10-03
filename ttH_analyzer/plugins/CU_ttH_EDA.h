@@ -200,8 +200,8 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	float getMHT(CU_ttH_EDA_event_vars &);
 	
 	// event selection
-	bool pass_event_sel_2l(CU_ttH_EDA_event_vars &, int, Selection_types);
-	bool pass_event_sel_3l(CU_ttH_EDA_event_vars &, int, Selection_types);
+	bool pass_event_sel_2l(CU_ttH_EDA_event_vars &, Selection_types);
+	bool pass_event_sel_3l(CU_ttH_EDA_event_vars &, Selection_types);
 
 	// MVA
 	int partition2DBDT(double, double);
@@ -283,23 +283,23 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	int min_njets;
 	int min_nbtags;
 	
-	//JEC
-	//std::string jet_corrector;
-	//std::string JECSysType;
-	//std::map<std::string,sysType::sysType> systematics
-	//	= {{"NA", sysType::NA},
-	//	   {"JERUp", sysType::JERup},{"JERDown", sysType::JERdown},
-	//	   {"JESUp", sysType::JESup},{"JESDown", sysType::JESdown}};
-	
 	/// Selection helper
 	MiniAODHelper miniAODhelper;
 
+	//JEC
+	std::string JECType;
+	// sysType::sysType defined in MiniAODHelper.h
+	std::map<std::string,sysType::sysType> JECTypes  
+		= {{"NA", sysType::NA},
+		   {"JERUp", sysType::JERup},{"JERDown", sysType::JERdown},
+		   {"JESUp", sysType::JESup},{"JESDown", sysType::JESdown}};
+	
 	bool isdata;
 	char MAODHelper_b_tag_strength;
 	int MAODHelper_sample_nr; // past insample_, in-development var. for
 							  // MAODHelper?
 	std::string MAODHelper_era;
-
+	
 	// event selection region
 	std::string selection_region;
     Selection_types selection_type;
@@ -310,15 +310,18 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 
 	TH1I *h_nProcessed;
 	
-	TH2D *h_MVA_ttV_vs_ttbar;
-	TH1D *h_MVA_shape;
-	TH2D *h_MVA_ttV_vs_ttbar_jesup;
-	TH1D *h_MVA_shape_jesup;
-	TH2D *h_MVA_ttV_vs_ttbar_jesdown;
-	TH1D *h_MVA_shape_jesdown;
-	TH2D *h_MVA_ttV_vs_ttbar_sys[16];
-	TH1D *h_MVA_shape_sys[16];
+	TH2D *h_MVA_ttV_vs_ttbar[3][2];
+	TH1D *h_MVA_shape[3][2];;
+	TH2D *h_MVA_ttV_vs_ttbar_sys[3][2][16];
+	TH1D *h_MVA_shape_sys[3][2][16];
 	bool setup_sysHist = false;
+
+	// for WZ control region
+	TH1D *h_mTWl;  // mT of the lepton from W
+	TH1D *h_met;
+	TH1D *h_nJets;
+	TH1D *h_lep_charge;
+	TH1D *h_mZ;
 
 	// Fake lepton rate lookup histograms
 	TH2F *h_fakerate_el;

@@ -257,18 +257,17 @@ float CU_ttH_EDA::getMHT(CU_ttH_EDA_event_vars &local)
 }
 
 bool CU_ttH_EDA::pass_event_sel_2l(CU_ttH_EDA_event_vars &local,
-								   int jecType,
 								   Selection_types selection_region)
 {
 	//////////////////////////
     /// Lepton number
-	if (local.leptons_selected.size() != 2) return false;
+	if (local.leptons_fakeable.size() != 2) return false;
 	
 	bool passLepSel = false;	 
 	// exactly two tight leptons
 	passLepSel =
-		local.leptons_selected[0].passTightSel() and
-		local.leptons_selected[1].passTightSel();
+		local.leptons_fakeable[0].passTightSel() and
+		local.leptons_fakeable[1].passTightSel();
 	
 	if (selection_region == Control_1lfakeable) {
 		// at least one lepton fails tight selection
@@ -281,14 +280,14 @@ bool CU_ttH_EDA::pass_event_sel_2l(CU_ttH_EDA_event_vars &local,
 	/// Lepton pt
 	float minpt_ldg = 20.;
 	float minpt_subldg = 10;
-	if (local.leptons_selected[0].Type() == LeptonType::kele)
+	if (local.leptons_fakeable[0].Type() == LeptonType::kele)
 		minpt_ldg = 25.;
-	if (local.leptons_selected[1].Type() == LeptonType::kele)
+	if (local.leptons_fakeable[1].Type() == LeptonType::kele)
 		minpt_subldg = 15.;
 
 	bool passLeptonPt =
-		local.leptons_selected[0].conePt() > minpt_ldg and
-		local.leptons_selected[1].conePt() > minpt_subldg;
+		local.leptons_fakeable[0].conePt() > minpt_ldg and
+		local.leptons_fakeable[1].conePt() > minpt_subldg;
 
 	if (not passLeptonPt) return false;
 	
@@ -311,8 +310,8 @@ bool CU_ttH_EDA::pass_event_sel_2l(CU_ttH_EDA_event_vars &local,
 	/// Lepton charge
 	bool passLepCharge = false;
 	// same sign
-	if (local.leptons_selected[0].charge() *
-		local.leptons_selected[1].charge() > 0)
+	if (local.leptons_fakeable[0].charge() *
+		local.leptons_fakeable[1].charge() > 0)
 		passLepCharge = true;
 
 	if (selection_region == Control_2los1tau)
@@ -324,8 +323,8 @@ bool CU_ttH_EDA::pass_event_sel_2l(CU_ttH_EDA_event_vars &local,
 	/// ee only cuts	
 	bool passMetLD = true;
 	bool passZmassVeto = true;
-	if (local.leptons_selected[0].Type() == LeptonType::kele and
-		local.leptons_selected[1].Type() == LeptonType::kele) {
+	if (local.leptons_fakeable[0].Type() == LeptonType::kele and
+		local.leptons_fakeable[1].Type() == LeptonType::kele) {
 		//////////////////////////
 		/// MetLD cut (ee only)
 		passMetLD = local.metLD > 0.2;
@@ -333,8 +332,8 @@ bool CU_ttH_EDA::pass_event_sel_2l(CU_ttH_EDA_event_vars &local,
 		//////////////////////////
 		/// Zmass Veto: 91.2 +/- 10
 		double eeInvMass =
-			(local.leptons_selected[0].p4() +
-			 local.leptons_selected[1].p4()).M();
+			(local.leptons_fakeable[0].p4() +
+			 local.leptons_fakeable[1].p4()).M();
 		passZmassVeto = eeInvMass < (91.2 - 10.0) or eeInvMass > (91.2 + 10.0);
 	}
 
@@ -348,26 +347,10 @@ bool CU_ttH_EDA::pass_event_sel_2l(CU_ttH_EDA_event_vars &local,
 
 	//////////////////////////
 	/// number of jets and btags
-   	int njets = 0;
-	int nbtags_loose = 0;
-	int nbtags_medium = 0;
+   	int njets = local.jets_selected.size();
+	int nbtags_loose = local.jets_selected_btag_loose.size();
+	int nbtags_medium = local.jets_selected_btag_medium.size();
 
-	if (jecType == 1) {       // JESUp
-		njets = local.jets_selected_jesup.size();
-		nbtags_loose = local.jets_selected_btag_loose_jesup.size();
-		nbtags_medium = local.jets_selected_btag_medium_jesup.size();
-	}
-	else if (jecType == -1) { // JESDown
-		njets = local.jets_selected_jesdown.size();
-		nbtags_loose = local.jets_selected_btag_loose_jesdown.size();
-		nbtags_medium = local.jets_selected_btag_medium_jesdown.size();
-	}
-	else {                    // NA
-		njets = local.jets_selected.size();
-		nbtags_loose = local.jets_selected_btag_loose.size();
-		nbtags_medium = local.jets_selected_btag_medium.size();
-	}
-	
 	bool passNumJets = njets >= 4;
 	bool passNumBtags = nbtags_loose >= 2 or nbtags_medium >= 1;
 	
@@ -378,7 +361,6 @@ bool CU_ttH_EDA::pass_event_sel_2l(CU_ttH_EDA_event_vars &local,
 }
 
 bool CU_ttH_EDA::pass_event_sel_3l(CU_ttH_EDA_event_vars &local,
-								   int jecType,
 								   Selection_types selection_region)
 {
 	//////////////////////////
@@ -444,25 +426,9 @@ bool CU_ttH_EDA::pass_event_sel_3l(CU_ttH_EDA_event_vars &local,
 
 	
 	/// number of jets and btags
-	int njets = 0;
-	int nbtags_loose = 0;
-	int nbtags_medium = 0;
-
-	if (jecType == 1) {       // JESUp
-		njets = local.jets_selected_jesup.size();
-		nbtags_loose = local.jets_selected_btag_loose_jesup.size();
-		nbtags_medium = local.jets_selected_btag_medium_jesup.size();
-	}
-	else if (jecType == -1) { // JESDown
-		njets = local.jets_selected_jesdown.size();
-		nbtags_loose = local.jets_selected_btag_loose_jesdown.size();
-		nbtags_medium = local.jets_selected_btag_medium_jesdown.size();
-	}
-	else {                    // NA
-		njets = local.jets_selected.size();
-		nbtags_loose = local.jets_selected_btag_loose.size();
-		nbtags_medium = local.jets_selected_btag_medium.size();
-	}
+	int njets = local.jets_selected.size();
+	int nbtags_loose = local.jets_selected_btag_loose.size();
+	int nbtags_medium = local.jets_selected_btag_medium.size();
 	
 	//////////////////////////
 	/// metLD cut
