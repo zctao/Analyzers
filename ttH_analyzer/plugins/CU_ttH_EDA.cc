@@ -345,7 +345,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 										   local.tau_selected_sorted,
 										   local.jets_selected_sorted,
 										   local.pfMET);
-
+				
 			double mva_ttar = MVA_ttbar_vars.Get_mvaScore();
 			double mva_ttV = MVA_ttV_vars.Get_mvaScore();
 
@@ -446,6 +446,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 			
 			// 1D shape
 			int bin = partition2DBDT(mva_ttar, mva_ttV);
+			
 			h_MVA_shape[ilep][ibtag]
 				->Fill(bin, local.weight);
 			

@@ -46,14 +46,14 @@ options.register('doSystematics', True,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.bool,
                  "Include systematics or not")
-options.register('OutputDir', '',  #'/uscms/home/ztao/nobackup/'
+options.register('OutputDir', '/uscms/home/ztao/nobackup/',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  "output file directory")
 options.register('SelectionRegion', 'signal_2lss1tau',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
-                 "Which selection region to apply: signal_2lss1tau, control_2los1tau, control_1lfakeable", "control_WZ")
+                 "Which selection region to apply: signal_2lss1tau, control_2los1tau, control_1lfakeable, control_WZ")
 options.register('TurnOffHLTCut', False,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.bool,
@@ -135,13 +135,13 @@ process.ttHtaus.doLumiScale = cms.bool(options.doLumiScale)
 process.ttHtaus.sampleName = cms.string(options.SampleName)
 process.ttHtaus.sample_xs = cms.double(options.CrossSection)
 process.ttHtaus.int_lumi = cms.double(options.IntLumi)
-process.ttHtaus.JECType = cms.string(option.JECType)
+process.ttHtaus.JECType = cms.string(options.JECType)
 process.ttHtaus.using_real_data = cms.bool(options.isData)
 process.ttHtaus.selection_region = cms.string(options.SelectionRegion)
 process.ttHtaus.turn_off_HLT_cut = cms.bool(options.TurnOffHLTCut)
 # for reHLT
-#process.ttHtaus.HLT_config_tag = cms.string("HLT2")
-#process.ttHtaus.filter_config_tag = cms.string("HLT2")
+process.ttHtaus.HLT_config_tag = cms.string("HLT2")
+process.ttHtaus.filter_config_tag = cms.string("HLT2")
 
 ### Outputs
 out_file = options.OutputDir + 'output_' + options.SampleName + '.root'

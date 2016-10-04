@@ -15,7 +15,7 @@ void CU_ttH_EDA::Set_up_histograms()
 		h_nProcessed = fs_->make<TH1I>("h_nProcessed","",1,0,1);
 
 		for (int il = 0; il < 3; il++) {
-			for (int ib = 0; ib <1; ib++) {
+			for (int ib = 0; ib <2; ib++) {
 				TString h2d_name =
 					"h_MVA_ttV_vs_ttbar_"+lep_cat[il]+"_"+btag_cat[ib];
 				
