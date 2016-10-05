@@ -271,18 +271,6 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	/// Output file is opened/closed through CMS py config
 	edm::Service<TFileService> fs_;
 	
-	/// Cuts
-	float min_tight_lepton_pT;
-	float min_ele_pT;	
-	float min_mu_pT;
-	float min_tau_pT;
-	float min_jet_pT;
-	float min_bjet_pT;
-	float max_jet_eta;
-	float max_bjet_eta;
-	int min_njets;
-	int min_nbtags;
-	
 	/// Selection helper
 	MiniAODHelper miniAODhelper;
 
