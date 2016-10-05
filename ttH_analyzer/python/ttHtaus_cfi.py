@@ -9,7 +9,7 @@ ttHtaus =  cms.EDAnalyzer('CU_ttH_EDA',
         # Analysis type choice: '2lss1tau', '3leptons'
         analysis_type = cms.string("2lss1tau"),
         # Sync ntuple
-        produce_sync_ntuple = cms.bool(False),
+        turn_off_event_sel = cms.bool(False),
         # Systematics
         do_systematics = cms.bool(False),
         # Sample parameter

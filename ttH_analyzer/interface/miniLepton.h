@@ -38,6 +38,10 @@ class miniLepton
 	bool passLooseSel() const {assert(_lepID_set); return _passloose;}
 	bool passFakeableSel() const {assert(_lepID_set); return _passfakeable;}
 	bool passTightSel() const {assert(_lepID_set); return _passtight;}
+
+	bool tightCharge() const {return _tight_charge;}
+	bool conversionVeto() const {assert(_type==LeptonType::kele); return _conversion_veto;}
+	bool noMissingHits() const {assert(_type==LeptonType::kele); return _no_missinghits;}
 	
 	float conePt() const;
 	
@@ -53,6 +57,10 @@ class miniLepton
 	bool _passloose;
 	bool _passfakeable;
 	bool _passtight;
+
+	bool _tight_charge;
+	bool _conversion_veto;
+	bool _no_missinghits;
 	
 	LeptonType _type;
 
@@ -60,6 +68,8 @@ class miniLepton
 
 	void Set_LeptonID(const pat::Electron &);
 	void Set_LeptonID(const pat::Muon &);
+	void Set_tightCharge(const pat::Electron &);
+	void Set_tightCharge(const pat::Muon &);
 	void Set_conePt();
 
 };

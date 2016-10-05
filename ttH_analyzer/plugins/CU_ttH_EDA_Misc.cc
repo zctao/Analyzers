@@ -257,14 +257,18 @@ float CU_ttH_EDA::getMHT(CU_ttH_EDA_event_vars &local)
 }
 
 bool CU_ttH_EDA::pass_event_sel_2l(CU_ttH_EDA_event_vars &local,
-								   Selection_types selection_region)
+								   Selection_types selection_region,
+								   int &ilep, int& ibtag)
 {
 	//////////////////////////
     /// Lepton number
-	if (local.leptons_fakeable.size() != 2) return false;
+	// at least 2 fakeable leptons
+	// no more than 2 tight leptons
+	if (!(local.leptons_fakeable.size() >= 2 and local.leptons_tight.size() <= 2))
+		return false;
 	
 	bool passLepSel = false;	 
-	// exactly two tight leptons
+	// signal region: two leading leptons are tight
 	passLepSel =
 		local.leptons_fakeable[0].passTightSel() and
 		local.leptons_fakeable[1].passTightSel();
@@ -320,25 +324,71 @@ bool CU_ttH_EDA::pass_event_sel_2l(CU_ttH_EDA_event_vars &local,
 	if (not passLepCharge) return false;
 
 	//////////////////////////
-	/// ee only cuts	
-	bool passMetLD = true;
-	bool passZmassVeto = true;
-	if (local.leptons_fakeable[0].Type() == LeptonType::kele and
-		local.leptons_fakeable[1].Type() == LeptonType::kele) {
+	/// Tight charge
+	bool passTightCharge =
+		local.leptons_fakeable[0].tightCharge() and
+		local.leptons_fakeable[1].tightCharge();
+
+	if (not passTightCharge) return false;
+	
+	//////////////////////////
+	/// Categorize
+	bool passMetLD = false;
+	bool passZmassVeto = false;
+	bool passPhotonVeto = false;
+	
+	if (local.leptons_fakeable[0].Type() == LeptonType::kmu and
+		local.leptons_fakeable[1].Type() == LeptonType::kmu) {  // mumu
+
+		ilep = 0;
+		
+		passMetLD = true;
+		passZmassVeto = true;
+		passPhotonVeto = true;
+	}
+	else if (local.leptons_fakeable[0].Type() == LeptonType::kele and
+			 local.leptons_fakeable[1].Type() == LeptonType::kele) {  // ee
+
+		ilep = 1;
+
 		//////////////////////////
 		/// MetLD cut (ee only)
 		passMetLD = local.metLD > 0.2;
 		
 		//////////////////////////
-		/// Zmass Veto: 91.2 +/- 10
+		/// Zmass Veto: 91.2 +/- 10 (ee only)
 		double eeInvMass =
 			(local.leptons_fakeable[0].p4() +
 			 local.leptons_fakeable[1].p4()).M();
+
 		passZmassVeto = eeInvMass < (91.2 - 10.0) or eeInvMass > (91.2 + 10.0);
+
+		//////////////////////////
+		/// To suppress electrons from photon conversions
+		passPhotonVeto = local.leptons_fakeable[0].conversionVeto() and
+			local.leptons_fakeable[0].noMissingHits() and
+			local.leptons_fakeable[1].conversionVeto() and
+			local.leptons_fakeable[1].noMissingHits();
 	}
+	else {  // emu
+		ilep = 2;
+
+		passMetLD = true;
+		passZmassVeto = true;
+
+		// determine which one is electron
+		int ie = local.leptons_fakeable[1].Type() == LeptonType::kele;
+		assert(local.leptons_fakeable[ie].Type() == LeptonType::kele);
+		assert(local.leptons_fakeable[!ie].Type() == LeptonType::kmu);
+
+		passPhotonVeto = local.leptons_fakeable[ie].conversionVeto() and
+			local.leptons_fakeable[ie].noMissingHits();
+	    
+	}	
 
 	if (not passMetLD) return false;
 	if (not passZmassVeto) return false;
+	if (not passPhotonVeto) return false;
 
 	//////////////////////////
 	/// number of taus
@@ -357,6 +407,8 @@ bool CU_ttH_EDA::pass_event_sel_2l(CU_ttH_EDA_event_vars &local,
 	if (not passNumJets) return false;	
 	if (not passNumBtags) return false;
 
+	ibtag = nbtags_medium >=2 ? 1 : 0;
+
 	return true;
 }
 
@@ -365,8 +417,15 @@ bool CU_ttH_EDA::pass_event_sel_3l(CU_ttH_EDA_event_vars &local,
 {
 	//////////////////////////
     /// Lepton number
-	// at least three tight leptons
-	if (local.leptons_tight.size() < 3) return false;
+	// at least three fakeable leptons
+	if (!(local.leptons_fakeable.size() >= 3)) return false;
+	// signal region: three leading leptons are tight
+    bool passLepSel =
+		local.leptons_fakeable[0].passTightSel() and
+		local.leptons_fakeable[1].passTightSel() and
+		local.leptons_fakeable[2].passTightSel();
+
+	if (not passLepSel) return false;
 
 	//////////////////////////
 	/// Lepton pt
@@ -449,6 +508,18 @@ bool CU_ttH_EDA::pass_event_sel_3l(CU_ttH_EDA_event_vars &local,
 	if (abs(total_charge) == 1) passCharge = true;
 
 	if (not passCharge) return false;
+
+	//////////////////////////
+	/// To suppress electron from photon conversion
+	bool passPhotonVeto = true;
+	for (auto & l : local.leptons_fakeable) {
+		if (l.Type() == LeptonType::kele) {
+			passPhotonVeto = passPhotonVeto and
+				l.conversionVeto() and l.noMissingHits();
+		}
+	}
+
+	if (not passPhotonVeto) return false;
 	
 	//////////////////////////
 	/// number of jets and btags

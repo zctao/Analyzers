@@ -34,8 +34,8 @@
 CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig):
 	// Analysis type
 	config_analysis_type (iConfig.getParameter<string>("analysis_type")),
-	// Sync ntuple
-	produce_sync_ntuple (iConfig.getParameter<bool>("produce_sync_ntuple")),
+	// Turn off event selection
+	turn_off_event_sel (iConfig.getParameter<bool>("turn_off_event_sel")),
 	// Systematics
 	doSystematics (iConfig.getParameter<bool>("do_systematics")),
 	// Sample parameter
@@ -145,10 +145,10 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	//Initialize weights
 	local.weight = 1.;
 	local.csv_weight = 1.;
-	//local.pu_weight = 1.;
 	local.gen_weight = 1.;
 	local.hlt_sf = 1.;
 	local.lepIDEff_sf = 1.;
+	//local.pu_weight = 1.;
 	
 	/// Run checks on event containers via their handles
 	Check_triggers(handle.triggerResults, local);
@@ -325,16 +325,20 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		// Check if all HLTs failed for debug purpose: assert(not passHLT);
 
 		if (hltcut_off) passHLT = true;
-					
+
+		// event category index, value set by pass_event_sel_2l()
+		int ilep = -1;
+		int ibtag = -1;
+		
 		// Event selection
 		bool pass_event_selection =
-			pass_event_sel_2l(local, selection_type)
+			pass_event_sel_2l(local, selection_type, ilep, ibtag)
 			and passHLT;
 
 		evtNtuple.initialize();
 		
 		if (pass_event_selection) {
-			assert(local.leptons_fakeable.size() == 2);
+			assert(local.leptons_fakeable.size() >= 2);
 				
 			// MVA
 			MVA_ttbar_vars.Calculate_mvaVars(local.leptons_fakeable,
@@ -360,9 +364,6 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 			evtNtuple.max_lep_eta = MVA_ttbar_vars.Get_max_lep_eta();
 			evtNtuple.lep0_conept = MVA_ttV_vars.Get_lep1_conePt();
 			evtNtuple.lep1_conept = MVA_ttV_vars.Get_lep2_conePt();
-
-			auto lep1type = local.leptons_fakeable[0].Type();
-			auto lep2type = local.leptons_fakeable[1].Type();
 			
 			// weights and scale factors
 			if (isdata) {
@@ -401,14 +402,19 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 				//local.csv_weight = getEvtCSVWeight(local.jets_selected, "NA");
 				local.csv_weight = getEvtCSVWeight(local.jets_selected, csv_iSys["NA"]);
 				/// HLT sf
-				if (lep1type == LeptonType::kmu and lep2type == LeptonType::kmu) {
+				if (ilep == 0) {  // mumu
 					local.hlt_sf = 1.01;
 				}
-				else if (lep1type == LeptonType::kele and lep2type == LeptonType::kele) {
+				else if (ilep == 1) {  // ee
+					local.hlt_sf = 1.02;
+				}
+				else if (ilep == 2) {  // emu
 					local.hlt_sf = 1.02;
 				}
 				else {
-					local.hlt_sf = 1.02;
+					std::cerr << "not valid lepton category ! aborting ..."
+							  << std::endl;
+					assert(0);
 				}
 				
 				/// total event weight
@@ -423,22 +429,6 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 				//	std::cout << "lepIDEff_sf : " << local.lepIDEff_sf << std::endl;
 				//}
 			}
-
-			// determine event category
-			int ilep = -1;
-			int ibtag = -1;
-			
-			if (lep1type==LeptonType::kmu and lep2type==LeptonType::kmu)
-				ilep = 0;  // mumu
-			else if (lep1type==LeptonType::kele and lep2type==LeptonType::kele)
-				ilep = 1;  // ee
-			else
-				ilep = 2;  // emu
-
-			if (local.jets_selected_btag_medium.size()>=2)
-				ibtag = 1;  // b-tight
-			else
-				ibtag = 0;  // b-loose
 			
 			// 2D hist
 			h_MVA_ttV_vs_ttbar[ilep][ibtag]
@@ -471,7 +461,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 
 		}
 		
-		if (produce_sync_ntuple or pass_event_selection) {
+		if (turn_off_event_sel or pass_event_selection) {
 			// no event selection is applied for sync ntuples
 			evtNtuple.write_ntuple(local);
 			eventTree->Fill();
@@ -480,9 +470,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	} // end of analysis_type == Analyze_2lss1tau
 	
 	if (analysis_type == Analyze_3l) {
-		bool passHLT =
-			local.pass_single_e or local.pass_single_mu or local.pass_double_mu or
-			local.pass_double_e or local.pass_elemu;
+		bool passHLT = true;  // FIXME
 
 		if (hltcut_off) passHLT = true;
 		
@@ -515,7 +503,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 			
 		}
 
-		if (produce_sync_ntuple or pass_event_selection) {
+		if (turn_off_event_sel or pass_event_selection) {
 			evtNtuple.write_ntuple(local);
 			eventTree->Fill();
 		}

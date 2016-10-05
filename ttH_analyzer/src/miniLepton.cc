@@ -13,8 +13,13 @@ miniLepton::miniLepton(const pat::Electron & ele)
 
 	_type = LeptonType::kele;
 	_lepID_set = false;
+	_tight_charge = false;
 
 	Set_LeptonID(ele);
+	Set_tightCharge(ele);
+
+	_no_missinghits = ele.userFloat("numMissingHits") == 0;
+	_conversion_veto = ele.passConversionVeto();
 }
 
 miniLepton::miniLepton(const pat::Muon & mu)
@@ -27,8 +32,13 @@ miniLepton::miniLepton(const pat::Muon & mu)
 
 	_type = LeptonType::kmu;
 	_lepID_set = false;
+	_tight_charge = false;
 
 	Set_LeptonID(mu);
+	Set_tightCharge(mu);
+
+	//_conversion_veto = false;
+	//_no_missinghits = false;
 }
 
 void miniLepton::Set_LeptonID(const pat::Electron & ele)
@@ -38,14 +48,14 @@ void miniLepton::Set_LeptonID(const pat::Electron & ele)
 
 	_passfakeable =
 		ele.userFloat("idFakeable") > 0.5 and
-		ele.userFloat("numMissingHits") == 0 and
+		//ele.userFloat("numMissingHits") == 0 and
 		_passloose;
 
 	_passtight =
 		ele.userFloat("idMVABased") > 0.5 and
-		ele.userFloat("numMissingHits") == 0 and
-		ele.passConversionVeto() and
-		ele.isGsfCtfScPixChargeConsistent() and
+		//ele.userFloat("numMissingHits") == 0 and
+		//ele.passConversionVeto() and
+		//ele.isGsfCtfScPixChargeConsistent() and
 		_passfakeable;
 	
     
@@ -54,7 +64,7 @@ void miniLepton::Set_LeptonID(const pat::Electron & ele)
 		_conept = 0.85 * ele.pt() / ele.userFloat("nearestJetPtRatio");
 	if (_passtight)
 		_conept = ele.pt();
-	 
+	
 	_lepID_set = true;
 }
 
@@ -62,22 +72,27 @@ void miniLepton::Set_LeptonID(const pat::Muon & mu)
 {
 	_passloose = mu.userFloat("idPreselection") > 0.5;
 	_passfakeable = mu.userFloat("idFakeable") > 0.5 and _passloose;
-
-	_passtight = false;
-	if (mu.userFloat("idMVABased") > 0.5 and
-		mu.innerTrack().isAvailable()) {
-		if (mu.innerTrack()->ptError()/mu.innerTrack()->pt() < 0.2)
-			_passtight = true;
-	}
-	_passtight = _passtight and _passfakeable;
+	_passtight = mu.userFloat("idMVABased") > 0.5 and _passfakeable;
    
-	_conept = -99;
+	_conept = -99.;
 	if (_passfakeable and !_passtight)
 		_conept = 0.85 * mu.pt() / mu.userFloat("nearestJetPtRatio");
 	if (_passtight)
 		_conept = mu.pt();
-	 
+	
 	_lepID_set = true;
+}
+
+void miniLepton::Set_tightCharge(const pat::Electron & e)
+{
+	_tight_charge =
+		e.isGsfCtfScPixChargeConsistent() + e.isGsfScPixChargeConsistent() > 1;
+}
+
+void miniLepton::Set_tightCharge(const pat::Muon & mu)
+{
+	if (mu.innerTrack().isAvailable())
+		_tight_charge = mu.innerTrack()->ptError()/mu.innerTrack()->pt() < 0.2;
 }
 
 float miniLepton::conePt() const

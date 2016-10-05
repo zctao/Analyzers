@@ -200,7 +200,7 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	float getMHT(CU_ttH_EDA_event_vars &);
 	
 	// event selection
-	bool pass_event_sel_2l(CU_ttH_EDA_event_vars &, Selection_types);
+	bool pass_event_sel_2l(CU_ttH_EDA_event_vars &, Selection_types, int&, int&);
 	bool pass_event_sel_3l(CU_ttH_EDA_event_vars &, Selection_types);
 
 	// MVA
@@ -220,7 +220,7 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	std::string config_analysis_type;
 	
 	// flag for sync ntuple
-	bool produce_sync_ntuple;
+	bool turn_off_event_sel;
 
 	bool doSystematics;
 
