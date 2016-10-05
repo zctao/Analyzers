@@ -19,37 +19,29 @@ void CU_ttH_EDA_Ntuple::write_ntuple(const CU_ttH_EDA_event_vars &local)
 	nEvent = local.event_nr;
 	ls = local.lumisection_nr;
 	run = local.run_nr;
-	evtWeight = local.weight;
+	event_weight = local.weight;
 	genWeight = local.gen_weight;
 	
 	// Muons
 	n_presel_mu = local.n_muons_loose;
 	n_fakeablesel_mu = local.n_muons_fakeable;
 	n_mvasel_mu = local.n_muons_tight;
-	n_cutsel_mu = 0;
-	for (auto & mu : local.mu_preselected_sorted) {
-		if (mu.userFloat("idCutBased") > 0.5)
-			++n_cutsel_mu;
-	}
-	//fill_ntuple_muons(local.mu_preselected_sorted);
-	fill_ntuple_muons(local.mu_fakeable);
+
+	fill_ntuple_muons(local.mu_preselected_sorted);
+	//fill_ntuple_muons(local.mu_fakeable);
 	
 	// Electrons
 	n_presel_ele = local.n_electrons_loose;
 	n_fakeablesel_ele = local.n_electrons_fakeable;
 	n_mvasel_ele = local.n_electrons_tight;
-	n_cutsel_ele = 0;
-	for (auto & ele : local.e_preselected_sorted) {
-		if (ele.userFloat("idCutBased") > 0.5)
-			++n_cutsel_ele;
-	}
-	//fill_ntuple_electrons(local.e_preselected_sorted);
-	fill_ntuple_electrons(local.e_fakeable);
+	
+	fill_ntuple_electrons(local.e_preselected_sorted);
+	//fill_ntuple_electrons(local.e_fakeable);
 		
 	// Taus
 	n_presel_tau = local.n_taus_pre;
 	n_tau = local.n_taus;
-	fill_ntuple_taus(local.tau_selected_sorted);
+	fill_ntuple_taus(local.tau_preselected_sorted);
 
 	// Jets
 	n_presel_jet = local.n_jets;
@@ -82,10 +74,14 @@ void CU_ttH_EDA_Ntuple::fill_ntuple_muons(const std::vector<pat::Muon>& muons)
 		mu0_dz = muons[0].userFloat("dz");
 		mu0_segmentCompatibility = muons[0].segmentCompatibility();
 		mu0_leptonMVA = muons[0].userFloat("leptonMVA");
-		mu0_mediumID = muons[0].isMediumMuon();
+		//mu0_mediumID = muons[0].isMediumMuon();
+		////////////////////
+		/// short term HIP safe muon mediumID
+		bool goodGlb0 = (muons[0].isGlobalMuon() && muons[0].userFloat("normalizedChiSq") < 3 && muons[0].userFloat("localChiSq") < 12 && muons[0].userFloat("trackKink") < 20);
+		mu0_mediumID = (muons[0].userFloat("validFraction") >= 0.8 && muons[0].segmentCompatibility() >= (goodGlb0 ? 0.303 : 0.451));
+		////////////////////
 		mu0_dpt_div_pt = muons[0].muonBestTrack()->ptError()/muons[0].muonBestTrack()->pt();
 		mu0_isfakeablesel = muons[0].userFloat("idFakeable") > 0.5;
-		mu0_iscutsel = muons[0].userFloat("idCutBased") > 0.5;
 		mu0_ismvasel = muons[0].userFloat("idMVABased") > 0.5;
 	}
 	
@@ -107,10 +103,14 @@ void CU_ttH_EDA_Ntuple::fill_ntuple_muons(const std::vector<pat::Muon>& muons)
 		mu1_dz = muons[1].userFloat("dz");
 		mu1_segmentCompatibility = muons[1].segmentCompatibility();
 		mu1_leptonMVA = muons[1].userFloat("leptonMVA");
-		mu1_mediumID = muons[1].isMediumMuon();
+		//mu1_mediumID = muons[1].isMediumMuon();
+		////////////////////
+		/// short term HIP safe muon mediumID
+		bool goodGlb1 = (muons[1].isGlobalMuon() && muons[1].userFloat("normalizedChiSq") < 3 && muons[1].userFloat("localChiSq") < 12 && muons[1].userFloat("trackKink") < 20);
+		mu1_mediumID = (muons[1].userFloat("validFraction") >= 0.8 && muons[1].segmentCompatibility() >= (goodGlb1 ? 0.303 : 0.451));
+		////////////////////		
 		mu1_dpt_div_pt = muons[1].muonBestTrack()->ptError()/muons[1].muonBestTrack()->pt();
 		mu1_isfakeablesel = muons[1].userFloat("idFakeable") > 0.5;
-		mu1_iscutsel = muons[1].userFloat("idCutBased") > 0.5;
 		mu1_ismvasel = muons[1].userFloat("idMVABased") > 0.5;
 	}
 }
@@ -135,10 +135,9 @@ void CU_ttH_EDA_Ntuple::fill_ntuple_electrons(const std::vector<pat::Electron>& 
 		ele0_dz = electrons[0].userFloat("dz");
 		ele0_ntMVAeleID = electrons[0].userFloat("eleMvaId"); // non-triggering mva ID
 		ele0_leptonMVA = electrons[0].userFloat("leptonMVA");
-		ele0_isChargeConsistent = electrons[0].isGsfCtfScPixChargeConsistent();
+		ele0_isChargeConsistent = (electrons[0].isGsfCtfScPixChargeConsistent() + electrons[0].isGsfScPixChargeConsistent()) > 1;
 		ele0_passesConversionVeto = electrons[0].passConversionVeto();
 		ele0_nMissingHits = electrons[0].userFloat("numMissingHits");
-		ele0_iscutsel = electrons[0].userFloat("idCutBased") > 0.5;
 		ele0_ismvasel = electrons[0].userFloat("idMVABased") > 0.5;
 		ele0_isfakeablesel = electrons[0].userFloat("idFakeable") > 0.5;
 	}
@@ -161,10 +160,9 @@ void CU_ttH_EDA_Ntuple::fill_ntuple_electrons(const std::vector<pat::Electron>& 
 		ele1_dz = electrons[1].userFloat("dz");
 		ele1_ntMVAeleID = electrons[1].userFloat("eleMvaId"); // non-triggering mva ID
 		ele1_leptonMVA = electrons[1].userFloat("leptonMVA");
-		ele1_isChargeConsistent = electrons[1].isGsfCtfScPixChargeConsistent();
+		ele1_isChargeConsistent = (electrons[1].isGsfCtfScPixChargeConsistent() + electrons[1].isGsfScPixChargeConsistent()) > 1;
 		ele1_passesConversionVeto = electrons[1].passConversionVeto();
 		ele1_nMissingHits = electrons[1].userFloat("numMissingHits");
-		ele1_iscutsel = electrons[1].userFloat("idCutBased") > 0.5;
 		ele1_ismvasel = electrons[1].userFloat("idMVABased") > 0.5;
 		ele1_isfakeablesel = electrons[1].userFloat("idFakeable") > 0.5;
 	}
@@ -284,14 +282,12 @@ void CU_ttH_EDA_Ntuple::initialize()
 	nEvent = -9999;
 	ls = -9999;
 	run = -9999;
-	evtWeight = -9999.;
+	event_weight = -9999.;
 	genWeight = -9999.;
 	n_presel_mu = -9999;
-	n_cutsel_mu = -9999;
 	n_mvasel_mu = -9999;
 	n_fakeablesel_mu = -9999;
 	n_presel_ele = -9999;
-	n_cutsel_ele = -9999;
 	n_mvasel_ele = -9999;
 	n_fakeablesel_ele = -9999;
 	n_presel_tau = -9999;
@@ -318,6 +314,7 @@ void CU_ttH_EDA_Ntuple::initialize()
 
 	// muons
 	mu0_pt = -9999.;
+	//mu0_conept = -9999.;
 	mu0_eta = -9999.;
 	mu0_phi = -9999.;
 	mu0_E = -9999.;
@@ -336,10 +333,10 @@ void CU_ttH_EDA_Ntuple::initialize()
 	mu0_leptonMVA = -9999.;
 	mu0_mediumID = -9999.;
 	mu0_dpt_div_pt = -9999.;
-	mu0_iscutsel = -9999;
 	mu0_ismvasel = -9999;
 	mu0_isfakeablesel = -9999;
 	mu1_pt = -9999.;
+	//mu1_conept = -9999.;
 	mu1_eta = -9999.;
 	mu1_phi = -9999.;
 	mu1_E = -9999.;
@@ -358,12 +355,12 @@ void CU_ttH_EDA_Ntuple::initialize()
 	mu1_leptonMVA = -9999.;
 	mu1_mediumID = -9999.;
 	mu1_dpt_div_pt = -9999.;
-	mu1_iscutsel = -9999;
 	mu1_ismvasel = -9999;
 	mu1_isfakeablesel = -9999;
 	
 	// electrons
 	ele0_pt = -9999.;
+	//ele0_conept = -9999.;
 	ele0_eta = -9999.;
 	ele0_phi = -9999.;
 	ele0_E = -9999.;
@@ -383,10 +380,10 @@ void CU_ttH_EDA_Ntuple::initialize()
 	ele0_isChargeConsistent = -9999;
 	ele0_passesConversionVeto = -9999;
 	ele0_nMissingHits = -9999;
-	ele0_iscutsel = -9999;
 	ele0_ismvasel = -9999;
 	ele0_isfakeablesel = -9999;
 	ele1_pt = -9999.;
+	//ele1_conept = -9999.;
 	ele1_eta = -9999.;
 	ele1_phi = -9999.;
 	ele1_E = -9999.;
@@ -406,7 +403,6 @@ void CU_ttH_EDA_Ntuple::initialize()
 	ele1_isChargeConsistent = -9999;
 	ele1_passesConversionVeto = -9999;
 	ele1_nMissingHits = -9999;
-	ele1_iscutsel = -9999;
 	ele1_ismvasel = -9999;
 	ele1_isfakeablesel = -9999;
 	
@@ -503,14 +499,12 @@ void CU_ttH_EDA_Ntuple::set_up_branches(TTree *tree)
 	tree->Branch("nEvent", &nEvent);
 	tree->Branch("ls", &ls);
 	tree->Branch("run", &run);
-	tree->Branch("evtWeight", &evtWeight);
+	tree->Branch("event_weight", &event_weight);
 	tree->Branch("genWeight", &genWeight);
 	tree->Branch("n_presel_mu", &n_presel_mu);
-	tree->Branch("n_cutsel_mu", &n_cutsel_mu);
 	tree->Branch("n_mvasel_mu", &n_mvasel_mu);
 	tree->Branch("n_fakeablesel_mu", &n_fakeablesel_mu);
 	tree->Branch("n_presel_ele", &n_presel_ele);
-	tree->Branch("n_cutsel_ele", &n_cutsel_ele);
 	tree->Branch("n_mvasel_ele", &n_mvasel_ele);
 	tree->Branch("n_fakeablesel_ele", &n_fakeablesel_ele);
 	tree->Branch("n_presel_tau", &n_presel_tau);
@@ -527,6 +521,7 @@ void CU_ttH_EDA_Ntuple::set_up_branches(TTree *tree)
 	tree->Branch("avg_dr_jet", &avg_dr_jet);
 	// muons
 	tree->Branch("mu0_pt",                   &mu0_pt);
+	//tree->Branch("mu0_conept",               &mu0_conept);
 	tree->Branch("mu0_eta",                  &mu0_eta);
 	tree->Branch("mu0_phi",                  &mu0_phi);
 	tree->Branch("mu0_E",                    &mu0_E);
@@ -545,10 +540,10 @@ void CU_ttH_EDA_Ntuple::set_up_branches(TTree *tree)
 	tree->Branch("mu0_leptonMVA",            &mu0_leptonMVA);
 	tree->Branch("mu0_mediumID", &mu0_mediumID);
 	tree->Branch("mu0_dpt_div_pt", &mu0_dpt_div_pt);
-	tree->Branch("mu0_iscutsel", &mu0_iscutsel);
 	tree->Branch("mu0_ismvasel", &mu0_ismvasel);
 	tree->Branch("mu0_isfakeablesel", &mu0_isfakeablesel);
 	tree->Branch("mu1_pt",                   &mu1_pt);
+	//tree->Branch("mu1_conept",               &mu1_conept);
 	tree->Branch("mu1_eta",                  &mu1_eta);
 	tree->Branch("mu1_phi",                  &mu1_phi);
 	tree->Branch("mu1_E",                    &mu1_E);
@@ -567,11 +562,11 @@ void CU_ttH_EDA_Ntuple::set_up_branches(TTree *tree)
 	tree->Branch("mu1_leptonMVA",            &mu1_leptonMVA);
 	tree->Branch("mu1_mediumID", &mu1_mediumID);
 	tree->Branch("mu1_dpt_div_pt", &mu1_dpt_div_pt);
-	tree->Branch("mu1_iscutsel", &mu1_iscutsel);
 	tree->Branch("mu1_ismvasel", &mu1_ismvasel);
 	tree->Branch("mu1_isfakeablesel", &mu1_isfakeablesel);
 	// electrons
 	tree->Branch("ele0_pt",                   &ele0_pt);
+	//tree->Branch("ele0_conept",               &ele0_conept);
 	tree->Branch("ele0_eta",                  &ele0_eta);
 	tree->Branch("ele0_phi",                  &ele0_phi);
 	tree->Branch("ele0_E",                    &ele0_E);
@@ -591,10 +586,10 @@ void CU_ttH_EDA_Ntuple::set_up_branches(TTree *tree)
 	tree->Branch("ele0_isChargeConsistent", &ele0_isChargeConsistent);
 	tree->Branch("ele0_passesConversionVeto", &ele0_passesConversionVeto);
 	tree->Branch("ele0_nMissingHits", &ele0_nMissingHits);
-	tree->Branch("ele0_iscutsel", &ele0_iscutsel);
 	tree->Branch("ele0_ismvasel", &ele0_ismvasel);
 	tree->Branch("ele0_isfakeablesel", &ele0_isfakeablesel);
 	tree->Branch("ele1_pt",                   &ele1_pt);
+	//tree->Branch("ele1_conept",               &ele1_conept);
 	tree->Branch("ele1_eta",                  &ele1_eta);
 	tree->Branch("ele1_phi",                  &ele1_phi);
 	tree->Branch("ele1_E",                    &ele1_E);
@@ -614,7 +609,6 @@ void CU_ttH_EDA_Ntuple::set_up_branches(TTree *tree)
 	tree->Branch("ele1_isChargeConsistent", &ele1_isChargeConsistent);
 	tree->Branch("ele1_passesConversionVeto", &ele1_passesConversionVeto);
 	tree->Branch("ele1_nMissingHits", &ele1_nMissingHits);
-	tree->Branch("ele1_iscutsel", &ele1_iscutsel);
 	tree->Branch("ele1_ismvasel", &ele1_ismvasel);
 	tree->Branch("ele1_isfakeablesel", &ele1_isfakeablesel);
 	// taus

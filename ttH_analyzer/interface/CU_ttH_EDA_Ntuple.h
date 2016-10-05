@@ -53,14 +53,12 @@ class CU_ttH_EDA_Ntuple //: public TClass
 	int nEvent;
 	int ls;   // luminosity section number
 	int run;  // run number
-	double evtWeight;
+	double event_weight;
 	double genWeight;
 	int n_presel_mu;
-	int n_cutsel_mu;
 	int n_mvasel_mu;
 	int n_fakeablesel_mu;
 	int n_presel_ele;
-	int n_cutsel_ele;
 	int n_mvasel_ele;
 	int n_fakeablesel_ele;
 	int n_presel_tau;
@@ -79,6 +77,7 @@ class CU_ttH_EDA_Ntuple //: public TClass
 	double max_lep_eta;
 	// muons
 	double mu0_pt;
+	//double mu0_conept;
 	double mu0_eta;
 	double mu0_phi;
 	double mu0_E;
@@ -97,10 +96,10 @@ class CU_ttH_EDA_Ntuple //: public TClass
 	double mu0_leptonMVA;
 	double mu0_mediumID;
 	double mu0_dpt_div_pt;
-	int    mu0_iscutsel;
 	int    mu0_ismvasel;
 	int    mu0_isfakeablesel;
 	double mu1_pt;
+	//double mu1_conept;
 	double mu1_eta;
 	double mu1_phi;
 	double mu1_E;
@@ -119,12 +118,12 @@ class CU_ttH_EDA_Ntuple //: public TClass
 	double mu1_leptonMVA;
 	double mu1_mediumID;
 	double mu1_dpt_div_pt;
-	int    mu1_iscutsel;
 	int    mu1_ismvasel;
 	int    mu1_isfakeablesel;
 	
 	// electrons
 	double ele0_pt;
+	//double ele0_conept;
 	double ele0_eta;
 	double ele0_phi;
 	double ele0_E;
@@ -144,10 +143,10 @@ class CU_ttH_EDA_Ntuple //: public TClass
 	int    ele0_isChargeConsistent;
 	int    ele0_passesConversionVeto;
 	int    ele0_nMissingHits;
-	int    ele0_iscutsel;
 	int    ele0_ismvasel;
 	int    ele0_isfakeablesel;
 	double ele1_pt;
+	//double ele1_conept;
 	double ele1_eta;
 	double ele1_phi;
 	double ele1_E;
@@ -167,7 +166,6 @@ class CU_ttH_EDA_Ntuple //: public TClass
 	int    ele1_isChargeConsistent;
 	int    ele1_passesConversionVeto;
 	int    ele1_nMissingHits;
-	int    ele1_iscutsel;
 	int    ele1_ismvasel;
 	int    ele1_isfakeablesel;
 	

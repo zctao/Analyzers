@@ -45,17 +45,6 @@ ttHtaus =  cms.EDAnalyzer('CU_ttH_EDA',
             'HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v4',
             'HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v3'
         ]),
-        # Cuts
-        min_tight_lepton_pT = cms.double(20),
-        min_ele_pT = cms.double(7.),
-        min_mu_pT = cms.double(5.),
-        min_tau_pT = cms.double(20.),
-        min_jet_pT = cms.double(25.),
-        min_bjet_pT = cms.double(20.),
-        max_jet_eta = cms.double(2.4),
-        max_bjet_eta = cms.double(2.5),
-        min_njets = cms.int32(2),
-        min_nbtags = cms.int32(1),
                           
         using_real_data = cms.bool(False),
         # JEC

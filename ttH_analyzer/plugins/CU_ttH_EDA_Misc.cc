@@ -233,17 +233,17 @@ float CU_ttH_EDA::getMHT(CU_ttH_EDA_event_vars &local)
 	float MHT_x = 0;
 	float MHT_y = 0;
 
-	for (auto & mu : local.mu_preselected_sorted) {
+	for (auto & mu : local.mu_fakeable) {
 		MHT_x -= mu.px();
 		MHT_y -= mu.py();
 	}
 
-	for (auto & ele : local.e_preselected_sorted) {
+	for (auto & ele : local.e_fakeable) {
 		MHT_x -= ele.px();
 		MHT_y -= ele.py();
 	}
 
-	for (auto & tau : local.tau_selected_sorted) {
+	for (auto & tau : local.tau_selected) {
 		MHT_x -= tau.px();
 		MHT_y -= tau.py();
 	}

@@ -49,7 +49,7 @@ void kinMVA_ttV_2lss::Calculate_mvaVars(const std::vector<miniLepton>& leptons,
 // call Calculate_MVAvars function every event after selection
 {
 	// make sure there two and only two selected leptons
-	assert(leptons.size() == 2);
+	assert(leptons.size() >= 2);
 	// input leptons should already be sorted by conept
 	assert(leptons[0].conePt() > leptons[1].conePt());
 

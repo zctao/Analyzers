@@ -56,17 +56,6 @@ CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig):
 	trigger_on_HLT_ee (iConfig.getParameter<std::vector<string>>("HLT_electron_electron_triggers")),
 	trigger_on_HLT_emu (iConfig.getParameter<std::vector<string>>("HLT_electron_muon_triggers")),
 	trigger_on_HLT_mumu (iConfig.getParameter<std::vector<string>>("HLT_muon_muon_triggers")),
-	// Cuts
-	min_tight_lepton_pT (iConfig.getParameter<double>("min_tight_lepton_pT")),
-	min_ele_pT (iConfig.getParameter<double>("min_ele_pT")),
-	min_mu_pT (iConfig.getParameter<double>("min_mu_pT")),
-	min_tau_pT (iConfig.getParameter<double>("min_tau_pT")),
-	min_jet_pT (iConfig.getParameter<double>("min_jet_pT")),
-	min_bjet_pT (iConfig.getParameter<double>("min_bjet_pT")),
-	max_jet_eta (iConfig.getParameter<double>("max_jet_eta")),
-	max_bjet_eta (iConfig.getParameter<double>("max_bjet_eta")),
-	min_njets (iConfig.getParameter<int>("min_njets")),
-	min_nbtags (iConfig.getParameter<int>("min_nbtags")),
 	// JEC
 	JECType (iConfig.getParameter<string>("JECType")),
 	//jet_corrector (iConfig.getParameter<string>("jet_corrector")),
@@ -182,7 +171,8 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	  Muons
 	*/
 	for (const auto& mu : *(handle.muons)){
-		if (mu.userFloat("idPreselection") > 0.5 and mu.pt() > min_mu_pT)
+		if (mu.userFloat("idPreselection") > 0.5 and
+			mu.pt() > 5. and abs(mu.eta()) < 2.4)
 			local.mu_preselected.push_back(mu);
 	}
 	// sort by pT
@@ -208,7 +198,8 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	  Electrons
 	*/
 	for (const auto& ele : *(handle.electrons)) {
-		if (ele.userFloat("idPreselection") > 0.5 and ele.pt() > min_ele_pT)
+		if (ele.userFloat("idPreselection") > 0.5 and
+			ele.pt() > 7. and abs(ele.eta()) < 2.5)
 			local.e_preselected.push_back(ele);
 	}
 	// remove overlap with muons
@@ -240,19 +231,25 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	  Taus
 	*/
 	for (const auto& tau : *(handle.taus)) {
-		if (tau.userFloat("idPreselection")>0.5 and tau.pt()>min_tau_pT)
+		if (tau.userFloat("idPreselection")>0.5 and
+			tau.pt() > 20. and abs(tau.eta()) < 2.3)
 			local.tau_preselected.push_back(tau);  // for cleaning
-		if (tau.userFloat("idSelection")>0.5 and tau.pt()>min_tau_pT)
+	}
+
+	// remove overlap with muons and electrons
+	local.tau_preselected =
+		removeOverlapdR(local.tau_preselected, local.e_preselected, 0.4);
+	local.tau_preselected =
+		removeOverlapdR(local.tau_preselected, local.mu_preselected, 0.4);
+	
+	// sort by pT
+	local.tau_preselected_sorted =
+		miniAODhelper.GetSortedByPt(local.tau_preselected);
+	
+	for (const auto& tau : local.tau_preselected_sorted) {
+		if (tau.userFloat("idSelection")>0.5)
 			local.tau_selected.push_back(tau);
 	}
-	// remove overlap with muons and electrons
-	local.tau_selected =
-		removeOverlapdR(local.tau_selected, local.e_preselected, 0.4);
-	local.tau_selected =
-		removeOverlapdR(local.tau_selected, local.mu_preselected, 0.4);
-	// sort by pT
-	local.tau_selected_sorted = miniAODhelper.GetSortedByPt(local.tau_selected);
-
 	
 	// number of selected leptons
 	local.n_electrons_loose = static_cast<int>(local.e_preselected.size());
@@ -271,7 +268,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		miniAODhelper.GetCorrectedJets(*(handle.jets),
 									   iEvent,iSetup, JECTypes[JECType]);
 	local.jets_raw = miniAODhelper.GetSelectedJets(
-		local.jets_corrected, min_jet_pT, max_jet_eta, jetID::jetLoose, '-');
+		local.jets_corrected, 25., 2.4, jetID::jetLoose, '-');
 	
 	// overlap removal by dR
 	local.jets_no_mu = removeOverlapdR(local.jets_raw, local.mu_fakeable, 0.4);
@@ -286,16 +283,15 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	  BTag
 	*/
 	local.jets_selected_btag_loose = miniAODhelper.GetSelectedJets(
-		local.jets_selected_sorted, min_bjet_pT, max_bjet_eta, jetID::jetLoose,
+		local.jets_selected_sorted, 20., 2.5, jetID::jetLoose,
 		'L');
 	local.jets_selected_btag_medium = miniAODhelper.GetSelectedJets(
-	    local.jets_selected_btag_loose, min_bjet_pT, max_bjet_eta,
+	    local.jets_selected_btag_loose,20., 2.5,
 		jetID::jetLoose, 'M');
 
 	local.n_jets = static_cast<int>(local.jets_selected.size());
 	local.n_btags_loose = static_cast<int>(local.jets_selected_btag_loose.size());
 	local.n_btags_medium = static_cast<int>(local.jets_selected_btag_medium.size());
-
 
 	/*
 	  MET
@@ -342,11 +338,11 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 				
 			// MVA
 			MVA_ttbar_vars.Calculate_mvaVars(local.leptons_fakeable,
-											 local.tau_selected_sorted,
+											 local.tau_selected,
 											 local.jets_selected_sorted,
 											 local.pfMET);
 			MVA_ttV_vars.Calculate_mvaVars(local.leptons_fakeable,
-										   local.tau_selected_sorted,
+										   local.tau_selected,
 										   local.jets_selected_sorted,
 										   local.pfMET);
 				
