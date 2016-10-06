@@ -13,8 +13,11 @@
 #include <vector>
 #include <string>
 
-void syncNtupleComparer(TString inputFile1="", TString inputFile2="",
-						TString inputFile3="", TString inputFile4="")
+void syncNtupleComparer(TString inputFile1="~/Documents/ttH/Outputs/80X/sync/Cornell/syncNtuple_event_ttH_80X.root",
+						TString inputFile2="~/Documents/ttH/Outputs/80X/sync/LLR/syncNtuple_event_ttH_80X.root",
+						TString inputFile3="",
+						TString inputFile4="",
+						TString Region="2lSS1tau_SR")
 {
 	/*
 	TString inputFile1, inputFile2, inputFile3, inputFile4;
@@ -44,7 +47,7 @@ void syncNtupleComparer(TString inputFile1="", TString inputFile2="",
 	options.reserve(4);
 	
 	if (f1->IsOpen()) {
-		TTree* tree1 = (TTree*) f1->Get("syncTree");
+		TTree* tree1 = (TTree*) f1->Get("syncTree_2lSS1tau_SR");
 		tree1->SetFillColor(5);
 		tree1->SetLineColor(0);
 		
@@ -56,7 +59,7 @@ void syncNtupleComparer(TString inputFile1="", TString inputFile2="",
 		cout << "Cannot open " << inputFile1 << endl;
 
 	if (f2->IsOpen()) {
-		TTree* tree2 = (TTree*) f2->Get("syncTree");
+		TTree* tree2 = (TTree*) f2->Get("syncTree_2lSS1tau_SR");
 		tree2->SetLineColor(4);
 		tree2->SetLineWidth(2);
 
@@ -102,6 +105,7 @@ void syncNtupleComparer(TString inputFile1="", TString inputFile2="",
 	std::vector<int> nevt_ele;
 	std::vector<int> nevt_tau;
 	std::vector<int> nevt_jet;
+	std::vector<int> nevt;
 
 	for (const auto branch : *branches1) {
 		
@@ -128,15 +132,17 @@ void syncNtupleComparer(TString inputFile1="", TString inputFile2="",
 					nevt_ele.push_back(trees[it]->GetEntries(bname+">0"));
 				if (bname.EqualTo("n_presel_tau"))
 					nevt_tau.push_back(trees[it]->GetEntries(bname+">0"));
-				if (bname.EqualTo("n_presel_jet"))
+				if (bname.EqualTo("n_presel_jet")) {
 					nevt_jet.push_back(trees[it]->GetEntries(bname+">0"));
+					nevt.push_back(trees[it]->GetEntries());
+				}
 			}
 		}
 
 		l->Draw("same");
 
-		c.SaveAs("~/Documents/ttH/syncPlots/"+bname+".png");
-		//c.SaveAs("~ztao/www/"+bname+"_"+type+".png");
+		c.SaveAs("~/Documents/ttH/syncPlots/"+Region+"/"+bname+".png");
+		//c.SaveAs("~ztao/www/"+Region+"/"+bname+"_"+type+".png");
 
 		delete l;
 	}
@@ -146,22 +152,27 @@ void syncNtupleComparer(TString inputFile1="", TString inputFile2="",
 		std::cout << name << "\t";
 	std::cout << std::endl;
 	
-	std::cout << "muon:";
+	std::cout << "presel muon:";
 	for (auto n: nevt_mu)
 		std::cout << "\t" << n;
 	std::cout << std::endl;
 	
-	std::cout << "ele:";
+	std::cout << "presel ele:";
 	for (auto n: nevt_ele)
 		std::cout << "\t" << n;
 	std::cout << std::endl;
 	
-	std::cout << "tau:";
+	std::cout << "presel tau:";
 	for (auto n: nevt_tau)
 		std::cout << "\t" << n;
 	std::cout << std::endl;
 	
-	std::cout << "jet:";
+	std::cout << "presel jet:";
+	for (auto n: nevt_jet)
+		std::cout << "\t" << n;
+	std::cout << std::endl;
+
+	std::cout << "# events:";
 	for (auto n: nevt_jet)
 		std::cout << "\t" << n;
 	std::cout << std::endl;
