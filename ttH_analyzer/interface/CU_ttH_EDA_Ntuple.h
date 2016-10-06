@@ -30,14 +30,6 @@ class CU_ttH_EDA_Ntuple //: public TClass
 	void fill_ntuple_taus(const std::vector<pat::Tau> &);
 	void fill_ntuple_jets(const std::vector<pat::Jet> &);
 	//void fill_ntuple_met(const pat::MET &);
-	
-	// internal variables
-	TLorentzVector lep0_p4;
-	TLorentzVector lep1_p4;
-	bool lep0_isfakeable;
-	bool lep1_isfakeable;
-	double lep0_ptRatio;
-	double lep1_ptRatio;
 		
  public:
 	/// function member

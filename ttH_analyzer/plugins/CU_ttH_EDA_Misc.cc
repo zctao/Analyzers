@@ -260,6 +260,7 @@ bool CU_ttH_EDA::pass_event_sel_2l(CU_ttH_EDA_event_vars &local,
 								   Selection_types selection_region,
 								   int &ilep, int& ibtag)
 {
+
 	//////////////////////////
     /// Lepton number
 	// at least 2 fakeable leptons
@@ -279,7 +280,7 @@ bool CU_ttH_EDA::pass_event_sel_2l(CU_ttH_EDA_event_vars &local,
 	} 
 	
 	if (not passLepSel) return false;
-
+	
 	//////////////////////////
 	/// Lepton pt
 	float minpt_ldg = 20.;
@@ -322,7 +323,7 @@ bool CU_ttH_EDA::pass_event_sel_2l(CU_ttH_EDA_event_vars &local,
 		passLepCharge = not passLepCharge;
 
 	if (not passLepCharge) return false;
-
+	
 	//////////////////////////
 	/// Tight charge
 	bool passTightCharge =
@@ -383,9 +384,8 @@ bool CU_ttH_EDA::pass_event_sel_2l(CU_ttH_EDA_event_vars &local,
 
 		passPhotonVeto = local.leptons_fakeable[ie].conversionVeto() and
 			local.leptons_fakeable[ie].noMissingHits();
-	    
 	}	
-
+	
 	if (not passMetLD) return false;
 	if (not passZmassVeto) return false;
 	if (not passPhotonVeto) return false;

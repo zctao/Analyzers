@@ -330,7 +330,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		bool pass_event_selection =
 			pass_event_sel_2l(local, selection_type, ilep, ibtag)
 			and passHLT;
-
+		
 		evtNtuple.initialize();
 		
 		if (pass_event_selection) {
@@ -417,13 +417,6 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 				local.weight =
 					local.csv_weight * //local.gen_weight *
 					local.hlt_sf * local.lepIDEff_sf;
-
-				//if (local.weight < 0) {
-				//	std::cout << "csv_weight : " << local.csv_weight << std::endl;
-				//	std::cout << "gen_weight : " << local.gen_weight << std::endl;
-				//	std::cout << "hlt_sf : " << local.hlt_sf << std::endl;
-				//	std::cout << "lepIDEff_sf : " << local.lepIDEff_sf << std::endl;
-				//}
 			}
 			
 			// 2D hist
@@ -447,8 +440,8 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 						local.weight / local.csv_weight * csv_weight_sys;
 
 					// 2D
-					h_MVA_ttV_vs_ttbar_sys[ilep][ibtag][isys]
-						->Fill(mva_ttar, mva_ttV,evt_weight_sys);
+					//h_MVA_ttV_vs_ttbar_sys[ilep][ibtag][isys]
+					//	->Fill(mva_ttar, mva_ttV,evt_weight_sys);
 					// 1D shape
 					h_MVA_shape_sys[ilep][ibtag][isys]
 						->Fill(bin, evt_weight_sys);

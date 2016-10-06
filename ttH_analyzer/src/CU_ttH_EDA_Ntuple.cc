@@ -305,13 +305,6 @@ void CU_ttH_EDA_Ntuple::initialize()
 	avg_dr_jet = -9999.;
 	max_lep_eta = -9999.;
 
-	lep0_p4.SetPtEtaPhiE(0.,0.,0.,0.);
-	lep1_p4.SetPtEtaPhiE(0.,0,0.,0.);
-	lep0_isfakeable = false;
-	lep1_isfakeable = false;
-	lep0_ptRatio = -1.;
-	lep1_ptRatio = -1.;
-
 	// muons
 	mu0_pt = -9999.;
 	//mu0_conept = -9999.;
@@ -333,8 +326,8 @@ void CU_ttH_EDA_Ntuple::initialize()
 	mu0_leptonMVA = -9999.;
 	mu0_mediumID = -9999.;
 	mu0_dpt_div_pt = -9999.;
-	mu0_ismvasel = -9999;
-	mu0_isfakeablesel = -9999;
+	mu0_ismvasel = 0;//-9999;
+	mu0_isfakeablesel = 0;//-9999;
 	mu1_pt = -9999.;
 	//mu1_conept = -9999.;
 	mu1_eta = -9999.;
@@ -355,8 +348,8 @@ void CU_ttH_EDA_Ntuple::initialize()
 	mu1_leptonMVA = -9999.;
 	mu1_mediumID = -9999.;
 	mu1_dpt_div_pt = -9999.;
-	mu1_ismvasel = -9999;
-	mu1_isfakeablesel = -9999;
+	mu1_ismvasel = 0;//-9999;
+	mu1_isfakeablesel = 0;//-9999;
 	
 	// electrons
 	ele0_pt = -9999.;
@@ -377,11 +370,11 @@ void CU_ttH_EDA_Ntuple::initialize()
 	ele0_dz = -9999.;
 	ele0_ntMVAeleID = -9999.;
 	ele0_leptonMVA = -9999.;
-	ele0_isChargeConsistent = -9999;
-	ele0_passesConversionVeto = -9999;
+	ele0_isChargeConsistent = 0;//-9999;
+	ele0_passesConversionVeto = 0;//-9999;
 	ele0_nMissingHits = -9999;
-	ele0_ismvasel = -9999;
-	ele0_isfakeablesel = -9999;
+	ele0_ismvasel = 0;//-9999;
+	ele0_isfakeablesel = 0;//-9999;
 	ele1_pt = -9999.;
 	//ele1_conept = -9999.;
 	ele1_eta = -9999.;
@@ -400,11 +393,11 @@ void CU_ttH_EDA_Ntuple::initialize()
 	ele1_dz = -9999.;
 	ele1_ntMVAeleID = -9999.;
 	ele1_leptonMVA = -9999.;
-	ele1_isChargeConsistent = -9999;
-	ele1_passesConversionVeto = -9999;
+	ele1_isChargeConsistent = 0;//-9999;
+	ele1_passesConversionVeto = 0;//-9999;
 	ele1_nMissingHits = -9999;
-	ele1_ismvasel = -9999;
-	ele1_isfakeablesel = -9999;
+	ele1_ismvasel = 0;//-9999;
+	ele1_isfakeablesel = 0;//-9999;
 	
 	// taus
 	tau0_pt = -9999.;

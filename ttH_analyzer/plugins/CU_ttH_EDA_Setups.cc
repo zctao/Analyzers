@@ -9,7 +9,7 @@ void CU_ttH_EDA::Set_up_histograms()
 
 	// categories
 	TString lep_cat[3] = {"mumu", "ee", "emu"};
-	TString btag_cat[2] = {"loose", "medium"};
+	TString btag_cat[2] = {"bloose", "bmedium"};
 	
 	if (analysis_type == Analyze_2lss1tau) {
 		h_nProcessed = fs_->make<TH1I>("h_nProcessed","",1,0,1);
@@ -34,13 +34,13 @@ void CU_ttH_EDA::Set_up_histograms()
 				if (!isdata and doSystematics) {
 
 					for (int icsv=0; icsv < 16; ++icsv) {
-						TString h2d_csv_name =
-							"h_MVA_ttV_vs_ttbar_"+lep_cat[il]+"_"+btag_cat[ib]+"_"
-							+sysList[icsv];
-						h_MVA_ttV_vs_ttbar_sys[il][ib][icsv] =
-							fs_->make<TH2D>(h2d_csv_name,";BDT",20,-1,1,20,-1,1);
-						h_MVA_ttV_vs_ttbar_sys[il][ib][icsv]->SetTitle("ttbar");
-						h_MVA_ttV_vs_ttbar_sys[il][ib][icsv]->SetTitle("ttV");
+						//TString h2d_csv_name =
+						//	"h_MVA_ttV_vs_ttbar_"+lep_cat[il]+"_"+btag_cat[ib]+"_"
+						//	+sysList[icsv];
+						//h_MVA_ttV_vs_ttbar_sys[il][ib][icsv] =
+						//	fs_->make<TH2D>(h2d_csv_name,";BDT",20,-1,1,20,-1,1);
+						//h_MVA_ttV_vs_ttbar_sys[il][ib][icsv]->SetTitle("ttbar");
+						//h_MVA_ttV_vs_ttbar_sys[il][ib][icsv]->SetTitle("ttV");
 
 						TString hshape_csv_name =
 							"h_MVA_shape_"+lep_cat[il]+"_"+btag_cat[ib]+"_"
