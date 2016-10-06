@@ -172,7 +172,7 @@ int fillHistofromTree(TTree* tree,
 {
 	int nEntries = tree->GetEntries();
 	
-	double evtWeight;
+	double event_weight;
 	double MVA_2lss_ttV;
 	double MVA_2lss_ttbar;
 	double MT_met_lep0;
@@ -222,7 +222,7 @@ int fillHistofromTree(TTree* tree,
 	int tau_charge;
 	int tau_decayMode;
 	
-	tree->SetBranchAddress("evtWeight", &evtWeight);
+	tree->SetBranchAddress("event_weight", &event_weight);
 	tree->SetBranchAddress("MVA_2lss_ttV", &MVA_2lss_ttV);
 	tree->SetBranchAddress("MVA_2lss_ttbar", &MVA_2lss_ttbar);
 	tree->SetBranchAddress("MT_met_lep0", &MT_met_lep0);

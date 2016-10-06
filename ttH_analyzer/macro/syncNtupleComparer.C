@@ -13,8 +13,10 @@
 #include <vector>
 #include <string>
 
-void syncNtupleComparer(TString type)
+void syncNtupleComparer(TString inputFile1="", TString inputFile2="",
+						TString inputFile3="", TString inputFile4="")
 {
+	/*
 	TString inputFile1, inputFile2, inputFile3, inputFile4;
 	if (type == "signal") {
 	    inputFile1 = "/afs/cern.ch/work/z/ztao/public/ttHTT_syncNtuple/ttHtausNtuple.root";
@@ -27,38 +29,73 @@ void syncNtupleComparer(TString type)
 		inputFile3 = "/afs/cern.ch/user/k/kaehatah/public/ntuples/ttJet_13TeV_ntuples_sync.root";
 	}
 	inputFile4 = "/afs/cern.ch/user/m/matze/public/ttH/sync_ntuple.root";
-
+	*/
+	
 	TFile* f1 = new TFile(inputFile1);
 	TFile* f2 = new TFile(inputFile2);
 	TFile* f3 = new TFile(inputFile3);
 	TFile* f4 = new TFile(inputFile4);
+
+	vector<TTree*> trees;
+	vector<TString> names;
+	vector<TString> options;
+	trees.reserve(4);
+	names.reserve(4);
+	options.reserve(4);
 	
-	if (!(f1->IsOpen() and f2->IsOpen() and f3->IsOpen() and f4->IsOpen() )) {
-		std::cout << "Cannot open the file ... " << std::endl;
-		return;
+	if (f1->IsOpen()) {
+		TTree* tree1 = (TTree*) f1->Get("syncTree");
+		tree1->SetFillColor(5);
+		tree1->SetLineColor(0);
+		
+		trees.push_back(tree1);
+		names.push_back("Cornell");
+		options.push_back("f");
 	}
+	else
+		cout << "Cannot open " << inputFile1 << endl;
 
-	TTree* tree1 = (TTree*) f1->Get("ttHtaus/eventTree");
-	TTree* tree2 = (TTree*) f2->Get("syncTree");
-	TTree* tree3 = (TTree*) f3->Get("tree");
-	TTree* tree4;
-	if (type == "signal")
-		tree4 = (TTree*) f4->Get("ttH");
-	if (type == "ttbar")
-		tree4 = (TTree*) f4->Get("ttjets");
+	if (f2->IsOpen()) {
+		TTree* tree2 = (TTree*) f2->Get("syncTree");
+		tree2->SetLineColor(4);
+		tree2->SetLineWidth(2);
 
-	tree1->SetFillColor(5);
-	tree1->SetLineColor(0);
-	tree2->SetLineColor(4);
-	tree2->SetLineWidth(2);
-	tree3->SetLineColor(2);
-	tree4->SetLineColor(8);
+		trees.push_back(tree2);
+		names.push_back("LLR");
+		options.push_back("l");
+	}
+	else
+		cout << "Cannot open " << inputFile2 << endl;
 
+	if (f3->IsOpen()) {
+		TTree* tree3 = (TTree*) f3->Get("");
+		tree3->SetLineColor(2);
+		//tree3->SetLineWidth(2);
+
+		trees.push_back(tree3);
+		names.push_back("Tallinn");
+		options.push_back("l");
+	}
+	else
+		cout << "Cannot open " << inputFile3 << endl;
+
+	if (f4->IsOpen()) {
+		TTree* tree4 = (TTree*) f4->Get("");
+		tree4->SetLineColor(8);
+		//tree4->SetLineWidth(2);
+
+		trees.push_back(tree4);
+		names.push_back("ND");
+		options.push_back("l");
+	}
+	else
+		cout << "Cannot open " << inputFile4 << endl;
+	
 	TCanvas c;
 	gStyle->SetOptStat(0);
 	gStyle->SetOptTitle(0);
 
-	TObjArray *branches1 = tree1->GetListOfBranches ();
+	auto branches1 = trees[0]->GetListOfBranches ();
 
 	//std::vector<string> gname;
 	std::vector<int> nevt_mu;
@@ -66,96 +103,67 @@ void syncNtupleComparer(TString type)
 	std::vector<int> nevt_tau;
 	std::vector<int> nevt_jet;
 
-	for (const auto &branch : *branches1) {
+	for (const auto branch : *branches1) {
 		
 		TString bname = branch->GetName();
 
 		TLegend *l = new TLegend(0.86,0.35,0.98,0.47);
 
-		vector<TTree*> forest;
+		for (unsigned int it = 0; it < trees.size(); ++it) {
+			if (trees[it]->GetBranch(bname) != nullptr) {
+				l->AddEntry(trees[it], names[it], options[it]);
+			}
 
-		if (tree1->GetBranch(bname) != nullptr) {
-			
-			l->AddEntry(tree1, "Cornell","f");
-			
-			if ( tree1->GetEntries(bname+">-233") != 0)
-				forest.push_back(tree1);
-		}
+			if (trees[it]->GetEntries(bname+">-233") != 0) {
+				if (it == 0)
+					trees[it]->Draw(bname, bname+">-233");
+				else
+					trees[it]->Draw(bname, bname+">-233", "same");
 
-		if (tree2->GetBranch(bname) != nullptr) {
-			
-			l->AddEntry(tree2, "LLR", "l");
-			
-			if ( tree2->GetEntries(bname+">-233") != 0)
-				forest.push_back(tree2);
-		}
+				gPad->Update();
 
-		if (tree3->GetBranch(bname) != nullptr) {
-			
-			l->AddEntry(tree3, "Tallinn", "l");
-			
-			if ( tree3->GetEntries(bname+">-233") != 0)
-				forest.push_back(tree3);
-		}
-
-		if (tree4->GetBranch(bname) != nullptr) {
-			
-			l->AddEntry(tree4, "ND", "l");
-			
-			if ( tree4->GetEntries(bname+">-233") != 0)
-				forest.push_back(tree4);
-		}
-
-		if (forest.size() == 0) {
-			delete l;
-			continue;
-		}
-		
-		for (const auto &tree : forest) {
-			
-			if (tree == *forest.begin())
-				tree->Draw(bname, bname+">-233");
-			else
-				tree->Draw(bname, bname+">-233", "same");
-			
-			gPad->Update();
-
-			if (bname.EqualTo("n_presel_mu"))
-				nevt_mu.push_back(tree->GetEntries(bname+">0"));
-			if (bname.EqualTo("n_presel_ele"))
-				nevt_ele.push_back(tree->GetEntries(bname+">0"));
-			if (bname.EqualTo("n_presel_tau"))
-				nevt_tau.push_back(tree->GetEntries(bname+">0"));
-			if (bname.EqualTo("n_presel_jet"))
-				nevt_jet.push_back(tree->GetEntries(bname+">0"));
+				if (bname.EqualTo("n_presel_mu"))
+					nevt_mu.push_back(trees[it]->GetEntries(bname+">0"));
+				if (bname.EqualTo("n_presel_ele"))
+					nevt_ele.push_back(trees[it]->GetEntries(bname+">0"));
+				if (bname.EqualTo("n_presel_tau"))
+					nevt_tau.push_back(trees[it]->GetEntries(bname+">0"));
+				if (bname.EqualTo("n_presel_jet"))
+					nevt_jet.push_back(trees[it]->GetEntries(bname+">0"));
+			}
 		}
 
 		l->Draw("same");
 
-		//c.SaveAs("./syncPlots/"+bname+".pdf");
-		c.SaveAs("~ztao/www/"+bname+"_"+type+".png");
+		c.SaveAs("~/Documents/ttH/syncPlots/"+bname+".png");
+		//c.SaveAs("~ztao/www/"+bname+"_"+type+".png");
 
 		delete l;
 	}
 
-	std::cout << "muon: ";
+	std::cout << "\t";
+	for (auto name : names)
+		std::cout << name << "\t";
+	std::cout << std::endl;
+	
+	std::cout << "muon:";
 	for (auto n: nevt_mu)
-		std::cout << n << "\t";
+		std::cout << "\t" << n;
 	std::cout << std::endl;
 	
-	std::cout << "ele: ";
+	std::cout << "ele:";
 	for (auto n: nevt_ele)
-		std::cout << n << "\t";
+		std::cout << "\t" << n;
 	std::cout << std::endl;
 	
-	std::cout << "tau: ";
+	std::cout << "tau:";
 	for (auto n: nevt_tau)
-		std::cout << n << "\t";
+		std::cout << "\t" << n;
 	std::cout << std::endl;
 	
-	std::cout << "jet: ";
+	std::cout << "jet:";
 	for (auto n: nevt_jet)
-		std::cout << n << "\t";
+		std::cout << "\t" << n;
 	std::cout << std::endl;
 
 }
