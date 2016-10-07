@@ -13,26 +13,14 @@
 #include <vector>
 #include <string>
 
-void syncNtupleComparer(TString inputFile1="~/Documents/ttH/Outputs/80X/sync/Cornell/syncNtuple_event_ttH_80X.root",
-						TString inputFile2="~/Documents/ttH/Outputs/80X/sync/LLR/syncNtuple_event_ttH_80X.root",
-						TString inputFile3="",
-						TString inputFile4="",
-						TString Region="2lSS1tau_SR")
+void syncNtupleComparer(TString Region="",
+						TString inputFile1="", const string treename1="",
+						TString inputFile2="", const string treename2="",
+						TString inputFile3="", const string treename3="",
+						TString inputFile4="", const string treename4="",		
+						TString outputDir=""
+						)
 {
-	/*
-	TString inputFile1, inputFile2, inputFile3, inputFile4;
-	if (type == "signal") {
-	    inputFile1 = "/afs/cern.ch/work/z/ztao/public/ttHTT_syncNtuple/ttHtausNtuple.root";
-		inputFile2 = "/afs/cern.ch/work/t/tstreble/public/syncNtuple_ttH_Htautau/syncNtuple_ttH.root";
-		inputFile3 = "/afs/cern.ch/user/k/kaehatah/public/ntuples/ttHJetToTT_M125_13TeV_ntuples_sync.root";	
-	}
-	else if (type == "ttbar") {
-		inputFile1 = "/afs/cern.ch/work/z/ztao/public/ttHTT_syncNtuple/ttJetsNtuple.root";
-		inputFile2 = "/afs/cern.ch/work/t/tstreble/public/syncNtuple_ttH_Htautau/syncNtuple_ttjets.root";
-		inputFile3 = "/afs/cern.ch/user/k/kaehatah/public/ntuples/ttJet_13TeV_ntuples_sync.root";
-	}
-	inputFile4 = "/afs/cern.ch/user/m/matze/public/ttH/sync_ntuple.root";
-	*/
 	
 	TFile* f1 = new TFile(inputFile1);
 	TFile* f2 = new TFile(inputFile2);
@@ -47,7 +35,7 @@ void syncNtupleComparer(TString inputFile1="~/Documents/ttH/Outputs/80X/sync/Cor
 	options.reserve(4);
 	
 	if (f1->IsOpen()) {
-		TTree* tree1 = (TTree*) f1->Get("syncTree_2lSS1tau_SR");
+		TTree* tree1 = (TTree*) f1->Get(treename1.data());
 		tree1->SetFillColor(5);
 		tree1->SetLineColor(0);
 		
@@ -59,7 +47,7 @@ void syncNtupleComparer(TString inputFile1="~/Documents/ttH/Outputs/80X/sync/Cor
 		cout << "Cannot open " << inputFile1 << endl;
 
 	if (f2->IsOpen()) {
-		TTree* tree2 = (TTree*) f2->Get("syncTree_2lSS1tau_SR");
+		TTree* tree2 = (TTree*) f2->Get(treename2.data());
 		tree2->SetLineColor(4);
 		tree2->SetLineWidth(2);
 
@@ -71,7 +59,7 @@ void syncNtupleComparer(TString inputFile1="~/Documents/ttH/Outputs/80X/sync/Cor
 		cout << "Cannot open " << inputFile2 << endl;
 
 	if (f3->IsOpen()) {
-		TTree* tree3 = (TTree*) f3->Get("");
+		TTree* tree3 = (TTree*) f3->Get(treename3.data());
 		tree3->SetLineColor(2);
 		//tree3->SetLineWidth(2);
 
@@ -83,7 +71,7 @@ void syncNtupleComparer(TString inputFile1="~/Documents/ttH/Outputs/80X/sync/Cor
 		cout << "Cannot open " << inputFile3 << endl;
 
 	if (f4->IsOpen()) {
-		TTree* tree4 = (TTree*) f4->Get("");
+		TTree* tree4 = (TTree*) f4->Get(treename4.data());
 		tree4->SetLineColor(8);
 		//tree4->SetLineWidth(2);
 
@@ -141,7 +129,7 @@ void syncNtupleComparer(TString inputFile1="~/Documents/ttH/Outputs/80X/sync/Cor
 
 		l->Draw("same");
 
-		c.SaveAs("~/Documents/ttH/syncPlots/"+Region+"/"+bname+".png");
+		c.SaveAs(outputDir+Region+bname+".png");
 		//c.SaveAs("~ztao/www/"+Region+"/"+bname+"_"+type+".png");
 
 		delete l;

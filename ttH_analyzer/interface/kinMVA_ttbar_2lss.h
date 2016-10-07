@@ -20,8 +20,8 @@ class kinMVA_ttbar_2lss : public kinMVA_2lss
 	float Get_avg_dr_jet() const {return avg_dr_jet;}
 	float Get_MET() const {return met;}
 
-	void Set_avg_dr_jet(const vector<pat::Jet>&);
-	void Set_MET(double pfmet) { met = min(pfmet,400.);}
+	float Set_avg_dr_jet(const vector<pat::Jet>&);
+	float Set_MET(double pfmet) { return min(pfmet,400.);}
 	
  private:
 	float avg_dr_jet;

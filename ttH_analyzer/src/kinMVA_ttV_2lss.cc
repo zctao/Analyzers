@@ -48,24 +48,39 @@ void kinMVA_ttV_2lss::Calculate_mvaVars(const std::vector<miniLepton>& leptons,
 										const pat::MET& MET)
 // call Calculate_MVAvars function every event after selection
 {
-	// make sure there two and only two selected leptons
-	assert(leptons.size() >= 2);
-	// input leptons should already be sorted by conept
-	assert(leptons[0].conePt() > leptons[1].conePt());
+	// initialize all varibales to be calculated
+	max_lep_eta = -9999.;
+	MT_met_lep1 = -9999.;
+	nJet25 = -9999.;
+	mindr_lep1_jet = -9999.;
+	mindr_lep2_jet = -9999.;
+	lep1_conePt = -9999.;
+	lep2_conePt = -9999.;
+	allVarSet = false;
 
-	Set_max_lep_eta(leptons[0].eta(),leptons[1].eta());
+	// calculation
+	if (leptons.size() > 0) {
+		MT_met_lep1 = Set_MT_met_lep1(leptons[0].conePt(), leptons[0].phi(), MET);
+		mindr_lep1_jet = mindr_lep_jet(leptons[0].eta(), leptons[0].phi(), jets);
+		lep1_conePt = leptons[0].conePt();
+	}
 
-	Set_MT_met_lep1(leptons[0].conePt(), leptons[0].phi(), MET);
+	if (leptons.size() > 1) {
+		// input leptons should already be sorted by conept
+		assert(leptons[0].conePt() > leptons[1].conePt());
 
-	mindr_lep1_jet = mindr_lep_jet(leptons[0].eta(), leptons[0].phi(), jets);
+		mindr_lep2_jet = mindr_lep_jet(leptons[1].eta(), leptons[1].phi(), jets);
+		max_lep_eta = Set_max_lep_eta(leptons[0].eta(),leptons[1].eta());
+		lep2_conePt = leptons[1].conePt();
+	}
 	
-	mindr_lep2_jet = mindr_lep_jet(leptons[1].eta(), leptons[1].phi(), jets);
-	
-	Set_nJet25(jets);
+	nJet25 = Set_nJet25(jets);
 
-	lep1_conePt = leptons[0].conePt();
-	lep2_conePt = leptons[1].conePt();
-	
+	// check if all variables are set
+	allVarSet =
+		MT_met_lep1!=-9999. and mindr_lep1_jet != -9999. and
+		mindr_lep2_jet != -9999. and max_lep_eta != -9999. and
+		nJet25 != -9999. and lep1_conePt != -9999. and lep2_conePt != -9999.;
 }
 
 

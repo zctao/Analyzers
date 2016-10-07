@@ -47,33 +47,46 @@ void kinMVA_ttbar_2lss::Calculate_mvaVars(const std::vector<miniLepton>& leptons
 										  const std::vector<pat::Tau>& taus,
 										  const std::vector<pat::Jet>& jets,
 										  const pat::MET& MET)
-// call Calculate_MVAvars function every event after selection
 {
+	// initialize all variables to be calculated
+	MT_met_lep1 = -9999.;
+	mindr_lep1_jet = -9999.;
+	mindr_lep2_jet = -9999.;
+	max_lep_eta = -9999.;
+	met = -9999.;
+	nJet25 = -9999.;
+	avg_dr_jet = -9999.;
+	allVarSet = false;
 
-	// make sure there two and only two selected leptons
-	assert(leptons.size() >= 2);
-	// input leptons should already be sorted by conept
-	assert(leptons[0].conePt() > leptons[1].conePt());
-	
-	Set_max_lep_eta(leptons[0].eta(),leptons[1].eta());
-	
-	Set_MT_met_lep1(leptons[0].conePt(), leptons[0].phi(), MET);
-	
-	mindr_lep1_jet = mindr_lep_jet(leptons[0].eta(), leptons[0].phi(), jets);
-	
-	mindr_lep2_jet = mindr_lep_jet(leptons[1].eta(), leptons[1].phi(), jets);
-	
-	Set_nJet25(jets);
-	
-	Set_MET(MET.pt());
-	
-	Set_avg_dr_jet(jets);
+	// calculation
+	if (leptons.size() > 0) {
+		MT_met_lep1 = Set_MT_met_lep1(leptons[0].conePt(), leptons[0].phi(), MET);
+		mindr_lep1_jet = mindr_lep_jet(leptons[0].eta(), leptons[0].phi(), jets);
+	}
+
+	if (leptons.size() > 1) {
+		// input leptons should already be sorted by conept
+		assert(leptons[0].conePt() > leptons[1].conePt());
+		
+		mindr_lep2_jet = mindr_lep_jet(leptons[1].eta(), leptons[1].phi(), jets);
+		max_lep_eta = Set_max_lep_eta(leptons[0].eta(),leptons[1].eta());
+	}
+
+	met = Set_MET(MET.pt());
+	nJet25 = Set_nJet25(jets);
+	avg_dr_jet = Set_avg_dr_jet(jets);
+
+	// check if all variables are set
+	allVarSet =
+		MT_met_lep1!=-9999. and mindr_lep1_jet != -9999. and
+		mindr_lep2_jet != -9999. and max_lep_eta != -9999. and
+		met != -9999. and nJet25 != -9999. and avg_dr_jet != -9999.;
 	
 }
 
-void kinMVA_ttbar_2lss::Set_avg_dr_jet(const vector<pat::Jet>& jets)
+float kinMVA_ttbar_2lss::Set_avg_dr_jet(const vector<pat::Jet>& jets)
 {
-	assert(jets.size()>=2);
+	if (jets.size()<2) return -9999.;
 
 	float sum_dr_jet = 0.;
 	int ncomb = 0;
@@ -85,7 +98,7 @@ void kinMVA_ttbar_2lss::Set_avg_dr_jet(const vector<pat::Jet>& jets)
 		}
 	}
 
-	avg_dr_jet = sum_dr_jet / ncomb;
+	return sum_dr_jet / ncomb;
 }
 
 #endif

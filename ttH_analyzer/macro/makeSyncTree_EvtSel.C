@@ -7,7 +7,9 @@
 
 using namespace std;
 
-void makeSyncTree_EvtSel(TString dir="~/Documents/ttH/Outputs/80X")
+void makeSyncTree_EvtSel(
+						 //TString dir="~/Documents/ttH/Outputs/80X")
+						 TString dir="/uscms/home/ztao/nobackup")
 {
 	// open input file and read tree
 	TFile* old_file1 = new TFile(dir+"/output_sync_event_sr.root");
@@ -32,7 +34,8 @@ void makeSyncTree_EvtSel(TString dir="~/Documents/ttH/Outputs/80X")
 	}
 	
 	// create new tree and output file
-	TFile* new_file = new TFile("syncNtuple_event_ttH_80X.root", "recreate");
+	//TFile* new_file = new TFile("/afs/cern.ch/work/z/ztao/public/ttHTT_syncNtuple/80X/syncNtuple_event.root", "recreate");
+	TFile* new_file = new TFile("~/nobackup/ttHTT_syncNtuple/80X/syncNtuple_event.root", "recreate");
 
 	vector<TTree*> new_trees;
 	for (auto old_tree : old_trees) {

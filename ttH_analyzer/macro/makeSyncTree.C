@@ -6,7 +6,7 @@
 
 using namespace std;
 
-void makeSyncTree(TString input_file)
+void makeSyncTree(TString input_file="/uscms/home/ztao/nobackup/output_sync.root")
 {
 	// open input file and read tree
 	TFile* old_file = new TFile(input_file);
@@ -20,7 +20,7 @@ void makeSyncTree(TString input_file)
 	old_tree->SetBranchStatus("tau1_decayMode", 0);
 
 	// create new tree and output file
-	TFile* new_file = new TFile("syncNtuple_ttH_80X.root", "recreate");
+	TFile* new_file = new TFile("~/nobackup/ttHTT_syncNtuple/80X/syncNtuple.root", "recreate");
 	TTree* new_tree = old_tree->CloneTree();
 
 	delete old_tree;

@@ -52,6 +52,14 @@ void CU_ttH_EDA_Ntuple::write_ntuple(const CU_ttH_EDA_event_vars &local)
 	PFMETphi = local.pfMET.phi();
 	MHT = local.MHT;
 	metLD = local.metLD;
+
+	// lep conePt
+	if (local.leptons_fakeable.size() > 0) {
+		lep0_conept = local.leptons_fakeable[0].conePt();
+	}
+	if (local.leptons_fakeable.size() > 1) {
+		lep1_conept = local.leptons_fakeable[1].conePt();
+	}
 }
 
 void CU_ttH_EDA_Ntuple::fill_ntuple_muons(const std::vector<pat::Muon>& muons)

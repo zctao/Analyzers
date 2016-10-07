@@ -36,7 +36,13 @@ class kinMVA_2lss
 								   const std::vector<pat::Jet>&,
 								   const pat::MET&) = 0;
 
-	double Get_mvaScore() {return reader->EvaluateMVA("BDTG method");}
+	double Get_mvaScore()
+	{
+		if (allVarSet)
+			return reader->EvaluateMVA("BDTG method");
+		else
+			return -9999.;
+	}
 	
  protected:
 
@@ -47,11 +53,12 @@ class kinMVA_2lss
 	float mindr_lep1_jet;
 	float mindr_lep2_jet;
 	float nJet25;
-
-	void Set_max_lep_eta(double, double);
-	void Set_MT_met_lep1(double, double, const pat::MET&);
+	bool allVarSet;  // a flag indicates if all MVA variables are set
+	
+	float Set_max_lep_eta(double, double);
+	float Set_MT_met_lep1(double, double, const pat::MET&);
 	float mindr_lep_jet(float, float, const vector<pat::Jet>&);
-	void Set_nJet25(const vector<pat::Jet>&);
+	float Set_nJet25(const vector<pat::Jet>&);
 	
 };
 

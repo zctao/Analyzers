@@ -312,6 +312,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		handle.METs->front(); // miniAODhelper.GetCorrectedMET( METs.at(0),
 							  // pfJets_forMET, iSysType );
 	*/
+
 	
 	if (analysis_type == Analyze_2lss1tau) {
 		
@@ -330,13 +331,14 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		bool pass_event_selection =
 			pass_event_sel_2l(local, selection_type, ilep, ibtag)
 			and passHLT;
+
+
+		double mva_ttbar = -9999.;
+		double mva_ttV = -9999.;
 		
-		evtNtuple.initialize();
-		
-		if (pass_event_selection) {
-			assert(local.leptons_fakeable.size() >= 2);
-				
-			// MVA
+		if (turn_off_event_sel or pass_event_selection) {
+			
+			// Calculate event-level MVA variables
 			MVA_ttbar_vars.Calculate_mvaVars(local.leptons_fakeable,
 											 local.tau_selected,
 											 local.jets_selected_sorted,
@@ -345,23 +347,16 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 										   local.tau_selected,
 										   local.jets_selected_sorted,
 										   local.pfMET);
-				
-			double mva_ttar = MVA_ttbar_vars.Get_mvaScore();
-			double mva_ttV = MVA_ttV_vars.Get_mvaScore();
-
-			// Write MVA variables to ntuple
-			evtNtuple.MVA_2lss_ttbar = mva_ttar;
-			evtNtuple.MVA_2lss_ttV = mva_ttV;		
-			evtNtuple.MT_met_lep0 = MVA_ttbar_vars.Get_MT_met_lep1();
-			evtNtuple.n_jet25_recl = MVA_ttbar_vars.Get_nJet25();
-			evtNtuple.mindr_lep0_jet = MVA_ttbar_vars.Get_mindr_lep1_jet();
-			evtNtuple.mindr_lep1_jet = MVA_ttbar_vars.Get_mindr_lep2_jet();
-			evtNtuple.avg_dr_jet = MVA_ttbar_vars.Get_avg_dr_jet();
-			evtNtuple.max_lep_eta = MVA_ttbar_vars.Get_max_lep_eta();
-			evtNtuple.lep0_conept = MVA_ttV_vars.Get_lep1_conePt();
-			evtNtuple.lep1_conept = MVA_ttV_vars.Get_lep2_conePt();
 			
-			// weights and scale factors
+			mva_ttbar = MVA_ttbar_vars.Get_mvaScore();
+			mva_ttV = MVA_ttV_vars.Get_mvaScore();
+		
+		}	
+
+		if (pass_event_selection) {
+			assert(local.leptons_fakeable.size() >= 2);
+			
+			// Weights and scale factors
 			if (isdata) {
 				local.weight = 1.;
 
@@ -418,13 +413,14 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 					local.csv_weight * //local.gen_weight *
 					local.hlt_sf * local.lepIDEff_sf;
 			}
-			
+
+			// Fill histograms
 			// 2D hist
 			h_MVA_ttV_vs_ttbar[ilep][ibtag]
-				->Fill(mva_ttar, mva_ttV, local.weight);
+				->Fill(mva_ttbar, mva_ttV, local.weight);
 			
 			// 1D shape
-			int bin = partition2DBDT(mva_ttar, mva_ttV);
+			int bin = partition2DBDT(mva_ttbar, mva_ttV);
 			
 			h_MVA_shape[ilep][ibtag]
 				->Fill(bin, local.weight);
@@ -441,18 +437,34 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 
 					// 2D
 					//h_MVA_ttV_vs_ttbar_sys[ilep][ibtag][isys]
-					//	->Fill(mva_ttar, mva_ttV,evt_weight_sys);
+					//	->Fill(mva_ttbar, mva_ttV,evt_weight_sys);
 					// 1D shape
 					h_MVA_shape_sys[ilep][ibtag][isys]
 						->Fill(bin, evt_weight_sys);
 				}
 			}
-
+			
 		}
-		
+
+		// Write Ntuple
 		if (turn_off_event_sel or pass_event_selection) {
-			// no event selection is applied for sync ntuples
+
+			evtNtuple.initialize();
+			
 			evtNtuple.write_ntuple(local);
+			
+			// Write MVA variables to ntuple
+			evtNtuple.MVA_2lss_ttbar = mva_ttbar;
+			evtNtuple.MVA_2lss_ttV = mva_ttV;		
+			evtNtuple.MT_met_lep0 = MVA_ttbar_vars.Get_MT_met_lep1();
+			evtNtuple.n_jet25_recl = MVA_ttbar_vars.Get_nJet25();
+			evtNtuple.mindr_lep0_jet = MVA_ttbar_vars.Get_mindr_lep1_jet();
+			evtNtuple.mindr_lep1_jet = MVA_ttbar_vars.Get_mindr_lep2_jet();
+			evtNtuple.avg_dr_jet = MVA_ttbar_vars.Get_avg_dr_jet();
+			evtNtuple.max_lep_eta = MVA_ttbar_vars.Get_max_lep_eta();
+			evtNtuple.lep0_conept = MVA_ttV_vars.Get_lep1_conePt();
+			evtNtuple.lep1_conept = MVA_ttV_vars.Get_lep2_conePt();
+			
 			eventTree->Fill();
 		}
 					
