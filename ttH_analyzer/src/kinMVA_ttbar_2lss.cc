@@ -94,7 +94,7 @@ float kinMVA_ttbar_2lss::Set_avg_dr_jet(const vector<pat::Jet>& jets)
 	for (auto i = jets.begin(); i != jets.end()-1; ++i) {
 		for (auto j = i+1; j != jets.end(); ++j) {
 			++ncomb;
-			sum_dr_jet += DeltaR(i->eta(), i->phi(), j->eta(), j->phi());
+			sum_dr_jet += reco::deltaR(i->eta(), i->phi(), j->eta(), j->phi());
 		}
 	}
 

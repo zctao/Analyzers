@@ -8,6 +8,7 @@
 #include "Analyzers/ttH_analyzer/interface/miniLepton.h"
 #include "TMVA/Reader.h"
 #include "TLorentzVector.h"
+#include "DataFormats/Math/interface/deltaR.h"
 
 #include <cmath>
 #include <algorithm>
@@ -26,9 +27,6 @@ class kinMVA_2lss
 	float Get_mindr_lep1_jet() const {return mindr_lep1_jet;}
 	float Get_mindr_lep2_jet() const {return mindr_lep2_jet;}
 	float Get_nJet25() const {return nJet25;}
-	
-	float DeltaR(double eta1, double phi1, double eta2, double phi2)
-	{return sqrt( (eta1-eta2)*(eta1-eta2) + (phi1-phi2)*(phi1-phi2) );}
 
 	virtual void Set_up_Reader(TMVA::Reader *) = 0;
 	virtual void Calculate_mvaVars(const std::vector<miniLepton>&,

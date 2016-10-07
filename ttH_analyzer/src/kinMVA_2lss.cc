@@ -22,7 +22,7 @@ float kinMVA_2lss::mindr_lep_jet(float lep_eta, float lep_phi,
 	float mindr = 666.;
 
 	for (auto & j : jets) {
-		float dr = DeltaR(lep_eta, lep_phi, j.eta(), j.phi());
+		float dr = reco::deltaR(lep_eta, lep_phi, j.eta(), j.phi());
 		if ( dr < mindr)
 			mindr = dr;		
 	}
