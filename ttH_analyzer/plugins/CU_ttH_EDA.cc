@@ -357,61 +357,66 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 			assert(local.leptons_fakeable.size() >= 2);
 			
 			// Weights and scale factors
-			if (isdata) {
-				local.weight = 1.;
-
-				//////////////////////////
-				// charge flip background (data driven)
-				if (selection_type == Control_2los1tau) {
-					float P1_misCharge =
-						getEleChargeMisIDProb(local.leptons_fakeable[0],true);
-					float P2_misCharge =
-						getEleChargeMisIDProb(local.leptons_fakeable[1],true);
-
-					local.weight = P1_misCharge + P2_misCharge;
-				}
-
-				//////////////////////////
-				// fake lepton background (data driven)
-				if (selection_type == Control_1lfakeable) {
-					float f1 = getFakeRate(local.leptons_fakeable[0]);
-					float f2 = getFakeRate(local.leptons_fakeable[1]);
-
-					if (not local.leptons_fakeable[0].passTightSel()
-						and local.leptons_fakeable[1].passTightSel())
-						local.weight = f1/(1.-f1);
-					else if (local.leptons_fakeable[0].passTightSel() and
-							 not local.leptons_fakeable[1].passTightSel())
-						local.weight = f2/(1.-f2);
-					else if (not local.leptons_fakeable[0].passTightSel() and
-							 not local.leptons_fakeable[1].passTightSel())
-						local.weight = -f1*f2/((1.-f1)*(1.-f2));
-				}
-			}
-			else {
-				/// CSV weight
-				//local.csv_weight = getEvtCSVWeight(local.jets_selected, "NA");
-				local.csv_weight = getEvtCSVWeight(local.jets_selected, csv_iSys["NA"]);
-				/// HLT sf
-				if (ilep == 0) {  // mumu
-					local.hlt_sf = 1.01;
-				}
-				else if (ilep == 1) {  // ee
-					local.hlt_sf = 1.02;
-				}
-				else if (ilep == 2) {  // emu
-					local.hlt_sf = 1.02;
+			//////////////////////////
+			// signal region
+			if (selection_type == Signal_2lss1tau) {
+				if (isdata) {
+					local.weight = 1.;
 				}
 				else {
-					std::cerr << "not valid lepton category ! aborting ..."
-							  << std::endl;
-					assert(0);
+					/// CSV weight
+					//local.csv_weight = getEvtCSVWeight(local.jets_selected, "NA");
+					local.csv_weight = getEvtCSVWeight(local.jets_selected, csv_iSys["NA"]);
+					/// HLT sf
+					if (ilep == 0) {  // mumu
+						local.hlt_sf = 1.01;
+					}
+					else if (ilep == 1) {  // ee
+						local.hlt_sf = 1.02;
+					}
+					else if (ilep == 2) {  // emu
+						local.hlt_sf = 1.02;
+					}
+					else {
+						std::cerr << "not valid lepton category ! aborting ..."
+								  << std::endl;
+						assert(0);
+					}
+					
+					/// total event weight
+					local.weight =
+						local.csv_weight * //local.gen_weight *
+						local.hlt_sf * local.lepIDEff_sf;
 				}
 				
-				/// total event weight
-				local.weight =
-					local.csv_weight * //local.gen_weight *
-					local.hlt_sf * local.lepIDEff_sf;
+			}
+			
+			//////////////////////////
+			// fake lepton background (data driven)
+			if (selection_type == Control_1lfakeable) {
+				float f1 = getFakeRate(local.leptons_fakeable[0]);
+				float f2 = getFakeRate(local.leptons_fakeable[1]);
+				
+				if (not local.leptons_fakeable[0].passTightSel()
+					and local.leptons_fakeable[1].passTightSel())
+					local.weight = f1/(1.-f1);
+				else if (local.leptons_fakeable[0].passTightSel() and
+						 not local.leptons_fakeable[1].passTightSel())
+					local.weight = f2/(1.-f2);
+				else if (not local.leptons_fakeable[0].passTightSel() and
+						 not local.leptons_fakeable[1].passTightSel())
+					local.weight = -f1*f2/((1.-f1)*(1.-f2));
+			}
+
+			//////////////////////////
+			// charge flip background (data driven)
+			if (selection_type == Control_2los1tau) {
+				float P1_misCharge =
+					getEleChargeMisIDProb(local.leptons_fakeable[0],true);
+				float P2_misCharge =
+					getEleChargeMisIDProb(local.leptons_fakeable[1],true);
+				
+				local.weight = P1_misCharge + P2_misCharge;
 			}
 
 			// Fill histograms

@@ -56,7 +56,7 @@ void CU_ttH_EDA::Set_up_histograms()
 		}
 
 
-		if (selection_type == Control_1lfakeable and isdata) {
+		if (selection_type == Control_1lfakeable) {
 			TFile* file_fr = new TFile((std::string(getenv("CMSSW_BASE")) + "/src/Analyzers/ttH_analyzer/data/FR_data_ttH_mva.root").c_str());
 			
 			h_fakerate_el = (TH2F*) file_fr->Get("FR_mva075_el_data_comb");
