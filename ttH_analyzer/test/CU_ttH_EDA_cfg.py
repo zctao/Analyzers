@@ -62,6 +62,10 @@ options.register('JECType', 'NA',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  "JEC type")
+options.register('Debug', False,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.bool,
+                 "Debug mode")
 
 options.maxEvents = -1
 options.inputFiles='file:/uscms/home/ztao/nobackup/datasample/ttH_80X/ttHnonbb.root'
@@ -139,6 +143,7 @@ process.ttHtaus.JECType = cms.string(options.JECType)
 process.ttHtaus.using_real_data = cms.bool(options.isData)
 process.ttHtaus.selection_region = cms.string(options.SelectionRegion)
 process.ttHtaus.turn_off_HLT_cut = cms.bool(options.TurnOffHLTCut)
+process.ttHtaus.debug_mode = cms.bool(options.Debug)
 # for reHLT
 process.ttHtaus.HLT_config_tag = cms.string("HLT2")
 process.ttHtaus.filter_config_tag = cms.string("HLT2")

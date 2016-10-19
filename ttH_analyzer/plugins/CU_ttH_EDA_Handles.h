@@ -62,6 +62,7 @@
 
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 #include "DataFormats/PatCandidates/interface/PackedGenParticle.h"
+#include "DataFormats/JetReco/interface/GenJet.h"
 
 /*
  *
@@ -97,6 +98,7 @@ struct edm_Handles {
 	//Handle<boosted::SubFilterJetCollection> subfilter_jets;
 
 	Handle<pat::PackedGenParticleCollection> MC_packed;
+	Handle<reco::GenJetCollection> genJets;
 };
 
 struct edm_Tokens {
@@ -125,6 +127,7 @@ struct edm_Tokens {
 	//EDGetTokenT<boosted::SubFilterJetCollection> subfilter_jets;
 	
 	EDGetTokenT<pat::PackedGenParticleCollection> MC_packed;
+	EDGetTokenT<reco::GenJetCollection> genJets;
 };
 
 /// Set up handles with getByToken from edm::Event

@@ -291,6 +291,9 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	// event selection region
 	std::string selection_region;
     Selection_types selection_type;
+
+	// debug flag
+	bool debug;
 	
 	/// Histograms
 	TH1D *h_hlt;

@@ -179,6 +179,8 @@ void CU_ttH_EDA::Set_up_tokens(const edm::ParameterSet &config)
 	    config.getParameter<edm::InputTag>("prunedgen"));
 	token.MC_packed = consumes<pat::PackedGenParticleCollection>(
 	    config.getParameter<edm::InputTag>("packedgen"));
+	token.genJets = consumes<reco::GenJetCollection>(
+	    edm::InputTag(std::string("slimmedGenJets")));
 }
 
 void CU_ttH_EDA::Set_up_selection_region(const string & selection_region )

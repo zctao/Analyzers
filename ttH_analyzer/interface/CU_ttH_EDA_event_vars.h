@@ -82,9 +82,9 @@ struct CU_ttH_EDA_event_vars {
 	std::vector<miniLepton> leptons_tight;     // sorted by pt
 		
 	std::vector<pat::Jet> jets_raw;
-	std::vector<pat::Jet> jets_no_mu;
-	std::vector<pat::Jet> jets_no_mu_e;
-	std::vector<pat::Jet> jets_corrected;
+	//std::vector<pat::Jet> jets_no_mu;
+	//std::vector<pat::Jet> jets_no_mu_e;
+	//std::vector<pat::Jet> jets_cleaned;
 	std::vector<pat::Jet> jets_selected;
 	std::vector<pat::Jet> jets_selected_sorted;
 	std::vector<pat::Jet> jets_selected_btag_loose;

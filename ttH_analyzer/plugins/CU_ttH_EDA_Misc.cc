@@ -261,12 +261,21 @@ bool CU_ttH_EDA::pass_event_sel_2l(CU_ttH_EDA_event_vars &local,
 								   int &ilep, int& ibtag)
 {
 
+	if (debug) {
+		std::cout << std::endl;
+		std::cout << "start event selection:" << std::endl;
+	}
+	
 	//////////////////////////
     /// Lepton number
 	// at least 2 fakeable leptons
 	// no more than 2 tight leptons
-	if (!(local.leptons_fakeable.size() >= 2 and local.leptons_tight.size() <= 2))
+	if (!(local.leptons_fakeable.size() >= 2 and local.leptons_tight.size()<=2)) {
+		if (debug) {
+			std::cout << "FAIL lepton number requirements" << std::endl;
+		}
 		return false;
+	}
 	
 	bool passLepSel = false;	 
 	// signal region: two leading leptons are tight
@@ -279,14 +288,17 @@ bool CU_ttH_EDA::pass_event_sel_2l(CU_ttH_EDA_event_vars &local,
 		passLepSel = not passLepSel;
 	} 
 	
-	if (not passLepSel) return false;
+	if (not passLepSel) {
+		if (debug) {
+			std::cout << "FAIL lepton number requirements" << std::endl;
+		}
+		return false;
+	}
 	
 	//////////////////////////
 	/// Lepton pt
-	float minpt_ldg = 20.;
+	float minpt_ldg = 25.;
 	float minpt_subldg = 10;
-	if (local.leptons_fakeable[0].Type() == LeptonType::kele)
-		minpt_ldg = 25.;
 	if (local.leptons_fakeable[1].Type() == LeptonType::kele)
 		minpt_subldg = 15.;
 
@@ -294,8 +306,15 @@ bool CU_ttH_EDA::pass_event_sel_2l(CU_ttH_EDA_event_vars &local,
 		local.leptons_fakeable[0].conePt() > minpt_ldg and
 		local.leptons_fakeable[1].conePt() > minpt_subldg;
 
-	if (not passLeptonPt) return false;
-	
+	if (not passLeptonPt) {
+		if (debug) {
+			std::cout << "FAIL lepton pT cut" << std::endl;
+			std::cout << "conePt : " << local.leptons_fakeable[0].conePt();
+			std::cout << " " << local.leptons_fakeable[1].conePt() << std::endl;
+		}
+		return false;
+	}
+
 	//////////////////////////
 	/// veto two loose leptons with invariant mass < 12 GeV
 	bool passPairMassVeto = true;
@@ -309,7 +328,12 @@ bool CU_ttH_EDA::pass_event_sel_2l(CU_ttH_EDA_event_vars &local,
 		}
 		if (not passPairMassVeto) break;
 	}
-	if (not passPairMassVeto) return false;
+	if (not passPairMassVeto) {
+		if (debug) {
+			std::cout << "FAIL any pair of loose leptons has invariant mass >= 12 GeV" << std::endl;
+		}
+		return false;
+	}
 
 	//////////////////////////
 	/// Lepton charge
@@ -322,15 +346,38 @@ bool CU_ttH_EDA::pass_event_sel_2l(CU_ttH_EDA_event_vars &local,
 	if (selection_region == Control_2los1tau)
 		passLepCharge = not passLepCharge;
 
-	if (not passLepCharge) return false;
+	if (not passLepCharge) {
+		if (debug) {
+			std::cout << "FAIL lepton charge requirement" << std::endl;
+		}
+		return false;
+	}
 	
 	//////////////////////////
 	/// Tight charge
 	bool passTightCharge =
 		local.leptons_fakeable[0].tightCharge() and
 		local.leptons_fakeable[1].tightCharge();
-
-	if (not passTightCharge) return false;
+	
+	if (not passTightCharge) {
+		if (debug) {
+			std::cout << "FAIL tight charge" << std::endl;
+			std::cout << "tight charge 1 : " << local.leptons_fakeable[0].tightCharge() << std::endl;
+			if (local.leptons_fakeable[0].Type() == LeptonType::kele) {
+				std::cout << "e" << std::endl;
+				std::cout << "isGsfCtfScPixChargeConsistent : " << local.e_fakeable[0].isGsfCtfScPixChargeConsistent() << std::endl;
+				std::cout << "isGsfScPixChargeConsistent : " << local.e_fakeable[0].isGsfScPixChargeConsistent() << std::endl;
+			}
+			
+			std::cout << "tight charge 2 : " << local.leptons_fakeable[1].tightCharge() << std::endl;
+			if (local.leptons_fakeable[1].Type() == LeptonType::kele) {
+				std::cout << "e" << std::endl;
+				std::cout << "isGsfCtfScPixChargeConsistent : " << local.e_fakeable[0].isGsfCtfScPixChargeConsistent() << std::endl;
+				std::cout << "isGsfScPixChargeConsistent : " << local.e_fakeable[0].isGsfScPixChargeConsistent() << std::endl;
+			}			
+		}
+		return false;
+	}
 	
 	//////////////////////////
 	/// Categorize
@@ -385,16 +432,38 @@ bool CU_ttH_EDA::pass_event_sel_2l(CU_ttH_EDA_event_vars &local,
 		passPhotonVeto = local.leptons_fakeable[ie].conversionVeto() and
 			local.leptons_fakeable[ie].noMissingHits();
 	}	
+
+	if (not passMetLD) {
+		if (debug) {
+			std::cout << "FAIL metLD cut" << std::endl;
+			std::cout << "metLD : " << local.metLD << std::endl;
+		}
+		return false;
+	}
 	
-	if (not passMetLD) return false;
-	if (not passZmassVeto) return false;
-	if (not passPhotonVeto) return false;
+	if (not passZmassVeto) {
+		if (debug) {
+			std::cout << "FAIL Zmass cut " << std::endl;
+		}
+		return false;
+	}
+	
+	if (not passPhotonVeto) {
+		if (debug) {
+			std::cout << "FAIL photon conversion veto" << std::endl;
+		}
+		return false;
+	}
 
 	//////////////////////////
 	/// number of taus
 	bool passNumTaus = local.n_taus >= 1;
-	if (not passNumTaus) return false;
-
+	if (not passNumTaus) {
+		if (debug)
+			std::cout << "FAIL number of taus requirement" << std::endl;
+		return false;
+	}
+	
 	//////////////////////////
 	/// number of jets and btags
    	int njets = local.jets_selected.size();
@@ -404,11 +473,20 @@ bool CU_ttH_EDA::pass_event_sel_2l(CU_ttH_EDA_event_vars &local,
 	bool passNumJets = njets >= 4;
 	bool passNumBtags = nbtags_loose >= 2 or nbtags_medium >= 1;
 	
-	if (not passNumJets) return false;	
-	if (not passNumBtags) return false;
-
+	if (not passNumJets) {
+		if (debug) std::cout << "FAIL number of jets requirement" << std::endl;
+		return false;
+	}
+	
+	if (not passNumBtags) {
+		if (debug) std::cout << "FAIL number of btags requirement" << std::endl;
+		return false;
+	}
+		
 	ibtag = nbtags_medium >=2 ? 1 : 0;
 
+	if (debug) std::cout << "PASSED event seletion!" << std::endl;
+	
 	return true;
 }
 

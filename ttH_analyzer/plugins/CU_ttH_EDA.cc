@@ -60,7 +60,9 @@ CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig):
 	JECType (iConfig.getParameter<string>("JECType")),
 	//jet_corrector (iConfig.getParameter<string>("jet_corrector")),
 	isdata (iConfig.getParameter<bool>("using_real_data")),
-	selection_region (iConfig.getParameter<string>("selection_region"))
+	selection_region (iConfig.getParameter<string>("selection_region")),
+	// debug flag
+	debug (iConfig.getParameter<bool>("debug_mode"))
 {
 	/*
 	 * now do whatever initialization is needed
@@ -260,20 +262,70 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	local.n_muons_tight = static_cast<int>(local.mu_tight.size());
 	local.n_taus_pre = static_cast<int>(local.tau_preselected.size());
 	local.n_taus = static_cast<int>(local.tau_selected.size());
-									
+
+	if (debug) {
+		std::cout << "************************************" << std::endl;
+		std::cout << "run:ls:event : " << local.run_nr <<":"<<local.lumisection_nr<<":"<<local.event_nr<<std::endl;
+		std::cout << "lepton selection : " << std::endl;
+		std::cout << "n_muon_fakeable : " << local.n_muons_fakeable << std::endl;
+		std::cout << "n_muon_tight : " << local.n_muons_tight << std::endl;
+		std::cout << "fakeable muons : " << std::endl;
+		for (auto & mu : local.mu_fakeable) {
+			std::cout<<"pt eta phi : " << mu.pt()<<" "<<mu.eta()<<" "<<mu.phi()<<std::endl;
+		}
+		std::cout << "n_electrons_fakeable : " << local.n_electrons_fakeable << std::endl;	
+		std::cout << "n_electrons_tight : " << local.n_electrons_tight << std::endl;
+		std::cout << "fakeable electrons : " << std::endl;
+		for (auto & e : local.e_fakeable) {
+			std::cout<<"pt eta phi : " << e.pt()<<" "<<e.eta()<<" "<<e.phi()<<std::endl;
+		}
+		std::cout << "n_taus_pre : " << local.n_taus_pre << std::endl;
+		std::cout << "n_taus : " << local.n_taus << std::endl;
+		std::cout << "preselected taus : " << std::endl;
+		for (auto & tau : local.tau_preselected) {
+			std::cout <<"pt eta phi : "<< tau.pt()<<" "<<tau.eta()<<" "<<tau.phi()<<std::endl;
+		}
+	}
+	
 	/*
 	  Jets selection
 	*/
-	local.jets_corrected =
-		miniAODhelper.GetCorrectedJets(*(handle.jets),
-									   iEvent,iSetup, JECTypes[JECType]);
-	local.jets_raw = miniAODhelper.GetSelectedJets(
-		local.jets_corrected, 25., 2.4, jetID::jetLoose, '-');
+	if (isdata) { // no smearing or systematics estimation with data sample
+		local.jets_raw = *(handle.jets);
+	}
+	else {
+		local.jets_raw =
+			miniAODhelper.GetCorrectedJets(*(handle.jets), iEvent, iSetup,
+									   handle.genJets, JECTypes[JECType]);
+	}
 	
 	// overlap removal by dR
-	local.jets_no_mu = removeOverlapdR(local.jets_raw, local.mu_fakeable, 0.4);
-	local.jets_no_mu_e = removeOverlapdR(local.jets_no_mu, local.e_fakeable, 0.4);
-	local.jets_selected = removeOverlapdR(local.jets_no_mu_e, local.tau_preselected, 0.4);
+	std::vector<pat::Jet> jets_no_mu = removeOverlapdR(local.jets_raw, local.mu_fakeable, 0.4);
+	std::vector<pat::Jet> jets_no_mu_e = removeOverlapdR(jets_no_mu, local.e_fakeable, 0.4);
+	std::vector<pat::Jet> jets_cleaned = removeOverlapdR(jets_no_mu_e, local.tau_preselected, 0.4);
+
+	// selected jets
+	local.jets_selected = miniAODhelper.GetSelectedJets(
+	    jets_cleaned, 25., 2.4, jetID::jetLoose, '-');
+
+	if (debug) {
+		std::cout << "all slimmedJets : " << std::endl;
+		for (const auto & j : *(handle.jets)) {
+			std::cout << "pt eta phi E : " << j.pt()<<" "<<j.eta()<<" "<<j.phi()<<" "<<j.energy()<<std::endl;
+		}
+		std::cout << "after JEC : " << std::endl;
+		for (const auto & j : local.jets_raw) {
+			std::cout << "pt eta phi E : " << j.pt()<<" "<<j.eta()<<" "<<j.phi()<<" "<<j.energy()<<std::endl;
+		}
+		std::cout << "after overlap removal : " << std::endl;
+		for (const auto & j : jets_cleaned) {
+			std::cout << "pt eta phi E CSV : " << j.pt()<<" "<<j.eta()<<" "<<j.phi()<<" "<<j.energy()<<" "<<j.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags")<<std::endl;
+		}
+		std::cout << "selected jets : " << std::endl;
+		for (const auto & j : local.jets_selected) {
+			std::cout << "pt eta phi E CSV : " << j.pt()<<" "<<j.eta()<<" "<<j.phi()<<" "<<j.energy()<<" "<<j.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags")<<std::endl;
+		}
+	}
 	
 	// sort by pT
 	local.jets_selected_sorted =
@@ -293,6 +345,12 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	local.n_btags_loose = static_cast<int>(local.jets_selected_btag_loose.size());
 	local.n_btags_medium = static_cast<int>(local.jets_selected_btag_medium.size());
 
+	if (debug) {
+		std::cout << "n_jets : " << local.n_jets << std::endl;
+		std::cout << "n_btags_loose : " << local.n_btags_loose << std::endl;
+		std::cout << "n_btags_medium : " << local.n_btags_medium << std::endl;
+	}
+	
 	/*
 	  MET
 	*/
@@ -313,6 +371,12 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 							  // pfJets_forMET, iSysType );
 	*/
 
+	if (debug) {
+		std::cout << "MET : " << std::endl;
+		std::cout << "pt : " << met << std::endl;
+		std::cout << "mht : " << mht << std::endl;
+	}
+	
 	
 	if (analysis_type == Analyze_2lss1tau) {
 		
@@ -328,6 +392,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		int ibtag = -1;
 		
 		// Event selection
+		
 		bool pass_event_selection =
 			pass_event_sel_2l(local, selection_type, ilep, ibtag)
 			and passHLT;
