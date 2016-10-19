@@ -380,24 +380,28 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	
 	if (analysis_type == Analyze_2lss1tau) {
 		
-		bool passHLT =
-			local.pass_single_e or local.pass_single_mu or local.pass_double_mu or
-			local.pass_double_e or local.pass_elemu;
-		// Check if all HLTs failed for debug purpose: assert(not passHLT);
-
-		if (hltcut_off) passHLT = true;
-
 		// event category index, value set by pass_event_sel_2l()
 		int ilep = -1;
 		int ibtag = -1;
 		
-		// Event selection
-		
+		// Event selection	
 		bool pass_event_selection =
-			pass_event_sel_2l(local, selection_type, ilep, ibtag)
-			and passHLT;
+			pass_event_sel_2l(local, selection_type, ilep, ibtag);
+		
+		// match HLT path by category
+		bool matchHLT = false;
+		if (ilep == 0) // mumu
+			matchHLT = local.pass_single_mu or local.pass_double_mu;
+		else if (ilep == 1) // ee
+			matchHLT = local.pass_single_e or local.pass_double_e;
+		else if (ilep == 2) // emu
+			matchHLT = local.pass_single_e or local.pass_single_mu or
+				local.pass_elemu;
 
-
+		pass_event_selection = pass_event_selection and (matchHLT or hltcut_off);
+		
+		// Check if all HLTs failed for debug purpose: assert(not matchHLT);
+		
 		double mva_ttbar = -9999.;
 		double mva_ttV = -9999.;
 		
@@ -541,13 +545,13 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	} // end of analysis_type == Analyze_2lss1tau
 	
 	if (analysis_type == Analyze_3l) {
-		bool passHLT = true;  // FIXME
+		bool matchHLT = true;  // FIXME
 
-		if (hltcut_off) passHLT = true;
+		if (hltcut_off) matchHLT = true;
 		
 		// Event selection
 		bool pass_event_selection = 
-			pass_event_sel_3l(local, selection_type) and passHLT;
+			pass_event_sel_3l(local, selection_type) and matchHLT;
 
 		evtNtuple.initialize();
 
