@@ -909,6 +909,14 @@ float CU_ttH_EDA::read2DHist(TH2* h2d, float x, float y)
 	return result;
 }
 
+float CU_ttH_EDA::readTGraph(TGraphAsymmErrors* graph, float x)
+{
+	float x1 = std::max(float(graph->GetXaxis()->GetXmin()+1e-5),
+						std::min(float(graph->GetXaxis()->GetXmax()-1e-5), x)
+						);
+	return graph->Eval(x1);
+}
+
 float CU_ttH_EDA::getFakeRate(const miniLepton& lepton)
 {
 	float fakerate = 0;
@@ -919,6 +927,97 @@ float CU_ttH_EDA::getFakeRate(const miniLepton& lepton)
 		fakerate = read2DHist(h_fakerate_mu, lepton.conePt(), lepton.eta());
 
 	return fakerate;
+}
+
+float CU_ttH_EDA::getLeptonSF(const miniLepton& lepton)
+{
+	float sf = 1.;
+	assert(lepton.passLooseSel());
+	
+	sf *= getLeptonSF_loose(lepton);
+	// SF fakeable to loose is currently assumed to be 1.
+	if (lepton.passTightSel())
+		sf *= getLeptonSF_tight_vs_loose(lepton);
+
+	return sf;
+}
+
+float CU_ttH_EDA::getLeptonSF_loose(const miniLepton& lepton)
+{
+	// TODO: implement systematic uncertainty
+	
+	float sf = 1.;
+	
+	if (lepton.Type()==LeptonType::kmu) {
+		if (abs(lepton.eta())<1.2) {
+			sf *= readTGraph(h_recoToLoose_leptonSF_mu1_b, lepton.pt());
+		}
+		else {
+			sf *= readTGraph(h_recoToLoose_leptonSF_mu1_e, lepton.pt());
+		}
+
+		sf *= read2DHist(h_recoToLoose_leptonSF_mu2,
+						 lepton.pt(), abs(lepton.eta()));
+
+		sf *= readTGraph(h_recoToLoose_leptonSF_mu3, lepton.eta());
+	}
+	else if (lepton.Type()==LeptonType::kele) {
+		sf *= read2DHist(h_recoToLoose_leptonSF_el1,
+						 lepton.pt(), abs(lepton.eta()));
+		sf *= read2DHist(h_recoToLoose_leptonSF_el2,
+						 lepton.pt(), abs(lepton.eta()));
+		sf *= read2DHist(h_recoToLoose_leptonSF_el3,
+						 lepton.pt(), abs(lepton.eta()));
+		// !! different pt eta xaxis
+		sf *= read2DHist(h_recoToLoose_leptonSF_gsf, lepton.eta(), lepton.pt());
+	}
+
+	return sf;
+}
+
+float CU_ttH_EDA::getLeptonSF_tight_vs_loose(const miniLepton& lepton)
+{
+	float sf = 1.;
+
+	assert(lepton.passTightSel());
+	
+	// TODO: implement systematic uncertainty
+	if (analysis_type == Analyze_2lss1tau) {
+		if (lepton.Type()==LeptonType::kmu) {
+			sf = read2DHist(h_looseToTight_leptonSF_mu_2lss,
+							lepton.pt(), abs(lepton.eta()));
+		}
+		else if (lepton.Type()==LeptonType::kele) {
+			sf = read2DHist(h_looseToTight_leptonSF_el_2lss,
+							lepton.pt(), abs(lepton.eta()));
+		}
+	}
+	else if (analysis_type == Analyze_3l) {
+		if (lepton.Type()==LeptonType::kmu) {
+			sf = read2DHist(h_looseToTight_leptonSF_mu_3l,
+							lepton.pt(), abs(lepton.eta()));
+		}
+		else if (lepton.Type()==LeptonType::kele) {
+			sf = read2DHist(h_looseToTight_leptonSF_el_3l,
+							lepton.pt(), abs(lepton.eta()));
+		}
+	}
+
+	return sf;
+}
+
+float CU_ttH_EDA::getLepHLTSF(int ilep)
+{
+	if (ilep == 0) // mumu
+		return 1.01;
+	else if (ilep == 1) // ee
+		return 1.02;
+	else if (ilep == 2) // emu
+		return 1.02;
+	
+	std::cerr << "not valid lepton category !" << std::endl;
+	assert(0);
+	return 0.;
 }
 
 bool CU_ttH_EDA::HiggsDecayFilter(const std::vector<reco::GenParticle>& genParticles, const TString& decayMode)

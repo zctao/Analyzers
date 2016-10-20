@@ -79,6 +79,7 @@
 #include "TAxis.h"
 #include "TFile.h"
 #include "TString.h"
+#include "TGraphAsymmErrors.h"
 
 /// Higgs and top tagger
 //#include "MiniAOD/BoostedObjects/interface/HTTTopJet.h"
@@ -167,6 +168,7 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	//void Set_up_BTagCalibration_Readers();
 	void Set_up_CSV_rootFile();
 	void fillCSVhistos(TFile*, TFile*);
+	void Set_up_LeptonSF_Lut();
 
 	int Set_up_Run_histograms_triggers(); // at beginRun(), after
 										  // Set_up_name_vectors()
@@ -210,6 +212,23 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	double getEvtCSVWeight(std::vector<pat::Jet> &, int); // use root file
 	//double getEvtCSVWeight(std::vector<pat::Jet> &, std::string &); // use csv file
 	//double getJetCSVWeight(pat::Jet &, std::string /*pass by copy*/);
+
+	float read2DHist(TH2*, float, float);
+	float readTGraph(TGraphAsymmErrors*, float);
+	
+	// Electron Charge misId
+	float getEleChargeMisIDProb(const miniLepton&, bool);
+	
+	// Lepton fake rate
+	float getFakeRate(const miniLepton&);
+
+	// HLT scale factor
+	float getLepHLTSF(int);
+	
+	// lepton scale factor
+	float getLeptonSF(const miniLepton&);
+	float getLeptonSF_loose(const miniLepton&);
+	float getLeptonSF_tight_vs_loose(const miniLepton&);
 	
 	/*
 	* Variable section
@@ -318,6 +337,31 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	TH2F *h_fakerate_el;
 	TH2F *h_fakerate_mu;
 
+	// Lepton ID scale factor lookup tables
+	// Input files
+	TFile* file_recoToLoose_leptonSF_mu1_b;
+	TFile* file_recoToLoose_leptonSF_mu1_e;
+	TFile* file_recoToLoose_leptonSF_mu2;
+	TFile* file_recoToLoose_leptonSF_mu3;
+	TFile* file_recoToLoose_leptonSF_el;
+	TFile* file_recoToLoose_leptonSF_gsf;
+	TFile* file_looseToTight_leptonSF_mu_2lss;
+	TFile* file_looseToTight_leptonSF_el_2lss;
+	TFile* file_looseToTight_leptonSF_mu_3l;
+	TFile* file_looseToTight_leptonSF_el_3l;
+	
+	TGraphAsymmErrors *h_recoToLoose_leptonSF_mu1_b;
+	TGraphAsymmErrors *h_recoToLoose_leptonSF_mu1_e;
+	TH2F *h_recoToLoose_leptonSF_mu2;
+	TGraphAsymmErrors *h_recoToLoose_leptonSF_mu3;
+	TH2F *h_recoToLoose_leptonSF_el1;
+	TH2F *h_recoToLoose_leptonSF_el2;
+	TH2F *h_recoToLoose_leptonSF_el3;
+	TH2F *h_recoToLoose_leptonSF_gsf;
+	TH2F *h_looseToTight_leptonSF_mu_2lss;
+	TH2F *h_looseToTight_leptonSF_el_2lss;
+	TH2F *h_looseToTight_leptonSF_mu_3l;
+	TH2F *h_looseToTight_leptonSF_el_3l;
 
 	// tree and ntuple
 	TTree *eventTree;
@@ -349,13 +393,6 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 		   {"LFStats1Down",18}, {"LFStats2Up",19}, {"LFStats2Down",20},
 		   {"cErr1Up",21},{"cErr1Down",22},{"cErr2Up",23},{"cErr2Down",24},
 		   {"NA",0}};
-
-	// Electron Charge misId
-	float getEleChargeMisIDProb(const miniLepton&, bool);
-
-	// Lepton fake rate
-	float getFakeRate(const miniLepton& lepton);
-	float read2DHist(TH2*, float, float);
 	
 };
 

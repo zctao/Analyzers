@@ -55,9 +55,9 @@ void CU_ttH_EDA::Set_up_histograms()
 			}
 		}
 
-
+		// fake rate
 		if (selection_type == Control_1lfakeable) {
-			TFile* file_fr = new TFile((std::string(getenv("CMSSW_BASE")) + "/src/Analyzers/ttH_analyzer/data/FR_data_ttH_mva.root").c_str());
+			TFile* file_fr = new TFile((std::string(getenv("CMSSW_BASE")) + "/src/Analyzers/ttH_analyzer/data/FR_data_ttH_mva.root").c_str(),"read");
 			
 			h_fakerate_el = (TH2F*) file_fr->Get("FR_mva075_el_data_comb");
 			h_fakerate_mu = (TH2F*) file_fr->Get("FR_mva075_mu_data_comb");
@@ -74,6 +74,57 @@ void CU_ttH_EDA::Set_up_histograms()
 		h_nJets = fs_->make<TH1D>("h_nJets", "", 8, 0, 8);
 		h_lep_charge = fs_->make<TH1D>("h_lep_charge", "", 10, -5, 5);
 		h_mZ = fs_->make<TH1D>("h_mZ", "", 15, 60, 120);
+	}
+}
+
+void CU_ttH_EDA::Set_up_LeptonSF_Lut()
+{
+	//// loose vs reco
+	/// for muons
+	// loose vs reco
+	file_recoToLoose_leptonSF_mu1_b = new TFile((std::string(getenv("CMSSW_BASE")) + "/src/Analyzers/ttH_analyzer/data/leptonSF/mu_ttH_presel_barrel.root").c_str(),"read");
+	file_recoToLoose_leptonSF_mu1_e = new TFile((std::string(getenv("CMSSW_BASE")) + "/src/Analyzers/ttH_analyzer/data/leptonSF/mu_ttH_presel_endcap.root").c_str(),"read");
+	file_recoToLoose_leptonSF_mu2 = new TFile((std::string(getenv("CMSSW_BASE")) + "/src/Analyzers/ttH_analyzer/data/leptonSF/MuonID_Z_RunBCD_prompt80X_7p65_looseID.root").c_str(),"read");
+	file_recoToLoose_leptonSF_mu3 = new TFile((std::string(getenv("CMSSW_BASE")) + "/src/Analyzers/ttH_analyzer/data/leptonSF/ratios_HIP_trkEff.root").c_str(),"read");
+	
+	h_recoToLoose_leptonSF_mu1_b = (TGraphAsymmErrors*)(file_recoToLoose_leptonSF_mu1_b->Get("ratio"));
+	h_recoToLoose_leptonSF_mu1_e = (TGraphAsymmErrors*)(file_recoToLoose_leptonSF_mu1_e->Get("ratio"));
+	h_recoToLoose_leptonSF_mu2 = (TH2F*)(file_recoToLoose_leptonSF_mu2->Get("pt_abseta_ratio_MC_NUM_LooseID_DEN_genTracks_PAR_pt_spliteta_bin1"));
+	h_recoToLoose_leptonSF_mu3 = (TGraphAsymmErrors*)(file_recoToLoose_leptonSF_mu3->Get("ratio_eta"));
+
+	/// for electrons
+	// loose vs reco
+	file_recoToLoose_leptonSF_el = new TFile((std::string(getenv("CMSSW_BASE")) + "/src/Analyzers/ttH_analyzer/data/leptonSF/el_scaleFactors_20160724.root").c_str(),"read");
+	file_recoToLoose_leptonSF_gsf = new TFile((std::string(getenv("CMSSW_BASE")) + "/src/Analyzers/ttH_analyzer/data/leptonSF/el_scaleFactors_gsf.root").c_str(),"read");
+
+	h_recoToLoose_leptonSF_el1 = (TH2F*)(file_recoToLoose_leptonSF_el->Get("GsfElectronToFOID2D"));
+	h_recoToLoose_leptonSF_el2 = (TH2F*)(file_recoToLoose_leptonSF_el->Get("MVAVLooseElectronToMini4"));
+	h_recoToLoose_leptonSF_el3 = (TH2F*)(file_recoToLoose_leptonSF_el->Get("MVAVLooseElectronToConvIHit1"));
+	h_recoToLoose_leptonSF_gsf = (TH2F*)(file_recoToLoose_leptonSF_gsf->Get("EGamma_SF2D"));
+
+	//// tight vs loose
+	if (analysis_type == Analyze_2lss1tau) {
+		/// for muon
+		file_looseToTight_leptonSF_mu_2lss = new TFile((std::string(getenv("CMSSW_BASE")) + "/src/Analyzers/ttH_analyzer/data/leptonSF/lepMVAEffSF_m_2lss.root").c_str(),"read");
+		h_looseToTight_leptonSF_mu_2lss = (TH2F*)(file_looseToTight_leptonSF_mu_2lss->Get("sf"));
+		h_looseToTight_leptonSF_mu_2lss -> SetDirectory(0);
+		
+		/// for electron
+		file_looseToTight_leptonSF_el_2lss = new TFile((std::string(getenv("CMSSW_BASE")) + "/src/Analyzers/ttH_analyzer/data/leptonSF/lepMVAEffSF_e_2lss.root").c_str(),"read");
+		h_looseToTight_leptonSF_el_2lss = (TH2F*)(file_looseToTight_leptonSF_el_2lss->Get("sf"));
+		h_looseToTight_leptonSF_el_2lss -> SetDirectory(0);
+	}
+	
+	if (analysis_type == Analyze_3l) {
+		/// for muon
+		file_looseToTight_leptonSF_mu_3l = new TFile((std::string(getenv("CMSSW_BASE")) + "/src/Analyzers/ttH_analyzer/data/leptonSF/lepMVAEffSF_m_3l.root").c_str(),"read");
+		h_looseToTight_leptonSF_mu_3l = (TH2F*)(file_looseToTight_leptonSF_mu_3l->Get("sf"));
+		h_looseToTight_leptonSF_mu_3l -> SetDirectory(0);
+		
+		/// for electron
+		file_looseToTight_leptonSF_el_3l = new TFile((std::string(getenv("CMSSW_BASE")) + "/src/Analyzers/ttH_analyzer/data/leptonSF/lepMVAEffSF_e_3l.root").c_str(),"read");
+		h_looseToTight_leptonSF_el_3l = (TH2F*)(file_looseToTight_leptonSF_el_3l->Get("sf"));
+		h_looseToTight_leptonSF_el_3l -> SetDirectory(0);
 	}
 }
 

@@ -90,6 +90,10 @@ CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig):
 	//Set_up_BTagCalibration_Readers();
 	Set_up_CSV_rootFile();
 
+	if (not isdata) {
+		Set_up_LeptonSF_Lut();
+	}
+
 }
 
 /// Destructor
@@ -100,6 +104,25 @@ CU_ttH_EDA::~CU_ttH_EDA()
 	// (e.g. close files, deallocate resources etc.)
 	
 	//delete BTagCaliReader;
+
+	if (not isdata) {
+		delete file_recoToLoose_leptonSF_mu1_b;
+		delete file_recoToLoose_leptonSF_mu1_e;
+		delete file_recoToLoose_leptonSF_mu2;
+		delete file_recoToLoose_leptonSF_mu3;
+		
+		delete file_recoToLoose_leptonSF_el;
+		delete file_recoToLoose_leptonSF_gsf;
+		
+		if (analysis_type == Analyze_2lss1tau) {
+			delete file_looseToTight_leptonSF_mu_2lss;
+			delete file_looseToTight_leptonSF_el_2lss;
+		}
+		if (analysis_type == Analyze_3l) {
+			delete file_looseToTight_leptonSF_mu_3l;
+			delete file_looseToTight_leptonSF_el_3l;
+		}
+	}
 }
 
 // ------------ method called for each event  ------------
@@ -436,21 +459,13 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 					/// CSV weight
 					//local.csv_weight = getEvtCSVWeight(local.jets_selected, "NA");
 					local.csv_weight = getEvtCSVWeight(local.jets_selected, csv_iSys["NA"]);
+					/// TODO: put it into getHLTSF()
 					/// HLT sf
-					if (ilep == 0) {  // mumu
-						local.hlt_sf = 1.01;
-					}
-					else if (ilep == 1) {  // ee
-						local.hlt_sf = 1.02;
-					}
-					else if (ilep == 2) {  // emu
-						local.hlt_sf = 1.02;
-					}
-					else {
-						std::cerr << "not valid lepton category ! aborting ..."
-								  << std::endl;
-						assert(0);
-					}
+					local.hlt_sf = getLepHLTSF(ilep);
+
+					// LeptonSF
+					local.lepIDEff_sf *= getLeptonSF(local.leptons_fakeable[0]);
+					local.lepIDEff_sf *= getLeptonSF(local.leptons_fakeable[1]);
 					
 					/// total event weight
 					local.weight =
@@ -506,7 +521,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 					double csv_weight_sys =
 						//getEvtCSVWeight(local.jets_selected, sysList[isys]);
 						getEvtCSVWeight(local.jets_selected, csv_iSys[sysList[isys]]);
-					double evt_weight_sys =
+					double evt_weight_sys = // TODO: protect control region on MC
 						local.weight / local.csv_weight * csv_weight_sys;
 
 					// 2D
