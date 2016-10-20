@@ -240,9 +240,9 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 
 	// remove overlap with muons and electrons
 	local.tau_preselected =
-		removeOverlapdR(local.tau_preselected, local.e_preselected, 0.4);
+		removeOverlapdR(local.tau_preselected, local.e_preselected, 0.3);
 	local.tau_preselected =
-		removeOverlapdR(local.tau_preselected, local.mu_preselected, 0.4);
+		removeOverlapdR(local.tau_preselected, local.mu_preselected, 0.3);
 	
 	// sort by pT
 	local.tau_preselected_sorted =
