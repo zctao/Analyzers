@@ -66,6 +66,10 @@ options.register('Debug', False,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.bool,
                  "Debug mode")
+options.register('reHLT', False,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.bool,
+                 "if reHLT use tag HLT2")
 
 options.maxEvents = -1
 options.inputFiles='file:/uscms/home/ztao/nobackup/datasample/ttH_80X/ttHnonbb.root'
@@ -145,8 +149,9 @@ process.ttHtaus.selection_region = cms.string(options.SelectionRegion)
 process.ttHtaus.turn_off_HLT_cut = cms.bool(options.TurnOffHLTCut)
 process.ttHtaus.debug_mode = cms.bool(options.Debug)
 # for reHLT
-process.ttHtaus.HLT_config_tag = cms.string("HLT2")
-process.ttHtaus.filter_config_tag = cms.string("HLT2")
+if options.reHLT:
+    process.ttHtaus.HLT_config_tag = cms.string("HLT2")
+    process.ttHtaus.filter_config_tag = cms.string("HLT2")
 
 ### Outputs
 out_file = options.OutputDir + 'output_' + options.SampleName + '.root'
