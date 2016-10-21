@@ -47,6 +47,9 @@ class CU_ttH_EDA_Ntuple //: public TClass
 	int run;  // run number
 	double event_weight;
 	double genWeight;
+	double csv_weight;
+	double leptonSF;
+	double hltSF;
 	int n_presel_mu;
 	int n_mvasel_mu;
 	int n_fakeablesel_mu;

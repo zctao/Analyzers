@@ -28,6 +28,9 @@ void makeSyncTree_EvtSel(
 	// turn off extra branches
 	for (auto tree : old_trees) {
 		tree->SetBranchStatus("genWeight", 0);
+		tree->SetBranchStatus("csv_weight", 0);
+		tree->SetBranchStatus("leptonSF", 0);
+		tree->SetBranchStatus("hltSF", 0);
 		tree->SetBranchStatus("n_tau", 0);
 		tree->SetBranchStatus("tau0_decayMode", 0);
 		tree->SetBranchStatus("tau1_decayMode", 0);
