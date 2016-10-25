@@ -70,6 +70,10 @@ options.register('reHLT', False,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.bool,
                  "if reHLT use tag HLT2")
+options.register('GridMode', True,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.bool,
+                 "run on grid or interactively")
 
 options.maxEvents = -1
 options.inputFiles='file:/uscms/home/ztao/nobackup/datasample/ttH_80X/ttHnonbb.root'
@@ -154,7 +158,10 @@ if options.reHLT:
     process.ttHtaus.filter_config_tag = cms.string("HLT2")
 
 ### Outputs
-out_file = options.OutputDir + 'output_' + options.SampleName + '.root'
+if options.GridMode:
+    out_file = 'output_' + options.SampleName + '.root'
+else:
+    out_file = options.OutputDir + 'output_' + options.SampleName + '.root'
 
 process.TFileService = cms.Service("TFileService",
                                    fileName = cms.string(out_file)
