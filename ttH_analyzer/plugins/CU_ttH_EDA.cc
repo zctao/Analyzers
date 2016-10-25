@@ -159,7 +159,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	//Initialize weights
 	local.weight = 1.;
 	local.csv_weight = 1.;
-	local.gen_weight = 1.;
+	local.mc_weight = 1.;
 	local.hlt_sf = 1.;
 	local.lepIDEff_sf = 1.;
 	//local.pu_weight = 1.;
@@ -184,8 +184,26 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	const JetCorrectorParameters & JetCorPar = (*JetCorParColl)["Uncertainty"];
 	miniAODhelper.SetJetCorrectorUncertainty(JetCorPar);
 
-	if (not isdata)
-		local.gen_weight = handle.event_gen_info.product()->weight();
+	if (not isdata) {
+		local.mc_weight = handle.event_gen_info.product()->weight();
+
+		if (handle.event_lhe_info.isValid()) {
+			if (handle.event_lhe_info->weights().size() > 6) {
+				local.mc_weight_scale_muF0p5 = // muF = 0.5 | muR = 1
+					local.mc_weight * (handle.event_lhe_info->weights()[2].wgt)/
+					(handle.event_lhe_info->originalXWGTUP()); 
+				local.mc_weight_scale_muF2 = // muF = 2 | muR = 1
+					local.mc_weight * (handle.event_lhe_info->weights()[1].wgt)/
+					(handle.event_lhe_info->originalXWGTUP()); 
+				local.mc_weight_scale_muR0p5 = // muF = 1 | muR = 0.5
+					local.mc_weight * (handle.event_lhe_info->weights()[6].wgt)/
+					(handle.event_lhe_info->originalXWGTUP()); 
+				local.mc_weight_scale_muR2 = // muF = 1 | muR = 2
+					local.mc_weight * (handle.event_lhe_info->weights()[3].wgt)/
+					(handle.event_lhe_info->originalXWGTUP()); 
+			}
+		}
+	}
 
 	if (trigger_stats) {
 		h_hlt->Fill(0., 1);
@@ -459,7 +477,6 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 					/// CSV weight
 					//local.csv_weight = getEvtCSVWeight(local.jets_selected, "NA");
 					local.csv_weight = getEvtCSVWeight(local.jets_selected, csv_iSys["NA"]);
-					/// TODO: put it into getHLTSF()
 					/// HLT sf
 					local.hlt_sf = getLepHLTSF(ilep);
 
@@ -469,7 +486,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 					
 					/// total event weight
 					local.weight =
-						local.csv_weight * //local.gen_weight *
+						local.csv_weight * //local.mc_weight *
 						local.hlt_sf * local.lepIDEff_sf;
 				}
 				

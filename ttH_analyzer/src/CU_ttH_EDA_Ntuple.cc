@@ -20,7 +20,11 @@ void CU_ttH_EDA_Ntuple::write_ntuple(const CU_ttH_EDA_event_vars &local)
 	ls = local.lumisection_nr;
 	run = local.run_nr;
 	event_weight = local.weight;
-	genWeight = local.gen_weight;
+	MC_weight = local.mc_weight;
+	MC_weight_scale_muF0p5 = local.mc_weight_scale_muF0p5;
+	MC_weight_scale_muF2 = local.mc_weight_scale_muF2;
+	MC_weight_scale_muR0p5 = local.mc_weight_scale_muR0p5;
+	MC_weight_scale_muR2 = local.mc_weight_scale_muR2;
 	csv_weight = local.csv_weight;
 	leptonSF = local.lepIDEff_sf;
 	hltSF = local.hlt_sf;
@@ -299,7 +303,11 @@ void CU_ttH_EDA_Ntuple::initialize()
 	ls = -9999;
 	run = -9999;
 	event_weight = -9999.;
-	genWeight = -9999.;
+	MC_weight = -9999.;
+	MC_weight_scale_muF0p5 = -9999.;
+	MC_weight_scale_muF2 = -9999.;
+	MC_weight_scale_muR0p5 = -9999.;
+	MC_weight_scale_muR2 = -9999.;
 	csv_weight = -9999.;
 	leptonSF = -9999.;
 	hltSF = -9999.;
@@ -517,7 +525,11 @@ void CU_ttH_EDA_Ntuple::set_up_branches(TTree *tree)
 	tree->Branch("ls", &ls);
 	tree->Branch("run", &run);
 	tree->Branch("event_weight", &event_weight);
-	tree->Branch("genWeight", &genWeight);
+	tree->Branch("MC_weight", &MC_weight);
+	tree->Branch("MC_weight_scale_muF0p5", &MC_weight_scale_muF0p5);
+	tree->Branch("MC_weight_scale_muF2", &MC_weight_scale_muF2);
+	tree->Branch("MC_weight_scale_muR0p5", &MC_weight_scale_muR0p5);
+	tree->Branch("MC_weight_scale_muR2", &MC_weight_scale_muR2);
 	tree->Branch("csv_weight", &csv_weight);
 	tree->Branch("leptonSF", &leptonSF);
 	tree->Branch("hltSF", &hltSF);

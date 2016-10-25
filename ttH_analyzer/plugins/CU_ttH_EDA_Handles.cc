@@ -31,6 +31,7 @@ void Set_up_handles(const Event &iEvent, edm_Handles &handle, edm_Tokens &token,
 
 	if (!isdata) {
 		iEvent.getByToken(token.event_gen_info, handle.event_gen_info);
+		iEvent.getByToken(token.event_lhe_info, handle.event_lhe_info);
 		iEvent.getByToken(token.MC_particles, handle.MC_particles);
 		iEvent.getByToken(token.MC_packed, handle.MC_packed);
 		iEvent.getByToken(token.genJets, handle.genJets);

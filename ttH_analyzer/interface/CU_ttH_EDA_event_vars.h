@@ -28,8 +28,12 @@
 struct CU_ttH_EDA_event_vars {
 	double weight; // total event weight
 	double csv_weight;
-	//double pu_weight;
-	double gen_weight;
+	double pu_weight;
+	double mc_weight;
+	double mc_weight_scale_muF0p5;
+	double mc_weight_scale_muF2;
+	double mc_weight_scale_muR0p5;
+	double mc_weight_scale_muR2;
 	double hlt_sf;
 	double lepIDEff_sf;
 

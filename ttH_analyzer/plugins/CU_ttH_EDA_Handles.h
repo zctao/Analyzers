@@ -52,6 +52,7 @@
 
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 #include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
+#include "SimDataFormats/GeneratorProducts/interface/LHEEventProduct.h"
 
 #include "FWCore/ServiceRegistry/interface/Service.h"
 
@@ -74,6 +75,7 @@ using namespace edm;
 
 struct edm_Handles {
 	Handle<GenEventInfoProduct> event_gen_info;
+	Handle<LHEEventProduct> event_lhe_info;
 	Handle<edm::TriggerResults> triggerResults;
 	Handle<edm::TriggerResults> filterResults;
 
@@ -103,6 +105,7 @@ struct edm_Handles {
 
 struct edm_Tokens {
 	EDGetTokenT<GenEventInfoProduct> event_gen_info;
+	EDGetTokenT<LHEEventProduct> event_lhe_info;
 	EDGetTokenT<edm::TriggerResults> triggerResults;
 	EDGetTokenT<edm::TriggerResults> filterResults;
 

@@ -46,7 +46,11 @@ class CU_ttH_EDA_Ntuple //: public TClass
 	int ls;   // luminosity section number
 	int run;  // run number
 	double event_weight;
-	double genWeight;
+	double MC_weight;
+	double MC_weight_scale_muF0p5;
+	double MC_weight_scale_muF2;
+	double MC_weight_scale_muR0p5;
+	double MC_weight_scale_muR2;
 	double csv_weight;
 	double leptonSF;
 	double hltSF;
