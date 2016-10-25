@@ -27,7 +27,7 @@ ttHtaus =  cms.EDAnalyzer('CU_ttH_EDA',
         collect_trigger_stats = cms.bool(False),
         ## Single lepton triggers:
         HLT_electron_triggers = cms.vstring([
-            'HLT_Ele27_eta2p1_WPLoose_Gsf_v3'
+            'HLT_Ele27_eta2p1_WPLoose_Gsf_v'
         ]),
         HLT_muon_triggers = cms.vstring([
             'HLT_IsoMu22_v',
