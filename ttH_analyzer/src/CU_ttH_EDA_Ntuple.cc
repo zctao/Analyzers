@@ -24,7 +24,12 @@ void CU_ttH_EDA_Ntuple::write_ntuple(const CU_ttH_EDA_event_vars &local)
 	csv_weight = local.csv_weight;
 	leptonSF = local.lepIDEff_sf;
 	hltSF = local.hlt_sf;
-	
+	pass_single_e = local.pass_single_e;
+	pass_single_mu = local.pass_single_mu;
+	pass_double_e = local.pass_double_e;
+	pass_double_mu = local.pass_double_mu;
+	pass_elemu = local.pass_elemu;
+
 	// Muons
 	n_presel_mu = local.n_muons_loose;
 	n_fakeablesel_mu = local.n_muons_fakeable;
@@ -307,6 +312,11 @@ void CU_ttH_EDA_Ntuple::initialize()
 	n_presel_tau = -9999;
 	n_tau = -9999;
 	n_presel_jet = -9999;
+	pass_single_mu = -9999;
+	pass_single_e = -9999;
+	pass_double_mu = -9999;
+	pass_double_e = -9999;
+	pass_elemu = -9999;
 
 	MVA_2lss_ttV = -9999.;
 	MVA_2lss_ttbar = -9999.;
@@ -520,6 +530,11 @@ void CU_ttH_EDA_Ntuple::set_up_branches(TTree *tree)
 	tree->Branch("n_presel_tau", &n_presel_tau);
 	tree->Branch("n_tau", &n_tau);
 	tree->Branch("n_presel_jet", &n_presel_jet);
+	tree->Branch("pass_single_e", &pass_single_e);
+	tree->Branch("pass_single_mu", &pass_single_mu);
+	tree->Branch("pass_double_e", &pass_double_e);
+	tree->Branch("pass_double_mu", &pass_double_mu);
+	tree->Branch("pass_elemu", &pass_elemu);
 	tree->Branch("MVA_2lss_ttV", &MVA_2lss_ttV);
 	tree->Branch("MVA_2lss_ttbar", &MVA_2lss_ttbar);
 	tree->Branch("MT_met_lep0", &MT_met_lep0);

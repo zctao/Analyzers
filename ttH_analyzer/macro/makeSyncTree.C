@@ -21,6 +21,11 @@ void makeSyncTree(TString input_file="/uscms/home/ztao/nobackup/output_sync.root
 	old_tree->SetBranchStatus("n_tau", 0);
 	old_tree->SetBranchStatus("tau0_decayMode", 0);
 	old_tree->SetBranchStatus("tau1_decayMode", 0);
+	old_tree->SetBranchStatus("pass_single_e", 0);
+	old_tree->SetBranchStatus("pass_single_mu", 0);
+	old_tree->SetBranchStatus("pass_double_e", 0);
+	old_tree->SetBranchStatus("pass_double_mu", 0);
+	old_tree->SetBranchStatus("pass_elemu", 0);
 
 	// create new tree and output file
 	TFile* new_file = new TFile("~/nobackup/ttHTT_syncNtuple/80X/syncNtuple.root", "recreate");

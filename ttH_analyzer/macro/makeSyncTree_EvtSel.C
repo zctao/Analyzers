@@ -34,6 +34,11 @@ void makeSyncTree_EvtSel(
 		tree->SetBranchStatus("n_tau", 0);
 		tree->SetBranchStatus("tau0_decayMode", 0);
 		tree->SetBranchStatus("tau1_decayMode", 0);
+		old_tree->SetBranchStatus("pass_single_e", 0);
+		old_tree->SetBranchStatus("pass_single_mu", 0);
+		old_tree->SetBranchStatus("pass_double_e", 0);
+		old_tree->SetBranchStatus("pass_double_mu", 0);
+		old_tree->SetBranchStatus("pass_elemu", 0);
 	}
 	
 	// create new tree and output file

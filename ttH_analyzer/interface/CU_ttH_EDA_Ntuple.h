@@ -59,6 +59,11 @@ class CU_ttH_EDA_Ntuple //: public TClass
 	int n_presel_tau;
 	int n_tau;
 	int n_presel_jet;
+	int pass_single_mu;
+	int pass_single_e;
+	int pass_double_mu;
+	int pass_double_e;
+	int pass_elemu;
 	// event level MVA
 	double MVA_2lss_ttV;
 	double MVA_2lss_ttbar;
