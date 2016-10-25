@@ -158,6 +158,40 @@ int CU_ttH_EDA::Set_up_Run_histograms_triggers()
 	return 0;
 }
 
+void CU_ttH_EDA::Set_up_HLT_path_name()
+{
+	std::vector<std::string> triggerNames = hlt_config.triggerNames();
+
+	Add_HLT_pathName_version(trigger_on_HLT_e, triggerNames);
+	Add_HLT_pathName_version(trigger_on_HLT_mu, triggerNames);
+	Add_HLT_pathName_version(trigger_on_HLT_ee, triggerNames);
+	Add_HLT_pathName_version(trigger_on_HLT_emu, triggerNames);
+	Add_HLT_pathName_version(trigger_on_HLT_mumu, triggerNames);
+	
+}
+
+void CU_ttH_EDA::Add_HLT_pathName_version(std::vector<std::string>& triggers,
+										  std::vector<std::string>& triggerNames)
+{
+	for (std::string & hltPath : triggers) {
+		
+		bool foundPath = false;
+
+		for (const std::string & pathName : triggerNames) {
+			//std::string pathNameNoVer = hlt_config.removeVersion(pathName);
+			if (pathName.find(hltPath) != std::string::npos) {
+				hltPath = pathName;
+				foundPath = true;
+				break;
+			}
+		}
+
+		if (not foundPath) {
+			std::cerr <<"WARNING!! Cannot find HLT path "<< hltPath << std::endl;
+		}
+	}
+}
+
 void CU_ttH_EDA::Set_up_trigger_name_vectors()
 {
 	/// Fill trigger name vectors and counters

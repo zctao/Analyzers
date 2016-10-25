@@ -174,6 +174,9 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 										  // Set_up_name_vectors()
 
 	void Set_up_trigger_name_vectors(); // at beginRun()
+	void Set_up_HLT_path_name();
+	void Add_HLT_pathName_version(std::vector<std::string>&,
+								  std::vector<std::string>&);
 
 	int End_Run_hist_fill_triggers(); // fill histograms at endRun()
 
