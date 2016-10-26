@@ -160,9 +160,16 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	local.weight = 1.;
 	local.csv_weight = 1.;
 	local.mc_weight = 1.;
+	local.mc_weight_scale_muF0p5 = 1.;
+	local.mc_weight_scale_muF2 = 1.;
+	local.mc_weight_scale_muR0p5 = 1.;
+	local.mc_weight_scale_muR2 = 1.;
 	local.hlt_sf = 1.;
 	local.lepIDEff_sf = 1.;
 	local.pu_weight = 1.;
+
+	local.npuTrue = -1.;
+	local.npuInTime = -1.;
 	
 	/// Run checks on event containers via their handles
 	Check_triggers(handle.triggerResults, local);
@@ -185,8 +192,22 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	const JetCorrectorParameters & JetCorPar = (*JetCorParColl)["Uncertainty"];
 	miniAODhelper.SetJetCorrectorUncertainty(JetCorPar);
 
-	// MC weights
+	
 	if (not isdata) {
+		// pileup
+		std::vector<PileupSummaryInfo>::const_iterator PVI;
+		
+		for (PVI = handle.PU_info->begin(); PVI != handle.PU_info->end();
+			 ++PVI) {
+			int BX = PVI->getBunchCrossing();
+			if (BX == 0) { // "0" is the in-time crossing, negative values are the early crossings, positive are late
+				local.npuTrue = PVI -> getTrueNumInteractions();
+				local.npuInTime = PVI -> getPU_NumInteractions();
+				break;
+			}
+		}
+		
+		// MC weights
 		double genWeight = handle.event_gen_info.product()->weight();
 		
 		local.mc_weight = genWeight / abs(genWeight);

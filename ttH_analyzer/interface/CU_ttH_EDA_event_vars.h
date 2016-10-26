@@ -26,17 +26,21 @@
  */
 
 struct CU_ttH_EDA_event_vars {
-	double weight; // total event weight
-	double csv_weight;
-	double pu_weight;
-	double mc_weight;
-	double mc_weight_scale_muF0p5;
-	double mc_weight_scale_muF2;
-	double mc_weight_scale_muR0p5;
-	double mc_weight_scale_muR2;
-	double hlt_sf;
-	double lepIDEff_sf;
+	float weight; // total event weight
+	float csv_weight;
+	float pu_weight;
+	float mc_weight;
+	float mc_weight_scale_muF0p5;
+	float mc_weight_scale_muF2;
+	float mc_weight_scale_muR0p5;
+	float mc_weight_scale_muR2;
+	float hlt_sf;
+	float lepIDEff_sf;
 
+	// pileup
+	float npuTrue;
+	float npuInTime;
+	
 	/// Common, run parameters
 	int run_nr;
 	int event_nr;
@@ -97,12 +101,12 @@ struct CU_ttH_EDA_event_vars {
 	/// Other quantities
 	pat::MET pfMET;
 	pat::MET MET_corrected;
-	double dimuon_mass;
-	double dielectron_mass;
-	double dilepton_mass;
+	float dimuon_mass;
+	float dielectron_mass;
+	float dilepton_mass;
 
-	double MHT;
-	double metLD;
+	float MHT;
+	float metLD;
 
 };
 

@@ -28,6 +28,10 @@ void CU_ttH_EDA_Ntuple::write_ntuple(const CU_ttH_EDA_event_vars &local)
 	csv_weight = local.csv_weight;
 	leptonSF = local.lepIDEff_sf;
 	hltSF = local.hlt_sf;
+
+	npuTrue = local.npuTrue;
+	npuInTime = local.npuInTime;
+	
 	pass_single_e = local.pass_single_e;
 	pass_single_mu = local.pass_single_mu;
 	pass_double_e = local.pass_double_e;
@@ -311,6 +315,8 @@ void CU_ttH_EDA_Ntuple::initialize()
 	csv_weight = -9999.;
 	leptonSF = -9999.;
 	hltSF = -9999.;
+	npuTrue = -9999.;
+	npuInTime = -9999.;
 	n_presel_mu = -9999;
 	n_mvasel_mu = -9999;
 	n_fakeablesel_mu = -9999;
@@ -533,6 +539,8 @@ void CU_ttH_EDA_Ntuple::set_up_branches(TTree *tree)
 	tree->Branch("csv_weight", &csv_weight);
 	tree->Branch("leptonSF", &leptonSF);
 	tree->Branch("hltSF", &hltSF);
+	tree->Branch("npuTrue", &npuTrue);
+	tree->Branch("npuInTime", &npuInTime);
 	tree->Branch("n_presel_mu", &n_presel_mu);
 	tree->Branch("n_mvasel_mu", &n_mvasel_mu);
 	tree->Branch("n_fakeablesel_mu", &n_fakeablesel_mu);
