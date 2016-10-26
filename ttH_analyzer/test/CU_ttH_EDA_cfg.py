@@ -61,7 +61,7 @@ options.register('TurnOffHLTCut', False,
 options.register('JECType', 'NA',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
-                 "JEC type")
+                 "JEC type: NA, JESUp, JESDown, JERUp, JERDown")
 options.register('Debug', False,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.bool,
