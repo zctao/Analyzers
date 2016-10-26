@@ -162,7 +162,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	local.mc_weight = 1.;
 	local.hlt_sf = 1.;
 	local.lepIDEff_sf = 1.;
-	//local.pu_weight = 1.;
+	local.pu_weight = 1.;
 	
 	/// Run checks on event containers via their handles
 	Check_triggers(handle.triggerResults, local);
@@ -179,13 +179,17 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	//miniAODhelper.SetJetCorrector(
 	//	JetCorrector::getJetCorrector(jet_corrector, iSetup));
 
+	// JEC
 	edm::ESHandle<JetCorrectorParametersCollection> JetCorParColl;
 	iSetup.get<JetCorrectionsRecord>().get("AK4PF",JetCorParColl);
 	const JetCorrectorParameters & JetCorPar = (*JetCorParColl)["Uncertainty"];
 	miniAODhelper.SetJetCorrectorUncertainty(JetCorPar);
 
+	// MC weights
 	if (not isdata) {
-		local.mc_weight = handle.event_gen_info.product()->weight();
+		double genWeight = handle.event_gen_info.product()->weight();
+		
+		local.mc_weight = genWeight / abs(genWeight);
 
 		if (handle.event_lhe_info.isValid()) {
 			if (handle.event_lhe_info->weights().size() > 6) {
@@ -200,7 +204,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 					(handle.event_lhe_info->originalXWGTUP()); 
 				local.mc_weight_scale_muR2 = // muF = 1 | muR = 2
 					local.mc_weight * (handle.event_lhe_info->weights()[3].wgt)/
-					(handle.event_lhe_info->originalXWGTUP()); 
+					(handle.event_lhe_info->originalXWGTUP());
 			}
 		}
 	}
@@ -486,7 +490,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 					
 					/// total event weight
 					local.weight =
-						local.csv_weight * //local.mc_weight *
+						local.csv_weight * local.mc_weight *
 						local.hlt_sf * local.lepIDEff_sf;
 				}
 				
@@ -534,6 +538,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 			// systematics
 			if (!isdata and doSystematics) {
 
+				// CSV reweight
 				for (int isys = 0; isys < 16; ++isys) {
 					double csv_weight_sys =
 						//getEvtCSVWeight(local.jets_selected, sysList[isys]);
@@ -545,9 +550,20 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 					//h_MVA_ttV_vs_ttbar_sys[ilep][ibtag][isys]
 					//	->Fill(mva_ttbar, mva_ttV,evt_weight_sys);
 					// 1D shape
-					h_MVA_shape_sys[ilep][ibtag][isys]
+					h_MVA_shape_csv_sys[ilep][ibtag][isys]
 						->Fill(bin, evt_weight_sys);
 				}
+
+				// theoretical uncertainty from renormalization and
+				// factorization scale
+				h_MVA_shape_thu_sys[ilep][ibtag][0]->
+					Fill(bin,local.mc_weight_scale_muF0p5);
+				h_MVA_shape_thu_sys[ilep][ibtag][1]->
+					Fill(bin,local.mc_weight_scale_muF2);
+				h_MVA_shape_thu_sys[ilep][ibtag][2]->
+					Fill(bin,local.mc_weight_scale_muR0p5);
+				h_MVA_shape_thu_sys[ilep][ibtag][3]->
+					Fill(bin,local.mc_weight_scale_muR2);
 			}
 			
 		}

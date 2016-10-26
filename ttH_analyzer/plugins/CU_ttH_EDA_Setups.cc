@@ -46,10 +46,19 @@ void CU_ttH_EDA::Set_up_histograms()
 							"h_MVA_shape_"+lep_cat[il]+"_"+btag_cat[ib]+"_"
 							+sysList[icsv];
 
-						h_MVA_shape_sys[il][ib][icsv] =
+						h_MVA_shape_csv_sys[il][ib][icsv] =
 							fs_->make<TH1D>(hshape_csv_name, "", 7, 0.5, 7.5);
 					}
-
+					
+					TString thuName[4] = {"xDown","xUp","yDown","yUp"}; //to check
+					for (int ithu=0; ithu < 4; ++ithu) {
+						TString hshape_thu_name =
+							"h_MVA_shape_"+lep_cat[il]+"_"+btag_cat[ib]+"_"
+							+thuName[ithu];
+						h_MVA_shape_thu_sys[il][ib][ithu] =
+							fs_->make<TH1D>(hshape_thu_name, "", 7, 0.5, 7.5);
+					}
+					
 					setup_sysHist = true;
 				}
 			}
@@ -230,7 +239,7 @@ void CU_ttH_EDA::Set_up_tokens(const edm::ParameterSet &config)
 	token.event_gen_info =
 		consumes<GenEventInfoProduct>(edm::InputTag(std::string("generator")));
 	token.event_lhe_info =
-		consumes<LHEEventProduct>(edm::InputTag(std::string("LHEEventProduct")));
+		consumes<LHEEventProduct>(edm::InputTag(std::string("externalLHEProducer")));
 	token.triggerResults = consumes<edm::TriggerResults>(
 		edm::InputTag(std::string("TriggerResults"), std::string(""), hltTag));
 	token.filterResults = consumes<edm::TriggerResults>(edm::InputTag(
