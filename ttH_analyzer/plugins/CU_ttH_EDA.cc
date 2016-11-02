@@ -212,6 +212,8 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		
 		local.mc_weight = genWeight / abs(genWeight);
 
+		genWeightSum += genWeight / abs(genWeight);
+
 		if (handle.event_lhe_info.isValid()) {
 			if (handle.event_lhe_info->weights().size() > 6) {
 				local.mc_weight_scale_muF0p5 = // muF = 0.5 | muR = 1
@@ -665,11 +667,15 @@ void CU_ttH_EDA::beginJob()
 	TH2::SetDefaultSumw2(true);
 
 	event_count = 0;
+	genWeightSum = 0.;
 }
 
 // ------------ method called once each job just after ending the event loop
 // ------------
 void CU_ttH_EDA::endJob() {
+
+	// fill GenWeightSum histogram
+	h_SumGenWeight -> SetBinContent(1,genWeightSum);
 	
 	if (analysis_type == Analyze_2lss1tau) {
 		//std::cout << "Total number of samples: " << event_count << std::endl;

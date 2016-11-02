@@ -7,13 +7,16 @@
 void CU_ttH_EDA::Set_up_histograms()
 {
 
+	// event count histograms
+	h_nProcessed = fs_->make<TH1I>("h_nProcessed","",1,0.5,1.5);
+	h_SumGenWeight = fs_->make<TH1F>("h_SumGenWeight","",1,0.5,1.5);
+	
 	// categories
 	TString lep_cat[3] = {"mumu", "ee", "emu"};
 	TString btag_cat[2] = {"bloose", "bmedium"};
 	
 	if (analysis_type == Analyze_2lss1tau) {
-		h_nProcessed = fs_->make<TH1I>("h_nProcessed","",1,0,1);
-
+		
 		for (int il = 0; il < 3; il++) {
 			for (int ib = 0; ib <2; ib++) {
 				TString h2d_name =
