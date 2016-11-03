@@ -67,17 +67,6 @@ void CU_ttH_EDA::Set_up_histograms()
 			}
 		}
 
-		// fake rate
-		if (selection_type == Control_1lfakeable) {
-			TFile* file_fr = new TFile((std::string(getenv("CMSSW_BASE")) + "/src/Analyzers/ttH_analyzer/data/FR_data_ttH_mva.root").c_str(),"read");
-			
-			h_fakerate_el = (TH2F*) file_fr->Get("FR_mva075_el_data_comb");
-			h_fakerate_mu = (TH2F*) file_fr->Get("FR_mva075_mu_data_comb");
-			h_fakerate_el -> SetDirectory(0);
-			h_fakerate_mu -> SetDirectory(0);
-
-			delete file_fr;
-		}
 	}
 
 	if (analysis_type == Analyze_3l) {
@@ -86,6 +75,25 @@ void CU_ttH_EDA::Set_up_histograms()
 		h_nJets = fs_->make<TH1D>("h_nJets", "", 8, 0, 8);
 		h_lep_charge = fs_->make<TH1D>("h_lep_charge", "", 10, -5, 5);
 		h_mZ = fs_->make<TH1D>("h_mZ", "", 15, 60, 120);
+	}
+}
+
+void CU_ttH_EDA::Set_up_FakeRate_Lut()
+{
+	if (selection_type == Control_1lfakeable) {
+		// electrons and muons
+		file_fr_lep = new TFile((std::string(getenv("CMSSW_BASE")) + "/src/Analyzers/ttH_analyzer/data/FR_data_ttH_mva.root").c_str(),"read");
+		
+		h_fakerate_el = (TH2F*) file_fr_lep->Get("FR_mva075_el_data_comb");
+		h_fakerate_mu = (TH2F*) file_fr_lep->Get("FR_mva075_mu_data_comb");
+		
+		//taus
+		file_fr_tau = new TFile((std::string(getenv("CMSSW_BASE")) + "/src/Analyzers/ttH_analyzer/data/FR_tau_2016.root").c_str(), "read");
+		
+		g_fakerate_tau_mvaM_etaL_mc = (TGraphAsymmErrors*) file_fr_tau->Get("jetToTauFakeRate/dR03mvaMedium/absEtaLt1_5/jetToTauFakeRate_mc_hadTaus_pt");
+		g_fakerate_tau_mvaM_etaH_mc = (TGraphAsymmErrors*) file_fr_tau->Get("jetToTauFakeRate/dR03mvaMedium/absEta1_5to9_9/jetToTauFakeRate_mc_hadTaus_pt");
+		f_fakerate_tau_mvaM_etaL_ratio = (TF1*) file_fr_tau->Get("jetToTauFakeRate/dR03mvaMedium/absEtaLt1_5/fitFunction_data_div_mc_hadTaus_pt");
+		f_fakerate_tau_mvaM_etaH_ratio = (TF1*) file_fr_tau->Get("jetToTauFakeRate/dR03mvaMedium/absEta1_5to9_9/fitFunction_data_div_mc_hadTaus_pt");
 	}
 }
 
@@ -119,24 +127,20 @@ void CU_ttH_EDA::Set_up_LeptonSF_Lut()
 		/// for muon
 		file_looseToTight_leptonSF_mu_2lss = new TFile((std::string(getenv("CMSSW_BASE")) + "/src/Analyzers/ttH_analyzer/data/leptonSF/lepMVAEffSF_m_2lss.root").c_str(),"read");
 		h_looseToTight_leptonSF_mu_2lss = (TH2F*)(file_looseToTight_leptonSF_mu_2lss->Get("sf"));
-		h_looseToTight_leptonSF_mu_2lss -> SetDirectory(0);
 		
 		/// for electron
 		file_looseToTight_leptonSF_el_2lss = new TFile((std::string(getenv("CMSSW_BASE")) + "/src/Analyzers/ttH_analyzer/data/leptonSF/lepMVAEffSF_e_2lss.root").c_str(),"read");
 		h_looseToTight_leptonSF_el_2lss = (TH2F*)(file_looseToTight_leptonSF_el_2lss->Get("sf"));
-		h_looseToTight_leptonSF_el_2lss -> SetDirectory(0);
 	}
 	
 	if (analysis_type == Analyze_3l) {
 		/// for muon
 		file_looseToTight_leptonSF_mu_3l = new TFile((std::string(getenv("CMSSW_BASE")) + "/src/Analyzers/ttH_analyzer/data/leptonSF/lepMVAEffSF_m_3l.root").c_str(),"read");
 		h_looseToTight_leptonSF_mu_3l = (TH2F*)(file_looseToTight_leptonSF_mu_3l->Get("sf"));
-		h_looseToTight_leptonSF_mu_3l -> SetDirectory(0);
 		
 		/// for electron
 		file_looseToTight_leptonSF_el_3l = new TFile((std::string(getenv("CMSSW_BASE")) + "/src/Analyzers/ttH_analyzer/data/leptonSF/lepMVAEffSF_e_3l.root").c_str(),"read");
 		h_looseToTight_leptonSF_el_3l = (TH2F*)(file_looseToTight_leptonSF_el_3l->Get("sf"));
-		h_looseToTight_leptonSF_el_3l -> SetDirectory(0);
 	}
 }
 
@@ -367,13 +371,10 @@ void CU_ttH_EDA::Set_up_CSV_rootFile()
 	std::string inputFileHF = "data/csv_rwt_fit_hf_v2_final_2016_08_5test.root";
 	std::string inputFileLF = "data/csv_rwt_fit_lf_v2_final_2016_08_5test.root";
 
-	TFile* f_CSVwgt_HF = new TFile ((std::string(getenv("CMSSW_BASE")) + "/src/Analyzers/ttH_analyzer/" + inputFileHF).c_str());
-	TFile* f_CSVwgt_LF = new TFile ((std::string(getenv("CMSSW_BASE")) + "/src/Analyzers/ttH_analyzer/" + inputFileLF).c_str());
+	f_CSVwgt_HF = new TFile ((std::string(getenv("CMSSW_BASE")) + "/src/Analyzers/ttH_analyzer/" + inputFileHF).c_str());
+	f_CSVwgt_LF = new TFile ((std::string(getenv("CMSSW_BASE")) + "/src/Analyzers/ttH_analyzer/" + inputFileLF).c_str());
 
 	fillCSVhistos(f_CSVwgt_HF, f_CSVwgt_LF);
-
-	delete f_CSVwgt_HF;
-	delete f_CSVwgt_LF;
 }
 
 void CU_ttH_EDA::fillCSVhistos(TFile* fileHF, TFile* fileLF)
@@ -438,20 +439,17 @@ void CU_ttH_EDA::fillCSVhistos(TFile* fileHF, TFile* fileLF)
 
 		for( int iPt=0; iPt<5; iPt++ ) {
 			h_csv_wgt_hf[iSys][iPt] = (TH1D*)fileHF->Get( Form("csv_ratio_Pt%i_Eta0_%s",iPt,syst_csv_suffix_hf.Data()) );
-			h_csv_wgt_hf[iSys][iPt] -> SetDirectory(0);
 		}
 		
 		if( iSys<5 ){
 			for( int iPt=0; iPt<5; iPt++ ) {
 				c_csv_wgt_hf[iSys][iPt] = (TH1D*)fileHF->Get( Form("c_csv_ratio_Pt%i_Eta0_%s",iPt,syst_csv_suffix_c.Data()) );
-				c_csv_wgt_hf[iSys][iPt] -> SetDirectory(0);
 			}
 		}
 		
 		for( int iPt=0; iPt<4; iPt++ ){
 			for( int iEta=0; iEta<3; iEta++ ) {
 				h_csv_wgt_lf[iSys][iPt][iEta] = (TH1D*)fileLF->Get( Form("csv_ratio_Pt%i_Eta%i_%s",iPt,iEta,syst_csv_suffix_lf.Data()) );
-				h_csv_wgt_lf[iSys][iPt][iEta] -> SetDirectory(0);
 			}
 		}
 	}

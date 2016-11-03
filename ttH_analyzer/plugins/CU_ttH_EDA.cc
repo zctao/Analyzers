@@ -87,13 +87,17 @@ CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig):
 
 	Set_up_Tree();
 
-	//Set_up_BTagCalibration_Readers();
-	Set_up_CSV_rootFile();
-
 	if (not isdata) {
+		//Set_up_BTagCalibration_Readers();
+		Set_up_CSV_rootFile();
+		
 		Set_up_LeptonSF_Lut();
 	}
 
+	if (selection_type == Control_1lfakeable) {
+		Set_up_FakeRate_Lut();
+	}
+	
 }
 
 /// Destructor
@@ -102,10 +106,23 @@ CU_ttH_EDA::~CU_ttH_EDA()
 
 	// do anything here that needs to be done at desctruction time
 	// (e.g. close files, deallocate resources etc.)
-	
-	//delete BTagCaliReader;
 
 	if (not isdata) {
+		//delete BTagCaliReader;
+		f_CSVwgt_HF->Close();
+		f_CSVwgt_LF->Close();
+		
+		delete f_CSVwgt_HF;
+		delete f_CSVwgt_LF;
+	
+		file_recoToLoose_leptonSF_mu1_b->Close();
+		file_recoToLoose_leptonSF_mu1_e->Close();
+		file_recoToLoose_leptonSF_mu2->Close();
+		file_recoToLoose_leptonSF_mu3->Close();
+
+		file_recoToLoose_leptonSF_el->Close();
+		file_recoToLoose_leptonSF_gsf->Close();
+		
 		delete file_recoToLoose_leptonSF_mu1_b;
 		delete file_recoToLoose_leptonSF_mu1_e;
 		delete file_recoToLoose_leptonSF_mu2;
@@ -115,13 +132,28 @@ CU_ttH_EDA::~CU_ttH_EDA()
 		delete file_recoToLoose_leptonSF_gsf;
 		
 		if (analysis_type == Analyze_2lss1tau) {
+			file_looseToTight_leptonSF_mu_2lss->Close();
+			file_looseToTight_leptonSF_el_2lss->Close();
+			
 			delete file_looseToTight_leptonSF_mu_2lss;
 			delete file_looseToTight_leptonSF_el_2lss;
 		}
 		if (analysis_type == Analyze_3l) {
+			file_looseToTight_leptonSF_mu_3l->Close();
+			file_looseToTight_leptonSF_el_3l->Close();
+			
 			delete file_looseToTight_leptonSF_mu_3l;
 			delete file_looseToTight_leptonSF_el_3l;
 		}
+	}
+
+	if (selection_type == Control_1lfakeable) {
+
+		file_fr_lep->Close();
+		file_fr_tau->Close();
+		
+		delete file_fr_lep;
+		delete file_fr_tau;
 	}
 }
 
@@ -494,6 +526,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 
 		if (pass_event_selection) {
 			assert(local.leptons_fakeable.size() >= 2);
+			assert(local.tau_preselected_sorted.size() >= 1);
 			
 			// Weights and scale factors
 			//////////////////////////
@@ -524,18 +557,30 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 			//////////////////////////
 			// fake lepton background (data driven)
 			if (selection_type == Control_1lfakeable) {
+				assert(local.n_taus_pre >= 1);
+
+				// two leading leptons
 				float f1 = getFakeRate(local.leptons_fakeable[0]);
 				float f2 = getFakeRate(local.leptons_fakeable[1]);
 				
-				if (not local.leptons_fakeable[0].passTightSel()
-					and local.leptons_fakeable[1].passTightSel())
-					local.weight = f1/(1.-f1);
-				else if (local.leptons_fakeable[0].passTightSel() and
-						 not local.leptons_fakeable[1].passTightSel())
-					local.weight = f2/(1.-f2);
-				else if (not local.leptons_fakeable[0].passTightSel() and
-						 not local.leptons_fakeable[1].passTightSel())
-					local.weight = -f1*f2/((1.-f1)*(1.-f2));
+				float F1 = local.leptons_fakeable[0].passTightSel() ?
+					-1. : f1/(1.-f1);
+				float F2 = local.leptons_fakeable[1].passTightSel() ?
+					-1. : f2/(1.-f2);
+				
+				if (local.n_taus >= 1) { // has at least one selected tau
+					// consider only electrons and muons
+					local.weight = -1. * F1 * F2;
+					assert(local.weight != 1.);
+				}
+				else { // all taus are fakeable
+					// consider leading tau
+					float f3 = getFakeRate(local.tau_preselected_sorted[0]);
+					float F3 = f3/(1.-f3);
+
+					local.weight = F1 * F2 * F3;
+				}
+				
 			}
 
 			//////////////////////////

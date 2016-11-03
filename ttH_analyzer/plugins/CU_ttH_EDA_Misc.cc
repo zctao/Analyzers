@@ -545,7 +545,7 @@ bool CU_ttH_EDA::pass_event_sel_2l(CU_ttH_EDA_event_vars &local,
 }
 
 bool CU_ttH_EDA::pass_event_sel_3l(CU_ttH_EDA_event_vars &local,
-								   Selection_types selection_region)
+								   Selection_types selection_type)
 {
 	//////////////////////////
     /// Lepton number
@@ -610,7 +610,7 @@ bool CU_ttH_EDA::pass_event_sel_3l(CU_ttH_EDA_event_vars &local,
 		if (not passZmassVeto) break;
 	}
 
-	if (selection_region == Control_WZ)
+	if (selection_type == Control_WZ)
 		passZmassVeto = not passZmassVeto;
 
 	if (not passZmassVeto) return false;
@@ -657,7 +657,7 @@ bool CU_ttH_EDA::pass_event_sel_3l(CU_ttH_EDA_event_vars &local,
 	/// number of jets and btags
 	bool passNumJets = njets >= 2;
 	bool passNumBtags = nbtags_loose >= 2 or nbtags_medium >= 1;
-	if (selection_region == Control_WZ) {
+	if (selection_type == Control_WZ) {
 		passNumBtags = not passNumBtags;  // inconsistent between AN and twiki
 	}
 
@@ -971,6 +971,14 @@ float CU_ttH_EDA::readTGraph(TGraphAsymmErrors* graph, float x)
 	return graph->Eval(x1);
 }
 
+float CU_ttH_EDA::readTF(TF1* f, float x)
+{
+	//float x1 = std::max(float(f->GetXaxis()->GetXmin()),
+	//					std::min(float(f->GetXaxis()->GetXmax()), x)
+	//					);
+	return f->Eval(x);
+}
+
 float CU_ttH_EDA::getFakeRate(const miniLepton& lepton)
 {
 	float fakerate = 0;
@@ -981,6 +989,23 @@ float CU_ttH_EDA::getFakeRate(const miniLepton& lepton)
 		fakerate = read2DHist(h_fakerate_mu, lepton.conePt(), lepton.eta());
 
 	return fakerate;
+}
+
+float CU_ttH_EDA::getFakeRate(const pat::Tau& tau)
+{
+	float fr_mc = 0;
+	float ratio = 0;
+
+	if (abs(tau.eta()) < 1.479) {
+		fr_mc = readTGraph(g_fakerate_tau_mvaM_etaL_mc, tau.pt());
+		ratio = readTF(f_fakerate_tau_mvaM_etaL_ratio, tau.pt());
+	}
+	else {
+		fr_mc = readTGraph(g_fakerate_tau_mvaM_etaH_mc, tau.pt());
+		ratio = readTF(f_fakerate_tau_mvaM_etaH_ratio, tau.pt());
+	}
+
+	return fr_mc * ratio;
 }
 
 float CU_ttH_EDA::getLeptonSF(const miniLepton& lepton)

@@ -81,6 +81,7 @@
 #include "TFile.h"
 #include "TString.h"
 #include "TGraphAsymmErrors.h"
+#include "TF1.h"
 
 /// Higgs and top tagger
 //#include "MiniAOD/BoostedObjects/interface/HTTTopJet.h"
@@ -170,6 +171,7 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	void Set_up_CSV_rootFile();
 	void fillCSVhistos(TFile*, TFile*);
 	void Set_up_LeptonSF_Lut();
+	void Set_up_FakeRate_Lut();
 
 	int Set_up_Run_histograms_triggers(); // at beginRun(), after
 										  // Set_up_name_vectors()
@@ -223,12 +225,14 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 
 	float read2DHist(TH2*, float, float);
 	float readTGraph(TGraphAsymmErrors*, float);
+	float readTF(TF1*, float);
 	
 	// Electron Charge misId
 	float getEleChargeMisIDProb(const miniLepton&, bool);
 	
 	// Lepton fake rate
 	float getFakeRate(const miniLepton&);
+	float getFakeRate(const pat::Tau&);
 
 	// HLT scale factor
 	float getLepHLTSF(int);
@@ -345,9 +349,20 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	TH1D *h_mZ;
 
 	// Fake lepton rate lookup histograms
+	TFile* file_fr_lep;
 	TH2F *h_fakerate_el;
 	TH2F *h_fakerate_mu;
-
+	// jet to tau fake rate
+	TFile* file_fr_tau;
+	TGraphAsymmErrors *g_fakerate_tau_mvaM_etaL_mc;
+	TGraphAsymmErrors *g_fakerate_tau_mvaM_etaH_mc;
+	//TGraphAsymmErrors *g_fakerate_tau_mvaT_etaL_mc;
+	//TGraphAsymmErrors *g_fakerate_tau_mvaT_etaH_mc;
+	TF1 *f_fakerate_tau_mvaM_etaL_ratio;
+	TF1 *f_fakerate_tau_mvaM_etaH_ratio;
+	//TF1 *f_fakerate_tau_mvaT_etaL_ratio;
+	//TF1 *f_fakerate_tau_mvaT_etaH_ratio;
+	
 	// Lepton ID scale factor lookup tables
 	// Input files
 	TFile* file_recoToLoose_leptonSF_mu1_b;
@@ -392,6 +407,8 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	//BTagCalibrationReader* BTagCaliReader;
 	
 	// or read SF from root file
+	TFile* f_CSVwgt_HF;
+	TFile* f_CSVwgt_LF;
 	TH1D* h_csv_wgt_hf[9][5];
 	TH1D* c_csv_wgt_hf[9][5];
 	TH1D* h_csv_wgt_lf[9][4][3];
