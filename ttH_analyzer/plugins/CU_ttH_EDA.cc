@@ -258,6 +258,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 			local.leptons_fakeable.push_back(lepton);
 		
 			if (lepton.passTightSel()) {
+				if (not isdata) lepton.MCMatchType = MatchGenParticle_Type(mu);
 				local.mu_tight.push_back(mu);
 				local.leptons_tight.push_back(lepton);
 			}
@@ -288,6 +289,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 			local.leptons_fakeable.push_back(lepton);
 		
 			if (lepton.passTightSel()) {
+				if (not isdata) lepton.MCMatchType = MatchGenParticle_Type(ele);
 				local.e_tight.push_back(ele);
 				local.leptons_tight.push_back(lepton);
 			}

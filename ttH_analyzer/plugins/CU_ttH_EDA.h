@@ -204,6 +204,10 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 		removeOverlapdR(const std::vector<T1>& v1, const std::vector<T2>& v2, double dR = 0.02);
 
 	float getMHT(CU_ttH_EDA_event_vars &);
+
+	// MC truth matching
+	template <typename T>
+		int MatchGenParticle_Type(const T&);
 	
 	// event selection
 	bool pass_event_sel_2l(CU_ttH_EDA_event_vars &, Selection_types, int&, int&);

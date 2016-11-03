@@ -272,29 +272,18 @@ bool CU_ttH_EDA::pass_event_sel_2l(CU_ttH_EDA_event_vars &local,
 	// no more than 2 tight leptons
 	if (!(local.leptons_fakeable.size() >= 2 and local.leptons_tight.size()<=2)) {
 		if (debug) {
-			std::cout << "FAIL lepton number requirements" << std::endl;
+			std::cout << "FAIL lepton number requirement" << std::endl;
 		}
 		return false;
 	}
-	
-	bool passLepSel = false;	 
-	// signal region: two leading leptons are tight
-	passLepSel =
-		local.leptons_fakeable[0].passTightSel() and
-		local.leptons_fakeable[1].passTightSel();
-	
-	if (selection_region == Control_1lfakeable) {
-		// at least one lepton fails tight selection
-		passLepSel = not passLepSel;
-	} 
-	
-	if (not passLepSel) {
+	// at least 1 fakeable(preselected) tau
+	if (local.tau_preselected.size() < 1) {
 		if (debug) {
-			std::cout << "FAIL lepton number requirements" << std::endl;
+			std::cout << "FAIL fakeable tau number requirement" << std::endl;
 		}
 		return false;
 	}
-	
+
 	//////////////////////////
 	/// Lepton pt
 	float minpt_ldg = 25.;
@@ -331,24 +320,6 @@ bool CU_ttH_EDA::pass_event_sel_2l(CU_ttH_EDA_event_vars &local,
 	if (not passPairMassVeto) {
 		if (debug) {
 			std::cout << "FAIL any pair of loose leptons has invariant mass >= 12 GeV" << std::endl;
-		}
-		return false;
-	}
-
-	//////////////////////////
-	/// Lepton charge
-	bool passLepCharge = false;
-	// same sign
-	if (local.leptons_fakeable[0].charge() *
-		local.leptons_fakeable[1].charge() > 0)
-		passLepCharge = true;
-
-	if (selection_region == Control_2los1tau)
-		passLepCharge = not passLepCharge;
-
-	if (not passLepCharge) {
-		if (debug) {
-			std::cout << "FAIL lepton charge requirement" << std::endl;
 		}
 		return false;
 	}
@@ -454,15 +425,6 @@ bool CU_ttH_EDA::pass_event_sel_2l(CU_ttH_EDA_event_vars &local,
 		}
 		return false;
 	}
-
-	//////////////////////////
-	/// number of taus
-	bool passNumTaus = local.n_taus >= 1;
-	if (not passNumTaus) {
-		if (debug)
-			std::cout << "FAIL number of taus requirement" << std::endl;
-		return false;
-	}
 	
 	//////////////////////////
 	/// number of jets and btags
@@ -484,7 +446,99 @@ bool CU_ttH_EDA::pass_event_sel_2l(CU_ttH_EDA_event_vars &local,
 	}
 		
 	ibtag = nbtags_medium >=2 ? 1 : 0;
+	
+	//////////////////////////
+	///
+	//////////////////////////	
+	/// Lepton charge
+	bool passLepCharge = false;
+	// same sign
+	if (local.leptons_fakeable[0].charge() *
+		local.leptons_fakeable[1].charge() > 0)
+		passLepCharge = true;
 
+	if (selection_region == Control_2los1tau)
+		passLepCharge = not passLepCharge;
+
+	if (not passLepCharge) {
+		if (debug) {
+			std::cout << "FAIL lepton charge requirement" << std::endl;
+		}
+		return false;
+	}
+
+	//////////////////////////
+	/// Leptons and tau WP
+	bool passLepSel = false;
+	bool passTauSel = false;
+	// signal region: two leading leptons are tight
+	// and at least one tau is "selected tau"
+	// i.e. pass "byMediumIsolationMVArun2v1DBdR03oldDMwLT"
+	passLepSel =
+		local.leptons_fakeable[0].passTightSel() and
+		local.leptons_fakeable[1].passTightSel();
+	
+	passTauSel = local.n_taus >= 1;
+
+	bool passIDWP = passLepSel and passTauSel;
+	
+	if (selection_region == Control_1lfakeable) {
+		// at least one lepton fails tight selection
+		// or no tau is "selected tau"
+		passIDWP = not passIDWP;
+	} 
+	
+	if (not passIDWP) {
+		if (debug) {
+			std::cout << "FAIL lepton and tau WP requirements" << std::endl;
+		}
+		return false;
+	}
+
+	//////////////////////////
+	/// MC truth matching for signal region
+	if (selection_region == Signal_2lss1tau and !isdata) {
+		assert(local.leptons_tight.size()==2);
+		assert(local.tau_selected.size()>=1);
+		
+		bool passMCMatching = true;
+		for (const auto & lep : local.leptons_tight) {
+			if (lep.MCMatchType==0) {  // initial value is set to 0
+				std::cerr << "WARNING!! MC match type is not set!!" << std::endl;
+			}
+			assert(lep.MCMatchType!=0);
+			
+			if (lep.Type() == LeptonType::kele) {
+				if (lep.MCMatchType != 1)  // not prompt electron
+					passMCMatching = false;
+			}
+			if (lep.Type() == LeptonType::kmu) {
+				if (lep.MCMatchType != 2)  // not prompt muon
+					passMCMatching = false;
+			}
+		}
+
+		bool matchMCTau = false;
+		for (const auto & tau : local.tau_selected) {
+		    int mtype = MatchGenParticle_Type(tau);
+			if (mtype == 3 or mtype == 4 or mtype == 5) {
+				matchMCTau = true;
+				break;
+			}
+		}
+
+		passMCMatching = passMCMatching and matchMCTau;
+
+		if (not passMCMatching) {
+			if (debug) {
+				std::cout << "FAIL MC truth matching" << std::endl;
+			}
+
+			return false;
+		}	
+	}
+	
+	//////////////////////////
 	if (debug) std::cout << "PASSED event seletion!" << std::endl;
 	
 	return true;
@@ -1048,5 +1102,42 @@ bool CU_ttH_EDA::HiggsDecayFilter(const std::vector<reco::GenParticle>& genParti
 
 	return false;
 }
+
+// MC Matching type encoding: https://twiki.cern.ch/twiki/bin/view/CMS/HiggsToTauTauWorking2016#MC_Matching
+template <typename T>
+int CU_ttH_EDA::MatchGenParticle_Type(const T& reco_particle)
+{
+	// loop over all matched genParticles?
+	// genParticlesSize()
+	
+	const reco::GenParticle* gen_particle = reco_particle.genParticle();
+
+	float dR = reco::deltaR(gen_particle->eta(), gen_particle->phi(),
+							reco_particle.eta(), reco_particle.phi());
+
+	if (dR >= 0.2) return 6;
+
+	auto genStatus = gen_particle->statusFlags();
+
+	if (abs(gen_particle->pdgId()) == 11) {
+		if (genStatus.isPrompt()) return 1;
+		if (genStatus.isDirectPromptTauDecayProduct()) return 3;
+	}
+
+	if (abs(gen_particle->pdgId()) == 13) {
+		if (genStatus.isPrompt()) return 2;
+		if (genStatus.isDirectPromptTauDecayProduct()) return 4;
+	}
+
+	if (abs(gen_particle->pdgId()) == 15) {
+		if (genStatus.isPrompt()) return 5;
+	}
+
+	return 6;
+}
+
+template int CU_ttH_EDA::MatchGenParticle_Type<pat::Electron>(const pat::Electron&);
+template int CU_ttH_EDA::MatchGenParticle_Type<pat::Muon>(const pat::Muon&);
+template int CU_ttH_EDA::MatchGenParticle_Type<pat::Tau>(const pat::Tau&);
 
 #endif

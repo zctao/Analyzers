@@ -20,6 +20,8 @@ miniLepton::miniLepton(const pat::Electron & ele)
 
 	_no_missinghits = ele.userFloat("numMissingHits") == 0;
 	_conversion_veto = ele.passConversionVeto();
+
+	MCMatchType = 0;
 }
 
 miniLepton::miniLepton(const pat::Muon & mu)
@@ -39,6 +41,8 @@ miniLepton::miniLepton(const pat::Muon & mu)
 
 	//_conversion_veto = false;
 	//_no_missinghits = false;
+
+	MCMatchType = 0;
 }
 
 void miniLepton::Set_LeptonID(const pat::Electron & ele)

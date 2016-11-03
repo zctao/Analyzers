@@ -44,6 +44,8 @@ class miniLepton
 	bool noMissingHits() const {assert(_type==LeptonType::kele); return _no_missinghits;}
 	
 	float conePt() const;
+
+	int MCMatchType;
 	
  private:
 	
