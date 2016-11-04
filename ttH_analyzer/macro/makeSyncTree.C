@@ -14,14 +14,10 @@ void makeSyncTree(TString input_file="/uscms/home/ztao/nobackup/output_sync.root
 
 	// turn off extra branches
 	old_tree->SetBranchStatus("event_weight",0);
-	old_tree->SetBranchStatus("MC_weight", 0);
 	old_tree->SetBranchStatus("MC_weight_scale_muF0p5", 0);
 	old_tree->SetBranchStatus("MC_weight_scale_muF2", 0);
 	old_tree->SetBranchStatus("MC_weight_scale_muR0p5", 0);
 	old_tree->SetBranchStatus("MC_weight_scale_muR2", 0);
-	old_tree->SetBranchStatus("csv_weight", 0);
-	old_tree->SetBranchStatus("leptonSF", 0);
-	old_tree->SetBranchStatus("hltSF", 0);
 	old_tree->SetBranchStatus("n_tau", 0);
 	old_tree->SetBranchStatus("tau0_decayMode", 0);
 	old_tree->SetBranchStatus("tau1_decayMode", 0);
@@ -30,6 +26,8 @@ void makeSyncTree(TString input_file="/uscms/home/ztao/nobackup/output_sync.root
 	old_tree->SetBranchStatus("pass_double_e", 0);
 	old_tree->SetBranchStatus("pass_double_mu", 0);
 	old_tree->SetBranchStatus("pass_elemu", 0);
+
+	old_tree->SetBranchStatus("PU_weight");
 
 	// create new tree and output file
 	TFile* new_file = new TFile("~/nobackup/ttHTT_syncNtuple/80X/syncNtuple.root", "recreate");

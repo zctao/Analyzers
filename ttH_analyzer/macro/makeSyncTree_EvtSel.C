@@ -27,22 +27,21 @@ void makeSyncTree_EvtSel(
 	
 	// turn off extra branches
 	for (auto tree : old_trees) {
-		tree->SetBranchStatus("MC_weight", 0);
+		tree->SetBranchStatus("event_weight", 0);
 		tree->SetBranchStatus("MC_weight_scale_muF0p5", 0);
 		tree->SetBranchStatus("MC_weight_scale_muF2", 0);
 		tree->SetBranchStatus("MC_weight_scale_muR0p5", 0);
 		tree->SetBranchStatus("MC_weight_scale_muR2", 0);
-		tree->SetBranchStatus("csv_weight", 0);
-		tree->SetBranchStatus("leptonSF", 0);
-		tree->SetBranchStatus("hltSF", 0);
 		tree->SetBranchStatus("n_tau", 0);
 		tree->SetBranchStatus("tau0_decayMode", 0);
 		tree->SetBranchStatus("tau1_decayMode", 0);
-		old_tree->SetBranchStatus("pass_single_e", 0);
-		old_tree->SetBranchStatus("pass_single_mu", 0);
-		old_tree->SetBranchStatus("pass_double_e", 0);
-		old_tree->SetBranchStatus("pass_double_mu", 0);
-		old_tree->SetBranchStatus("pass_elemu", 0);
+		tree->SetBranchStatus("pass_single_e", 0);
+		tree->SetBranchStatus("pass_single_mu", 0);
+		tree->SetBranchStatus("pass_double_e", 0);
+		tree->SetBranchStatus("pass_double_mu", 0);
+		tree->SetBranchStatus("pass_elemu", 0);
+
+		tree->SetBranchStatus("PU_weight", 0);
 	}
 	
 	// create new tree and output file

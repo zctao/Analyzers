@@ -46,14 +46,16 @@ class CU_ttH_EDA_Ntuple //: public TClass
 	int ls;   // luminosity section number
 	int run;  // run number
 	float event_weight;
+	float PU_weight;
 	float MC_weight;
 	float MC_weight_scale_muF0p5;
 	float MC_weight_scale_muF2;
 	float MC_weight_scale_muR0p5;
 	float MC_weight_scale_muR2;
-	float csv_weight;
-	float leptonSF;
-	float hltSF;
+	float bTagSF_weight; //csv_weight;
+	float leptonSF_weight;
+	float triggerSF_weight;//hltSF;
+	float FR_weight;
 	
 	float npuTrue;
 	float npuInTime;
