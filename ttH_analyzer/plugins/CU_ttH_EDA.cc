@@ -286,11 +286,15 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		local.leptons_loose.push_back(lepton);
 		
 		if (lepton.passFakeableSel()) {
+			if (not isdata) {
+				int mtype_mu = MatchGenParticle_Type(mu);
+				lepton.MCMatchType = mtype_mu;
+				local.mu_fakeable_mcMatchTypes.push_back(mtype_mu);
+			}
 			local.mu_fakeable.push_back(mu);
 			local.leptons_fakeable.push_back(lepton);
 		
-			if (lepton.passTightSel()) {
-				if (not isdata) lepton.MCMatchType = MatchGenParticle_Type(mu);
+			if (lepton.passTightSel()) {			
 				local.mu_tight.push_back(mu);
 				local.leptons_tight.push_back(lepton);
 			}
@@ -317,11 +321,15 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		local.leptons_loose.push_back(lepton);
 		
 		if (lepton.passFakeableSel()) {
+			if (not isdata) {
+				int mtype_e = MatchGenParticle_Type(ele);
+				lepton.MCMatchType = mtype_e;
+				local.e_fakeable_mcMatchTypes.push_back(mtype_e);
+			}
 			local.e_fakeable.push_back(ele);
 			local.leptons_fakeable.push_back(lepton);
 		
-			if (lepton.passTightSel()) {
-				if (not isdata) lepton.MCMatchType = MatchGenParticle_Type(ele);
+			if (lepton.passTightSel()) {				
 				local.e_tight.push_back(ele);
 				local.leptons_tight.push_back(lepton);
 			}
@@ -351,6 +359,11 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		miniAODhelper.GetSortedByPt(local.tau_preselected);
 	
 	for (const auto& tau : local.tau_preselected_sorted) {
+		if (not isdata) {
+			int mtype_tau = MatchGenParticle_Type(tau);
+			local.tau_preselected_mcMatchTypes.push_back(mtype_tau);
+		}
+			
 		if (tau.userFloat("idSelection")>0.5)
 			local.tau_selected.push_back(tau);
 	}

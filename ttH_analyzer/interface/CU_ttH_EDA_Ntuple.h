@@ -108,6 +108,7 @@ class CU_ttH_EDA_Ntuple //: public TClass
 	float mu0_dpt_div_pt;
 	int    mu0_ismvasel;
 	int    mu0_isfakeablesel;
+	int mu0_mcMatchType;
 	float mu1_pt;
 	//float mu1_conept;
 	float mu1_eta;
@@ -130,6 +131,7 @@ class CU_ttH_EDA_Ntuple //: public TClass
 	float mu1_dpt_div_pt;
 	int    mu1_ismvasel;
 	int    mu1_isfakeablesel;
+	int mu1_mcMatchType;
 	
 	// electrons
 	float ele0_pt;
@@ -155,6 +157,7 @@ class CU_ttH_EDA_Ntuple //: public TClass
 	int    ele0_nMissingHits;
 	int    ele0_ismvasel;
 	int    ele0_isfakeablesel;
+	int ele0_mcMatchType;
 	float ele1_pt;
 	//float ele1_conept;
 	float ele1_eta;
@@ -178,6 +181,7 @@ class CU_ttH_EDA_Ntuple //: public TClass
 	int    ele1_nMissingHits;
 	int    ele1_ismvasel;
 	int    ele1_isfakeablesel;
+	int ele1_mcMatchType;
 	
 	// taus
 	float tau0_pt;
@@ -207,6 +211,7 @@ class CU_ttH_EDA_Ntuple //: public TClass
 	int    tau0_againstElectronLooseMVA6;
 	int    tau0_againstElectronMediumMVA6;
 	int    tau0_againstElectronTightMVA6;
+	int tau0_mcMatchType;
 	float tau1_pt;
 	float tau1_eta;
 	float tau1_phi;
@@ -234,6 +239,7 @@ class CU_ttH_EDA_Ntuple //: public TClass
 	int    tau1_againstElectronLooseMVA6;
 	int    tau1_againstElectronMediumMVA6;
 	int    tau1_againstElectronTightMVA6;
+	int tau1_mcMatchType;
 	// jets
 	float jet0_pt;
 	float jet0_eta;

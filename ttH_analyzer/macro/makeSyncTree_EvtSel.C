@@ -40,6 +40,12 @@ void makeSyncTree_EvtSel(
 		tree->SetBranchStatus("pass_double_e", 0);
 		tree->SetBranchStatus("pass_double_mu", 0);
 		tree->SetBranchStatus("pass_elemu", 0);
+		tree->SetBranchStatus("mu0_mcMatchType", 0);
+		tree->SetBranchStatus("mu1_mcMatchType", 0);
+		tree->SetBranchStatus("ele0_mcMatchType", 0);
+		tree->SetBranchStatus("ele1_mcMatchType", 0);
+		tree->SetBranchStatus("tau0_mcMatchType", 0);
+		tree->SetBranchStatus("tau1_mcMatchType", 0);
 
 		tree->SetBranchStatus("PU_weight", 0);
 	}

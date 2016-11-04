@@ -3,6 +3,7 @@
 
 #include "Analyzers/ttH_analyzer/interface/CU_ttH_EDA_Ntuple.h"
 #include "Analyzers/ttH_analyzer/interface/CU_ttH_EDA_event_vars.h"
+
 #include <cmath>
 
 // Constructor
@@ -78,6 +79,21 @@ void CU_ttH_EDA_Ntuple::write_ntuple(const CU_ttH_EDA_event_vars &local)
 	if (local.leptons_fakeable.size() > 1) {
 		lep1_conept = local.leptons_fakeable[1].conePt();
 	}
+
+	// MC match type
+	if (local.mu_fakeable_mcMatchTypes.size() > 0)
+		mu0_mcMatchType = local.mu_fakeable_mcMatchTypes[0];
+	if (local.mu_fakeable_mcMatchTypes.size() > 1)
+		mu1_mcMatchType = local.mu_fakeable_mcMatchTypes[1];
+	if (local.e_fakeable_mcMatchTypes.size() > 0)
+		ele0_mcMatchType = local.e_fakeable_mcMatchTypes[0];
+	if (local.e_fakeable_mcMatchTypes.size() > 1)
+		ele1_mcMatchType = local.e_fakeable_mcMatchTypes[1];
+	if (local.tau_preselected_mcMatchTypes.size() > 0)
+		tau0_mcMatchType = local.tau_preselected_mcMatchTypes[0];
+	if (local.tau_preselected_mcMatchTypes.size() > 1)
+		tau1_mcMatchType = local.tau_preselected_mcMatchTypes[1];
+		
 }
 
 void CU_ttH_EDA_Ntuple::fill_ntuple_muons(const std::vector<pat::Muon>& muons)
@@ -370,6 +386,7 @@ void CU_ttH_EDA_Ntuple::initialize()
 	mu0_dpt_div_pt = -9999.;
 	mu0_ismvasel = 0;//-9999;
 	mu0_isfakeablesel = 0;//-9999;
+	mu0_mcMatchType = -9999;
 	mu1_pt = -9999.;
 	//mu1_conept = -9999.;
 	mu1_eta = -9999.;
@@ -392,6 +409,7 @@ void CU_ttH_EDA_Ntuple::initialize()
 	mu1_dpt_div_pt = -9999.;
 	mu1_ismvasel = 0;//-9999;
 	mu1_isfakeablesel = 0;//-9999;
+	mu1_mcMatchType = -9999;
 	
 	// electrons
 	ele0_pt = -9999.;
@@ -417,6 +435,7 @@ void CU_ttH_EDA_Ntuple::initialize()
 	ele0_nMissingHits = -9999;
 	ele0_ismvasel = 0;//-9999;
 	ele0_isfakeablesel = 0;//-9999;
+	ele0_mcMatchType = -9999;
 	ele1_pt = -9999.;
 	//ele1_conept = -9999.;
 	ele1_eta = -9999.;
@@ -440,6 +459,7 @@ void CU_ttH_EDA_Ntuple::initialize()
 	ele1_nMissingHits = -9999;
 	ele1_ismvasel = 0;//-9999;
 	ele1_isfakeablesel = 0;//-9999;
+	ele1_mcMatchType = -9999;
 	
 	// taus
 	tau0_pt = -9999.;
@@ -469,6 +489,7 @@ void CU_ttH_EDA_Ntuple::initialize()
 	tau0_againstElectronLooseMVA6 = -9999;
 	tau0_againstElectronMediumMVA6 = -9999;
 	tau0_againstElectronTightMVA6 = -9999;
+	tau0_mcMatchType = -9999;
 	tau1_pt = -9999.;
 	tau1_eta = -9999.;
 	tau1_phi = -9999.;
@@ -496,6 +517,7 @@ void CU_ttH_EDA_Ntuple::initialize()
 	tau1_againstElectronLooseMVA6 = -9999;
 	tau1_againstElectronMediumMVA6 = -9999;
 	tau1_againstElectronTightMVA6 = -9999;
+	tau1_mcMatchType = -9999;
 		
 	// jets
 	jet0_pt = -9999.;
@@ -593,6 +615,7 @@ void CU_ttH_EDA_Ntuple::set_up_branches(TTree *tree)
 	tree->Branch("mu0_dpt_div_pt", &mu0_dpt_div_pt);
 	tree->Branch("mu0_ismvasel", &mu0_ismvasel);
 	tree->Branch("mu0_isfakeablesel", &mu0_isfakeablesel);
+	tree->Branch("mu0_mcMatchType", &mu0_mcMatchType);
 	tree->Branch("mu1_pt",                   &mu1_pt);
 	//tree->Branch("mu1_conept",               &mu1_conept);
 	tree->Branch("mu1_eta",                  &mu1_eta);
@@ -615,6 +638,7 @@ void CU_ttH_EDA_Ntuple::set_up_branches(TTree *tree)
 	tree->Branch("mu1_dpt_div_pt", &mu1_dpt_div_pt);
 	tree->Branch("mu1_ismvasel", &mu1_ismvasel);
 	tree->Branch("mu1_isfakeablesel", &mu1_isfakeablesel);
+	tree->Branch("mu1_mcMatchType", &mu1_mcMatchType);
 	// electrons
 	tree->Branch("ele0_pt",                   &ele0_pt);
 	//tree->Branch("ele0_conept",               &ele0_conept);
@@ -639,6 +663,7 @@ void CU_ttH_EDA_Ntuple::set_up_branches(TTree *tree)
 	tree->Branch("ele0_nMissingHits", &ele0_nMissingHits);
 	tree->Branch("ele0_ismvasel", &ele0_ismvasel);
 	tree->Branch("ele0_isfakeablesel", &ele0_isfakeablesel);
+	tree->Branch("ele0_mcMatchType", &ele0_mcMatchType);
 	tree->Branch("ele1_pt",                   &ele1_pt);
 	//tree->Branch("ele1_conept",               &ele1_conept);
 	tree->Branch("ele1_eta",                  &ele1_eta);
@@ -662,6 +687,7 @@ void CU_ttH_EDA_Ntuple::set_up_branches(TTree *tree)
 	tree->Branch("ele1_nMissingHits", &ele1_nMissingHits);
 	tree->Branch("ele1_ismvasel", &ele1_ismvasel);
 	tree->Branch("ele1_isfakeablesel", &ele1_isfakeablesel);
+	tree->Branch("ele1_mcMatchType", &ele1_mcMatchType);
 	// taus
 	tree->Branch("tau0_pt", &tau0_pt);
 	tree->Branch("tau0_eta", &tau0_eta);
@@ -690,6 +716,7 @@ void CU_ttH_EDA_Ntuple::set_up_branches(TTree *tree)
 	tree->Branch("tau0_againstElectronLooseMVA6", &tau0_againstElectronLooseMVA6);
 	tree->Branch("tau0_againstElectronMediumMVA6", &tau0_againstElectronMediumMVA6);
 	tree->Branch("tau0_againstElectronTightMVA6", &tau0_againstElectronTightMVA6);
+	tree->Branch("tau0_mcMatchType", &tau0_mcMatchType);
 	tree->Branch("tau1_pt", &tau1_pt);
 	tree->Branch("tau1_eta", &tau1_eta);
 	tree->Branch("tau1_phi", &tau1_phi);
@@ -717,6 +744,7 @@ void CU_ttH_EDA_Ntuple::set_up_branches(TTree *tree)
 	tree->Branch("tau1_againstElectronLooseMVA6", &tau1_againstElectronLooseMVA6);
 	tree->Branch("tau1_againstElectronMediumMVA6", &tau1_againstElectronMediumMVA6);
 	tree->Branch("tau1_againstElectronTightMVA6", &tau1_againstElectronTightMVA6);
+	tree->Branch("tau1_mcMatchType", &tau1_mcMatchType);
 
 	// jets
 	tree->Branch("jet0_pt", &jet0_pt);
