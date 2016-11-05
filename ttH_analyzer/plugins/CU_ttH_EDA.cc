@@ -161,6 +161,7 @@ CU_ttH_EDA::~CU_ttH_EDA()
 void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 						 const edm::EventSetup &iSetup)
 {
+	if (debug) std::cout << "start of analyze() " << std::endl;
 	
 	using namespace edm;
 	++event_count;
@@ -272,6 +273,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	/*
 	  Muons
 	*/
+	if (debug) std::cout << "muons" << std::endl;
 	for (const auto& mu : *(handle.muons)){
 		if (mu.userFloat("idPreselection") > 0.5 and
 			mu.pt() > 5. and abs(mu.eta()) < 2.4)
@@ -287,9 +289,9 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		
 		if (lepton.passFakeableSel()) {
 			if (not isdata) {
-				int mtype_mu = MatchGenParticle_Type(mu);
+				int mtype_mu = MatchGenParticle_Type(mu, *(handle.MC_particles));
 				lepton.MCMatchType = mtype_mu;
-				local.mu_fakeable_mcMatchTypes.push_back(mtype_mu);
+				mu.addUserFloat("MCMatchType", mtype_mu);
 			}
 			local.mu_fakeable.push_back(mu);
 			local.leptons_fakeable.push_back(lepton);
@@ -304,6 +306,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	/*
 	  Electrons
 	*/
+	if (debug) std::cout << "electrons" << std::endl;
 	for (const auto& ele : *(handle.electrons)) {
 		if (ele.userFloat("idPreselection") > 0.5 and
 			ele.pt() > 7. and abs(ele.eta()) < 2.5)
@@ -322,9 +325,9 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		
 		if (lepton.passFakeableSel()) {
 			if (not isdata) {
-				int mtype_e = MatchGenParticle_Type(ele);
+				int mtype_e = MatchGenParticle_Type(ele, *(handle.MC_particles));
 				lepton.MCMatchType = mtype_e;
-				local.e_fakeable_mcMatchTypes.push_back(mtype_e);
+				ele.addUserFloat("MCMatchType", mtype_e);
 			}
 			local.e_fakeable.push_back(ele);
 			local.leptons_fakeable.push_back(lepton);
@@ -342,6 +345,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	/*
 	  Taus
 	*/
+	if (debug) std::cout << "taus" << std::endl;
 	for (const auto& tau : *(handle.taus)) {
 		if (tau.userFloat("idPreselection")>0.5 and
 			tau.pt() > 20. and abs(tau.eta()) < 2.3)
@@ -357,11 +361,13 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	// sort by pT
 	local.tau_preselected_sorted =
 		miniAODhelper.GetSortedByPt(local.tau_preselected);
-	
-	for (const auto& tau : local.tau_preselected_sorted) {
+
+	for (auto& tau : local.tau_preselected_sorted) {
 		if (not isdata) {
-			int mtype_tau = MatchGenParticle_Type(tau);
-			local.tau_preselected_mcMatchTypes.push_back(mtype_tau);
+			int mtype_tau = MatchGenParticle_Type(tau, *(handle.MC_particles));
+			tau.addUserFloat("MCMatchType", mtype_tau);
+			if (debug)
+				std::cout << "mc match type tau : " << mtype_tau << std::endl;
 		}
 			
 		if (tau.userFloat("idSelection")>0.5)
@@ -652,6 +658,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		}
 
 		// Write Ntuple
+		if (debug) std::cout << "start to write ntuple... " << std::endl;
 		if (turn_off_event_sel or pass_event_selection) {
 
 			evtNtuple.initialize();
@@ -715,7 +722,8 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		}
 		
 	}  // end of analysis_type == Analyze_3l
-	
+
+	if (debug) std::cout << "end of analyze()" << std::endl;
 }
 
 // ------------ method called once each job just before starting event loop

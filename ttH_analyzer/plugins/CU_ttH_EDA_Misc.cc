@@ -500,7 +500,7 @@ bool CU_ttH_EDA::pass_event_sel_2l(CU_ttH_EDA_event_vars &local,
 	if (selection_region == Signal_2lss1tau and !isdata) {
 		assert(local.leptons_tight.size()==2);
 		assert(local.tau_selected.size()>=1);
-		
+
 		bool passMCMatching = true;
 		for (const auto & lep : local.leptons_tight) {
 			if (lep.MCMatchType==0) {  // initial value is set to 0
@@ -509,19 +509,29 @@ bool CU_ttH_EDA::pass_event_sel_2l(CU_ttH_EDA_event_vars &local,
 			assert(lep.MCMatchType!=0);
 			
 			if (lep.Type() == LeptonType::kele) {
-				if (lep.MCMatchType != 1)  // not prompt electron
+				if (debug) {
+					std::cout << "ele mc match: " << lep.MCMatchType << std::endl;
+				}
+				// require prompt  or from prompt tau decay
+				if (not (lep.MCMatchType == 1 or lep.MCMatchType == 3))
 					passMCMatching = false;
 			}
 			if (lep.Type() == LeptonType::kmu) {
-				if (lep.MCMatchType != 2)  // not prompt muon
+				if (debug) {
+					std::cout << "mu mc match: " << lep.MCMatchType << std::endl;
+				}
+				// require prompt  or from prompt tau decay
+				if (not (lep.MCMatchType == 2 or lep.MCMatchType == 4))
 					passMCMatching = false;
 			}
 		}
 
 		bool matchMCTau = false;
 		for (const auto & tau : local.tau_selected) {
-		    int mtype = MatchGenParticle_Type(tau);
-			if (mtype == 3 or mtype == 4 or mtype == 5) {
+		    int mtype = tau.userFloat("MCMatchType");
+			if (debug)
+				std::cout << "tau mc match: " << mtype << std::endl;
+			if (mtype==1 or mtype==2 or mtype==3 or mtype==4 or mtype==5) {
 				matchMCTau = true;
 				break;
 			}
@@ -1129,40 +1139,151 @@ bool CU_ttH_EDA::HiggsDecayFilter(const std::vector<reco::GenParticle>& genParti
 }
 
 // MC Matching type encoding: https://twiki.cern.ch/twiki/bin/view/CMS/HiggsToTauTauWorking2016#MC_Matching
-template <typename T>
-int CU_ttH_EDA::MatchGenParticle_Type(const T& reco_particle)
+const reco::GenParticle* CU_ttH_EDA::getMatchedGenParticle(const pat::Muon& patMu, const std::vector<reco::GenParticle>& gen_particles)
 {
-	// loop over all matched genParticles?
-	// genParticlesSize()
+	const reco::GenParticle* out = NULL;
+	float dRmin = 666.;
 	
-	const reco::GenParticle* gen_particle = reco_particle.genParticle();
+	// loop over genParticle collections to find match
+	for (auto& gen : gen_particles) {
+		if (abs(gen.pdgId()) == 13) {
+			
+			auto genStatus = gen.statusFlags();
 
-	float dR = reco::deltaR(gen_particle->eta(), gen_particle->phi(),
-							reco_particle.eta(), reco_particle.phi());
+			if (not (genStatus.isPrompt() or
+					 genStatus.isDirectPromptTauDecayProduct()))
+				continue;
 
-	if (dR >= 0.2) return 6;
+			float dR = reco::deltaR(gen.eta(),gen.phi(),patMu.eta(),patMu.phi());
+			
+			if (dR > 0.2) continue;
+			// if (gen.pt() < 8.) continue
 
-	auto genStatus = gen_particle->statusFlags();
+			if (dR > dRmin) continue;  // find the closest in dR
 
-	if (abs(gen_particle->pdgId()) == 11) {
-		if (genStatus.isPrompt()) return 1;
-		if (genStatus.isDirectPromptTauDecayProduct()) return 3;
+			dRmin = dR;
+			out = &gen;
+		}
 	}
 
-	if (abs(gen_particle->pdgId()) == 13) {
-		if (genStatus.isPrompt()) return 2;
-		if (genStatus.isDirectPromptTauDecayProduct()) return 4;
-	}
-
-	if (abs(gen_particle->pdgId()) == 15) {
-		if (genStatus.isPrompt()) return 5;
-	}
-
-	return 6;
+	return out;
 }
 
-template int CU_ttH_EDA::MatchGenParticle_Type<pat::Electron>(const pat::Electron&);
-template int CU_ttH_EDA::MatchGenParticle_Type<pat::Muon>(const pat::Muon&);
-template int CU_ttH_EDA::MatchGenParticle_Type<pat::Tau>(const pat::Tau&);
+const reco::GenParticle* CU_ttH_EDA::getMatchedGenParticle(const pat::Electron& patEle, const std::vector<reco::GenParticle>& gen_particles)
+{
+	const reco::GenParticle* out = NULL;
+	float dRmin = 666.;
+	
+	// loop over genParticle collections to find match
+	for (auto& gen : gen_particles) {
+		if (abs(gen.pdgId()) == 11) {
+			auto genStatus = gen.statusFlags();
+
+			if (not (genStatus.isPrompt() or
+					 genStatus.isDirectPromptTauDecayProduct()))
+				continue;
+
+			float dR = reco::deltaR(gen.eta(),gen.phi(),patEle.eta(),patEle.phi());
+			if (dR > 0.2) continue;
+			// if (gen.pt() < 8.) continue
+
+			if (dR > dRmin) continue;  // find the closest in dR
+			
+			dRmin = dR;
+			out = &gen;
+		}
+	}
+
+	return out;
+}
+
+const reco::GenParticle* CU_ttH_EDA::getMatchedGenParticle(const pat::Tau& patTau, const std::vector<reco::GenParticle>& gen_particles)
+{
+	const reco::GenParticle* out = NULL;
+	float dRmin = 666.;
+	
+	// loop over genParticle collections to find match
+	for (auto& gen : gen_particles) {
+		if ( abs(gen.pdgId()) == 11 or abs(gen.pdgId()) == 13 ) {
+			auto genStatus = gen.statusFlags();
+
+			if (not (genStatus.isPrompt() or
+					 genStatus.isDirectPromptTauDecayProduct()))
+				continue;
+
+			float dR = reco::deltaR(gen.eta(),gen.phi(),patTau.eta(),patTau.phi());
+
+			if (dR > 0.2) continue;
+			// if (gen.pt() < 8.) continue;
+
+		    if (dR > dRmin) continue;
+
+			dRmin = dR;
+			out = &gen;
+		}
+
+		if ( abs(gen.pdgId()) == 15 ) {
+			auto genStatus = gen.statusFlags();
+
+			if (not genStatus.isPrompt()) continue;
+
+			reco::Candidate::LorentzVector visP4;
+			for (unsigned int i = 0; i < gen.numberOfDaughters(); ++i) {
+				auto daug = gen.daughter(i);
+				int id = abs(daug->pdgId());
+				if (id == 11 or id == 12 or id == 13 or id == 14 or id == 16)
+					continue;
+				visP4 += daug->p4();
+			}
+
+			float dR = reco::deltaR(visP4.eta(),visP4.phi(),patTau.eta(),patTau.phi());
+
+			if (dR > 0.2) continue;
+			// if (visP4.pt() < 15.) continue;
+
+			if (dR > dRmin) continue;
+			
+			dRmin = dR;
+			out = &gen;
+		}
+	}
+
+	return out;
+}
+
+
+template <typename T>
+int CU_ttH_EDA::MatchGenParticle_Type(const T& reco_particle, const std::vector<reco::GenParticle>& gen_particles)
+{
+	auto matchedGen =
+		getMatchedGenParticle(reco_particle, gen_particles);
+		//reco_particle.genParticle();
+
+	if (matchedGen == NULL) return 6;
+
+	auto genStatus = matchedGen->statusFlags();
+
+	int mtype = 6;
+	
+	if (abs(matchedGen->pdgId()) == 11) {
+		if (genStatus.isPrompt()) mtype = 1;
+		if (genStatus.isDirectPromptTauDecayProduct()) mtype = 3;
+	}
+
+	if (abs(matchedGen->pdgId()) == 13) {
+		if (genStatus.isPrompt()) mtype = 2;
+		if (genStatus.isDirectPromptTauDecayProduct())	mtype = 4;
+	}
+
+	if ( abs(matchedGen->pdgId()) == 15 and genStatus.isPrompt() ) {
+		mtype = 5;
+	}
+	
+	return mtype;
+}
+
+template int CU_ttH_EDA::MatchGenParticle_Type<pat::Electron>(const pat::Electron&, const std::vector<reco::GenParticle>&);
+template int CU_ttH_EDA::MatchGenParticle_Type<pat::Muon>(const pat::Muon&, const std::vector<reco::GenParticle>&);
+template int CU_ttH_EDA::MatchGenParticle_Type<pat::Tau>(const pat::Tau&, const std::vector<reco::GenParticle>&);
 
 #endif

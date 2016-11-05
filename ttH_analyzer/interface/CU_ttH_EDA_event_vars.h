@@ -85,10 +85,6 @@ struct CU_ttH_EDA_event_vars {
 	std::vector<pat::Tau> tau_preselected_sorted;
 	std::vector<pat::Tau> tau_selected;
 
-	std::vector<int> e_fakeable_mcMatchTypes;
-	std::vector<int> mu_fakeable_mcMatchTypes;
-	std::vector<int> tau_preselected_mcMatchTypes;  // preselected_sorted
-
 	std::vector<miniLepton> leptons_loose;
 	std::vector<miniLepton> leptons_fakeable;  // sorted by conePt
 	std::vector<miniLepton> leptons_tight;     // sorted by pt

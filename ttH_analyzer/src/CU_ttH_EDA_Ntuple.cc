@@ -78,22 +78,7 @@ void CU_ttH_EDA_Ntuple::write_ntuple(const CU_ttH_EDA_event_vars &local)
 	}
 	if (local.leptons_fakeable.size() > 1) {
 		lep1_conept = local.leptons_fakeable[1].conePt();
-	}
-
-	// MC match type
-	if (local.mu_fakeable_mcMatchTypes.size() > 0)
-		mu0_mcMatchType = local.mu_fakeable_mcMatchTypes[0];
-	if (local.mu_fakeable_mcMatchTypes.size() > 1)
-		mu1_mcMatchType = local.mu_fakeable_mcMatchTypes[1];
-	if (local.e_fakeable_mcMatchTypes.size() > 0)
-		ele0_mcMatchType = local.e_fakeable_mcMatchTypes[0];
-	if (local.e_fakeable_mcMatchTypes.size() > 1)
-		ele1_mcMatchType = local.e_fakeable_mcMatchTypes[1];
-	if (local.tau_preselected_mcMatchTypes.size() > 0)
-		tau0_mcMatchType = local.tau_preselected_mcMatchTypes[0];
-	if (local.tau_preselected_mcMatchTypes.size() > 1)
-		tau1_mcMatchType = local.tau_preselected_mcMatchTypes[1];
-		
+	}	
 }
 
 void CU_ttH_EDA_Ntuple::fill_ntuple_muons(const std::vector<pat::Muon>& muons)
@@ -125,6 +110,8 @@ void CU_ttH_EDA_Ntuple::fill_ntuple_muons(const std::vector<pat::Muon>& muons)
 		mu0_dpt_div_pt = muons[0].muonBestTrack()->ptError()/muons[0].muonBestTrack()->pt();
 		mu0_isfakeablesel = muons[0].userFloat("idFakeable") > 0.5;
 		mu0_ismvasel = muons[0].userFloat("idMVABased") > 0.5;
+		if (muons[0].hasUserFloat("MCMatchType"))
+			mu0_mcMatchType = muons[0].userFloat("MCMatchType");
 	}
 	
 	if (muons.size() > 1 ) {
@@ -154,6 +141,8 @@ void CU_ttH_EDA_Ntuple::fill_ntuple_muons(const std::vector<pat::Muon>& muons)
 		mu1_dpt_div_pt = muons[1].muonBestTrack()->ptError()/muons[1].muonBestTrack()->pt();
 		mu1_isfakeablesel = muons[1].userFloat("idFakeable") > 0.5;
 		mu1_ismvasel = muons[1].userFloat("idMVABased") > 0.5;
+		if (muons[1].hasUserFloat("MCMatchType"))
+			mu1_mcMatchType = muons[1].userFloat("MCMatchType");
 	}
 }
 
@@ -182,6 +171,8 @@ void CU_ttH_EDA_Ntuple::fill_ntuple_electrons(const std::vector<pat::Electron>& 
 		ele0_nMissingHits = electrons[0].userFloat("numMissingHits");
 		ele0_ismvasel = electrons[0].userFloat("idMVABased") > 0.5;
 		ele0_isfakeablesel = electrons[0].userFloat("idFakeable") > 0.5;
+		if (electrons[0].hasUserFloat("MCMatchType"))
+			ele0_mcMatchType = electrons[0].userFloat("MCMatchType");
 	}
 	
 	if (electrons.size() > 1 ) {
@@ -207,6 +198,8 @@ void CU_ttH_EDA_Ntuple::fill_ntuple_electrons(const std::vector<pat::Electron>& 
 		ele1_nMissingHits = electrons[1].userFloat("numMissingHits");
 		ele1_ismvasel = electrons[1].userFloat("idMVABased") > 0.5;
 		ele1_isfakeablesel = electrons[1].userFloat("idFakeable") > 0.5;
+		if (electrons[1].hasUserFloat("MCMatchType"))
+			ele1_mcMatchType = electrons[1].userFloat("MCMatchType");
 	}
 }
 
@@ -245,6 +238,8 @@ void CU_ttH_EDA_Ntuple::fill_ntuple_taus(const std::vector<pat::Tau>& taus)
 		tau0_againstElectronLooseMVA6 = taus[0].tauID("againstElectronLooseMVA6");
 		tau0_againstElectronMediumMVA6 = taus[0].tauID("againstElectronMediumMVA6");
 		tau0_againstElectronTightMVA6 = taus[0].tauID("againstElectronTightMVA6");
+		if (taus[0].hasUserFloat("MCMatchType"))
+			tau0_mcMatchType = taus[0].userFloat("MCMatchType");
 	}
 	
 	if (taus.size() > 1 ) {
@@ -280,6 +275,8 @@ void CU_ttH_EDA_Ntuple::fill_ntuple_taus(const std::vector<pat::Tau>& taus)
 		tau1_againstElectronLooseMVA6 = taus[1].tauID("againstElectronLooseMVA6");
 		tau1_againstElectronMediumMVA6 = taus[1].tauID("againstElectronMediumMVA6");
 		tau1_againstElectronTightMVA6 = taus[1].tauID("againstElectronTightMVA6");
+		if (taus[1].hasUserFloat("MCMatchType"))
+			tau1_mcMatchType = taus[1].userFloat("MCMatchType");
 	}
 }
 
@@ -325,7 +322,7 @@ void CU_ttH_EDA_Ntuple::initialize()
 	ls = -9999;
 	run = -9999;
 	event_weight = -9999.;
-	//PU_weight = -9999.;
+	PU_weight = -9999.;
 	MC_weight = -9999.;
 	MC_weight_scale_muF0p5 = -9999.;
 	MC_weight_scale_muF2 = -9999.;
@@ -557,7 +554,7 @@ void CU_ttH_EDA_Ntuple::set_up_branches(TTree *tree)
 	tree->Branch("ls", &ls);
 	tree->Branch("run", &run);
 	tree->Branch("event_weight", &event_weight);
-	//tree->Branch("PU_weight", &PU_weight);
+	tree->Branch("PU_weight", &PU_weight);
 	tree->Branch("MC_weight", &MC_weight);
 	tree->Branch("MC_weight_scale_muF0p5", &MC_weight_scale_muF0p5);
 	tree->Branch("MC_weight_scale_muF2", &MC_weight_scale_muF2);

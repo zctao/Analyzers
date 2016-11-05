@@ -209,7 +209,10 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 
 	// MC truth matching
 	template <typename T>
-		int MatchGenParticle_Type(const T&);
+		int MatchGenParticle_Type(const T&, const std::vector<reco::GenParticle>&);
+	const reco::GenParticle* getMatchedGenParticle(const pat::Electron&, const std::vector<reco::GenParticle>&);
+	const reco::GenParticle* getMatchedGenParticle(const pat::Muon&, const std::vector<reco::GenParticle>&);
+	const reco::GenParticle* getMatchedGenParticle(const pat::Tau&, const std::vector<reco::GenParticle>&);
 	
 	// event selection
 	bool pass_event_sel_2l(CU_ttH_EDA_event_vars &, Selection_types, int&, int&);
