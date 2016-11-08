@@ -527,14 +527,14 @@ bool CU_ttH_EDA::pass_event_sel_2l(CU_ttH_EDA_event_vars &local,
 		}
 
 		bool matchMCTau = false;
-		for (const auto & tau : local.tau_selected) {
-		    int mtype = tau.userFloat("MCMatchType");
-			if (debug)
-				std::cout << "tau mc match: " << mtype << std::endl;
-			if (mtype==1 or mtype==2 or mtype==3 or mtype==4 or mtype==5) {
-				matchMCTau = true;
-				break;
-			}
+		// should have at least one tau at this stage
+		// Only match the leading one if there are more
+		assert(local.tau_selected.size()>=1);
+		int mtype = local.tau_selected[0].userFloat("MCMatchType");
+		if (debug)
+			std::cout << "tau mc match: " << mtype << std::endl;
+		if (mtype==1 or mtype==2 or mtype==3 or mtype==4 or mtype==5) {
+			matchMCTau = true;
 		}
 
 		passMCMatching = passMCMatching and matchMCTau;
@@ -1157,7 +1157,7 @@ const reco::GenParticle* CU_ttH_EDA::getMatchedGenParticle(const pat::Muon& patM
 			float dR = reco::deltaR(gen.eta(),gen.phi(),patMu.eta(),patMu.phi());
 			
 			if (dR > 0.2) continue;
-			// if (gen.pt() < 8.) continue
+			if (gen.pt() < 8.) continue;
 
 			if (dR > dRmin) continue;  // find the closest in dR
 
@@ -1185,7 +1185,7 @@ const reco::GenParticle* CU_ttH_EDA::getMatchedGenParticle(const pat::Electron& 
 
 			float dR = reco::deltaR(gen.eta(),gen.phi(),patEle.eta(),patEle.phi());
 			if (dR > 0.2) continue;
-			// if (gen.pt() < 8.) continue
+			if (gen.pt() < 8.) continue;
 
 			if (dR > dRmin) continue;  // find the closest in dR
 			
@@ -1214,7 +1214,7 @@ const reco::GenParticle* CU_ttH_EDA::getMatchedGenParticle(const pat::Tau& patTa
 			float dR = reco::deltaR(gen.eta(),gen.phi(),patTau.eta(),patTau.phi());
 
 			if (dR > 0.2) continue;
-			// if (gen.pt() < 8.) continue;
+			if (gen.pt() < 8.) continue;
 
 		    if (dR > dRmin) continue;
 
@@ -1240,6 +1240,7 @@ const reco::GenParticle* CU_ttH_EDA::getMatchedGenParticle(const pat::Tau& patTa
 
 			if (dR > 0.2) continue;
 			// if (visP4.pt() < 15.) continue;
+			if (gen.pt() < 15.) continue;
 
 			if (dR > dRmin) continue;
 			

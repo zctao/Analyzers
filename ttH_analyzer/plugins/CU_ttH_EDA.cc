@@ -521,6 +521,18 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 
 		pass_event_selection = pass_event_selection and (matchHLT or hltcut_off);
 		
+		if (debug) {
+			if (not matchHLT) {
+				std::cout << "FAILED matchHLT" << std::endl;
+				std::cout << "category : " << ilep << std::endl;
+				std::cout << "single mu : " << local.pass_single_mu << std::endl;
+				std::cout << "double mu : " << local.pass_double_mu << std::endl;
+				std::cout << "single e : " << local.pass_single_e << std::endl;
+				std::cout << "double e : " << local.pass_double_e << std::endl;
+				std::cout << "e mu : " << local.pass_elemu << std::endl;
+ 			}
+		}
+		
 		// Check if all HLTs failed for debug purpose: assert(not matchHLT);
 		
 		double mva_ttbar = -9999.;

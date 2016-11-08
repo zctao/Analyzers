@@ -1,7 +1,7 @@
 *~
 *.pyc
 .fuse_*
-#*#
+*#*#
 *.root
 crabConfig*.py
 ttH_analyzer/test/crab/
@@ -14,3 +14,10 @@ crab.log
 
 *.txt
 *.log
+*.out
+*.json
+
+*tmp*
+
+ttH_analyzer/data/leptonSF/*.cc
+*pickevents_*.py
