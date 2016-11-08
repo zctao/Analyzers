@@ -417,7 +417,8 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	else {
 		local.jets_raw =
 			miniAODhelper.GetCorrectedJets(*(handle.jets), iEvent, iSetup,
-									   handle.genJets, JECTypes[JECType]);
+										   handle.genJets, JECTypes[JECType],
+										   true, false);// turn off JER smearing for now
 	}
 	
 	// overlap removal by dR
