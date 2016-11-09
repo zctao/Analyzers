@@ -354,7 +354,6 @@ bool CU_ttH_EDA::pass_event_sel_2l(CU_ttH_EDA_event_vars &local,
 	/// Categorize
 	bool passMetLD = false;
 	bool passZmassVeto = false;
-	bool passPhotonVeto = false;
 	
 	if (local.leptons_fakeable[0].Type() == LeptonType::kmu and
 		local.leptons_fakeable[1].Type() == LeptonType::kmu) {  // mumu
@@ -363,7 +362,6 @@ bool CU_ttH_EDA::pass_event_sel_2l(CU_ttH_EDA_event_vars &local,
 		
 		passMetLD = true;
 		passZmassVeto = true;
-		passPhotonVeto = true;
 	}
 	else if (local.leptons_fakeable[0].Type() == LeptonType::kele and
 			 local.leptons_fakeable[1].Type() == LeptonType::kele) {  // ee
@@ -381,13 +379,6 @@ bool CU_ttH_EDA::pass_event_sel_2l(CU_ttH_EDA_event_vars &local,
 			 local.leptons_fakeable[1].p4()).M();
 
 		passZmassVeto = eeInvMass < (91.2 - 10.0) or eeInvMass > (91.2 + 10.0);
-
-		//////////////////////////
-		/// To suppress electrons from photon conversions
-		passPhotonVeto = local.leptons_fakeable[0].conversionVeto() and
-			local.leptons_fakeable[0].noMissingHits() and
-			local.leptons_fakeable[1].conversionVeto() and
-			local.leptons_fakeable[1].noMissingHits();
 	}
 	else {  // emu
 		ilep = 2;
@@ -399,9 +390,6 @@ bool CU_ttH_EDA::pass_event_sel_2l(CU_ttH_EDA_event_vars &local,
 		int ie = local.leptons_fakeable[1].Type() == LeptonType::kele;
 		assert(local.leptons_fakeable[ie].Type() == LeptonType::kele);
 		assert(local.leptons_fakeable[!ie].Type() == LeptonType::kmu);
-
-		passPhotonVeto = local.leptons_fakeable[ie].conversionVeto() and
-			local.leptons_fakeable[ie].noMissingHits();
 	}	
 
 	if (not passMetLD) {
@@ -415,13 +403,6 @@ bool CU_ttH_EDA::pass_event_sel_2l(CU_ttH_EDA_event_vars &local,
 	if (not passZmassVeto) {
 		if (debug) {
 			std::cout << "FAIL Zmass cut " << std::endl;
-		}
-		return false;
-	}
-	
-	if (not passPhotonVeto) {
-		if (debug) {
-			std::cout << "FAIL photon conversion veto" << std::endl;
 		}
 		return false;
 	}
@@ -1262,6 +1243,10 @@ int CU_ttH_EDA::MatchGenParticle_Type(const T& reco_particle, const std::vector<
 
 	if (matchedGen == NULL) return 6;
 
+	if (debug) {
+		std::cout << "gen pt eta phi pdgid: "<< matchedGen->pt() << " " << matchedGen->eta()<< " "<< matchedGen->phi()<<" "<< matchedGen->pdgId() << std::endl;
+	}
+	
 	auto genStatus = matchedGen->statusFlags();
 
 	int mtype = 6;

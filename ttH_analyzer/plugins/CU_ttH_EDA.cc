@@ -366,8 +366,10 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		if (not isdata) {
 			int mtype_tau = MatchGenParticle_Type(tau, *(handle.MC_particles));
 			tau.addUserFloat("MCMatchType", mtype_tau);
-			if (debug)
+			if (debug) {
+				std::cout << "reco tau pt eta phi : "<<tau.pt()<<" "<<tau.eta()<<" "<<tau.phi()<<std::endl;
 				std::cout << "mc match type tau : " << mtype_tau << std::endl;
+			}
 		}
 			
 		if (tau.userFloat("idSelection")>0.5)
@@ -399,6 +401,11 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		std::cout << "fakeable electrons : " << std::endl;
 		for (auto & e : local.e_fakeable) {
 			std::cout<<"pt eta phi : " << e.pt()<<" "<<e.eta()<<" "<<e.phi()<<std::endl;
+		}
+		std::cout << "n_leptons_fakeable : " << local.leptons_fakeable.size() << std::endl;
+		std::cout << "n_leptons_tight : " << local.leptons_tight.size()<<std::endl;
+		for (auto & lep : local.leptons_fakeable) {
+			std::cout << "pt conept eta phi : "<<lep.pt()<<" "<<lep.conePt()<<" "<<lep.eta()<<" "<<lep.phi()<<std::endl;
 		}
 		std::cout << "n_taus_pre : " << local.n_taus_pre << std::endl;
 		std::cout << "n_taus : " << local.n_taus << std::endl;

@@ -52,7 +52,8 @@ void miniLepton::Set_LeptonID(const pat::Electron & ele)
 
 	_passfakeable =
 		ele.userFloat("idFakeable") > 0.5 and
-		//ele.userFloat("numMissingHits") == 0 and
+		ele.userFloat("numMissingHits") == 0 and
+		ele.passConversionVeto() and
 		_passloose;
 
 	_passtight =
