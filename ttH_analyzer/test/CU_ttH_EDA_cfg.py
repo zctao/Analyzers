@@ -74,6 +74,10 @@ options.register('GridMode', True,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.bool,
                  "run on grid or interactively")
+options.register("doJERSmearing", True,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.bool,
+                 "apply jet energy smearing for MC or not")
 
 options.maxEvents = -1
 options.inputFiles='file:/uscms/home/ztao/nobackup/datasample/ttH_80X/ttHnonbb.root'
@@ -122,6 +126,12 @@ updateJetCollection(
     jetCorrections = ('AK4PFchs', cms.vstring(['L1FastJet', 'L2Relative', 'L3Absolute','L2L3Residual']), 'None')
 )
 
+### MET Uncertainty
+from PhysicsTools.PatUtils.tools.runMETCorrectionsAndUncertainties import runMetCorAndUncFromMiniAOD
+runMetCorAndUncFromMiniAOD(process,
+                           isData=options.isData,
+                           )
+
 ### load the analysis
 # electron MVA developed by the EGamma POG
 process.load("RecoEgamma.ElectronIdentification.ElectronMVAValueMapProducer_cfi")
@@ -139,6 +149,7 @@ process.ttHtaus.input_tags.electrons = cms.InputTag("ttHLeptons")
 process.ttHtaus.input_tags.muons = cms.InputTag("ttHLeptons")
 process.ttHtaus.input_tags.taus = cms.InputTag("ttHLeptons")
 process.ttHtaus.input_tags.jets = cms.InputTag("updatedPatJetsUpdatedJEC")
+#process.ttHtaus.input_tags.mets = cms.InputTag("slimmedMETs","","ttH")
 process.ttHtaus.input_tags.rho = cms.InputTag("fixedGridRhoFastjetCentralNeutral")
 
 process.ttHtaus.do_systematics = cms.bool(options.doSystematics)
@@ -152,6 +163,7 @@ process.ttHtaus.using_real_data = cms.bool(options.isData)
 process.ttHtaus.selection_region = cms.string(options.SelectionRegion)
 process.ttHtaus.turn_off_HLT_cut = cms.bool(options.TurnOffHLTCut)
 process.ttHtaus.debug_mode = cms.bool(options.Debug)
+process.ttHtaus.doJERsmear = cms.bool(options.doJERSmearing)
 # for reHLT
 if options.reHLT:
     process.ttHtaus.HLT_config_tag = cms.string("HLT2")
@@ -178,6 +190,7 @@ if options.isData:
         process.patJetCorrFactorsUpdatedJEC *
         process.updatedPatJetsUpdatedJEC *
         process.electronMVAValueMapProducer *
+        #process.fullPatMetSequence *
         process.ttHLeptons *
         process.ttHtaus
     )
@@ -185,6 +198,7 @@ else:
     process.p = cms.Path(
         process.patJetCorrFactorsUpdatedJEC * process.updatedPatJetsUpdatedJEC *
         process.electronMVAValueMapProducer *
+        #process.fullPatMetSequence *
         process.ttHLeptons *
         process.ttHtaus
     )

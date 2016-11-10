@@ -59,6 +59,7 @@ CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig):
 	// JEC
 	JECType (iConfig.getParameter<string>("JECType")),
 	//jet_corrector (iConfig.getParameter<string>("jet_corrector")),
+	doJERsmear (iConfig.getParameter<bool>("doJERsmear")),
 	isdata (iConfig.getParameter<bool>("using_real_data")),
 	selection_region (iConfig.getParameter<string>("selection_region")),
 	// debug flag
@@ -425,7 +426,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		local.jets_raw =
 			miniAODhelper.GetCorrectedJets(*(handle.jets), iEvent, iSetup,
 										   handle.genJets, JECTypes[JECType],
-										   true, false);// turn off JER smearing for now
+										   true, doJERsmear);
 	}
 	
 	// overlap removal by dR

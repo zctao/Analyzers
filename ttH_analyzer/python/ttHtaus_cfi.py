@@ -53,6 +53,8 @@ ttHtaus =  cms.EDAnalyzer('CU_ttH_EDA',
         selection_region = cms.string('signal'),
         # debug flag
         debug_mode = cms.bool(False),
+        # JER Smearing flag
+        doJERsmear = cms.bool(True),
         # InputTags
         input_tags = cms.PSet(
             pv = cms.InputTag("offlineSlimmedPrimaryVertices"),

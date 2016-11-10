@@ -316,6 +316,8 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 		= {{"NA", sysType::NA},
 		   {"JERUp", sysType::JERup},{"JERDown", sysType::JERdown},
 		   {"JESUp", sysType::JESup},{"JESDown", sysType::JESdown}};
+	bool doJERsmear;
+
 	
 	bool isdata;
 	char MAODHelper_b_tag_strength;
