@@ -996,6 +996,11 @@ float CU_ttH_EDA::getFakeRate(const pat::Tau& tau)
 		ratio = readTF(f_fakerate_tau_mvaM_etaH_ratio, tau.pt());
 	}
 
+	if (debug) {
+		std::cout << "tau fake rate (fr_mc  ratio) : " << fr_mc <<" "<<
+			ratio<<std::endl;
+	}
+	
 	return fr_mc * ratio;
 }
 

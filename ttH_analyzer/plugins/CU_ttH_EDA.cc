@@ -73,7 +73,7 @@ CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig):
 	MAODHelper_era = "2015_74x";
 	MAODHelper_sample_nr = 2500;
 
-	Load_configuration_set_type(config_analysis_type);	
+	Load_configuration_set_type(config_analysis_type);
 	Load_configuration_MAODH(isdata);
 	
 	// Load_configuration(static_cast<string>("Configs/config_analyzer.yaml"));
@@ -607,6 +607,20 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 					-1. : f1/(1.-f1);
 				float F2 = local.leptons_fakeable[1].passTightSel() ?
 					-1. : f2/(1.-f2);
+
+				if (debug) {
+					std::cout << "lep1 type passTight? : " <<
+						local.leptons_fakeable[0].Type()<<" "<<
+						local.leptons_fakeable[0].passTightSel()<<std::endl;
+					std::cout << "f1 F1 : " << f1 << " " << F1 << std::endl;
+					std::cout << "lep2 type passTight? : " <<
+						local.leptons_fakeable[1].Type()<<" "<<
+						local.leptons_fakeable[1].passTightSel()<<std::endl;
+					std::cout << "f2 F2 : " << f2 << " " << F2 << std::endl;
+				}
+				
+				float f3 = -1.;
+				float F3 = -1.;
 				
 				if (local.n_taus >= 1) { // has at least one selected tau
 					// consider only electrons and muons
@@ -615,12 +629,16 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 				}
 				else { // all taus are fakeable
 					// consider leading tau
-					float f3 = getFakeRate(local.tau_preselected_sorted[0]);
-					float F3 = f3/(1.-f3);
+					f3 = getFakeRate(local.tau_preselected_sorted[0]);
+					F3 = f3/(1.-f3);
 
 					local.weight = F1 * F2 * F3;
 				}
-				
+
+				if (debug) {
+					std::cout << "n_tau : " << local.n_taus << std::endl;
+					std::cout << "f3 F3 : " << f3 << " " << F3 << std::endl;
+				}
 			}
 
 			//////////////////////////

@@ -63,12 +63,10 @@ void miniLepton::Set_LeptonID(const pat::Electron & ele)
 		//ele.isGsfCtfScPixChargeConsistent() and
 		_passfakeable;
 	
-    
 	_conept = -99;
-	if (_passfakeable and !_passtight)
-		_conept = 0.85 * ele.pt() / ele.userFloat("nearestJetPtRatio");
-	if (_passtight)
-		_conept = ele.pt();
+	if (_passfakeable)
+		_conept = (ele.userFloat("leptonMVA") > 0.75) ?
+			ele.pt() : 0.85 * ele.pt() / ele.userFloat("nearestJetPtRatio");
 	
 	_lepID_set = true;
 }
@@ -80,10 +78,9 @@ void miniLepton::Set_LeptonID(const pat::Muon & mu)
 	_passtight = mu.userFloat("idMVABased") > 0.5 and _passfakeable;
    
 	_conept = -99.;
-	if (_passfakeable and !_passtight)
-		_conept = 0.85 * mu.pt() / mu.userFloat("nearestJetPtRatio");
-	if (_passtight)
-		_conept = mu.pt();
+	if (_passfakeable)
+		_conept = (mu.userFloat("leptonMVA") > 0.75) ?
+			mu.pt() : (0.85 * mu.pt() / mu.userFloat("nearestJetPtRatio"));
 	
 	_lepID_set = true;
 }
