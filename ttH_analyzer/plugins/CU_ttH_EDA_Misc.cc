@@ -935,6 +935,17 @@ float CU_ttH_EDA::getEleChargeMisIDProb(const miniLepton& lepton, bool isdata)
 	
 }
 
+float CU_ttH_EDA::getEleChargeMisIDProb(const miniLepton& lepton)
+{
+	// muon
+	if (lepton.Type() == LeptonType::kmu) return 0.;
+
+	// electron
+	assert(lepton.Type() == LeptonType::kele);
+
+	return read2DHist(h_chargeMisId, lepton.pt(), abs(lepton.eta()));
+}
+
 float CU_ttH_EDA::read2DHist(TH2* h2d, float x, float y)
 {
 	TAxis* xaxis = h2d->GetXaxis();
@@ -954,12 +965,28 @@ float CU_ttH_EDA::read2DHist(TH2* h2d, float x, float y)
 	return result;
 }
 
-float CU_ttH_EDA::readTGraph(TGraphAsymmErrors* graph, float x)
+float CU_ttH_EDA::evalTGraph(TGraphAsymmErrors* graph, float x)
 {
 	float x1 = std::max(float(graph->GetXaxis()->GetXmin()+1e-5),
 						std::min(float(graph->GetXaxis()->GetXmax()-1e-5), x)
 						);
 	return graph->Eval(x1);
+}
+
+float CU_ttH_EDA::readTGraph(TGraphAsymmErrors* graph, float x)
+{
+	int nPoints = graph -> GetN();
+	double xp, yp = -1.;
+	for (int i=0; i<nPoints; ++i) {
+		int ip = graph -> GetPoint(i,xp,yp);
+		float xerr_h = graph->GetErrorXhigh(i);
+		float xerr_l = graph->GetErrorXlow(i);
+
+		if (ip != -1) {
+			if (x>xp-xerr_l and x<xp+xerr_h) return yp;
+		}
+	}
+	return yp;
 }
 
 float CU_ttH_EDA::readTF(TF1* f, float x)
@@ -1025,16 +1052,16 @@ float CU_ttH_EDA::getLeptonSF_loose(const miniLepton& lepton)
 	
 	if (lepton.Type()==LeptonType::kmu) {
 		if (abs(lepton.eta())<1.2) {
-			sf *= readTGraph(h_recoToLoose_leptonSF_mu1_b, lepton.pt());
+			sf *= evalTGraph(h_recoToLoose_leptonSF_mu1_b, lepton.pt());
 		}
 		else {
-			sf *= readTGraph(h_recoToLoose_leptonSF_mu1_e, lepton.pt());
+			sf *= evalTGraph(h_recoToLoose_leptonSF_mu1_e, lepton.pt());
 		}
 
 		sf *= read2DHist(h_recoToLoose_leptonSF_mu2,
 						 lepton.pt(), abs(lepton.eta()));
 
-		sf *= readTGraph(h_recoToLoose_leptonSF_mu3, lepton.eta());
+		sf *= evalTGraph(h_recoToLoose_leptonSF_mu3, lepton.eta());
 	}
 	else if (lepton.Type()==LeptonType::kele) {
 		sf *= read2DHist(h_recoToLoose_leptonSF_el1,

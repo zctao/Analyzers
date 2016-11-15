@@ -97,6 +97,12 @@ void CU_ttH_EDA::Set_up_FakeRate_Lut()
 	}
 }
 
+void CU_ttH_EDA::Set_up_ChargeMisID_Lut()
+{
+	file_eleMisCharge = new TFile((std::string(getenv("CMSSW_BASE")) + "/src/Analyzers/ttH_analyzer/data/QF_data_el.root").c_str(), "read");
+	h_chargeMisId = (TH2F*) file_eleMisCharge->Get("chargeMisId");
+}
+
 void CU_ttH_EDA::Set_up_LeptonSF_Lut()
 {
 	//// loose vs reco

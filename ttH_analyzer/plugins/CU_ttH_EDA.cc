@@ -98,7 +98,10 @@ CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig):
 	if (selection_type == Control_1lfakeable) {
 		Set_up_FakeRate_Lut();
 	}
-	
+
+	if (selection_type == Control_2los1tau) {
+		Set_up_ChargeMisID_Lut();
+	}
 }
 
 /// Destructor
@@ -645,9 +648,11 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 			// charge flip background (data driven)
 			if (selection_type == Control_2los1tau) {
 				float P1_misCharge =
-					getEleChargeMisIDProb(local.leptons_fakeable[0],true);
+					//getEleChargeMisIDProb(local.leptons_fakeable[0],true);
+					getEleChargeMisIDProb(local.leptons_fakeable[0]);
 				float P2_misCharge =
-					getEleChargeMisIDProb(local.leptons_fakeable[1],true);
+					//getEleChargeMisIDProb(local.leptons_fakeable[1],true);
+					getEleChargeMisIDProb(local.leptons_fakeable[1]);
 				
 				local.weight = P1_misCharge + P2_misCharge;
 			}

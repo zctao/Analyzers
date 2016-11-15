@@ -172,6 +172,7 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	void fillCSVhistos(TFile*, TFile*);
 	void Set_up_LeptonSF_Lut();
 	void Set_up_FakeRate_Lut();
+	void Set_up_ChargeMisID_Lut();
 
 	int Set_up_Run_histograms_triggers(); // at beginRun(), after
 										  // Set_up_name_vectors()
@@ -228,10 +229,12 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 
 	float read2DHist(TH2*, float, float);
 	float readTGraph(TGraphAsymmErrors*, float);
+	float evalTGraph(TGraphAsymmErrors*, float);
 	float readTF(TF1*, float);
 	
 	// Electron Charge misId
 	float getEleChargeMisIDProb(const miniLepton&, bool);
+	float getEleChargeMisIDProb(const miniLepton&);
 	
 	// Lepton fake rate
 	float getFakeRate(const miniLepton&);
@@ -354,7 +357,7 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	TH1D *h_mZ;
 
 	// Fake lepton rate lookup histograms
-	TFile* file_fr_lep;
+	TFile *file_fr_lep;
 	TH2F *h_fakerate_el;
 	TH2F *h_fakerate_mu;
 	// jet to tau fake rate
@@ -367,6 +370,10 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	TF1 *f_fakerate_tau_mvaM_etaH_ratio;
 	//TF1 *f_fakerate_tau_mvaT_etaL_ratio;
 	//TF1 *f_fakerate_tau_mvaT_etaH_ratio;
+
+	// Electron Charge MisID lookup histogram
+	TFile *file_eleMisCharge;
+	TH2F *h_chargeMisId;
 	
 	// Lepton ID scale factor lookup tables
 	// Input files
