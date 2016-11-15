@@ -2,6 +2,8 @@
 <use name="DataFormats/Math"/>
 <use name="DataFormats/PatCandidates"/>
 <use name="MiniAOD/MiniAODHelper"/>
+<use name="CondTools/BTau"/>
+<use name="CondFormats/BTauObjects"/>
 <use name="root"/>
 <use name="roottmva"/>
 <export>

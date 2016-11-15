@@ -710,7 +710,7 @@ int CU_ttH_EDA::partition2DBDT(double ttbar, double ttV)
 	return 2*(x-1)+y;
 }
 */
-
+/*
 double CU_ttH_EDA::getEvtCSVWeight(std::vector<pat::Jet> & jets, int iSys)//, double &csvWgtHF, double &csvWgtLF, double &csvWgtCF)
 {
 	int iSysHF = 0;
@@ -811,16 +811,20 @@ double CU_ttH_EDA::getEvtCSVWeight(std::vector<pat::Jet> & jets, int iSys)//, do
 	
 	return csvWgtTotal;
 }
+*/
 
-/*
-double CU_ttH_EDA::getEvtCSVWeight(std::vector<pat::Jet> & jets, std::string & sys)
+double CU_ttH_EDA::getEvtCSVWeight(std::vector<pat::Jet> & jets, const std::string & sys)
 {
 	double weight_evt = 1.;
+
+	if (debug) std::cout << "Btag reweighting : " << std::endl;
 
 	for (auto & j : jets) {		
 		double w = getJetCSVWeight(j, sys);
 		weight_evt *= w;
 	}
+
+	if (debug) std::cout << "total weight : "<< weight_evt << std::endl;
 
 	return weight_evt;
 }
@@ -832,6 +836,8 @@ double CU_ttH_EDA::getJetCSVWeight(pat::Jet & jet, std::string sys)
 	double csv = jet.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
 	int flavor = jet.hadronFlavour();
 
+	if (debug) std::cout << "jet pt eta csv flavor weight: "<<pt<<" "<<eta<<" "<<csv<<" "<<flavor<<" ";
+	
 	BTagEntry::JetFlavor jf = BTagEntry::FLAV_UDSG;	
 	if ( abs(flavor) == 5 )
 		jf = BTagEntry::FLAV_B;
@@ -881,6 +887,8 @@ double CU_ttH_EDA::getJetCSVWeight(pat::Jet & jet, std::string sys)
 
 	weight_jet = BTagCaliReader->eval_auto_bounds(sys, jf, eta, pt, csv);
 
+	if (debug) std::cout << weight_jet << std::endl;
+	
 	assert(weight_jet > 0.);
 	// problems in CSVv2 file? negative weight e.g. line 1735 and 1736
 	// for now:
@@ -890,7 +898,7 @@ double CU_ttH_EDA::getJetCSVWeight(pat::Jet & jet, std::string sys)
 
 	return weight_jet;
 }
-*/
+
 
 float CU_ttH_EDA::getEleChargeMisIDProb(const miniLepton& lepton, bool isdata)
 {

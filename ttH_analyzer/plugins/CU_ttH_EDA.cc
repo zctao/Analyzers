@@ -89,8 +89,8 @@ CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig):
 	Set_up_Tree();
 
 	if (not isdata) {
-		//Set_up_BTagCalibration_Readers();
-		Set_up_CSV_rootFile();
+		Set_up_BTagCalibration_Readers();
+		//Set_up_CSV_rootFile();
 		
 		Set_up_LeptonSF_Lut();
 	}
@@ -112,12 +112,12 @@ CU_ttH_EDA::~CU_ttH_EDA()
 	// (e.g. close files, deallocate resources etc.)
 
 	if (not isdata) {
-		//delete BTagCaliReader;
-		f_CSVwgt_HF->Close();
-		f_CSVwgt_LF->Close();
+		delete BTagCaliReader;
+		//f_CSVwgt_HF->Close();
+		//f_CSVwgt_LF->Close();
 		
-		delete f_CSVwgt_HF;
-		delete f_CSVwgt_LF;
+		//delete f_CSVwgt_HF;
+		//delete f_CSVwgt_LF;
 	
 		file_recoToLoose_leptonSF_mu1_b->Close();
 		file_recoToLoose_leptonSF_mu1_e->Close();
@@ -572,29 +572,31 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 			assert(local.tau_preselected_sorted.size() >= 1);
 			
 			// Weights and scale factors
+			if (not isdata) {
+				/// CSV weight
+				local.csv_weight = getEvtCSVWeight(local.jets_selected, "NA");
+				//local.csv_weight = getEvtCSVWeight(local.jets_selected, csv_iSys["NA"]);
+				/// HLT sf
+				local.hlt_sf = getLepHLTSF(ilep);
+				
+				// LeptonSF
+				local.lepIDEff_sf *= getLeptonSF(local.leptons_fakeable[0]);
+				local.lepIDEff_sf *= getLeptonSF(local.leptons_fakeable[1]);
+				
+			}
+			
 			//////////////////////////
-			// signal region
+			// signal region			
 			if (selection_type == Signal_2lss1tau) {
+				/// total event weight
 				if (isdata) {
 					local.weight = 1.;
 				}
 				else {
-					/// CSV weight
-					//local.csv_weight = getEvtCSVWeight(local.jets_selected, "NA");
-					local.csv_weight = getEvtCSVWeight(local.jets_selected, csv_iSys["NA"]);
-					/// HLT sf
-					local.hlt_sf = getLepHLTSF(ilep);
-
-					// LeptonSF
-					local.lepIDEff_sf *= getLeptonSF(local.leptons_fakeable[0]);
-					local.lepIDEff_sf *= getLeptonSF(local.leptons_fakeable[1]);
-					
-					/// total event weight
 					local.weight =
 						local.csv_weight * local.mc_weight *
 						local.hlt_sf * local.lepIDEff_sf;
 				}
-				
 			}
 			
 			//////////////////////////
@@ -669,14 +671,14 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 				->Fill(bin, local.weight);
 			
 			// systematics
-			if (!isdata and doSystematics) {
+			if (!isdata and doSystematics and selection_type == Signal_2lss1tau) {
 
 				// CSV reweight
 				for (int isys = 0; isys < 16; ++isys) {
 					double csv_weight_sys =
-						//getEvtCSVWeight(local.jets_selected, sysList[isys]);
-						getEvtCSVWeight(local.jets_selected, csv_iSys[sysList[isys]]);
-					double evt_weight_sys = // TODO: protect control region on MC
+						getEvtCSVWeight(local.jets_selected, sysList[isys]);
+						//getEvtCSVWeight(local.jets_selected, csv_iSys[sysList[isys]]);
+					double evt_weight_sys =
 						local.weight / local.csv_weight * csv_weight_sys;
 
 					// 2D
@@ -746,8 +748,8 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 			else {
 				/// CSV weight
 				local.csv_weight =
-					getEvtCSVWeight(local.jets_selected, csv_iSys["NA"]);
-				    //getEvtCSVWeight(local.jets_selected, "NA");
+					//getEvtCSVWeight(local.jets_selected, csv_iSys["NA"]);
+				    getEvtCSVWeight(local.jets_selected, "NA");
 
 				/// HLT sf: (1) +/- 0.06
 				local.hlt_sf = 1.0;

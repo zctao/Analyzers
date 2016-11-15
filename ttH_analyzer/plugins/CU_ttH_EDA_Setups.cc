@@ -346,13 +346,13 @@ void CU_ttH_EDA::Set_up_Tree()
 	evtNtuple.set_up_branches(eventTree);
 }
 
-/*
+
 void CU_ttH_EDA::Set_up_BTagCalibration_Readers()
 {
 	const std::string base =
 		std::string(getenv("CMSSW_BASE")) +  "/src/Analyzers/ttH_analyzer/data/";
 
-	BTagCalibration calib_csvv2("csvv2", base + "CSVv2_ichep.csv");  // 80X
+	BTagCalibration calib_csvv2("csvv2", base + "CSVv2_ichep.csv");
 	
 	BTagCaliReader = new BTagCalibrationReader(
 	    BTagEntry::OP_RESHAPING, // operating point
@@ -368,8 +368,8 @@ void CU_ttH_EDA::Set_up_BTagCalibration_Readers()
 	BTagCaliReader->load(calib_csvv2,BTagEntry::FLAV_UDSG,"iterativefit");
 
 }
-*/
 
+/*
 void CU_ttH_EDA::Set_up_CSV_rootFile()
 {
 	std::string inputFileHF = "data/csv_rwt_fit_hf_v2_final_2016_09_7test.root";
@@ -380,7 +380,8 @@ void CU_ttH_EDA::Set_up_CSV_rootFile()
 
 	fillCSVhistos(f_CSVwgt_HF, f_CSVwgt_LF);
 }
-
+*/
+/*
 void CU_ttH_EDA::fillCSVhistos(TFile* fileHF, TFile* fileLF)
 {
 	for( int iSys=0; iSys<9; iSys++ ){
@@ -460,6 +461,6 @@ void CU_ttH_EDA::fillCSVhistos(TFile* fileHF, TFile* fileLF)
 
 	return;
 }
-
+*/
 #endif
 	
