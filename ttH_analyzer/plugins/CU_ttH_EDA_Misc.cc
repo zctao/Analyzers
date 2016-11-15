@@ -758,6 +758,8 @@ double CU_ttH_EDA::getEvtCSVWeight(std::vector<pat::Jet> & jets, int iSys)//, do
 		double jetAbsEta = std::abs(jet.eta());
 		int flavor = jet.hadronFlavour();
 
+		if (debug) std::cout<<"jet pt eta csv flavor weight: "<<jetPt<<" "<<jetAbsEta<<" "<<csv<<" "<<flavor<<" ";
+		
 		int iPt = -1; int iEta = -1;
 		if (jetPt >=19.99 && jetPt<30) iPt = 0;
 		else if (jetPt >=30 && jetPt<40) iPt = 1;
@@ -776,12 +778,16 @@ double CU_ttH_EDA::getEvtCSVWeight(std::vector<pat::Jet> & jets, int iSys)//, do
 			 double iCSVWgtHF = h_csv_wgt_hf[iSysHF][iPt]->GetBinContent(useCSVBin);
 			 if( iCSVWgtHF!=0 ) csvWgthf *= iCSVWgtHF;
 			 assert(csvWgthf > 0.);
+			 
+			 if (debug) std::cout << iCSVWgtHF << std::endl;
 		 }
 		 else if( abs(flavor) == 4 ){
 			 int useCSVBin = (csv>=0.) ? c_csv_wgt_hf[iSysC][iPt]->FindBin(csv) : 1;
 			 double iCSVWgtC = c_csv_wgt_hf[iSysC][iPt]->GetBinContent(useCSVBin);
 			 if( iCSVWgtC!=0 ) csvWgtC *= iCSVWgtC;
 			 assert(csvWgtC > 0.);
+
+			 if (debug) std::cout << iCSVWgtC << std::endl;
 		 }
 		 else {
 			 if (iPt >=3) iPt=3;       /// [30-40], [40-60] and [60-10000] only 3 Pt bins for lf
@@ -789,11 +795,15 @@ double CU_ttH_EDA::getEvtCSVWeight(std::vector<pat::Jet> & jets, int iSys)//, do
 			 double iCSVWgtLF = h_csv_wgt_lf[iSysLF][iPt][iEta]->GetBinContent(useCSVBin);
 			 if( iCSVWgtLF!=0 ) csvWgtlf *= iCSVWgtLF;
 			 assert(csvWgtlf);
+
+			 if (debug) std::cout << iCSVWgtLF << std::endl;
 		 }
 		 
 	}  // end of jet loop
 
 	double csvWgtTotal = csvWgthf * csvWgtC * csvWgtlf;
+
+	if (debug) std::cout << "total btag SF : "<< csvWgtTotal << std::endl;
 
 	//csvWgtHF = csvWgthf;
 	//csvWgtLF = csvWgtlf;

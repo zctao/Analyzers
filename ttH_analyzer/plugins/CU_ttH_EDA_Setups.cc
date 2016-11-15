@@ -372,10 +372,8 @@ void CU_ttH_EDA::Set_up_BTagCalibration_Readers()
 
 void CU_ttH_EDA::Set_up_CSV_rootFile()
 {
-	//std::string inputFileHF = "data/csv_rwt_fit_hf_76x_2016_02_08.root";
-	//std::string inputFileLF = "data/csv_rwt_fit_lf_76x_2016_02_08.root";
-	std::string inputFileHF = "data/csv_rwt_fit_hf_v2_final_2016_08_5test.root";
-	std::string inputFileLF = "data/csv_rwt_fit_lf_v2_final_2016_08_5test.root";
+	std::string inputFileHF = "data/csv_rwt_fit_hf_v2_final_2016_09_7test.root";
+	std::string inputFileLF = "data/csv_rwt_fit_lf_v2_final_2016_09_7test.root";
 
 	f_CSVwgt_HF = new TFile ((std::string(getenv("CMSSW_BASE")) + "/src/Analyzers/ttH_analyzer/" + inputFileHF).c_str());
 	f_CSVwgt_LF = new TFile ((std::string(getenv("CMSSW_BASE")) + "/src/Analyzers/ttH_analyzer/" + inputFileLF).c_str());
