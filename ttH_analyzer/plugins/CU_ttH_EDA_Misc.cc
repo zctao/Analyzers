@@ -413,7 +413,7 @@ bool CU_ttH_EDA::pass_event_sel_2l(CU_ttH_EDA_event_vars &local,
 	int nbtags_loose = local.jets_selected_btag_loose.size();
 	int nbtags_medium = local.jets_selected_btag_medium.size();
 
-	bool passNumJets = njets >= 4;
+	bool passNumJets = njets >= 3;
 	bool passNumBtags = nbtags_loose >= 2 or nbtags_medium >= 1;
 	
 	if (not passNumJets) {
@@ -885,16 +885,11 @@ double CU_ttH_EDA::getJetCSVWeight(pat::Jet & jet, std::string sys)
 	else
 		sys = "central";
 
-	weight_jet = BTagCaliReader->eval_auto_bounds(sys, jf, eta, pt, csv);
+	weight_jet = BTagCaliReader->eval_auto_bounds(sys, jf, abs(eta), pt, csv);
 
 	if (debug) std::cout << weight_jet << std::endl;
-	
-	assert(weight_jet > 0.);
-	// problems in CSVv2 file? negative weight e.g. line 1735 and 1736
-	// for now:
-	//if (weight_jet <= 0.) {
-	//	weight_jet = 1.;
-	//}
+
+	if (sys == "central") assert(weight_jet > 0.);
 
 	return weight_jet;
 }
