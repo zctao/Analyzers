@@ -63,6 +63,7 @@ for ch in channels:
                     run = f.next().strip()
                 pset = f.next().strip()
                 perjob = f.next().strip()
+                break
                 
     vd = locals()
     vd['name'] = ch
