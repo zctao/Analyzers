@@ -32,6 +32,8 @@ void makeSyncTree_EvtSel(
 		tree->SetBranchStatus("MC_weight_scale_muF2", 0);
 		tree->SetBranchStatus("MC_weight_scale_muR0p5", 0);
 		tree->SetBranchStatus("MC_weight_scale_muR2", 0);
+		tree->SetBranchStatus("npuTrue", 0);
+		tree->SetBranchStatus("npuInTime", 0);
 		tree->SetBranchStatus("n_tau", 0);
 		tree->SetBranchStatus("tau0_decayMode", 0);
 		tree->SetBranchStatus("tau1_decayMode", 0);

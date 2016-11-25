@@ -127,10 +127,10 @@ updateJetCollection(
 )
 
 ### MET Uncertainty
-from PhysicsTools.PatUtils.tools.runMETCorrectionsAndUncertainties import runMetCorAndUncFromMiniAOD
-runMetCorAndUncFromMiniAOD(process,
-                           isData=options.isData,
-                           )
+#from PhysicsTools.PatUtils.tools.runMETCorrectionsAndUncertainties import runMetCorAndUncFromMiniAOD
+#runMetCorAndUncFromMiniAOD(process,
+#                           isData=options.isData,
+#                           )
 
 ### load the analysis
 # electron MVA developed by the EGamma POG

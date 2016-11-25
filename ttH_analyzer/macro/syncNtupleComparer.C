@@ -36,12 +36,12 @@ void syncNtupleComparer(TString Region="",
 	
 	if (f1->IsOpen()) {
 		TTree* tree1 = (TTree*) f1->Get(treename1.data());
-		tree1->SetFillColor(5);
-		tree1->SetLineColor(0);
+		//tree1->SetFillColor(5);
+		tree1->SetLineColor(1);
 		
 		trees.push_back(tree1);
 		names.push_back("Cornell");
-		options.push_back("f");
+		options.push_back("l");
 	}
 	else
 		cout << "Cannot open " << inputFile1 << endl;
