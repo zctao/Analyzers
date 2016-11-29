@@ -14,6 +14,8 @@
 #include <algorithm>
 #include <map>
 
+#include "Cross_Section.h"
+
 using namespace std;
 
 const TString BTagSysts [16] =
@@ -21,15 +23,18 @@ const TString BTagSysts [16] =
 		 "_HFStats1Up","_HFStats1Down","_HFStats2Up","_HFStats2Down",
 		 "_LFStats1Up","_LFStats1Down","_LFStats2Up","_LFStats2Down",
 		 "_cErr1Up","_cErr1Down","_cErr2Up","_cErr2Down"};
+const TString ThuSysts [4] = {"_xUp","_xDown","_yUp","_yDown"};
 
 const TString fname_prefix = "output_";
-const TString sys_coname = "";//"_CMS_ttHl_";
+const TString sys_coname = "_";//"_CMS_ttHl_";
 
 // data directories
 map<TString,TString> dir_map =
-	{{"ttH_htt", "~/Documents/ttH/Outputs/"},
-	 {"ttH_hww", "~/Documents/ttH/Outputs/"},
-	 {"ttH_hzz", "~/Documents/ttH/Outputs/"},
+	{{"ttH_htt", "/eos/uscms/store/user/ztao/ttH_80X/ttHJetToNonbb_M125_13TeV_amcatnloFXFX_madspin_pythia8_mWCutfix/crab_"},
+	 {"ttH_hww", "/eos/uscms/store/user/ztao/ttH_80X/ttHJetToNonbb_M125_13TeV_amcatnloFXFX_madspin_pythia8_mWCutfix/crab_"},
+	 {"ttH_hzz", "/eos/uscms/store/user/ztao/ttH_80X/ttHJetToNonbb_M125_13TeV_amcatnloFXFX_madspin_pythia8_mWCutfix/crab_"},
+	 
+	 // FIXME
 	 {"TTW", "~/Documents/ttH/Outputs/"},
 	 {"TTZ", "~/Documents/ttH/Outputs/"},
 	 {"rares_TTTT", "~/Documents/ttH/Outputs/"},
@@ -41,35 +46,31 @@ map<TString,TString> dir_map =
 	 {"flips_data", "~/Documents/ttH/Outputs/"}
 	};
 
-const TString lepCategory [3] = {"_mumu", "_ee", "_emu"};
-const TString bCategory[2] = {"_bloose", "_bmedium"};
+const TString data_dir_prefix = "/";
 
 const TString dataSamples [5] =
 	{"DoubleMuon", "SingleMuon", "DoubleEG", "SingleElectron", "MuonEG"};
 
+const TString lepCategory [3] = {"_mumu", "_ee", "_emu"};
+const TString bCategory[2] = {"_bloose", "_bmedium"};
+
 //const float lumi = (0.02 + 2.24) * 1000.; // 1/pb
-const float lumi = 2.17 * 1000.; // 1/pb
+const float LUMI = 2.17 * 1000.; // 1/pb
 
-map<TString, float> xs_map =
-	{{"ttH_htt", 0.212}, {"ttH_hww", 0.212}, {"ttH_hzz", 0.212}, // ttHnonbb xs
-	 {"TTW", 0.2043}, {"TTZ", 0.2529}, {"WZ", 4.102},
-	 {"rares_TTTT", 0.009103}, {"rares_tZq", 0.0758}, {"rares_WW", 1.64},
-	 {"rares_WZZ", 0.05565}};
-
-vector<TH1D*> getShapesMC(const TString, const TString);
-vector<TH1D*> getShapesData(const TString, const TString);
+vector<TH1D*> getShapesMC(const TString, const TString, bool);
 vector<TH1D*> getShapesData(const TString, vector<const TString>&);
-void fillHistoFromTree(TH1D*, vector<vector<int>>&, TTree*);
+void fillHistoFromTree(TH1D*, vector<vector<int>>&, TTree*, vector<float>&);
 int partition2DBDT(float, float);
-TH1* combineHistCategories(TFile*, TString, int, float, float, vector<float>&);
-
+TH1* combineHistCategories(TFile*, TString, float, float, float, vector<float>&);
+TH1* combineHistCategories(TFile*, TString, float, float, float;
 
 void makeDatacards(
 				   vector<TString> channels = {"ttH_htt", "ttH_hww", "ttH_hzz",
 						   "TTW", "TTZ",
 						   //"WZ",
 						   "data_obs", "flips_data", "fakes_data",
-						   "Rares"})
+						   "Rares"},
+				   bool doSys = false)
 {
 	vector<TH1D*> datacards;
 	
@@ -80,7 +81,7 @@ void makeDatacards(
 			
 			vector<const TString> data_dir;
 			for (auto & ds : dataSamples) {
-				data_dir.push_back(dir_map[channel] + ds +"/");
+				data_dir.push_back(data_dir_predix + ds + "/");
 			}
 
 		    //shapes = getShapesData(channel, dir_map[channel]);
@@ -88,16 +89,17 @@ void makeDatacards(
 		}
 		else if (channel == "Rares") {
 			//{"rares_TTTT", "rares_WZZ",/*"rares_WW",*/ "rares_tZq"};
-		    vector<TH1D*> rare1 = getShapesMC("rares_TTTT",dir_map["rares_TTTT"]);
-			vector<TH1D*> rare2 = getShapesMC("rares_WZZ", dir_map["rares_WZZ"]);
-			vector<TH1D*> rare3 = getShapesMC("rares_tZq",dir_map["rares_tZq"]);
-			vector<TH1D*> rare4 = getShapesMC("rares_WW", dir_map["rares_WW"]);
+		    vector<TH1D*> rare1 = getShapesMC("rares_TTTT", doSys);
+			vector<TH1D*> rare2 = getShapesMC("rares_WZZ", doSys);
+			vector<TH1D*> rare3 = getShapesMC("rares_tZq", doSys);
+			vector<TH1D*> rare4 = getShapesMC("rares_WW", doSys);
 
 			int nhist = rare1.size();
 			for (int i = 0; i < nhist; ++i) {
 				TH1D* hrare_ = rare1.at(i);
 				hrare_->Add(rare2.at(i));
 				hrare_->Add(rare3.at(i));
+				hrare_->Add(rare4.at(i));
 
 				TString name = hrare_->GetName();
 				name.ReplaceAll("rares_TTTT","Rares");
@@ -107,7 +109,7 @@ void makeDatacards(
 			}					
 		}
 		else {
-			shapes = getShapesMC(channel, dir_map[channel]);
+			shapes = getShapesMC(channel, doSys);
 		}
 
 	    datacards.insert(datacards.end(), shapes.begin(), shapes.end());
@@ -122,79 +124,83 @@ void makeDatacards(
 	}
 }
 
-vector<TH1D*> getShapesMC(const TString channel, const TString dir)
+vector<TH1D*> getShapesMC(const TString channel, bool addSysts)
 {
 	vector<TH1D*> hists;
+	
 	// Open files
-	TFile* f = new TFile(dir + fname_prefix + channel+".root");
+	const TString dir = dir_map[channel] + channel + "/";
+	const TString fname = fname_prefix + channel + ".root";
+	TFile* f = new TFile(dir + fname);
 	if (not f->IsOpen()) {
-		cout << "Warning: cannot find " << fname_prefix << channel
-			 << ".root in " << dir << endl;
-		cout << "return an empty vector." << endl;
+		cout << "Warning: cannot find " << fname  << " in " << dir << endl;
+		cout << "return an empty vector" << endl;
 		return hists;
 	}
 
 	// For scaling
-	TH1I* h_nProcessed = (TH1I*)f->Get("ttHtaus/h_nProcessed");
-	int nsamples = h_nProcessed->GetEntries();
-	double xsection = xs_map[channel];
+	//TH1I* h_nProcessed = (TH1I*)f->Get("ttHtaus/h_nProcessed");
+	//int nsample = h_nProcessed->GetEntries();
+	TH1F* h_SumMCWeight = (TH1F*)f->Get("ttHtaus/h_SumGenWeight");
+	float nSum = h_SumMCWeight = h_SumMCWeight->GetBinContent(1);
+	double xs = xsection::xsection[string(channel)];
+
+	vector<float> yields;
 	
-	
-	TH1D* h_central = (TH1D*)f->Get("ttHtaus/h_MVA_shape");
-	if (channel != "WZ") {
-		ScaleHist(h_central, nsamples, lumi, xsection);
-	}
-	else {
-		ScaleHist(h_central, nsamples, 10);
-	}
+	TH1D* h_central = combineHistCategories(f, "", nSum, LUMI, xs, yields);
 	h_central->SetName("x_"+channel);
 	hists.push_back(h_central);
 
-	TH1D* h_jesup = (TH1D*)f->Get("ttHtaus/h_MVA_shape_JESUp");
-	if (channel != "WZ") {
-		ScaleHist(h_jesup, nsamples, lumi, xsection);
+	// print out yields in each category
+	int icat = 0;
+	float ysum = 0.;
+	cout << channel << " : ";
+	for (const TString lcat : lepCategory) {
+		for (const TString bcat : bCategory) {
+			cout << yields.at(i) << "("<<lcat<<","<<bcat<<") ";
+			ysum += yields.at(i++);
+		}
 	}
-	else {
-		ScaleHist(h_jesup, nsamples, 10);
-	}
-	h_jesup->SetName("x_" + channel + sys_coname + "JESUp");
-	hists.push_back(h_jesup);
+	cout << ysum << "(sum)" << endl;
 
-	TH1D* h_jesdo = (TH1D*)f->Get("ttHtaus/h_MVA_shape_JESDown");
-	if (channel != "WZ") {
-		ScaleHist(h_jesdo, nsamples, lumi, xsection);
-	}
-	else {
-		ScaleHist(h_jesdo, nsamples, 10);
-	}
-	h_jesdo->SetName("x_" + channel + sys_coname + "JESDown");
-	hists.push_back(h_jesdo);
-
-	for (auto & bsys : BTagSysts) {
-		TH1D* h_ = (TH1D*)f->Get("ttHtaus/h_MVA_shape_"+bsys);
-		ScaleHist(h_, nsamples, lumi, xsection);
-		h_->SetName("x_" + channel + sys_coname + "btag_" + bsys);
-		hists.push_back(h_);
-	}
-
-	return hists;
-}
-
-vector<TH1D*> getShapesData(const TString channel, const TString dir)
-{
-	vector<TH1D*> hists;
-	TFile* f_data = new TFile(dir + fname_prefix + channel + ".root");
-
-	if (not f_data->IsOpen()) {
-		cout << "Warning: cannot find " << fname_prefix << channel
-			 << ".root in " << dir << endl;
-		cout << "return an empty vector." << endl;
-		return hists;
+	if (not addSysts) return hists;
+	
+	// open jesup and jesdown files
+	const TString dir_jesup = dir_map[channel] + channel + "_jesup/";
+	const TString dir_jesdo = dir_map[channel] + channel + "_jesdown/";
+	
+	TFile* f_jesup = new TFile(dir_jesup + fname);
+	if (not f_jesup -> IsOpen()) {
+		cout << "Warning: cannot find " << fname << " in " << dir_jesup << endl;
 	}
 	
-	TH1D* h_ = (TH1D*)f_data->Get("ttHtaus/h_MVA_shape");
-	h_->SetName("x_"+channel);
-	hists.push_back(h_);
+	TFile* f_jesdo = new TFile(dir_jesdo + fname);
+	if (not f_jesdo -> IsOpen()) {
+		cout << "Warning: cannot find " << fname << " in " << dir_jesdo << endl;
+	}
+	
+	TH1D* h_jesup = combineHistCategories(f_jesup, "", nSum, LUMI, xs);
+	TH1D* h_jesdo = combineHistCategories(f_jesdo, "", nSum, LUMI, xs);
+	
+	h_jesup->SetName("x_" + channel + sys_coname + "JESUp");
+	hists.push_back(h_jesup);
+	
+	h_jesdo->SetName("x_" + channel + sys_coname + "JESDown");
+	hists.push_back(h_jesdo);
+	
+	// btag 
+	for (auto & bsys : BTagSysts) {
+		TH1D* h_ = combineHistCategories(f, bsys, nSum, LUMI, xs);
+		h_->SetName("x_" + channel + sys_coname + "btag" + bsys);
+		hists.push_back(h_);
+	}
+	
+	// theoretical
+	for (auto & thu : ThuSysts) {
+		TH1D* h_ = combineHistCategories(f, thu, nSum, LUMI, xs);
+		h_->SetName("x_" + channel + sys_coname + "thu_shape_" + thu);
+		hists.push_back(h_);
+	}
 
 	return hists;
 }
@@ -205,26 +211,47 @@ vector<TH1D*> getShapesData(const TString channel, vector<const TString>& dirs)
 
 	vector<vector<int>> eventList;  // A set of vectors: (run, lumisection, event#)
 
-	TH1D* h_ = new TH1D("h_MVA_shape","", 6, 0.5, 6.5);
+	TH1D* h_ = new TH1D("h_MVA_shape","", 7, 0.5, 7.5);
 	h_ -> Sumw2();
 	//TH1D* h_sys = ...
 	
 	// Open files
 	for (auto & dir : dirs) {
 		TFile* f_data = new TFile(dir + fname_prefix + channel + ".root");
-
+		if (not f_data -> IsOpen()) {
+			cout << "Warning: cannot find " << fname_prefix << channel
+				 << ".root in " << dir << endl;
+		}
+		
 		TTree* tree = (TTree*) f_data->Get("ttHtaus/eventTree");
 
-	    fillHistoFromTree(h_, eventList, tree);
-	}
+		vector<float> yields;
+		yields.resize(lepCategory.size() * bCategory.size());
+		
+	    fillHistoFromTree(h_, eventList, tree, yields);
 
+		/*
+		// print out yields
+		int icat = 0;
+		float ysum = 0.;
+		cout << channel << " : ";
+		for (const TString lcat : lepCategory) {
+			for (const TString bcat : bCategory) {
+				cout << yields.at(i) << "("<<lcat<<","<<bcat<<") ";
+				ysum += yields.at(i++);
+			}
+		}
+		cout << ysum << "(sum)" << endl;
+		*/
+	}
+	
 	h_->SetName("x_"+channel);
 	hists.push_back(h_);
 	
 	return hists;
 }
 
-void fillHistoFromTree(TH1D* h, vector<vector<int>>& eventList, TTree* tree)
+void fillHistoFromTree(TH1D* h, vector<vector<int>>& eventList, TTree* tree, vector<float>& yields)
 // Fill shape histogram from TTree entries.
 //Duplicate events characterized by (run, lumisection, event#) are only filled once
 {
@@ -235,13 +262,17 @@ void fillHistoFromTree(TH1D* h, vector<vector<int>>& eventList, TTree* tree)
 	double weight;
 	double mva_ttbar;
 	double mva_ttV;
+	//int lepCat;
+	//int btagCat;
 
 	tree->SetBranchAddress("nEvent", &event);
 	tree->SetBranchAddress("ls", &ls);
 	tree->SetBranchAddress("run", &run);
 	tree->SetBranchAddress("MVA_2lss_ttbar", &mva_ttbar);
 	tree->SetBranchAddress("MVA_2lss_ttV", &mva_ttV);
-	tree->SetBranchAddress("evtWeight", &weight);
+	tree->SetBranchAddress("event_weight", &weight);
+	//tree->SetBranchAddress("btagCategory", &btagCat);
+	//tree->SetBranchAddress("lepCategory", &lepCat);
 
 	int nEntries = tree->GetEntries();
 
@@ -266,6 +297,13 @@ void fillHistoFromTree(TH1D* h, vector<vector<int>>& eventList, TTree* tree)
 			//fill histogram
 			int bin = partition2DBDT(mva_ttbar, mva_ttV);
 			h->Fill(bin, weight);
+
+			/*
+			// yields
+			if (lepCat == x and btagCat == y) {
+				yields[x.y] += weight;
+			}
+			*/
 		}
 	}
 
@@ -273,45 +311,47 @@ void fillHistoFromTree(TH1D* h, vector<vector<int>>& eventList, TTree* tree)
 
 int partition2DBDT(float ttbar, float ttV)
 /*
-             bin 1       bin 2       bin 3       bin 4      bin 5       bin 6
-2lss(ttbar) (-1.0,-0.2] (-1.0,-0.2] (-0.2,0.3]  (-0.2,0.3] (0.3,1.0]   (0.3,1.0]
-2lss(ttV)   (-1.0,-0.1] (-0.1,1.0]  (-1.0,-0.1] (-0.1,1.0] (-1.0,-0.1] (-0.1,1.0]
+  ICHEP binning
  */
 {
-	int x = -99;
-	int y = -99;
-	
-	if (ttbar > -1.0 and ttbar <= -0.2)
-		x = 1;
-	else if (ttbar > -0.2 and ttbar <= 0.3)
-		x = 2;
-	else if (ttbar > 0.3 and ttbar <= 1.0)
-		x = 3;
+	if (ttbar > -1.0 and ttbar <= -0.2 and ttV > -1.0 and ttV <= 1.0)
+		return 1;
+	else if (ttbar > -0.2 and ttbar <= 0.1 and ttV > -1.0 and ttV <= 1.0)
+		return 2;
+	else if (ttbar > 0.1 and ttbar <= 0.4) {
+		if (ttV > -1.0 and ttV <= 0.3)
+			return 3;
+		else if (ttV > 0.3 and ttV <= 1.0)
+			return 4;
+	}
+	else if (ttbar > 0.4 and ttbar <= 1.0) {
+		if (ttV > -1.0 and ttV <= 0.1)
+			return 5;
+		else if (ttV > 0.1 and ttV <= 0.4)
+			return 6;
+		else if (ttV > 0.4 and ttV <= 1.0)
+			return 7;
+	}
 
-	if (ttV > -1.0  and ttV <= -0.1)
-		y = 1;
-	else if (ttV > -0.1 and ttV <= 1.0)
-		y = 2;
-	
-	return 2*(x-1)+y;
+	return 0;
 }
 
-TH1* combineHistCategories(TFile* f, TString name, int nsamples,
-						   float lumi, float xsection, vector<float>& counts)
+TH1* combineHistCategories(TFile* f, TString name, float nSum,
+						   float lumi, float xsection, vector<float>& yields)
 {
 	TH1* hist_out;
 	bool first = true;
 
 	// clear event counts for each category
-	counts.clear();
-	counts.reserve(6);
+	yields.clear();
+	yields.reserve(lepCategory.size() * bCategory.size());
 
 	for (const TString lcat : lepCategory) {
 		for (const TString bcat : bCategory) {
 			TString hname = "ttHtaus/h_MVA_shape" + lcat + bcat + name;
 			TH1* h_ = (TH1*)f->Get(hname);
 			
-			counts.push_back(h_->Integral());
+			yields.push_back(h_->Integral());
 
 			if (first) {
 				hist_out = h_->Clone();
@@ -325,13 +365,12 @@ TH1* combineHistCategories(TFile* f, TString name, int nsamples,
 		}
 	}
 
-	hist_out -> SetName("h_MVA_shape"+name);
 	// scale
 	hist_out -> Sumw2();
-	hist_out -> Scale(lumi * xsection / nsamples);
+	hist_out -> Scale(lumi * xsection / nSum);
 
-	for (int &n : counts) {
-		n = n * lumi * xsection / nsamples;
+	for (float y : yields) {
+		y = y * lumi * xsection / nSum;
 	}
 	
 	return hist_out;
@@ -340,63 +379,6 @@ TH1* combineHistCategories(TFile* f, TString name, int nsamples,
 TH1* combineHistCategories(TFile* f, TString name,
 						   int nsample, float lumi, float xsection)
 {
-	vector<float> counts;
-	return combineHistCategories(f, name, nsample, lumi, xsection, counts);
-}
-
-vector<TH1*> getShapesMC(const TString channel, const TString dir,
-						 vector<float>& counts, bool doSys = true)
-{
-	vector<TH1*> hists;
-	
-	// Open files
-	TFile* f_central = new TFile(dir + fname_prefix + channel + ".root");
-	TFile* f_jesup = new TFile(dir + fname_prefix + channel + "_jesup.root");
-	TFile* f_jesdo = new TFile(dir + fname_prefix + channel + "_jesdown.root");
-	
-	if (not f_central->IsOpen()) {
-		cout << "Warning: cannot find " << fname_prefix << channel
-			 << ".root in " << dir << endl;
-		cout << "return an empty vector." << endl;
-		return hists;
-	}
-
-	if (not (f_jesup->IsOpen() and f_jesdo->IsOpen())) {
-		doSys = false;
-		cout << "Warning: root files for systematics are not opened.";
-		cout << "Igore systematics..." << endl;
-	}
-
-	// For scaling
-	TH1I* h_nProcessed = (TH1I*)f->Get("ttHtaus/h_nProcessed");
-	int nsamples = h_nProcessed->GetEntries();
-	//float xsection
-	
-	// Get histograms
-	TH1* h_central = combineHistCategories(f_central, "",
-										   nsamples, lumi, xsection, counts);
-	h_central->SetName("x_" + channel);
-	hists.push_back(h_central);
-
-	if (not doSys) return hists;
-	
-	// Systematics
-	// JEC
-	TH1* h_jesup = combineHistCategories(f_jesup, "", nsamples, lumi, xsection);
-	TH1* h_jesdo = combineHistCategories(f_jesdo, "", nsamples, lumi, xsection);
-	h_jesup -> SetName("x_" + channel + sys_coname + "JESUp");
-	h_jesdo -> SetName("x_" + channel + sys_coname + "JESDown");
-	hists.push_back(h_jesup);
-	hists.push_back(h_jesdo);
-	// Btag
-	for (auto & bsys : BTagSysts) {
-		TH1* h_ = combineHistCategories(f_central, bsys, nsamples,lumi,xsection);
-		h_ -> SetName("x_" + channel + sys_coname + "btag" + bsys);
-		hists.push_back(h_);
-	}
-	// Theoretical
-	
-
-	
-		
+	vector<float> yields;
+	return combineHistCategories(f, name, nsample, lumi, xsection, yields);
 }
