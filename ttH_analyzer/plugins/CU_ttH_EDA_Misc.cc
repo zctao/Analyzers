@@ -1010,6 +1010,12 @@ float CU_ttH_EDA::readTF(TF1* f, float x)
 	return f->Eval(x);
 }
 
+float CU_ttH_EDA::getPUWeight(int nPU)
+{
+	int xbin = h_puweight->FindBin(nPU);
+	return h_puweight->GetBinContent(xbin);
+}
+
 float CU_ttH_EDA::getFakeRate(const miniLepton& lepton)
 {
 	float fakerate = 0;

@@ -103,6 +103,12 @@ void CU_ttH_EDA::Set_up_ChargeMisID_Lut()
 	h_chargeMisId = (TH2F*) file_eleMisCharge->Get("chargeMisId");
 }
 
+void CU_ttH_EDA::Set_up_PUWeight_hist()
+{
+	file_puweight = new TFile((std::string(getenv("CMSSW_BASE")) + "/src/Analyzers/ttH_analyzer/data/PU_weights/PU_weights_2016_271036_284044.root").c_str(), "read");
+	h_puweight = (TH1F*) file_puweight->Get("h_ratio_data_MC");
+}
+
 void CU_ttH_EDA::Set_up_LeptonSF_Lut()
 {
 	//// loose vs reco

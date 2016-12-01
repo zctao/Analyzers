@@ -173,6 +173,7 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	void Set_up_LeptonSF_Lut();
 	void Set_up_FakeRate_Lut();
 	void Set_up_ChargeMisID_Lut();
+	void Set_up_PUWeight_hist();
 
 	int Set_up_Run_histograms_triggers(); // at beginRun(), after
 										  // Set_up_name_vectors()
@@ -247,6 +248,9 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	float getLeptonSF(const miniLepton&);
 	float getLeptonSF_loose(const miniLepton&);
 	float getLeptonSF_tight_vs_loose(const miniLepton&);
+
+	// PU weight
+	float getPUWeight(int);
 	
 	/*
 	* Variable section
@@ -401,6 +405,10 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	TH2F *h_looseToTight_leptonSF_mu_3l;
 	TH2F *h_looseToTight_leptonSF_el_3l;
 
+	// PU weight
+	TFile* file_puweight;
+	TH1F *h_puweight;
+	
 	// tree and ntuple
 	TTree *eventTree;
 	CU_ttH_EDA_Ntuple evtNtuple;

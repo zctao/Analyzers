@@ -48,8 +48,6 @@ void makeSyncTree_EvtSel(
 		tree->SetBranchStatus("ele1_mcMatchType", 0);
 		tree->SetBranchStatus("tau0_mcMatchType", 0);
 		tree->SetBranchStatus("tau1_mcMatchType", 0);
-
-		tree->SetBranchStatus("PU_weight", 0);
 	}
 	
 	// create new tree and output file

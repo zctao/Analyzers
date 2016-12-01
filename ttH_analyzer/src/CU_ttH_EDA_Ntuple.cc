@@ -21,7 +21,7 @@ void CU_ttH_EDA_Ntuple::write_ntuple(const CU_ttH_EDA_event_vars &local)
 	ls = local.lumisection_nr;
 	run = local.run_nr;
 	event_weight = local.weight;
-	//PU_weight = local.pu_weight;
+	PU_weight = local.pu_weight;
 	MC_weight = local.mc_weight;
 	MC_weight_scale_muF0p5 = local.mc_weight_scale_muF0p5;
 	MC_weight_scale_muF2 = local.mc_weight_scale_muF2;

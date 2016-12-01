@@ -93,6 +93,8 @@ CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig):
 		//Set_up_CSV_rootFile();
 		
 		Set_up_LeptonSF_Lut();
+
+		Set_up_PUWeight_hist();
 	}
 
 	if (selection_type == Control_1lfakeable) {
@@ -118,7 +120,10 @@ CU_ttH_EDA::~CU_ttH_EDA()
 		
 		//delete f_CSVwgt_HF;
 		//delete f_CSVwgt_LF;
-	
+
+		file_puweight->Close();
+		delete file_puweight;
+		
 		file_recoToLoose_leptonSF_mu1_b->Close();
 		file_recoToLoose_leptonSF_mu1_e->Close();
 		file_recoToLoose_leptonSF_mu2->Close();
@@ -243,6 +248,8 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 				break;
 			}
 		}
+
+		local.pu_weight = getPUWeight(local.npuTrue);
 		
 		// MC weights
 		double genWeight = handle.event_gen_info.product()->weight();
@@ -595,7 +602,8 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 				else {
 					local.weight =
 						local.csv_weight * local.mc_weight *
-						local.hlt_sf * local.lepIDEff_sf;
+						local.hlt_sf * local.lepIDEff_sf *
+						local.pu_weight;
 				}
 			}
 			
