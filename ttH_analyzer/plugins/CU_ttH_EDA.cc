@@ -179,6 +179,14 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	/// Create and set up edm:Handles in stack mem.
 	edm_Handles handle;
 	Set_up_handles(iEvent, handle, token, isdata);
+
+	// MC weight
+	double genWeight = 0;
+	if (not isdata) {
+		genWeight = handle.event_gen_info.product()->weight();
+		genWeightSum += genWeight / abs(genWeight);
+		//h_SumGenWeight->Fill(1, genWeight/abs(genWeight)); 
+	}
 	
 	// for signal sample, filter Higgs decay mode
 	if (sampleName.Contains("ttH_")) {
@@ -252,11 +260,8 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		local.pu_weight = getPUWeight(local.npuTrue);
 		
 		// MC weights
-		double genWeight = handle.event_gen_info.product()->weight();
-		
+		//genWeight = handle.event_gen_info.product()->weight();
 		local.mc_weight = genWeight / abs(genWeight);
-
-		genWeightSum += genWeight / abs(genWeight);
 
 		if (handle.event_lhe_info.isValid()) {
 			if (handle.event_lhe_info->weights().size() > 6) {
