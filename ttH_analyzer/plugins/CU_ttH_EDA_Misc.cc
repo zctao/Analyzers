@@ -292,8 +292,8 @@ bool CU_ttH_EDA::pass_event_sel_2l(CU_ttH_EDA_event_vars &local,
 		minpt_subldg = 15.;
 
 	bool passLeptonPt =
-		local.leptons_fakeable[0].conePt() > minpt_ldg and
-		local.leptons_fakeable[1].conePt() > minpt_subldg;
+		local.leptons_fakeable[0].pt() > minpt_ldg and
+		local.leptons_fakeable[1].pt() > minpt_subldg;
 
 	if (not passLeptonPt) {
 		if (debug) {
