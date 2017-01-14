@@ -60,6 +60,10 @@ CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig):
 	JECType (iConfig.getParameter<string>("JECType")),
 	//jet_corrector (iConfig.getParameter<string>("jet_corrector")),
 	doJERsmear (iConfig.getParameter<bool>("doJERsmear")),
+	// CSV WP
+	csv_loose_wp (iConfig.getParameter<double>("csv_loose_wp")),
+	csv_medium_wp (iConfig.getParameter<double>("csv_medium_wp")),
+	csv_tight_wp (iConfig.getParameter<double>("csv_tight_wp")),
 	isdata (iConfig.getParameter<bool>("using_real_data")),
 	selection_region (iConfig.getParameter<string>("selection_region")),
 	// debug flag
@@ -479,12 +483,22 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	/*
 	  BTag
 	*/
-	local.jets_selected_btag_loose = miniAODhelper.GetSelectedJets(
-		local.jets_selected_sorted, 20., 2.5, jetID::jetLoose,
-		'L');
-	local.jets_selected_btag_medium = miniAODhelper.GetSelectedJets(
-	    local.jets_selected_btag_loose,20., 2.5,
-		jetID::jetLoose, 'M');
+	//local.jets_selected_btag_loose = miniAODhelper.GetSelectedJets(
+	//	local.jets_selected_sorted, 20., 2.5, jetID::jetLoose,
+	//	'L');
+	//local.jets_selected_btag_medium = miniAODhelper.GetSelectedJets(
+	//    local.jets_selected_btag_loose,20., 2.5,
+	//	jetID::jetLoose, 'M');
+	local.jets_selected_btag_loose.clear();
+	local.jets_selected_btag_medium.clear();
+	
+	for (const auto & jet : local.jets_selected_sorted) {
+		float csv = miniAODhelper.GetJetCSV(jet,"pfCombinedInclusiveSecondaryVertexV2BJetTags");
+		if (csv > csv_loose_wp)
+			local.jets_selected_btag_loose.push_back(jet);
+		if (csv > csv_medium_wp)
+			local.jets_selected_btag_medium.push_back(jet);
+	}
 
 	local.n_jets = static_cast<int>(local.jets_selected.size());
 	local.n_btags_loose = static_cast<int>(local.jets_selected_btag_loose.size());

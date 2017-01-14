@@ -325,6 +325,10 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 		   {"JESUp", sysType::JESup},{"JESDown", sysType::JESdown}};
 	bool doJERsmear;
 
+	// CSV WP
+	double csv_loose_wp;
+	double csv_medium_wp;
+	double csv_tight_wp;
 	
 	bool isdata;
 	char MAODHelper_b_tag_strength;

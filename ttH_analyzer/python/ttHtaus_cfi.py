@@ -55,6 +55,10 @@ ttHtaus =  cms.EDAnalyzer('CU_ttH_EDA',
         debug_mode = cms.bool(False),
         # JER Smearing flag
         doJERsmear = cms.bool(True),
+        # CSV work point
+        csv_loose_wp = cms.double(0.460),
+        csv_meidum_wp = cms.double(0.800),
+        csv_tight_wp = cms.double(0.935),
         # InputTags
         input_tags = cms.PSet(
             pv = cms.InputTag("offlineSlimmedPrimaryVertices"),

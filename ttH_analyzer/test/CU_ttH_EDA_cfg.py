@@ -143,7 +143,9 @@ process.load("Analyzers.ttH_analyzer.ttHtaus_cfi")
 
 ### Redefine parameter sets
 process.ttHLeptons.rhoParam = "fixedGridRhoFastjetCentralNeutral"
-process.ttHLeptons.jets = cms.InputTag("updatedPatJetsUpdatedJEC") # use JEC's from tag
+process.ttHLeptons.jets = cms.InputTag("updatedPatJetsUpdatedJEC")
+process.ttHLeptons.LooseCSVWP = cms.double(0.5426)
+process.ttHLeptons.MediumCSVWP = cms.double(0.8484)
 
 process.ttHtaus.input_tags.electrons = cms.InputTag("ttHLeptons")
 process.ttHtaus.input_tags.muons = cms.InputTag("ttHLeptons")
@@ -164,6 +166,10 @@ process.ttHtaus.selection_region = cms.string(options.SelectionRegion)
 process.ttHtaus.turn_off_HLT_cut = cms.bool(options.TurnOffHLTCut)
 process.ttHtaus.debug_mode = cms.bool(options.Debug)
 process.ttHtaus.doJERsmear = cms.bool(options.doJERSmearing)
+# CSV WPs for Summer16 80X MC + ReReco Data
+process.ttHtaus.csv_loose_wp = cms.double(0.5426)
+process.ttHtaus.csv_medium_wp = cms.double(0.8484)
+process.ttHtaus.csv_tight_wp = cms.double(0.9535)
 # for reHLT
 if options.reHLT:
     process.ttHtaus.HLT_config_tag = cms.string("HLT2")
@@ -187,18 +193,17 @@ process.TFileService = cms.Service("TFileService",
 if options.isData:
     process.p = cms.Path(
         process.primaryVertexFilter *
-        process.patJetCorrFactorsUpdatedJEC *
-        process.updatedPatJetsUpdatedJEC *
+        process.patJetCorrFactorsUpdatedJEC * process.updatedPatJetsUpdatedJEC *
+#        process.fullPatMetSequence *
         process.electronMVAValueMapProducer *
-        #process.fullPatMetSequence *
         process.ttHLeptons *
         process.ttHtaus
     )
 else:
     process.p = cms.Path(
         process.patJetCorrFactorsUpdatedJEC * process.updatedPatJetsUpdatedJEC *
+#        process.fullPatMetSequence *
         process.electronMVAValueMapProducer *
-        #process.fullPatMetSequence *
         process.ttHLeptons *
         process.ttHtaus
     )
