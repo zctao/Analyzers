@@ -90,9 +90,11 @@ process.load('Configuration.StandardSequences.Services_cff')
 process.load( "Configuration.StandardSequences.FrontierConditions_GlobalTag_cff" )
 
 if options.isData:
-    process.GlobalTag.globaltag = '80X_dataRun2_Prompt_ICHEP16JEC_v0'
+    process.GlobalTag.globaltag = '80X_dataRun2_2016SeptRepro_v4'
+    #process.GlobalTag.globaltag = '80X_dataRun2_Prompt_ICHEP16JEC_v0'
 else:
-    process.GlobalTag.globaltag = '80X_mcRun2_asymptotic_2016_miniAODv2_v1'
+    process.GlobalTag.globaltag = '80X_mcRun2_asymptotic_2016_TrancheIV_v6'
+    #process.GlobalTag.globaltag = '80X_mcRun2_asymptotic_2016_miniAODv2_v1'
 
 process.maxEvents = cms.untracked.PSet(
 	input = cms.untracked.int32(options.maxEvents)
