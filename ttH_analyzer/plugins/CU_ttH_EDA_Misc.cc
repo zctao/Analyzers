@@ -276,10 +276,11 @@ bool CU_ttH_EDA::pass_event_sel_2l(CU_ttH_EDA_event_vars &local,
 		}
 		return false;
 	}
-	// at least 1 fakeable(preselected) tau
-	if (local.tau_preselected.size() < 1) {
+	// at least 1 selected tau
+	// i.e. pass "byMediumIsolationMVArun2v1DBdR03oldDMwLT"
+	if (local.tau_selected.size() < 1) {
 		if (debug) {
-			std::cout << "FAIL fakeable tau number requirement" << std::endl;
+			std::cout << "FAIL tau number requirement" << std::endl;
 		}
 		return false;
 	}
@@ -449,29 +450,21 @@ bool CU_ttH_EDA::pass_event_sel_2l(CU_ttH_EDA_event_vars &local,
 	}
 
 	//////////////////////////
-	/// Leptons and tau WP
+	/// Leptons WP
 	bool passLepSel = false;
-	bool passTauSel = false;
 	// signal region: two leading leptons are tight
-	// and at least one tau is "selected tau"
-	// i.e. pass "byMediumIsolationMVArun2v1DBdR03oldDMwLT"
 	passLepSel =
 		local.leptons_fakeable[0].passTightSel() and
 		local.leptons_fakeable[1].passTightSel();
-	
-	passTauSel = local.n_taus >= 1;
 
-	bool passIDWP = passLepSel and passTauSel;
-	
 	if (selection_region == Control_1lfakeable) {
 		// at least one lepton fails tight selection
-		// or no tau is "selected tau"
-		passIDWP = not passIDWP;
+		passLepSel = not passLepSel;
 	} 
 	
-	if (not passIDWP) {
+	if (not passLepSel) {
 		if (debug) {
-			std::cout << "FAIL lepton and tau WP requirements" << std::endl;
+			std::cout << "FAIL lepton WP requirements" << std::endl;
 		}
 		return false;
 	}
@@ -507,7 +500,10 @@ bool CU_ttH_EDA::pass_event_sel_2l(CU_ttH_EDA_event_vars &local,
 			}
 		}
 
-		bool matchMCTau = false;
+		// Tau genMatch not used in event selection
+		//instead, split MC sample into _gentau and _faketau based on tau genMatch
+		/*
+		bool matchMCTau = true; 
 		// should have at least one tau at this stage
 		// Only match the leading one if there are more
 		assert(local.tau_selected.size()>=1);
@@ -519,6 +515,7 @@ bool CU_ttH_EDA::pass_event_sel_2l(CU_ttH_EDA_event_vars &local,
 		}
 
 		passMCMatching = passMCMatching and matchMCTau;
+		*/
 
 		if (not passMCMatching) {
 			if (debug) {
