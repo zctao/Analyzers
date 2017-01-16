@@ -29,9 +29,12 @@ void CU_ttH_EDA_Ntuple::write_ntuple(const CU_ttH_EDA_event_vars &local)
 	MC_weight_scale_muR2 = local.mc_weight_scale_muR2;
 	bTagSF_weight = local.csv_weight;
 	leptonSF_weight = local.lepIDEff_sf;
+	tauSF_weight = local.tauID_sf;
 	triggerSF_weight = local.hlt_sf;
 	FR_weight = local.weight; // fake extrapolation region only
 
+	isGenMatched = local.isGenMatched;
+	
 	npuTrue = local.npuTrue;
 	npuInTime = local.npuInTime;
 	
@@ -330,8 +333,10 @@ void CU_ttH_EDA_Ntuple::initialize()
 	MC_weight_scale_muR2 = -9999.;
 	bTagSF_weight = -9999.;
 	leptonSF_weight = -9999.;
+	tauSF_weight = -9999.;
 	triggerSF_weight = -9999.;
 	FR_weight = -9999.;
+	isGenMatched = -9999;
 	npuTrue = -9999.;
 	npuInTime = -9999.;
 	n_presel_mu = -9999;
@@ -562,8 +567,10 @@ void CU_ttH_EDA_Ntuple::set_up_branches(TTree *tree)
 	tree->Branch("MC_weight_scale_muR2", &MC_weight_scale_muR2);
 	tree->Branch("bTagSF_weight", &bTagSF_weight);
 	tree->Branch("leptonSF_weight", &leptonSF_weight);
+	tree->Branch("tauSF_weight", &tauSF_weight);
 	tree->Branch("triggerSF_weight", &triggerSF_weight);
 	tree->Branch("FR_weight", &FR_weight);
+	tree->Branch("isGenMatched", &isGenMatched);
 	tree->Branch("npuTrue", &npuTrue);
 	tree->Branch("npuInTime", &npuInTime);
 	tree->Branch("n_presel_mu", &n_presel_mu);

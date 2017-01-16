@@ -475,7 +475,7 @@ bool CU_ttH_EDA::pass_event_sel_2l(CU_ttH_EDA_event_vars &local,
 		assert(local.leptons_tight.size()==2);
 		assert(local.tau_selected.size()>=1);
 
-		bool passMCMatching = true;
+		bool matchGenLeps = true;
 		for (const auto & lep : local.leptons_tight) {
 			if (lep.MCMatchType==0) {  // initial value is set to 0
 				std::cerr << "WARNING!! MC match type is not set!!" << std::endl;
@@ -486,24 +486,24 @@ bool CU_ttH_EDA::pass_event_sel_2l(CU_ttH_EDA_event_vars &local,
 				if (debug) {
 					std::cout << "ele mc match: " << lep.MCMatchType << std::endl;
 				}
-				// require prompt  or from prompt tau decay
+				// require prompt or from prompt tau decay
 				if (not (lep.MCMatchType == 1 or lep.MCMatchType == 3))
-					passMCMatching = false;
+					matchGenLeps = false;
 			}
 			if (lep.Type() == LeptonType::kmu) {
 				if (debug) {
 					std::cout << "mu mc match: " << lep.MCMatchType << std::endl;
 				}
-				// require prompt  or from prompt tau decay
+				// require prompt or from prompt tau decay
 				if (not (lep.MCMatchType == 2 or lep.MCMatchType == 4))
-					passMCMatching = false;
+					matchGenLeps = false;
 			}
 		}
 
 		// Tau genMatch not used in event selection
 		//instead, split MC sample into _gentau and _faketau based on tau genMatch
-		/*
-		bool matchMCTau = true; 
+		
+		bool matchGenTau = false; 
 		// should have at least one tau at this stage
 		// Only match the leading one if there are more
 		assert(local.tau_selected.size()>=1);
@@ -511,11 +511,15 @@ bool CU_ttH_EDA::pass_event_sel_2l(CU_ttH_EDA_event_vars &local,
 		if (debug)
 			std::cout << "tau mc match: " << mtype << std::endl;
 		if (mtype==1 or mtype==2 or mtype==3 or mtype==4 or mtype==5) {
-			matchMCTau = true;
+			matchGenTau = true;
 		}
+		
+		// set Gen Matching flag
+		local.isGenMatched = matchGenLeps and matchGenTau;
+		// tauID scale factor
+		local.tauID_sf = matchGenTau ? 0.9 : 1.0;
 
-		passMCMatching = passMCMatching and matchMCTau;
-		*/
+		bool passMCMatching = matchGenLeps;
 
 		if (not passMCMatching) {
 			if (debug) {

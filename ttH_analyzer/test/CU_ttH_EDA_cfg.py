@@ -81,6 +81,7 @@ options.register("doJERSmearing", True,
 
 options.maxEvents = -1
 options.inputFiles='file:/uscms/home/ztao/nobackup/datasample/ttH_80X/ttHnonbb.root'
+#options.inputFiles='file:/uscms/home/ztao/nobackup/datasample/ttH_80X/Spring16MC_PromptRecoData/ttHnonbb.root'
 
 # get and parse the command line arguments
 options.parseArguments()

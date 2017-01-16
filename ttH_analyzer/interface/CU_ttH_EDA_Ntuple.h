@@ -54,8 +54,11 @@ class CU_ttH_EDA_Ntuple //: public TClass
 	float MC_weight_scale_muR2;
 	float bTagSF_weight; //csv_weight;
 	float leptonSF_weight;
+	float tauSF_weight;
 	float triggerSF_weight;//hltSF;
 	float FR_weight;
+
+	int isGenMatched;
 	
 	float npuTrue;
 	float npuInTime;

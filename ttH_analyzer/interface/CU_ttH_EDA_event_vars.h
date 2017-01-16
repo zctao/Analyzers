@@ -36,10 +36,14 @@ struct CU_ttH_EDA_event_vars {
 	float mc_weight_scale_muR2;
 	float hlt_sf;
 	float lepIDEff_sf;
+	float tauID_sf;
 
 	// pileup
 	float npuTrue;
 	float npuInTime;
+
+	// MC sample
+	int isGenMatched;
 	
 	/// Common, run parameters
 	int run_nr;

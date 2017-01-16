@@ -220,10 +220,13 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	local.mc_weight_scale_muR2 = 1.;
 	local.hlt_sf = 1.;
 	local.lepIDEff_sf = 1.;
+	local.tauID_sf = 1.;
 	local.pu_weight = 1.;
 
 	local.npuTrue = -1.;
 	local.npuInTime = -1.;
+
+	local.isGenMatched = -9999;
 	
 	/// Run checks on event containers via their handles
 	Check_triggers(handle.triggerResults, local);
@@ -621,7 +624,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 				else {
 					local.weight =
 						local.csv_weight * local.mc_weight *
-						local.hlt_sf * local.lepIDEff_sf *
+						local.hlt_sf * local.lepIDEff_sf * local.tauID_sf *
 						local.pu_weight;
 				}
 			}
@@ -629,7 +632,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 			//////////////////////////
 			// fake lepton background (data driven)
 			if (selection_type == Control_1lfakeable) {
-				assert(local.n_taus_pre >= 1);
+				//assert(local.n_taus_pre >= 1);
 
 				// two leading leptons
 				float f1 = getFakeRate(local.leptons_fakeable[0]);
@@ -650,7 +653,8 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 						local.leptons_fakeable[1].passTightSel()<<std::endl;
 					std::cout << "f2 F2 : " << f2 << " " << F2 << std::endl;
 				}
-				
+
+				/*
 				float f3 = -1.;
 				float F3 = -1.;
 				
@@ -671,6 +675,8 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 					std::cout << "n_tau : " << local.n_taus << std::endl;
 					std::cout << "f3 F3 : " << f3 << " " << F3 << std::endl;
 				}
+				*/
+				local.weight = -1. * F1 * F2;
 			}
 
 			//////////////////////////
