@@ -6,9 +6,11 @@
 
 using namespace std;
 
-void makeSyncTree(TString input_file="/uscms/home/ztao/nobackup/output_sync.root")
+void makeSyncTree(TString input_file="/uscms/home/ztao/nobackup/output_sync.root",
+				  TString output_file="~/nobackup/ttHTT_syncNtuple/80X/syncNtuple.root")
 {
 	// open input file and read tree
+	cout << "Opening input file: " << input_file << endl;
 	TFile* old_file = new TFile(input_file);
 	TTree* old_tree = (TTree*)old_file->Get("ttHtaus/eventTree");
 
@@ -33,10 +35,11 @@ void makeSyncTree(TString input_file="/uscms/home/ztao/nobackup/output_sync.root
 	old_tree->SetBranchStatus("tau0_mcMatchType", 0);
 	old_tree->SetBranchStatus("tau1_mcMatchType", 0);
 	
-	old_tree->SetBranchStatus("PU_weight");
+	//old_tree->SetBranchStatus("PU_weight");
 
 	// create new tree and output file
-	TFile* new_file = new TFile("~/nobackup/ttHTT_syncNtuple/80X/syncNtuple.root", "recreate");
+	cout << "Output file created: " << output_file << endl;
+	TFile* new_file = new TFile(output_file, "recreate");
 	TTree* new_tree = old_tree->CloneTree();
 
 	delete old_tree;

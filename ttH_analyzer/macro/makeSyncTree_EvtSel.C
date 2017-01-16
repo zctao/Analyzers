@@ -8,13 +8,14 @@
 using namespace std;
 
 void makeSyncTree_EvtSel(
-						 //TString dir="~/Documents/ttH/Outputs/80X")
-						 TString dir="/uscms/home/ztao/nobackup")
+						 //TString dir="~/Documents/ttH/Outputs/80X/")
+						 TString dir="/uscms/home/ztao/nobackup/")
 {
 	// open input file and read tree
-	TFile* old_file1 = new TFile(dir+"/output_sync_event_sr.root");
-	TFile* old_file2 = new TFile(dir+"/output_sync_event_fake.root");
-	TFile* old_file3 = new TFile(dir+"/output_sync_event_flip.root");
+	cout << "Opening root file from directory " << dir << endl;
+	TFile* old_file1 = new TFile(dir+"output_sync_event_sr.root");
+	TFile* old_file2 = new TFile(dir+"output_sync_event_fake.root");
+	TFile* old_file3 = new TFile(dir+"output_sync_event_flip.root");
 	
 	TTree* old_tree1 = (TTree*)old_file1->Get("ttHtaus/eventTree");
 	TTree* old_tree2 = (TTree*)old_file2->Get("ttHtaus/eventTree");
@@ -51,8 +52,10 @@ void makeSyncTree_EvtSel(
 	}
 	
 	// create new tree and output file
-	//TFile* new_file = new TFile("/afs/cern.ch/work/z/ztao/public/ttHTT_syncNtuple/80X/syncNtuple_event.root", "recreate");
-	TFile* new_file = new TFile("~/nobackup/ttHTT_syncNtuple/80X/syncNtuple_event.root", "recreate");
+	TString output_file = "~/nobackup/ttHTT_syncNtuple/80X/syncNtuple_event.root";
+	//TString output_file = "/afs/cern.ch/work/z/ztao/public/ttHTT_syncNtuple/80X/syncNtuple_event.root";
+	cout << "Output file created: " << output_file << endl;
+	TFile* new_file = new TFile(output_file, "recreate");
 
 	vector<TTree*> new_trees;
 	for (auto old_tree : old_trees) {
