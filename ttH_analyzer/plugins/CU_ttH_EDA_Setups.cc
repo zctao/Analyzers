@@ -9,7 +9,8 @@ void CU_ttH_EDA::Set_up_histograms()
 
 	// event count histograms
 	h_nProcessed = fs_->make<TH1I>("h_nProcessed","",1,0.5,1.5);
-	h_SumGenWeight = fs_->make<TH1F>("h_SumGenWeight","",1,0.5,1.5);
+	h_SumGenWeight = fs_->make<TH1D>("h_SumGenWeight","",1,0.5,1.5);
+	h_SumGenWeightxPU = fs_->make<TH1D>("h_SumGenWeightxPU","",1,0.5,1.5);
 	
 	// categories
 	TString lep_cat[3] = {"mumu", "ee", "emu"};

@@ -273,7 +273,8 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	double sample_xs;	  // cross section	
 	double int_lumi;	  // integrated luminosity
 	double sample_n;	  // total nr of events. Should be long if compatible
-	float genWeightSum;
+	double genWeightSum;
+	double genWeightxPUSum;
 	//double weight_sample; // int lumi * xs / sample_n
 	
 	/// debug flags
@@ -349,7 +350,8 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	TH1D *h_flt;
 
 	TH1I *h_nProcessed;
-	TH1F *h_SumGenWeight;
+	TH1D *h_SumGenWeight;
+	TH1D *h_SumGenWeightxPU;
 	
 	TH2D *h_MVA_ttV_vs_ttbar[3][2];
 	TH1D *h_MVA_shape[3][2];

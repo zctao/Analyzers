@@ -186,20 +186,14 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	edm_Handles handle;
 	Set_up_handles(iEvent, handle, token, isdata);
 
-	// MC weight
-	double genWeight = 0;
-	if (not isdata) {
-		genWeight = handle.event_gen_info.product()->weight();
-		genWeightSum += genWeight / abs(genWeight);
-		//h_SumGenWeight->Fill(1, genWeight/abs(genWeight)); 
-	}
-	
+	/*
 	// for signal sample, filter Higgs decay mode
 	if (sampleName.Contains("ttH_")) {
 		bool rightHiggsDecay = HiggsDecayFilter(*(handle.MC_particles), sampleName);
 		if (not rightHiggsDecay)
 			return;
 	}
+	*/
 	
 	/// Declaring local struct for data readout and manipulations
 	CU_ttH_EDA_event_vars local;
@@ -269,7 +263,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		local.pu_weight = getPUWeight(local.npuTrue);
 		
 		// MC weights
-		//genWeight = handle.event_gen_info.product()->weight();
+		double genWeight = handle.event_gen_info.product()->weight();
 		local.mc_weight = genWeight / abs(genWeight);
 
 		if (handle.event_lhe_info.isValid()) {
@@ -288,6 +282,10 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 					(handle.event_lhe_info->originalXWGTUP());
 			}
 		}
+
+		genWeightSum += local.mc_weight;
+		//h_SumGenWeight->Fill(1, genWeight/abs(genWeight));
+		genWeightxPUSum += local.mc_weight * local.pu_weight;
 	}
 
 	if (trigger_stats) {
@@ -817,6 +815,7 @@ void CU_ttH_EDA::beginJob()
 
 	event_count = 0;
 	genWeightSum = 0.;
+	genWeightxPUSum = 0.;
 }
 
 // ------------ method called once each job just after ending the event loop
@@ -825,6 +824,7 @@ void CU_ttH_EDA::endJob() {
 
 	// fill GenWeightSum histogram
 	h_SumGenWeight -> SetBinContent(1,genWeightSum);
+	h_SumGenWeightxPU -> SetBinContent(1,genWeightxPUSum);
 	
 	if (analysis_type == Analyze_2lss1tau) {
 		//std::cout << "Total number of samples: " << event_count << std::endl;
