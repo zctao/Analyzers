@@ -978,16 +978,16 @@ float CU_ttH_EDA::getEleChargeMisIDProb(const miniLepton& lepton)
 float CU_ttH_EDA::read2DHist(TH2* h2d, float x, float y)
 {
 	TAxis* xaxis = h2d->GetXaxis();
-	int nbinx = xaxis->GetNbins();
+	//int nbinx = xaxis->GetNbins();
 	int xbin = xaxis->FindBin(x);
-    if (xbin < 1) xbin = 1;
-	if (xbin > nbinx) xbin = nbinx;
+    //if (xbin < 1) xbin = 1;
+	//if (xbin > nbinx) xbin = nbinx;
 
 	TAxis* yaxis = h2d->GetYaxis();
-	int nbiny = yaxis->GetNbins();
+	//int nbiny = yaxis->GetNbins();
 	int ybin = yaxis->FindBin(abs(y));
-    if (ybin < 1) ybin = 1;
-	if (ybin > nbiny) ybin = nbiny;
+    //if (ybin < 1) ybin = 1;
+	//if (ybin > nbiny) ybin = nbiny;
 
 	float result = h2d->GetBinContent(xbin, ybin);
 
@@ -1157,7 +1157,7 @@ float CU_ttH_EDA::getLepHLTSF(int ilep)
 	return 0.;
 }
 
-bool CU_ttH_EDA::HiggsDecayFilter(const std::vector<reco::GenParticle>& genParticles, const TString& decayMode)
+int CU_ttH_EDA::HiggsDaughterPdgId(const std::vector<reco::GenParticle>& genParticles)
 {
 	for (auto & p : genParticles) {
 		if (p.pdgId() != 25) continue;
@@ -1168,22 +1168,30 @@ bool CU_ttH_EDA::HiggsDecayFilter(const std::vector<reco::GenParticle>& genParti
 		const reco::Candidate *d1 = p.daughter(0);
 		const reco::Candidate *d2 = p.daughter(1);
 
-		if (abs(d1->pdgId()) != abs(d2->pdgId()) ) continue;
+		if ( abs(d1->pdgId()) != abs(d2->pdgId()) ) continue;
 
-		int daug_id = abs(d1->pdgId());
-
-		int required_id = 0;
-		if (decayMode == "ttH_htt")
-			required_id = 15;
-		else if (decayMode == "ttH_hww")
-			required_id = 24;
-		else if (decayMode == "ttH_hzz")
-			required_id = 23;
-
-		return daug_id == required_id;
+		assert(p.statusFlags().isLastCopy());
+		
+		return d1->pdgId();
 	}
 
-	return false;
+	return -9999;
+}
+
+bool CU_ttH_EDA::HiggsDecayFilter(const std::vector<reco::GenParticle>& genParticles, const TString& decayMode)
+{
+	int required_id = 0;
+	if (decayMode == "ttH_htt")
+		required_id = 15;
+	else if (decayMode == "ttH_hww")
+		required_id = 24;
+	else if (decayMode == "ttH_hzz")
+		required_id = 23;
+
+	int daug_id = HiggsDaughterPdgId(genParticles);
+	
+	return abs(daug_id) == required_id;
+
 }
 
 // MC Matching type encoding: https://twiki.cern.ch/twiki/bin/view/CMS/HiggsToTauTauWorking2016#MC_Matching

@@ -59,24 +59,21 @@ class CU_ttH_EDA_Ntuple //: public TClass
 	float FR_weight;
 
 	int isGenMatched;
+	int HiggsDecayType;   // Higgs decay product pdgId
+
+	int lepCategory;   // 0: mumu; 1: ee; 2: emu
+	int btagCategory;  // 0: loose; 1: medium (>=2 medium btags)
 	
 	float npuTrue;
 	float npuInTime;
 	
-	int n_presel_mu;
-	int n_mvasel_mu;
-	int n_fakeablesel_mu;
-	int n_presel_ele;
-	int n_mvasel_ele;
-	int n_fakeablesel_ele;
-	int n_presel_tau;
-	int n_tau;
-	int n_presel_jet;
 	int pass_single_mu;
 	int pass_single_e;
 	int pass_double_mu;
 	int pass_double_e;
 	int pass_elemu;
+	int matchHLTPath;
+	
 	// event level MVA
 	float MVA_2lss_ttV;
 	float MVA_2lss_ttbar;
@@ -88,9 +85,20 @@ class CU_ttH_EDA_Ntuple //: public TClass
 	float lep1_conept;
 	float avg_dr_jet;
 	float max_lep_eta;
+	
+	int n_presel_mu;
+	int n_mvasel_mu;
+	int n_fakeablesel_mu;
+	int n_presel_ele;
+	int n_mvasel_ele;
+	int n_fakeablesel_ele;
+	int n_presel_tau;
+	int n_tau;
+	int n_presel_jet;
+	
 	// muons
 	float mu0_pt;
-	//float mu0_conept;
+	float mu0_conept;
 	float mu0_eta;
 	float mu0_phi;
 	float mu0_E;
@@ -113,7 +121,7 @@ class CU_ttH_EDA_Ntuple //: public TClass
 	int    mu0_isfakeablesel;
 	int mu0_mcMatchType;
 	float mu1_pt;
-	//float mu1_conept;
+	float mu1_conept;
 	float mu1_eta;
 	float mu1_phi;
 	float mu1_E;
@@ -138,7 +146,7 @@ class CU_ttH_EDA_Ntuple //: public TClass
 	
 	// electrons
 	float ele0_pt;
-	//float ele0_conept;
+	float ele0_conept;
 	float ele0_eta;
 	float ele0_phi;
 	float ele0_E;
@@ -162,7 +170,7 @@ class CU_ttH_EDA_Ntuple //: public TClass
 	int    ele0_isfakeablesel;
 	int ele0_mcMatchType;
 	float ele1_pt;
-	//float ele1_conept;
+	float ele1_conept;
 	float ele1_eta;
 	float ele1_phi;
 	float ele1_E;

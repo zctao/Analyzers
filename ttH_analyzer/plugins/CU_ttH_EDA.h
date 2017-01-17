@@ -202,6 +202,7 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 
 	void printDecayChain(const reco::Candidate &p, int &index, int mother_index,
 						 bool details);
+	int HiggsDaughterPdgId(const std::vector<reco::GenParticle>&);
 	bool HiggsDecayFilter(const std::vector<reco::GenParticle>&, const TString&);
 
 	template <typename T1, typename T2>

@@ -20,6 +20,11 @@ void makeSyncTree(TString input_file="/uscms/home/ztao/nobackup/output_sync.root
 	old_tree->SetBranchStatus("MC_weight_scale_muF2", 0);
 	old_tree->SetBranchStatus("MC_weight_scale_muR0p5", 0);
 	old_tree->SetBranchStatus("MC_weight_scale_muR2", 0);
+	old_tree->SetBranchStatus("HiggsDecayType", 0);
+	old_tree->SetBranchStatus("lepCategory", 0);
+	old_tree->SetBranchStatus("btagCategory", 0);
+	old_tree->SetBranchStatus("npuTrue", 0);
+	old_tree->SetBranchStatus("npuInTime", 0);
 	old_tree->SetBranchStatus("n_tau", 0);
 	old_tree->SetBranchStatus("tau0_decayMode", 0);
 	old_tree->SetBranchStatus("tau1_decayMode", 0);
@@ -28,6 +33,7 @@ void makeSyncTree(TString input_file="/uscms/home/ztao/nobackup/output_sync.root
 	old_tree->SetBranchStatus("pass_double_e", 0);
 	old_tree->SetBranchStatus("pass_double_mu", 0);
 	old_tree->SetBranchStatus("pass_elemu", 0);
+	old_tree->SetBranchStatus("matchHLTPath", 0);
 	old_tree->SetBranchStatus("mu0_mcMatchType", 0);
 	old_tree->SetBranchStatus("mu1_mcMatchType", 0);
 	old_tree->SetBranchStatus("ele0_mcMatchType", 0);

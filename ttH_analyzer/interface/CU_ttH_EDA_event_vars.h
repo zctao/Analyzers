@@ -44,6 +44,7 @@ struct CU_ttH_EDA_event_vars {
 
 	// MC sample
 	int isGenMatched;
+	int HiggsDecayType;   // Higgs decay product pdgId
 	
 	/// Common, run parameters
 	int run_nr;
@@ -69,12 +70,16 @@ struct CU_ttH_EDA_event_vars {
 	int n_ttags;
 	int n_Htags;
 
+	int lepCategory;  // 0: mumu; 1: ee; 2: emu
+	int btagCategory; // 0: loose; 1: medium (>=2 medium btags)
+	
 	/// Passing-trigger flags
 	bool pass_single_e;
 	bool pass_single_mu;
 	bool pass_double_mu;
 	bool pass_double_e;
 	bool pass_elemu;
+	bool matchHLTPath;
 
 	/// Particle container vectors
 	std::vector<pat::Electron> e_preselected;

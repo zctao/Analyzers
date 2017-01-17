@@ -33,6 +33,9 @@ void makeSyncTree_EvtSel(
 		tree->SetBranchStatus("MC_weight_scale_muF2", 0);
 		tree->SetBranchStatus("MC_weight_scale_muR0p5", 0);
 		tree->SetBranchStatus("MC_weight_scale_muR2", 0);
+		tree->SetBranchStatus("HiggsDecayType", 0);
+		tree->SetBranchStatus("lepCategory", 0);
+		tree->SetBranchStatus("btagCategory", 0);
 		tree->SetBranchStatus("npuTrue", 0);
 		tree->SetBranchStatus("npuInTime", 0);
 		tree->SetBranchStatus("n_tau", 0);
@@ -43,6 +46,7 @@ void makeSyncTree_EvtSel(
 		tree->SetBranchStatus("pass_double_e", 0);
 		tree->SetBranchStatus("pass_double_mu", 0);
 		tree->SetBranchStatus("pass_elemu", 0);
+		tree->SetBranchStatus("matchHLTPath", 0);
 		tree->SetBranchStatus("mu0_mcMatchType", 0);
 		tree->SetBranchStatus("mu1_mcMatchType", 0);
 		tree->SetBranchStatus("ele0_mcMatchType", 0);

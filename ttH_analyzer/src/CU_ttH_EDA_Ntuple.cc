@@ -34,15 +34,20 @@ void CU_ttH_EDA_Ntuple::write_ntuple(const CU_ttH_EDA_event_vars &local)
 	FR_weight = local.weight; // fake extrapolation region only
 
 	isGenMatched = local.isGenMatched;
+	HiggsDecayType = local.HiggsDecayType;
 	
 	npuTrue = local.npuTrue;
 	npuInTime = local.npuInTime;
+
+	lepCategory = local.lepCategory;
+	btagCategory = local.btagCategory;
 	
 	pass_single_e = local.pass_single_e;
 	pass_single_mu = local.pass_single_mu;
 	pass_double_e = local.pass_double_e;
 	pass_double_mu = local.pass_double_mu;
 	pass_elemu = local.pass_elemu;
+	matchHLTPath = local.matchHLTPath;
 
 	// Muons
 	n_presel_mu = local.n_muons_loose;
@@ -88,6 +93,9 @@ void CU_ttH_EDA_Ntuple::fill_ntuple_muons(const std::vector<pat::Muon>& muons)
 {
 	if (muons.size() > 0) {
 		mu0_pt = muons[0].pt();
+		mu0_conept =
+			(muons[0].userFloat("leptonMVA") > 0.75) ? muons[0].pt() :
+			(0.85 * muons[0].pt() / muons[0].userFloat("nearestJetPtRatio"));
 		mu0_eta = muons[0].eta();
 		mu0_phi = muons[0].phi();
 		mu0_E = muons[0].energy();
@@ -119,6 +127,9 @@ void CU_ttH_EDA_Ntuple::fill_ntuple_muons(const std::vector<pat::Muon>& muons)
 	
 	if (muons.size() > 1 ) {
 		mu1_pt = muons[1].pt();
+		mu1_conept =
+			(muons[1].userFloat("leptonMVA") > 0.75) ? muons[1].pt() :
+			(0.85 * muons[1].pt() / muons[1].userFloat("nearestJetPtRatio"));
 		mu1_eta = muons[1].eta();
 		mu1_phi = muons[1].phi();
 		mu1_E = muons[1].energy();
@@ -153,6 +164,9 @@ void CU_ttH_EDA_Ntuple::fill_ntuple_electrons(const std::vector<pat::Electron>& 
 {
 	if (electrons.size() > 0) {
 		ele0_pt = electrons[0].pt();
+		ele0_conept =
+			(electrons[0].userFloat("leptonMVA") > 0.75) ? electrons[0].pt() :
+			(0.85 * electrons[0].pt() / electrons[0].userFloat("nearestJetPtRatio"));
 		ele0_eta = electrons[0].eta();
 		ele0_phi = electrons[0].phi();
 		ele0_E = electrons[0].energy();
@@ -180,6 +194,9 @@ void CU_ttH_EDA_Ntuple::fill_ntuple_electrons(const std::vector<pat::Electron>& 
 	
 	if (electrons.size() > 1 ) {
 		ele1_pt = electrons[1].pt();
+		ele1_conept =
+			(electrons[1].userFloat("leptonMVA") > 0.75) ? electrons[1].pt() :
+			(0.85 * electrons[1].pt() / electrons[1].userFloat("nearestJetPtRatio"));
 		ele1_eta = electrons[1].eta();
 		ele1_phi = electrons[1].phi();
 		ele1_E = electrons[1].energy();
@@ -324,6 +341,7 @@ void CU_ttH_EDA_Ntuple::initialize()
 	nEvent = -9999;
 	ls = -9999;
 	run = -9999;
+	
 	event_weight = -9999.;
 	PU_weight = -9999.;
 	MC_weight = -9999.;
@@ -336,9 +354,21 @@ void CU_ttH_EDA_Ntuple::initialize()
 	tauSF_weight = -9999.;
 	triggerSF_weight = -9999.;
 	FR_weight = -9999.;
+	
 	isGenMatched = -9999;
+	HiggsDecayType = -9999;
+	lepCategory = -9999;
+	btagCategory = -9999;
 	npuTrue = -9999.;
 	npuInTime = -9999.;
+	
+	pass_single_mu = -9999;
+	pass_single_e = -9999;
+	pass_double_mu = -9999;
+	pass_double_e = -9999;
+	pass_elemu = -9999;
+	matchHLTPath = -9999;
+	
 	n_presel_mu = -9999;
 	n_mvasel_mu = -9999;
 	n_fakeablesel_mu = -9999;
@@ -348,11 +378,6 @@ void CU_ttH_EDA_Ntuple::initialize()
 	n_presel_tau = -9999;
 	n_tau = -9999;
 	n_presel_jet = -9999;
-	pass_single_mu = -9999;
-	pass_single_e = -9999;
-	pass_double_mu = -9999;
-	pass_double_e = -9999;
-	pass_elemu = -9999;
 
 	MVA_2lss_ttV = -9999.;
 	MVA_2lss_ttbar = -9999.;
@@ -367,7 +392,7 @@ void CU_ttH_EDA_Ntuple::initialize()
 
 	// muons
 	mu0_pt = -9999.;
-	//mu0_conept = -9999.;
+	mu0_conept = -9999.;
 	mu0_eta = -9999.;
 	mu0_phi = -9999.;
 	mu0_E = -9999.;
@@ -390,7 +415,7 @@ void CU_ttH_EDA_Ntuple::initialize()
 	mu0_isfakeablesel = 0;//-9999;
 	mu0_mcMatchType = -9999;
 	mu1_pt = -9999.;
-	//mu1_conept = -9999.;
+	mu1_conept = -9999.;
 	mu1_eta = -9999.;
 	mu1_phi = -9999.;
 	mu1_E = -9999.;
@@ -415,7 +440,7 @@ void CU_ttH_EDA_Ntuple::initialize()
 	
 	// electrons
 	ele0_pt = -9999.;
-	//ele0_conept = -9999.;
+	ele0_conept = -9999.;
 	ele0_eta = -9999.;
 	ele0_phi = -9999.;
 	ele0_E = -9999.;
@@ -439,7 +464,7 @@ void CU_ttH_EDA_Ntuple::initialize()
 	ele0_isfakeablesel = 0;//-9999;
 	ele0_mcMatchType = -9999;
 	ele1_pt = -9999.;
-	//ele1_conept = -9999.;
+	ele1_conept = -9999.;
 	ele1_eta = -9999.;
 	ele1_phi = -9999.;
 	ele1_E = -9999.;
@@ -571,8 +596,17 @@ void CU_ttH_EDA_Ntuple::set_up_branches(TTree *tree)
 	tree->Branch("triggerSF_weight", &triggerSF_weight);
 	tree->Branch("FR_weight", &FR_weight);
 	tree->Branch("isGenMatched", &isGenMatched);
+	tree->Branch("HiggsDecayType", &HiggsDecayType);
+	tree->Branch("lepCategory", &lepCategory);
+	tree->Branch("btagCategory", &btagCategory);
 	tree->Branch("npuTrue", &npuTrue);
 	tree->Branch("npuInTime", &npuInTime);
+	tree->Branch("pass_single_e", &pass_single_e);
+	tree->Branch("pass_single_mu", &pass_single_mu);
+	tree->Branch("pass_double_e", &pass_double_e);
+	tree->Branch("pass_double_mu", &pass_double_mu);
+	tree->Branch("pass_elemu", &pass_elemu);
+	tree->Branch("matchHLTPath", &matchHLTPath);
 	tree->Branch("n_presel_mu", &n_presel_mu);
 	tree->Branch("n_mvasel_mu", &n_mvasel_mu);
 	tree->Branch("n_fakeablesel_mu", &n_fakeablesel_mu);
@@ -582,11 +616,6 @@ void CU_ttH_EDA_Ntuple::set_up_branches(TTree *tree)
 	tree->Branch("n_presel_tau", &n_presel_tau);
 	tree->Branch("n_tau", &n_tau);
 	tree->Branch("n_presel_jet", &n_presel_jet);
-	tree->Branch("pass_single_e", &pass_single_e);
-	tree->Branch("pass_single_mu", &pass_single_mu);
-	tree->Branch("pass_double_e", &pass_double_e);
-	tree->Branch("pass_double_mu", &pass_double_mu);
-	tree->Branch("pass_elemu", &pass_elemu);
 	tree->Branch("MVA_2lss_ttV", &MVA_2lss_ttV);
 	tree->Branch("MVA_2lss_ttbar", &MVA_2lss_ttbar);
 	tree->Branch("MT_met_lep0", &MT_met_lep0);
@@ -598,7 +627,7 @@ void CU_ttH_EDA_Ntuple::set_up_branches(TTree *tree)
 	tree->Branch("avg_dr_jet", &avg_dr_jet);
 	// muons
 	tree->Branch("mu0_pt",                   &mu0_pt);
-	//tree->Branch("mu0_conept",               &mu0_conept);
+	tree->Branch("mu0_conept",               &mu0_conept);
 	tree->Branch("mu0_eta",                  &mu0_eta);
 	tree->Branch("mu0_phi",                  &mu0_phi);
 	tree->Branch("mu0_E",                    &mu0_E);
@@ -621,7 +650,7 @@ void CU_ttH_EDA_Ntuple::set_up_branches(TTree *tree)
 	tree->Branch("mu0_isfakeablesel", &mu0_isfakeablesel);
 	tree->Branch("mu0_mcMatchType", &mu0_mcMatchType);
 	tree->Branch("mu1_pt",                   &mu1_pt);
-	//tree->Branch("mu1_conept",               &mu1_conept);
+	tree->Branch("mu1_conept",               &mu1_conept);
 	tree->Branch("mu1_eta",                  &mu1_eta);
 	tree->Branch("mu1_phi",                  &mu1_phi);
 	tree->Branch("mu1_E",                    &mu1_E);
@@ -645,7 +674,7 @@ void CU_ttH_EDA_Ntuple::set_up_branches(TTree *tree)
 	tree->Branch("mu1_mcMatchType", &mu1_mcMatchType);
 	// electrons
 	tree->Branch("ele0_pt",                   &ele0_pt);
-	//tree->Branch("ele0_conept",               &ele0_conept);
+	tree->Branch("ele0_conept",               &ele0_conept);
 	tree->Branch("ele0_eta",                  &ele0_eta);
 	tree->Branch("ele0_phi",                  &ele0_phi);
 	tree->Branch("ele0_E",                    &ele0_E);
@@ -669,7 +698,7 @@ void CU_ttH_EDA_Ntuple::set_up_branches(TTree *tree)
 	tree->Branch("ele0_isfakeablesel", &ele0_isfakeablesel);
 	tree->Branch("ele0_mcMatchType", &ele0_mcMatchType);
 	tree->Branch("ele1_pt",                   &ele1_pt);
-	//tree->Branch("ele1_conept",               &ele1_conept);
+	tree->Branch("ele1_conept",               &ele1_conept);
 	tree->Branch("ele1_eta",                  &ele1_eta);
 	tree->Branch("ele1_phi",                  &ele1_phi);
 	tree->Branch("ele1_E",                    &ele1_E);

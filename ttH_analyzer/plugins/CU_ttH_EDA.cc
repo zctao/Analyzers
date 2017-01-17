@@ -223,6 +223,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	local.npuInTime = -1.;
 
 	local.isGenMatched = -9999;
+	local.HiggsDecayType = -9999;
 	
 	/// Run checks on event containers via their handles
 	Check_triggers(handle.triggerResults, local);
@@ -247,6 +248,10 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 
 	
 	if (not isdata) {
+		// Higgs decay mode
+		if (sampleName.Contains("ttH") or sampleName.Contains("sync_"))
+			local.HiggsDecayType = HiggsDaughterPdgId(*(handle.MC_particles));
+		
 		// pileup
 		std::vector<PileupSummaryInfo>::const_iterator PVI;
 		
@@ -560,6 +565,10 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 			matchHLT = local.pass_single_e or local.pass_single_mu or
 				local.pass_elemu;
 
+		local.lepCategory = ilep;
+		local.btagCategory = ibtag;
+		local.matchHLTPath = matchHLT;
+		
 		pass_event_selection = pass_event_selection and (matchHLT or hltcut_off);
 		
 		if (debug) {
