@@ -978,16 +978,16 @@ float CU_ttH_EDA::getEleChargeMisIDProb(const miniLepton& lepton)
 float CU_ttH_EDA::read2DHist(TH2* h2d, float x, float y)
 {
 	TAxis* xaxis = h2d->GetXaxis();
-	//int nbinx = xaxis->GetNbins();
+	int nbinx = xaxis->GetNbins();
 	int xbin = xaxis->FindBin(x);
-    //if (xbin < 1) xbin = 1;
-	//if (xbin > nbinx) xbin = nbinx;
+    if (xbin < 1) xbin = 1;
+	if (xbin > nbinx) xbin = nbinx;
 
 	TAxis* yaxis = h2d->GetYaxis();
-	//int nbiny = yaxis->GetNbins();
+	int nbiny = yaxis->GetNbins();
 	int ybin = yaxis->FindBin(abs(y));
-    //if (ybin < 1) ybin = 1;
-	//if (ybin > nbiny) ybin = nbiny;
+    if (ybin < 1) ybin = 1;
+	if (ybin > nbiny) ybin = nbiny;
 
 	float result = h2d->GetBinContent(xbin, ybin);
 
@@ -1041,6 +1041,8 @@ float CU_ttH_EDA::getFakeRate(const miniLepton& lepton)
 	else if (lepton.Type() == LeptonType::kmu)
 		fakerate = read2DHist(h_fakerate_mu, lepton.conePt(), lepton.eta());
 
+	if (lepton.conePt() < 10.) return 0.;
+	
 	return fakerate;
 }
 
