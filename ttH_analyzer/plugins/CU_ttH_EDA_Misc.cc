@@ -470,13 +470,14 @@ bool CU_ttH_EDA::pass_event_sel_2l(CU_ttH_EDA_event_vars &local,
 	}
 
 	//////////////////////////
-	/// MC truth matching for signal region
-	if (selection_region == Signal_2lss1tau and !isdata) {
-		assert(local.leptons_tight.size()==2);
-		assert(local.tau_selected.size()>=1);
+	/// MC truth matching
+	if (not isdata) {
 
+		assert(local.leptons_fakeable.size()>=2);
 		bool matchGenLeps = true;
-		for (const auto & lep : local.leptons_tight) {
+		int lep_cnt = 0;
+		
+		for (const auto & lep : local.leptons_fakeable) {
 			if (lep.MCMatchType==0) {  // initial value is set to 0
 				std::cerr << "WARNING!! MC match type is not set!!" << std::endl;
 			}
@@ -498,10 +499,13 @@ bool CU_ttH_EDA::pass_event_sel_2l(CU_ttH_EDA_event_vars &local,
 				if (not (lep.MCMatchType == 2 or lep.MCMatchType == 4))
 					matchGenLeps = false;
 			}
+
+			// match only the two leading leptons
+			if (++lep_cnt > 1) break;
 		}
 
 		// Tau genMatch not used in event selection
-		//instead, split MC sample into _gentau and _faketau based on tau genMatch
+		// split MC sample into _gentau and _faketau based on tau genMatch
 		
 		bool matchGenTau = false; 
 		// should have at least one tau at this stage
@@ -516,18 +520,29 @@ bool CU_ttH_EDA::pass_event_sel_2l(CU_ttH_EDA_event_vars &local,
 		
 		// set Gen Matching flag
 		local.isGenMatched = matchGenLeps and matchGenTau;
+		
 		// tauID scale factor
-		local.tauID_sf = matchGenTau ? 0.9 : 1.0;
-
-		bool passMCMatching = matchGenLeps;
-
-		if (not passMCMatching) {
-			if (debug) {
-				std::cout << "FAIL MC truth matching" << std::endl;
+		float tauEta = local.tau_selected[0].eta();
+		float tauPt = local.tau_selected[0].pt();
+	    
+		float tauEff_sf = 0.9;  // tau ID efficiency data/MC scale factor
+		float tauFR_sf =  // tau ID fake rate data/MC scale factor
+			tauEta < 1.479 ? readTF(f_fakerate_tau_mvaM_etaL_ratio, tauPt) :
+			readTF(f_fakerate_tau_mvaM_etaH_ratio, tauPt);;
+	    
+		local.tauID_sf = matchGenTau ? tauEff_sf : tauFR_sf;
+		
+		// for signal region
+		if (selection_region == Signal_2lss1tau) {
+			bool passMCMatching = matchGenLeps;
+			
+			assert(local.leptons_tight.size()==2);			
+			if (not passMCMatching) {
+				if (debug) std::cout << "FAIL MC truth matching" << std::endl;
+				return false;
 			}
-
-			return false;
-		}	
+		}
+		
 	}
 	
 	//////////////////////////

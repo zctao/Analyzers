@@ -80,21 +80,29 @@ void CU_ttH_EDA::Set_up_histograms()
 
 void CU_ttH_EDA::Set_up_FakeRate_Lut()
 {
-	if (selection_type == Control_1lfakeable) {
-		// electrons and muons
-		file_fr_lep = new TFile((std::string(getenv("CMSSW_BASE")) + "/src/Analyzers/ttH_analyzer/data/FR_data_ttH_mva.root").c_str(),"read");
-		
-		h_fakerate_el = (TH2F*) file_fr_lep->Get("FR_mva075_el_data_comb");
-		h_fakerate_mu = (TH2F*) file_fr_lep->Get("FR_mva075_mu_data_comb");
-		
-		//taus
-		file_fr_tau = new TFile((std::string(getenv("CMSSW_BASE")) + "/src/Analyzers/ttH_analyzer/data/FR_tau_2016.root").c_str(), "read");
-		
-		g_fakerate_tau_mvaM_etaL_mc = (TGraphAsymmErrors*) file_fr_tau->Get("jetToTauFakeRate/dR03mvaMedium/absEtaLt1_5/jetToTauFakeRate_mc_hadTaus_pt");
-		g_fakerate_tau_mvaM_etaH_mc = (TGraphAsymmErrors*) file_fr_tau->Get("jetToTauFakeRate/dR03mvaMedium/absEta1_5to9_9/jetToTauFakeRate_mc_hadTaus_pt");
-		f_fakerate_tau_mvaM_etaL_ratio = (TF1*) file_fr_tau->Get("jetToTauFakeRate/dR03mvaMedium/absEtaLt1_5/fitFunction_data_div_mc_hadTaus_pt");
-		f_fakerate_tau_mvaM_etaH_ratio = (TF1*) file_fr_tau->Get("jetToTauFakeRate/dR03mvaMedium/absEta1_5to9_9/fitFunction_data_div_mc_hadTaus_pt");
-	}
+	// electrons and muons
+	file_fr_lep = new TFile((std::string(getenv("CMSSW_BASE")) + "/src/Analyzers/ttH_analyzer/data/FR_data_ttH_mva.root").c_str(),"read");
+	
+	h_fakerate_el = (TH2F*) file_fr_lep->Get("FR_mva075_el_data_comb");
+	h_fakerate_mu = (TH2F*) file_fr_lep->Get("FR_mva075_mu_data_comb");
+	
+	//taus
+	/*
+	  file_fr_tau = new TFile((std::string(getenv("CMSSW_BASE")) + "/src/Analyzers/ttH_analyzer/data/FR_tau_2016.root").c_str(), "read");
+	  
+	  g_fakerate_tau_mvaM_etaL_mc = (TGraphAsymmErrors*) file_fr_tau->Get("jetToTauFakeRate/dR03mvaMedium/absEtaLt1_5/jetToTauFakeRate_mc_hadTaus_pt");
+	  g_fakerate_tau_mvaM_etaH_mc = (TGraphAsymmErrors*) file_fr_tau->Get("jetToTauFakeRate/dR03mvaMedium/absEta1_5to9_9/jetToTauFakeRate_mc_hadTaus_pt");
+	  f_fakerate_tau_mvaM_etaL_ratio = (TF1*) file_fr_tau->Get("jetToTauFakeRate/dR03mvaMedium/absEtaLt1_5/fitFunction_data_div_mc_hadTaus_pt");
+	  f_fakerate_tau_mvaM_etaH_ratio = (TF1*) file_fr_tau->Get("jetToTauFakeRate/dR03mvaMedium/absEta1_5to9_9/fitFunction_data_div_mc_hadTaus_pt");
+	*/
+}
+
+void CU_ttH_EDA::Set_up_TauSF_Lut()
+{
+	file_fr_tau = new TFile((std::string(getenv("CMSSW_BASE")) + "/src/Analyzers/ttH_analyzer/data/FR_tau_2016.root").c_str(), "read");
+	
+	f_fakerate_tau_mvaM_etaL_ratio = (TF1*) file_fr_tau->Get("jetToTauFakeRate/dR03mvaMedium/absEtaLt1_5/fitFunction_data_div_mc_hadTaus_pt");
+	f_fakerate_tau_mvaM_etaH_ratio = (TF1*) file_fr_tau->Get("jetToTauFakeRate/dR03mvaMedium/absEta1_5to9_9/fitFunction_data_div_mc_hadTaus_pt");
 }
 
 void CU_ttH_EDA::Set_up_ChargeMisID_Lut()

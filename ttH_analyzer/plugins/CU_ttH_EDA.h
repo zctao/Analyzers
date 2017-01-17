@@ -172,6 +172,7 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	void fillCSVhistos(TFile*, TFile*);
 	void Set_up_LeptonSF_Lut();
 	void Set_up_FakeRate_Lut();
+	void Set_up_TauSF_Lut();
 	void Set_up_ChargeMisID_Lut();
 	void Set_up_PUWeight_hist();
 

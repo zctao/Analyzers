@@ -99,6 +99,8 @@ CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig):
 		Set_up_LeptonSF_Lut();
 
 		Set_up_PUWeight_hist();
+
+		Set_up_TauSF_Lut();
 	}
 
 	if (selection_type == Control_1lfakeable) {
