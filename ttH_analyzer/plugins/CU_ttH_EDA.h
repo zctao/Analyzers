@@ -354,19 +354,19 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	TH1D *h_SumGenWeight;
 	TH1D *h_SumGenWeightxPU;
 	
-	TH2D *h_MVA_ttV_vs_ttbar[3][2];
-	TH1D *h_MVA_shape[3][2];
-	TH2D *h_MVA_ttV_vs_ttbar_sys[3][2][16];
-	TH1D *h_MVA_shape_csv_sys[3][2][16];
-	TH1D *h_MVA_shape_thu_sys[3][2][4];
-	bool setup_sysHist = false;
+	//TH2D *h_MVA_ttV_vs_ttbar[3][2];
+	//TH1D *h_MVA_shape[3][2];
+	//TH2D *h_MVA_ttV_vs_ttbar_sys[3][2][16];
+	//TH1D *h_MVA_shape_csv_sys[3][2][16];
+	//TH1D *h_MVA_shape_thu_sys[3][2][4];
+	//bool setup_sysHist = false;
 
 	// for WZ control region
-	TH1D *h_mTWl;  // mT of the lepton from W
-	TH1D *h_met;
-	TH1D *h_nJets;
-	TH1D *h_lep_charge;
-	TH1D *h_mZ;
+	//TH1D *h_mTWl;  // mT of the lepton from W
+	//TH1D *h_met;
+	//TH1D *h_nJets;
+	//TH1D *h_lep_charge;
+	//TH1D *h_mZ;
 
 	// Fake lepton rate lookup histograms
 	TFile *file_fr_lep;

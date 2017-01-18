@@ -48,16 +48,36 @@ class CU_ttH_EDA_Ntuple //: public TClass
 	float event_weight;
 	float PU_weight;
 	float MC_weight;
-	float MC_weight_scale_muF0p5;
-	float MC_weight_scale_muF2;
-	float MC_weight_scale_muR0p5;
-	float MC_weight_scale_muR2;
 	float bTagSF_weight; //csv_weight;
 	float leptonSF_weight;
 	float tauSF_weight;
 	float triggerSF_weight;//hltSF;
 	float FR_weight;
 
+	/////////////////////////////
+	// systematics
+	float MC_weight_scale_muF0p5;
+	float MC_weight_scale_muF2;
+	float MC_weight_scale_muR0p5;
+	float MC_weight_scale_muR2;
+	float btagSF_weight_LFUp;
+	float btagSF_weight_LFDown;
+	float btagSF_weight_HFUp;
+	float btagSF_weight_HFDown;
+	float btagSF_weight_HFStats1Up;
+	float btagSF_weight_HFStats1Down;
+	float btagSF_weight_HFStats2Up;
+	float btagSF_weight_HFStats2Down;
+	float btagSF_weight_LFStats1Up;
+	float btagSF_weight_LFStats1Down;
+	float btagSF_weight_LFStats2Up;
+	float btagSF_weight_LFStats2Down;
+	float btagSF_weight_cErr1Up;
+	float btagSF_weight_cErr1Down;
+	float btagSF_weight_cErr2Up;
+	float btagSF_weight_cErr2Down;
+	/////////////////////////////
+	
 	int isGenMatched;
 	int HiggsDecayType;   // Higgs decay product pdgId
 

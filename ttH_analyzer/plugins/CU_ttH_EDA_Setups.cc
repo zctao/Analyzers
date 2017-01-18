@@ -17,7 +17,7 @@ void CU_ttH_EDA::Set_up_histograms()
 	TString btag_cat[2] = {"bloose", "bmedium"};
 	
 	if (analysis_type == Analyze_2lss1tau) {
-		
+		/*
 		for (int il = 0; il < 3; il++) {
 			for (int ib = 0; ib <2; ib++) {
 				TString h2d_name =
@@ -67,15 +67,17 @@ void CU_ttH_EDA::Set_up_histograms()
 				}
 			}
 		}
-
+		*/
 	}
 
 	if (analysis_type == Analyze_3l) {
+		/*
 		h_mTWl = fs_->make<TH1D>("h_mTWl","", 10, 0, 300);
 		h_met = fs_->make<TH1D>("h_met", "", 8, 0, 200);
 		h_nJets = fs_->make<TH1D>("h_nJets", "", 8, 0, 8);
 		h_lep_charge = fs_->make<TH1D>("h_lep_charge", "", 10, -5, 5);
 		h_mZ = fs_->make<TH1D>("h_mZ", "", 15, 60, 120);
+		*/
 	}
 }
 

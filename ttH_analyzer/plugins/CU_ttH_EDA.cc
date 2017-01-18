@@ -703,7 +703,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 
 			local.ibin = partition2DBDT(mva_ttbar, mva_ttV);
 			
-			// Fill histograms
+			/*// Fill histograms
 			// 2D hist
 			h_MVA_ttV_vs_ttbar[ilep][ibtag]
 				->Fill(mva_ttbar, mva_ttV, local.weight);
@@ -713,8 +713,9 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 			
 			h_MVA_shape[ilep][ibtag]
 				->Fill(bin, local.weight);
+			*/
 				
-			// systematics
+			/*// systematics
 			if (!isdata and doSystematics and selection_type == Signal_2lss1tau) {
 
 				// CSV reweight
@@ -744,6 +745,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 				h_MVA_shape_thu_sys[ilep][ibtag][3]->
 					Fill(bin,local.mc_weight_scale_muR2);
 			}
+			*/
 			
 		}
 
@@ -766,6 +768,42 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 			evtNtuple.max_lep_eta = MVA_ttbar_vars.Get_max_lep_eta();
 			evtNtuple.lep0_conept = MVA_ttV_vars.Get_lep1_conePt();
 			evtNtuple.lep1_conept = MVA_ttV_vars.Get_lep2_conePt();
+
+			// systematics
+			if (not isdata and doSystematics) {
+				evtNtuple.btagSF_weight_LFUp =
+					getEvtCSVWeight(local.jets_selected, "LFUp");
+				evtNtuple.btagSF_weight_LFDown =
+					getEvtCSVWeight(local.jets_selected, "LFDown");
+				evtNtuple.btagSF_weight_HFUp =
+					getEvtCSVWeight(local.jets_selected, "HFUp");
+				evtNtuple.btagSF_weight_HFDown =
+					getEvtCSVWeight(local.jets_selected, "HFDown");
+				evtNtuple.btagSF_weight_HFStats1Up =
+					getEvtCSVWeight(local.jets_selected, "HFStats1Up");
+				evtNtuple.btagSF_weight_HFStats1Down =
+					getEvtCSVWeight(local.jets_selected, "HFStats1Down");
+				evtNtuple.btagSF_weight_HFStats2Up =
+					getEvtCSVWeight(local.jets_selected, "HFStats2Up");
+				evtNtuple.btagSF_weight_HFStats2Down =
+					getEvtCSVWeight(local.jets_selected, "HFStats2Down");
+				evtNtuple.btagSF_weight_LFStats1Up =
+					getEvtCSVWeight(local.jets_selected, "LFStats1Up");
+				evtNtuple.btagSF_weight_LFStats1Down =
+					getEvtCSVWeight(local.jets_selected, "LFStats1Down");
+				evtNtuple.btagSF_weight_LFStats2Up =
+					getEvtCSVWeight(local.jets_selected, "LFStats2Up");
+				evtNtuple.btagSF_weight_LFStats2Down =
+					getEvtCSVWeight(local.jets_selected, "LFStats2Down");
+				evtNtuple.btagSF_weight_cErr1Up =
+					getEvtCSVWeight(local.jets_selected, "cErr1Up");
+				evtNtuple.btagSF_weight_cErr1Down =
+					getEvtCSVWeight(local.jets_selected, "cErr1Down");
+				evtNtuple.btagSF_weight_cErr2Up =
+					getEvtCSVWeight(local.jets_selected, "cErr2Up");
+				evtNtuple.btagSF_weight_cErr2Down =
+					getEvtCSVWeight(local.jets_selected, "cErr2Down");
+			}
 			
 			eventTree->Fill();
 		}

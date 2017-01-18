@@ -1172,7 +1172,7 @@ int CU_ttH_EDA::HiggsDaughterPdgId(const std::vector<reco::GenParticle>& genPart
 
 		if ( abs(d1->pdgId()) != abs(d2->pdgId()) ) continue;
 
-		assert(p.statusFlags().isLastCopy());
+		//assert(p.statusFlags().isLastCopy());
 		
 		return d1->pdgId();
 	}
