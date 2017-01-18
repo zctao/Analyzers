@@ -917,7 +917,7 @@ void CU_ttH_EDA::beginRun(const edm::Run &iRun, const edm::EventSetup &iSetup)
 	if (hlt_config_changed) {
 		std::cout << "New " << hltTag << " config has been loaded.\n";
 		
-		if (not hltcut_off) Set_up_HLT_path_name();
+	    Set_up_HLT_path_name();
 	}
 
 	bool filter_config_changed = true; // init() updates this one
