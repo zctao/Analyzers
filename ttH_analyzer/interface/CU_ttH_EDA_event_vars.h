@@ -51,6 +51,8 @@ struct CU_ttH_EDA_event_vars {
 	int event_nr;
 	int lumisection_nr;
 
+	int ibin;  // bin index in 1D BDT shape template
+
 	/// Number of tags per event
 	//int n_electrons;
 	int n_electrons_loose;

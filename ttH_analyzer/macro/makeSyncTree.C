@@ -26,6 +26,7 @@ void makeSyncTree(TString input_file="/uscms/home/ztao/nobackup/output_sync.root
 	old_tree->SetBranchStatus("npuTrue", 0);
 	old_tree->SetBranchStatus("npuInTime", 0);
 	old_tree->SetBranchStatus("n_tau", 0);
+	old_tree->SetBranchStatus("ibin", 0);
 	old_tree->SetBranchStatus("tau0_decayMode", 0);
 	old_tree->SetBranchStatus("tau1_decayMode", 0);
 	old_tree->SetBranchStatus("pass_single_e", 0);

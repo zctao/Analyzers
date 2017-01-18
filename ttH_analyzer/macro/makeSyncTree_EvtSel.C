@@ -39,6 +39,7 @@ void makeSyncTree_EvtSel(
 		tree->SetBranchStatus("npuTrue", 0);
 		tree->SetBranchStatus("npuInTime", 0);
 		tree->SetBranchStatus("n_tau", 0);
+		tree->SetBranchStatus("ibin", 0);
 		tree->SetBranchStatus("tau0_decayMode", 0);
 		tree->SetBranchStatus("tau1_decayMode", 0);
 		tree->SetBranchStatus("pass_single_e", 0);

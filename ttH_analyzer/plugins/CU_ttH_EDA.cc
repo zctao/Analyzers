@@ -701,6 +701,8 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 				local.weight = P1_misCharge + P2_misCharge;
 			}
 
+			local.ibin = partition2DBDT(mva_ttbar, mva_ttV);
+			
 			// Fill histograms
 			// 2D hist
 			h_MVA_ttV_vs_ttbar[ilep][ibtag]
@@ -711,7 +713,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 			
 			h_MVA_shape[ilep][ibtag]
 				->Fill(bin, local.weight);
-			
+				
 			// systematics
 			if (!isdata and doSystematics and selection_type == Signal_2lss1tau) {
 

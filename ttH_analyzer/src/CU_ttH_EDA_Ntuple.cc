@@ -49,6 +49,8 @@ void CU_ttH_EDA_Ntuple::write_ntuple(const CU_ttH_EDA_event_vars &local)
 	pass_elemu = local.pass_elemu;
 	matchHLTPath = local.matchHLTPath;
 
+	ibin = local.ibin;
+
 	// Muons
 	n_presel_mu = local.n_muons_loose;
 	n_fakeablesel_mu = local.n_muons_fakeable;
@@ -389,6 +391,7 @@ void CU_ttH_EDA_Ntuple::initialize()
 	lep1_conept = -9999.;
 	avg_dr_jet = -9999.;
 	max_lep_eta = -9999.;
+	ibin = -9999;
 
 	// muons
 	mu0_pt = -9999.;
@@ -625,6 +628,7 @@ void CU_ttH_EDA_Ntuple::set_up_branches(TTree *tree)
 	tree->Branch("lep0_conept", &lep0_conept);
 	tree->Branch("lep1_conept", &lep1_conept);
 	tree->Branch("avg_dr_jet", &avg_dr_jet);
+	tree->Branch("ibin", &ibin);
 	// muons
 	tree->Branch("mu0_pt",                   &mu0_pt);
 	tree->Branch("mu0_conept",               &mu0_conept);
