@@ -160,15 +160,19 @@ CU_ttH_EDA::~CU_ttH_EDA()
 			delete file_looseToTight_leptonSF_mu_3l;
 			delete file_looseToTight_leptonSF_el_3l;
 		}
+
+		file_fr_tau->Close();		
+		delete file_fr_tau;
 	}
 
-	if (selection_type == Control_1lfakeable) {
-
-		file_fr_lep->Close();
-		file_fr_tau->Close();
-		
+	if (selection_type == Control_1lfakeable) {		
+		file_fr_lep->Close();		
 		delete file_fr_lep;
-		delete file_fr_tau;
+	}
+
+	if (selection_type == Control_2los1tau) {
+		file_eleMisCharge->Close();
+		delete file_eleMisCharge;
 	}
 }
 
