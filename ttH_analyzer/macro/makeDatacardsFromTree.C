@@ -33,11 +33,13 @@ vector<TH1D*> getClosureTestShapes(TH1D*);
 // "", "_gentau", "_faketau", "_"+syts, "_gentau"+"_"+syst, "_faketau"+"_"+syst,
 // "_JESUp", "_JESDown"; jesup jesdown on seperate loop
 
-void makeDatacardsFromTree(TString outfile_suffix = "12_9",
-						   vector<TString> channels =
-							   {"ttH", "TTW", "TTZ", "EWK", "Rare",
-									   "fakes_data", "flips_data", "data_obs"})
+void makeDatacardsFromTree(TString outfile_suffix = "12_9")
 {
+	vector<TString> channels =
+		{"ttH", "TTW", "TTZ", "EWK", "Rare",
+		 "fakes_data", "flips_data", "data_obs"
+		};
+	
 	vector<TH1D*> datacards;
 	
 	for (const auto & channel : channels) {
@@ -52,10 +54,10 @@ void makeDatacardsFromTree(TString outfile_suffix = "12_9",
 
 		datacards.insert(datacards.end(), shapes.begin(), shapes.end());
 	} // end of channel loop
-
+	
 	// output file
 	TFile output_combine("ttH_2lss_1tau_"+outfile_suffix+".root", "RECREATE");
-
+	
 	for (auto & h : datacards)
 		h->Write();
 }
@@ -88,11 +90,13 @@ map<TString, TH1D*> setupHistoMap(TString sample, bool addSyst, TString jec_suff
 		keys_sys.push_back("" + jec_suffix);
 
 		if (addSyst and jec_suffix == "") {  // only for the central one
+			if (sample=="ttH" or sample=="TTW" or sample=="TTZ") {
+				for (auto & thu : ThSysts)
+					keys_sys.push_back("_"+thu);
+			}			
+			
 			for (auto & btagsys : BTagSysts)
 				keys_sys.push_back("_"+btagsys);
-
-			for (auto & thu : ThSysts)
-				keys_sys.push_back("_"+thu);
 		}
 
 		for (auto & ks : keys_sys) {
@@ -144,10 +148,10 @@ vector<TH1D*> getShapesMC( TString channel, vector<TString> samples)
 		hists.insert(hists_jesdown.begin(), hists_jesdown.end());
 		
 		// scale histograms
-		//TH1D* h_SumGenWeight = (TH1D*)f_central->Get("ttHtaus/h_SumGenWeight");
+		TH1D* h_SumGenWeight = (TH1D*)f_central->Get("ttHtaus/h_SumGenWeight");
 		//TH1D* h_SumGenWeightxPU = (TH1D*)f_central->Get("ttHtaus/h_SumGenWeightxPU");
-		//float nSum = h_SumGenWeight->GetBinContent(1);
-		//float XS = xsection::xsection[string(sample)];
+		float nSum = h_SumGenWeight->GetBinContent(1);
+		float XS = xsection::xsection[string(sample)];
 
 		int ih = 0;
 		for (auto & h : hists) {
@@ -182,7 +186,7 @@ vector<TH1D*> getShapesMC( TString channel, vector<TString> samples)
 		// To be updated: cout yields
 
 		first = false;
-
+		
 		// close file and release memory
 		f_central->Close();
 		f_jesup->Close();
@@ -208,6 +212,9 @@ vector<TH1D*> getShapesData(TString channel, vector<TString> samples)
 	h->Sumw2();
 	
 	for (const TString & sample : samples) {
+
+		cout << "opening sample: " << sample << endl;
+
 		// open file
 		TFile* f = new TFile(dir_map.at(sample)+"output_"+channel+".root");
 
@@ -221,7 +228,7 @@ vector<TH1D*> getShapesData(TString channel, vector<TString> samples)
 
 		delete f;
 	}
-
+	
 	// To be updated: yields
 	float y = h->Integral();
 	yields.push_back(y);
@@ -480,6 +487,7 @@ void updateHistoName(pair<const TString, TH1D*>& h, TString channel)
 		return;
 	}
 
+	h.second->SetName("x_"+channel+key);
 	return;
 }
 
@@ -487,7 +495,7 @@ vector<TH1D*> getClosureTestShapes(TH1D* h_nominal)
 {	
 	TString hname = h_nominal->GetName();
 	assert(hname=="x_fakes_data");
-	h_nominal->Sumw2();
+	//h_nominal->Sumw2();
 	
 	vector<TH1D*> hists_clos;
 	
@@ -502,16 +510,16 @@ vector<TH1D*> getClosureTestShapes(TH1D* h_nominal)
 		assert(0);
 	}
 	
-	TFile f_clos("../data/Closure_FR_syst/Closure_FR_lepton_syst_2lSS1tau_nofaketau_MVA_2lSS_"+era_clos+".root", "READ");
+	TFile* f_clos = new TFile("../data/Closure_FR_syst/Closure_FR_lepton_syst_2lSS1tau_nofaketau_MVA_2lSS_"+era_clos+".root", "READ");
 	
 	// get histograms
 	TH1D* h_ttbar_minus_qcd_fr_ele =
-		(TH1D*)f_clos.Get("x_TT_DL_FR_TT_MC_minus_FR_QCD_MC_ele");
+		(TH1D*)f_clos->Get("x_TT_DL_FR_TT_MC_minus_FR_QCD_MC_ele");
 	TH1D* h_ttbar_minus_qcd_fr_mu =
-		(TH1D*)f_clos.Get("x_TT_DL_FR_TT_MC_minus_FR_QCD_MC_mu");
+		(TH1D*)f_clos->Get("x_TT_DL_FR_TT_MC_minus_FR_QCD_MC_mu");
 
-	h_ttbar_minus_qcd_fr_ele->Sumw2();
-	h_ttbar_minus_qcd_fr_mu->Sumw2();
+	//h_ttbar_minus_qcd_fr_ele->Sumw2();
+	//h_ttbar_minus_qcd_fr_mu->Sumw2();
 	
 	TH1D* h_clos_e_shape_up =
 		new TH1D("x_fakes_data_"+sys_coname+"Clos_e_shape1Up","", 7, 0.5, 7.5);
