@@ -41,6 +41,9 @@ channels = [#'ttH', 'ttH_jesup', 'ttH_jesdown',
             #'WWds', 'WWds_jesup', 'WWds_jesdown',
             #'WpWp', 'WpWp_jesup', 'WpWp_jesdown',
             #'WZZ', 'WZZ_jesup', 'WZZ_jesdown',
+            #'WWZ', 'WWZ_jesup', 'WWZ_jesdown',
+            #'WWW', 'WWW_jesup', 'WWW_jesdown',
+            #'ZZZ', 'ZZZ_jesup', 'ZZZ_jesdown',
             #'TTTT', 'TTTT_jesup', 'TTTT_jesdown',
             #'TTJets_DiLep', 'TTJets_DiLep_jesup', 'TTJets_DiLep_jesdown',
             #'TTJets_DiLep_ext', 'TTJets_DiLep_ext_jesup', 'TTJets_DiLep_ext_jesdown',
@@ -92,10 +95,9 @@ channels = [#'ttH', 'ttH_jesup', 'ttH_jesdown',
 for ch in channels:
     with open("../data/SampleList_Moriond17.txt") as f:
         for line in f:
-            if len(line.strip())>1 and line.strip() in ch:
-                sample = f.next().strip()
-                
-                if not 'data' in ch:                  
+            if not 'data' in ch:
+                if line.strip() in ch:
+                    sample = f.next().strip()
                     pset = f.next().strip()
                     if '_jesup' in ch:
                         pset=pset.replace("doSystematics=True","doSystematics=False")
@@ -107,7 +109,9 @@ for ch in channels:
                     perjob = f.next().strip()
                     break
                 
-                else:
+            else:
+                if len(line.strip())>5 and line.strip() in ch:
+                    sample = f.next().strip()
                     run = f.next().strip()
                     perjob = f.next().strip()
                     pset="['isData=True','SampleName=','SelectionRegion=','TurnOffHLTCut=True']"

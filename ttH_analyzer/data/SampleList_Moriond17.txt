@@ -82,10 +82,30 @@ WZZ
 ['SampleName=WZZ','doSystematics=True','JECType=NA','TurnOffHLTCut=True','doJERSmearing=False']
 10000
 --------------------------
+WWZ
+'/WWZ_TuneCUETP8M1_13TeV-amcatnlo-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM'
+['SampleName=WWZ','doSystematics=True','JECType=NA','TurnOffHLTCut=True','doJERSmearing=False']
+10000
+--------------------------
+WWW
+'/WWW_4F_TuneCUETP8M1_13TeV-amcatnlo-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM'
+['SampleName=WWW','doSystematics=True','JECType=NA','TurnOffHLTCut=True','doJERSmearing=False']
+10000
+--------------------------
+ZZZ
+'/ZZZ_TuneCUETP8M1_13TeV-amcatnlo-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM'
+['SampleName=ZZZ','doSystematics=True','JECType=NA','TurnOffHLTCut=True','doJERSmearing=False']
+10000
+--------------------------
 TTTT
 '/TTTT_TuneCUETP8M1_13TeV-amcatnlo-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/MINIAODSIM'
 ['SampleName=TTTT','doSystematics=True','JECType=NA','TurnOffHLTCut=True','doJERSmearing=False']
 3300
+--------------------------
+tZq
+'/tZq_ll_4f_13TeV-amcatnlo-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1-v1/MINIAODSIM'
+['SampleName=tZq','doSystematics=True','JECType=NA','TurnOffHLTCut=True','doJERSmearing=False']
+10000
 --------------------------
 ## Top ##
 --------------------------
@@ -158,10 +178,6 @@ TGJets
 '/TGJets_TuneCUETP8M1_13TeV_amcatnlo_madspin_pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1-v1/MINIAODSIM'
 ['SampleName=TGJets','doSystematics=True','JECType=NA','TurnOffHLTCut=True','doJERSmearing=False']
 10000
---------------------------
-tZq
-'/tZq_ll_4f_13TeV-amcatnlo-pythia8/RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1-v1/MINIAODSIM'
-['SampleName=tZq','doSystematics=True','JECType=NA','TurnOffHLTCut=True','doJERSmearing=False']
 --------------------------
 ### Data sample ###
 --------------------------
