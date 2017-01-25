@@ -36,14 +36,19 @@ vector<TH1D*> getClosureTestShapes(TH1D*);
 void makeDatacardsFromTree(TString outfile_suffix = "12_9")
 {
 	vector<TString> channels =
-		{"ttH", "TTW", "TTZ", "EWK", "Rare",
+		{"ttH", "TTW", "TTZ", "EWK", "Rares",
 		 "fakes_data", "flips_data", "data_obs"
 		};
 	
 	vector<TH1D*> datacards;
 	
 	for (const auto & channel : channels) {
+		cout << "=========================================" << endl;
 		cout << "processing channel: " << channel << endl;
+		cout << "-----------------------------------------" << endl;
+		cout << "sample" << "\t" << "yields" << "\t" << "yields(gentau)"
+			 << "\t" << "yields(faketau)" << endl;
+		cout << "-----------------------------------------" << endl;
 
 		vector<TH1D*> shapes;
 		
@@ -56,10 +61,15 @@ void makeDatacardsFromTree(TString outfile_suffix = "12_9")
 	} // end of channel loop
 	
 	// output file
-	TFile output_combine("ttH_2lss_1tau_"+outfile_suffix+".root", "RECREATE");
+	TString outname = "ttH_2lss_1tau_"+outfile_suffix+".root";
+	TFile output_combine(outname, "RECREATE");
 	
 	for (auto & h : datacards)
 		h->Write();
+
+	cout << "Output file: " << outname << endl;
+
+	return;
 }
 
 map<TString, TH1D*> setupHistoMap(TString sample, bool addSyst, TString jec_suffix)
@@ -112,12 +122,13 @@ map<TString, TH1D*> setupHistoMap(TString sample, bool addSyst, TString jec_suff
 vector<TH1D*> getShapesMC( TString channel, vector<TString> samples)
 {
 	vector<TH1D*> shapes;
-	map<TString, float> yields;
+    float yields[3] = {0., 0., 0.};
 
 	bool first = true;
+	
 	for (const TString & sample : samples) {
 		
-		cout << "opening sample: " << sample << endl;
+		cout << sample << "\t";
 		
 		// open files
 		TFile* f_central =
@@ -167,25 +178,26 @@ vector<TH1D*> getShapesMC( TString channel, vector<TString> samples)
 				shapes.at(ih++)->Add(h.second);
 			}
 		}		
-		
-		// yields
-		yields[sample] = hists[""]->Integral();
-		yields[sample+"_gentau"] = hists["_gentau"]->Integral();
-		yields[sample+"_faketau"] = hists["_faketau"]->Integral();
-		if (sample == "ttH") {
-			for (TString mode : HiggsDecayMode) {
-				yields[sample+"_"+mode] =
-					hists["_"+mode]->Integral();
-				yields[sample+"_"+mode+"_gentau"] =
-					hists["_"+mode+"_gentau"]->Integral();
-				yields[sample+"_"+mode+"_faketau"] =
-					hists["_"+mode+"_faketau"]->Integral();
-			}
-		}
-
-		// To be updated: cout yields
 
 		first = false;
+		
+		// print out yields
+		if (sample == "ttH") {
+			for (TString mode : HiggsDecayMode) {
+				cout << "ttH_" << mode << "\t";
+				cout << hists["_"+mode]->Integral() << "\t";
+				cout << hists["_"+mode+"_gentau"]->Integral() << "\t";
+				cout << hists["_"+mode+"_faketau"]->Integral() << endl;
+			}
+		}
+		
+		cout << hists[""]->Integral() << "\t";
+		cout << hists["_gentau"]->Integral() << "\t";
+		cout << hists["_faketau"]->Integral() << endl;
+
+		yields[0] += hists[""]->Integral();
+		yields[1] += hists["_gentau"]->Integral();
+		yields[2] += hists["_faketau"]->Integral();
 		
 		// close file and release memory
 		f_central->Close();
@@ -198,13 +210,17 @@ vector<TH1D*> getShapesMC( TString channel, vector<TString> samples)
 		
 	} // end of sample loop
 
+	if (channel == "Rares" or channel == "EWK") {
+		cout << "Total" << "\t" << yields[0] << "\t" << yields[1] << "\t"
+			 << yields[2] << endl;
+	}
+	
 	return shapes;
 }
 
 vector<TH1D*> getShapesData(TString channel, vector<TString> samples)
 {
 	vector<TH1D*> shapes;
-	vector<float> yields;
 
 	vector<vector<int>> eventList; // (run, lumisection, event)
 
@@ -229,9 +245,8 @@ vector<TH1D*> getShapesData(TString channel, vector<TString> samples)
 		delete f;
 	}
 	
-	// To be updated: yields
-	float y = h->Integral();
-	yields.push_back(y);
+	// print out yields
+	cout << channel << "\t" << h->Integral() << endl;
 	
 	shapes.push_back(h);
 
