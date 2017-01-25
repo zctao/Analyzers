@@ -92,11 +92,14 @@ channels = [#'ttH', 'ttH_jesup', 'ttH_jesdown',
             #'data_obs_dieg_2016e', 'data_obs_dieg_2016f', 'data_obs_dieg_2016g',
             ]
 
+def remove_prefix(text, prefix):
+    return text[text.startswith(prefix) and len(prefix):]
+
 for ch in channels:
     with open("../data/SampleList_Moriond17.txt") as f:
         for line in f:
             if not 'data' in ch:
-                if line.strip() in ch:
+                if line.strip()==ch.strip("_jesup") or line.strip()==ch.strip("_jesdown"):
                     sample = f.next().strip()
                     pset = f.next().strip()
                     if '_jesup' in ch:
@@ -110,7 +113,7 @@ for ch in channels:
                     break
                 
             else:
-                if len(line.strip())>5 and line.strip() in ch:
+                if line.strip()==remove_prefix(ch,"data_obs") or line.strip()==remove_prefix(ch,"fakes_data") or line.strip()==remove_prefix(ch,"flips_data"):
                     sample = f.next().strip()
                     run = f.next().strip()
                     perjob = f.next().strip()
