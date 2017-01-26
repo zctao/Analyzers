@@ -47,16 +47,17 @@ void makeDatacardsFromTree(TString outfile_suffix = "12_9")
 		cout << "=========================================" << endl;
 		cout << "processing channel: " << channel << endl;
 		cout << "-----------------------------------------" << endl;
-		cout << "sample" << "\t" << "yields" << "\t" << "yields(gentau)"
-			 << "\t" << "yields(faketau)" << endl;
-		cout << "-----------------------------------------" << endl;
 
 		vector<TH1D*> shapes;
 		
 		if (channel.Contains("data"))
 			shapes = getShapesData(channel, SamplesInChannel.at(channel));
-		else
+		else {
+			cout << "sample" << "\t" << "yields" << "\t" << "yields(gentau)"
+				 << "\t" << "yields(faketau)" << endl;
+			cout << "-----------------------------------------" << endl;
 			shapes = getShapesMC(channel, SamplesInChannel.at(channel));
+		}
 
 		datacards.insert(datacards.end(), shapes.begin(), shapes.end());
 	} // end of channel loop
@@ -166,9 +167,10 @@ vector<TH1D*> getShapesMC( TString channel, vector<TString> samples)
 		hists.insert(hists_jesdown.begin(), hists_jesdown.end());
 		
 		// scale histograms
-		TH1D* h_SumGenWeight = (TH1D*)f_central->Get("ttHtaus/h_SumGenWeight");
-		//TH1D* h_SumGenWeightxPU = (TH1D*)f_central->Get("ttHtaus/h_SumGenWeightxPU");
-		float nSum = h_SumGenWeight->GetBinContent(1);
+		//TH1D* h_SumGenWeight = (TH1D*)f_central->Get("ttHtaus/h_SumGenWeight");
+		TH1D* h_SumGenWeightxPU = (TH1D*)f_central->Get("ttHtaus/h_SumGenWeightxPU");
+		//float nSum = h_SumGenWeight->GetBinContent(1);
+		float nSum = h_SumGenWeightxPU->GetBinContent(1);
 		float XS = xsection::xsection[string(sample)];
 
 		int ih = 0;
@@ -235,7 +237,9 @@ vector<TH1D*> getShapesData(TString channel, vector<TString> samples)
 
 	TH1D* h = new TH1D("x_"+channel, "", 7, 0.5, 7.5);
 	h->Sumw2();
-	
+
+	int nevents = eventList.size();
+	cout << "eventList size : " << nevents << endl;
 	for (const TString & sample : samples) {
 
 		cout << "opening sample: " << sample << endl;
@@ -247,11 +251,10 @@ vector<TH1D*> getShapesData(TString channel, vector<TString> samples)
 		TTree* tree = (TTree*) f->Get("ttHtaus/eventTree");
 
 		fillHistoFromTreeData(h, tree, eventList);
-
+		
 		// close file
-		f->Close();
-
-		delete f;
+		//f->Close();
+		//delete f;
 	}
 	
 	// print out yields
@@ -441,10 +444,12 @@ void fillHistoFromTreeData(TH1D* h, TTree* tree, vector<vector<int>>& eventList)
 	int run;
 	int ls;
 	int event;
+	// FIXME: should be unsigned long long;
 	float event_weight;
 	float mva_ttbar;
 	float mva_ttV;
 	int ibin;
+	int matchHLTPath;
 
 	tree->SetBranchAddress("nEvent", &event);
 	tree->SetBranchAddress("ls", &ls);
@@ -453,14 +458,17 @@ void fillHistoFromTreeData(TH1D* h, TTree* tree, vector<vector<int>>& eventList)
 	tree->SetBranchAddress("MVA_2lss_ttbar", &mva_ttbar);
 	tree->SetBranchAddress("MVA_2lss_ttV", &mva_ttV);
 	tree->SetBranchAddress("ibin", &ibin);
+	tree->SetBranchAddress("matchHLTPath", &matchHLTPath);
 
 	int nEntries = tree->GetEntries();
 
 	for (int i = 0; i < nEntries; ++i) {
-		tree->GetEntry(1);
+		tree->GetEntry(i);
 
+		if (not matchHLTPath) continue;
+		
 		vector<int> eventid = {run, ls, event};
-		assert(run >= 0 and ls >= 0 and event >= 0);
+		//assert(run >= 0 and ls >= 0 and event >= 0);
 
 		bool alreadyIncluded =
 			find(eventList.begin(), eventList.end(), eventid) != eventList.end();
@@ -474,7 +482,7 @@ void fillHistoFromTreeData(TH1D* h, TTree* tree, vector<vector<int>>& eventList)
 			// update bin index here if needed
 
 			// fill histogram
-			h->Fill(ibin, event_weight);			
+			h->Fill(ibin, event_weight);
 		}	
 	} // end of event loop
 }
