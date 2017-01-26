@@ -38,7 +38,7 @@ const std::map<TString,std::vector<TString>> SamplesInChannel =
 	  {"TTW", {"TTW"}},
 	  {"TTZ", {"TTZ"}},
 	  {"EWK", {"WZ", "ZZ", "WW", "WG", "ZG"}},
-	  {"Rare", {"TTTT", "tqZ", /*"WZZ", "WWZ", "WWW", "ZZZ"*/}},
+	  {"Rares", {"TTTT", "tZq"/*, "WZZ", "WWZ", "WWW", "ZZZ"*/}},
 	  {"fakes_data", DataSamples},
 	  {"flips_data", DataSamples},
 	  {"data_obs", DataSamples}

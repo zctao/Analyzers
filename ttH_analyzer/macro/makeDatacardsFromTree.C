@@ -9,6 +9,7 @@
 #include "TString.h"
 
 #include <iostream>
+#include <iomanip>
 #include <string>
 #include <vector>
 #include <algorithm>
@@ -103,7 +104,7 @@ map<TString, TH1D*> setupHistoMap(TString sample, bool addSyst, TString jec_suff
 			if (sample=="ttH" or sample=="TTW" or sample=="TTZ") {
 				for (auto & thu : ThSysts)
 					keys_sys.push_back("_"+thu);
-			}			
+			}
 			
 			for (auto & btagsys : BTagSysts)
 				keys_sys.push_back("_"+btagsys);
@@ -138,13 +139,19 @@ vector<TH1D*> getShapesMC( TString channel, vector<TString> samples)
 		TFile* f_jesdown =
 			new TFile(dir_map.at(sample)+"output_"+sample+"_jesdown.root");
 
-		// To be updated: check files are open
-		
+		// Check if files are open
+		if (not f_central->IsOpen())
+			cout << "CANNOT open file " << "output_" << sample << ".root";
+		if (not f_jesup->IsOpen())
+			cout << "CANNOT open file " << "output_" << sample << "_jesup.root";
+		if (not f_jesdown->IsOpen())
+			cout << "CANNOT open file " << "output_" << sample << "_jesdown.root";
+
 		// get trees
 		TTree* tree_central = (TTree*) f_central->Get("ttHtaus/eventTree");
 		TTree* tree_jesup = (TTree*) f_jesup->Get("ttHtaus/eventTree");
 		TTree* tree_jesdown = (TTree*) f_jesdown->Get("ttHtaus/eventTree");
-		
+
 		// set up histograms
 		map<TString,TH1D*> hists = setupHistoMap(sample, true, "");
 		map<TString,TH1D*> hists_jesup = setupHistoMap(sample, false, "_JESUp");
@@ -153,7 +160,7 @@ vector<TH1D*> getShapesMC( TString channel, vector<TString> samples)
 		fillHistoFromTreeMC(hists, tree_central);
 		fillHistoFromTreeMC(hists_jesup, tree_jesup);
 		fillHistoFromTreeMC(hists_jesdown, tree_jesdown);
-
+		
 		// append maps
 		hists.insert(hists_jesup.begin(), hists_jesup.end());
 		hists.insert(hists_jesdown.begin(), hists_jesdown.end());
@@ -166,9 +173,9 @@ vector<TH1D*> getShapesMC( TString channel, vector<TString> samples)
 
 		int ih = 0;
 		for (auto & h : hists) {
-			h.second->Sumw2();
+			//h.second->Sumw2();
 			h.second->Scale(LUMI * XS / nSum);
-
+			
 			// update histogram names and add to the output histograms
 			if (first) {
 				updateHistoName(h, channel);
@@ -183,36 +190,38 @@ vector<TH1D*> getShapesMC( TString channel, vector<TString> samples)
 		
 		// print out yields
 		if (sample == "ttH") {
+			cout << endl;
 			for (TString mode : HiggsDecayMode) {
 				cout << "ttH_" << mode << "\t";
-				cout << hists["_"+mode]->Integral() << "\t";
-				cout << hists["_"+mode+"_gentau"]->Integral() << "\t";
-				cout << hists["_"+mode+"_faketau"]->Integral() << endl;
+				cout << setw(4) << hists["_"+mode]->Integral() << "\t";
+				cout << setw(4) << hists["_"+mode+"_gentau"]->Integral() << "\t";
+				cout << setw(4) << hists["_"+mode+"_faketau"]->Integral() << endl;
 			}
+			cout << "\t";
 		}
 		
-		cout << hists[""]->Integral() << "\t";
-		cout << hists["_gentau"]->Integral() << "\t";
-		cout << hists["_faketau"]->Integral() << endl;
+		cout << setw(4) << hists[""]->Integral() << "\t";
+		cout << setw(4) << hists["_gentau"]->Integral() << "\t";
+		cout << setw(4) << hists["_faketau"]->Integral() << endl;
 
 		yields[0] += hists[""]->Integral();
 		yields[1] += hists["_gentau"]->Integral();
 		yields[2] += hists["_faketau"]->Integral();
 		
 		// close file and release memory
-		f_central->Close();
-		f_jesup->Close();
-		f_jesdown->Close();
+		//f_central->Close();
+		//f_jesup->Close();
+		//f_jesdown->Close();
 
-		delete f_central;
-		delete f_jesup;
-		delete f_jesdown;
+		//delete f_central;
+		//delete f_jesup;
+		//delete f_jesdown;
 		
 	} // end of sample loop
 
 	if (channel == "Rares" or channel == "EWK") {
-		cout << "Total" << "\t" << yields[0] << "\t" << yields[1] << "\t"
-			 << yields[2] << endl;
+		cout << "Total" << setw(4) << "\t" << yields[0] << "\t" << yields[1]
+			 << "\t" << yields[2] << endl;
 	}
 	
 	return shapes;
@@ -246,7 +255,7 @@ vector<TH1D*> getShapesData(TString channel, vector<TString> samples)
 	}
 	
 	// print out yields
-	cout << channel << "\t" << h->Integral() << endl;
+	cout << channel << "\t" << setw(4) << h->Integral() << endl;
 	
 	shapes.push_back(h);
 
@@ -326,18 +335,18 @@ void fillHistoFromTreeMC(map<TString, TH1D*>& hists, TTree* tree)
 	tree->SetBranchAddress("MC_weight_scale_muF2", &mc_weight_scale_muf2);
 	tree->SetBranchAddress("MC_weight_scale_muR0p5", &mc_weight_scale_mur0p5);
 	tree->SetBranchAddress("MC_weight_scale_muR2", &mc_weight_scale_mur2);
-	tree->SetBranchAddress("bTagSF_weight_LFUp", &btagsf_weight_lfup);
-	tree->SetBranchAddress("bTagSF_weight_LFDown", &btagsf_weight_lfdown);
-	tree->SetBranchAddress("bTagSF_weight_HFUp", &btagsf_weight_hfup);
-	tree->SetBranchAddress("bTagSF_weight_HFDown", &btagsf_weight_hfdown);
-	tree->SetBranchAddress("bTagSF_weight_HFStats1Up", &btagsf_weight_hfstats1up);
-	tree->SetBranchAddress("bTagSF_weight_HFStats1Down", &btagsf_weight_hfstats1down);
-	tree->SetBranchAddress("bTagSF_weight_HFStats2Up", &btagsf_weight_hfstats2up);
-	tree->SetBranchAddress("bTagSF_weight_HFStats2Down", &btagsf_weight_hfstats2down);
-	tree->SetBranchAddress("bTagSF_weight_LFStats1Up", &btagsf_weight_lfstats1up);
-	tree->SetBranchAddress("bTagSF_weight_LFStats1Down", &btagsf_weight_lfstats1down);
-	tree->SetBranchAddress("bTagSF_weight_LFStats2Up", &btagsf_weight_lfstats2up);
-	tree->SetBranchAddress("bTagSF_weight_LFStats2Down", &btagsf_weight_lfstats2down);
+	tree->SetBranchAddress("btagSF_weight_LFUp", &btagsf_weight_lfup);
+	tree->SetBranchAddress("btagSF_weight_LFDown", &btagsf_weight_lfdown);
+	tree->SetBranchAddress("btagSF_weight_HFUp", &btagsf_weight_hfup);
+	tree->SetBranchAddress("btagSF_weight_HFDown", &btagsf_weight_hfdown);
+	tree->SetBranchAddress("btagSF_weight_HFStats1Up", &btagsf_weight_hfstats1up);
+	tree->SetBranchAddress("btagSF_weight_HFStats1Down", &btagsf_weight_hfstats1down);
+	tree->SetBranchAddress("btagSF_weight_HFStats2Up", &btagsf_weight_hfstats2up);
+	tree->SetBranchAddress("btagSF_weight_HFStats2Down", &btagsf_weight_hfstats2down);
+	tree->SetBranchAddress("btagSF_weight_LFStats1Up", &btagsf_weight_lfstats1up);
+	tree->SetBranchAddress("btagSF_weight_LFStats1Down", &btagsf_weight_lfstats1down);
+	tree->SetBranchAddress("btagSF_weight_LFStats2Up", &btagsf_weight_lfstats2up);
+	tree->SetBranchAddress("btagSF_weight_LFStats2Down", &btagsf_weight_lfstats2down);
 	tree->SetBranchAddress("btagSF_weight_cErr1Up", &btagsf_weight_cerr1up);
 	tree->SetBranchAddress("btagSF_weight_cErr1Down", &btagsf_weight_cerr1down);
 	tree->SetBranchAddress("btagSF_weight_cErr2Up", &btagsf_weight_cerr2up);
