@@ -38,7 +38,7 @@ const std::map<TString,std::vector<TString>> SamplesInChannel =
 	  {"TTW", {"TTW"}},
 	  {"TTZ", {"TTZ"}},
 	  {"EWK", {"WZ", "ZZ", "WW", "WG", "ZG"}},
-	  {"Rare", {"TTTT", "tqZ", "WZZ"/*, "WWZ", "WWW", "ZZZ"*/}},
+	  {"Rare", {"TTTT", "tqZ", /*"WZZ", "WWZ", "WWW", "ZZZ"*/}},
 	  {"fakes_data", DataSamples},
 	  {"flips_data", DataSamples},
 	  {"data_obs", DataSamples}
@@ -47,7 +47,7 @@ const std::map<TString,std::vector<TString>> SamplesInChannel =
 /////////////////////////////////////////////
 // Crab job output directories for different samples
 TString batch = "jan2017/";
-TString eos_dir = "/eos/uscms/store/user/ztao/ttH_80X/"
+TString eos_dir = "/eos/uscms/store/user/ztao/ttH_80X/";
 const std::map<TString, TString> dir_map =
 	{{"ttH", eos_dir+"ttHToNonbb_M125_TuneCUETP8M2_ttHtranche3_13TeV-powheg-pythia8/"+batch},
 	 {"TTW", eos_dir+"TTWJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-madspin-pythia8/"+batch},
@@ -66,19 +66,18 @@ const std::map<TString, TString> dir_map =
 	 {"ZZZ", eos_dir+""+batch},
 	 {"tZq", eos_dir+"tZq_ll_4f_13TeV-amcatnlo-pythia8/"+batch},
 	 {"TTTT", eos_dir+"TTTT_TuneCUETP8M1_13TeV-amcatnlo-pythia8/"+batch},
-	 {"TTJets_ll",},
-	 {"TTJets_lt",},
-	 {"TTJets_ltbar",},
+	 {"TTJets_ll",eos_dir+""+batch},
+	 {"TTJets_lt",eos_dir+""+batch},
+	 {"TTJets_ltbar",eos_dir+""+batch},
 	 {"DYJets_M10to50", eos_dir+"DYJetsToLL_M-10to50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/"+batch},
 	 {"DYJets_M50", eos_dir+"DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/"+batch},
 	 {"WJets",eos_dir+"WJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/"+batch},
-	 {"ST_sLep",},
-	 {"ST_tT",},
-	 {"ST_tTbar",},
-	 {"ST_tWT",},
-	 {"ST_tWTbar",},
-	 {"WWds", eos_dir+""+batch},
-	 
+	 {"ST_sLep",eos_dir+""+batch},
+	 {"ST_tT",eos_dir+""+batch},
+	 {"ST_tTbar",eos_dir+""+batch},
+	 {"ST_tWT",eos_dir+""+batch},
+	 {"ST_tWTbar",eos_dir+""+batch},
+	 {"WWds", eos_dir+""+batch}, 
 	 {"DoubleMuon", "/eos/uscms/store/user/ztao/ttH_80X/DoubleMuon/"+batch},
 	 {"SingleMuon", "/eos/uscms/store/user/ztao/ttH_80X/SingleMuon/"+batch},
 	 {"DoubleEG", "/eos/uscms/store/user/ztao/ttH_80X/DoubleEG/"+batch},

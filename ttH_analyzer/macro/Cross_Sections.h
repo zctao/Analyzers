@@ -33,7 +33,7 @@ namespace xsection{  // unit: pb
 		 {"ST_tTbar",70.7},      // ST_t-channel_antitop_4f
 		 {"ST_tWT",35.6},        // ST_tW_top_5f
 		 {"ST_tWTbar",35.6},     // ST_tW_antitop_5f
-		 {"WWds",} // WW_DoubleScattering
+		 //{"WWds",} // WW_DoubleScattering
 		};
 }
 
