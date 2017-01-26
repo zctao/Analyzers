@@ -42,7 +42,7 @@ class CU_ttH_EDA_Ntuple //: public TClass
 	
 	/// variables
 	// event variables
-	int nEvent;
+	unsigned long long nEvent;
 	int ls;   // luminosity section number
 	int run;  // run number
 	float event_weight;
