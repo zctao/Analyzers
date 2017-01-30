@@ -15,6 +15,10 @@ For MET Correction:
 	
 	git cms-merge-topic cms-met:METRecipe_8020
 
+Electron MVA ID:
+
+	git cms-merge-topic ikrav:egm_id_80X_v2
+
 Analysis package:
 
 	git clone https://github.com/zctao/Analyzers.git
@@ -36,6 +40,17 @@ Fix needed for a possible bug in current version of CMSSW:
 Compile:
 
 	scram b -j 16
+
+Add the area containing the Electron MVA weights:
+
+	cd $CMSSW_BASE/external
+	cd slc6_amd64_gcc530/
+	git clone https://github.com/ikrav/RecoEgamma-ElectronIdentification.git data/RecoEgamma/ElectronIdentification/data
+	cd data/RecoEgamma/ElectronIdentification/data
+	git checkout egm_id_80X_v1
+	cd $CMSSW_BASE/src
+
+When running with CRAB one needs to add the following option to the crab config file: config.JobType.sendExternalFolder = True This is needed until the PR including this ID will be integrated in CMSSW/cms-data.
 
 ## Formatting
 
