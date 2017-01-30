@@ -78,6 +78,10 @@ options.register("doJERSmearing", True,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.bool,
                  "apply jet energy smearing for MC or not")
+options.register("HIPSafeMedimMuon", False,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.bool,
+                 "A switch for normal or HIP safe medium muon definions")
 
 options.maxEvents = -1
 options.inputFiles='file:/uscms/home/ztao/nobackup/datasample/ttH_80X/ttHnonbb.root'
@@ -149,6 +153,7 @@ process.ttHLeptons.rhoParam = "fixedGridRhoFastjetCentralNeutral"
 process.ttHLeptons.jets = cms.InputTag("updatedPatJetsUpdatedJEC")
 process.ttHLeptons.LooseCSVWP = cms.double(0.5426)
 process.ttHLeptons.MediumCSVWP = cms.double(0.8484)
+process.ttHLeptons.IsHIPSafe = cms.bool(options.HIPSafeMedimMuon)
 
 process.ttHtaus.input_tags.electrons = cms.InputTag("ttHLeptons")
 process.ttHtaus.input_tags.muons = cms.InputTag("ttHLeptons")
