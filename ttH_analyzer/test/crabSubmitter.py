@@ -28,7 +28,7 @@ config.Site.storageSite = 'T3_US_FNALLPC'
 '''
 
 channels = [#'ttH', 'ttH_jesup', 'ttH_jesdown',
-            'TTW', 'TTW_ext',
+            #'TTW', 'TTW_ext',
             #'TTW_jesup', 'TTW_ext_jesup', 'TTW_jesdown', 'TTW_ext_jesdown',
             #'TTZ', 'TTZ_jesup', 'TTZ_jesdown',
             #'WZ', 'WZ_jesup', 'WZ_jesdown',
@@ -90,7 +90,7 @@ channels = [#'ttH', 'ttH_jesup', 'ttH_jesdown',
             #'data_obs_e_2016b', 'data_obs_e_2016c', 'data_obs_e_2016d',
             #'data_obs_e_2016e', 'data_obs_e_2016f', 'data_obs_e_2016g',
             #'data_obs_dieg_2016b', 'data_obs_dieg_2016c', 'data_obs_dieg_2016d',
-            'data_obs_dieg_2016e', 'data_obs_dieg_2016f', 'data_obs_dieg_2016g',
+            #'data_obs_dieg_2016e', 'data_obs_dieg_2016f', 'data_obs_dieg_2016g',
             ]
 
 def remove_prefix(text, prefix):
@@ -155,4 +155,4 @@ for ch in channels:
         vd['splitting'] = 'EventAwareLumiBased'
 
     open('crab/crabConfig_'+ch+'.py','wt').write(string % vd)
-    #os.system('crab submit -c crab/crabConfig_'+ch+'.py')
+    os.system('crab submit -c crab/crabConfig_'+ch+'.py')

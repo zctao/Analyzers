@@ -93,6 +93,16 @@ class CU_ttH_EDA_Ntuple //: public TClass
 	int pass_double_e;
 	int pass_elemu;
 	int matchHLTPath;
+	// save hlt paths
+	int HLT_Ele27_WPTight_Gsf;
+	int HLT_IsoMu24;
+	int HLT_IsoTkMu24;
+	int HLT_IsoMu22_eta2p1;
+	int HLT_IsoTkMu22_eta2p1;
+	int HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ;
+	int HLT_Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL;
+	int HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL;
+	int HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ;
 	
 	// event level MVA
 	float MVA_2lss_ttV;

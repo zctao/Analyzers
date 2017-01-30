@@ -387,6 +387,16 @@ void CU_ttH_EDA_Ntuple::initialize()
 	pass_double_e = -9999;
 	pass_elemu = -9999;
 	matchHLTPath = -9999;
+
+    HLT_Ele27_WPTight_Gsf = -9999;
+	HLT_IsoMu24 = -9999;
+	HLT_IsoTkMu24 = -9999;
+	HLT_IsoMu22_eta2p1 = -9999;
+	HLT_IsoTkMu22_eta2p1 = -9999;
+	HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ = -9999;
+	HLT_Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL = -9999;
+	HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL = -9999;
+	HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ = -9999;
 	
 	n_presel_mu = -9999;
 	n_mvasel_mu = -9999;
@@ -643,6 +653,15 @@ void CU_ttH_EDA_Ntuple::set_up_branches(TTree *tree)
 	tree->Branch("pass_double_mu", &pass_double_mu);
 	tree->Branch("pass_elemu", &pass_elemu);
 	tree->Branch("matchHLTPath", &matchHLTPath);
+	tree->Branch("HLT_Ele27_WPTight_Gsf", &HLT_Ele27_WPTight_Gsf);
+	tree->Branch("HLT_IsoMu24", &HLT_IsoMu24);
+	tree->Branch("HLT_IsoTkMu24", &HLT_IsoTkMu24);
+	tree->Branch("HLT_IsoMu22_eta2p1", &HLT_IsoMu22_eta2p1);
+	tree->Branch("HLT_IsoTkMu22_eta2p1", &HLT_IsoTkMu22_eta2p1);
+	tree->Branch("HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ", &HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ);
+	tree->Branch("HLT_Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL", &HLT_Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL);
+	tree->Branch("HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL", &HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL);
+	tree->Branch("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ", &HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ);
 	tree->Branch("n_presel_mu", &n_presel_mu);
 	tree->Branch("n_mvasel_mu", &n_mvasel_mu);
 	tree->Branch("n_fakeablesel_mu", &n_fakeablesel_mu);
