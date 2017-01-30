@@ -13,6 +13,7 @@ config.General.workArea = '/uscms/home/ztao/nobackup/crab'
 config.JobType.pluginName = 'Analysis'
 config.JobType.psetName = 'CU_ttH_EDA_cfg.py'
 config.JobType.pyCfgParams = %(cfgparams)s
+config.JobType.sendExternalFolder = True
 
 config.Data.inputDataset = %(dataset)s
 config.Data.splitting = '%(splitting)s'
