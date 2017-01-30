@@ -28,7 +28,7 @@ config.Site.storageSite = 'T3_US_FNALLPC'
 '''
 
 channels = [#'ttH', 'ttH_jesup', 'ttH_jesdown',
-            #'TTW', 'TTW_ext',
+            'TTW', 'TTW_ext',
             #'TTW_jesup', 'TTW_ext_jesup', 'TTW_jesdown', 'TTW_ext_jesdown',
             #'TTZ', 'TTZ_jesup', 'TTZ_jesdown',
             #'WZ', 'WZ_jesup', 'WZ_jesdown',
@@ -90,7 +90,7 @@ channels = [#'ttH', 'ttH_jesup', 'ttH_jesdown',
             #'data_obs_e_2016b', 'data_obs_e_2016c', 'data_obs_e_2016d',
             #'data_obs_e_2016e', 'data_obs_e_2016f', 'data_obs_e_2016g',
             #'data_obs_dieg_2016b', 'data_obs_dieg_2016c', 'data_obs_dieg_2016d',
-            #'data_obs_dieg_2016e', 'data_obs_dieg_2016f', 'data_obs_dieg_2016g',
+            'data_obs_dieg_2016e', 'data_obs_dieg_2016f', 'data_obs_dieg_2016g',
             ]
 
 def remove_prefix(text, prefix):
@@ -109,7 +109,7 @@ for ch in channels:
                     if '_jesdown' in ch:
                         pset=pset.replace("doSystematics=True","doSystematics=False")
                         pset=pset.replace("JECType=NA","JECType=JESDown")
-
+                        
                     perjob = f.next().strip()
                     break
                 
@@ -118,7 +118,7 @@ for ch in channels:
                     sample = f.next().strip()
                     run = f.next().strip()
                     perjob = f.next().strip()
-                    pset="['isData=True','SampleName=','SelectionRegion=','TurnOffHLTCut=True']"
+                    pset="['isData=True','SampleName=','SelectionRegion=','TurnOffHLTCut=True', 'HIPSafeMediumMuon=True']"
                     if 'fakes_' in ch:
                         pset=pset.replace("SampleName=","SampleName=fakes_data")
                         pset=pset.replace("SelectionRegion=",
@@ -134,6 +134,10 @@ for ch in channels:
                     else:
                         print 'WARNING: channel name is not valid!!!'
                         exit()
+
+                    if '_2016g' in ch or '_2016h' in ch:
+                        pset=pset.replace("HIPSafeMediumMuon=True","HIPSafeMediumMuon=False")
+                        
                     break
                          
     vd = locals()
@@ -151,4 +155,4 @@ for ch in channels:
         vd['splitting'] = 'EventAwareLumiBased'
 
     open('crab/crabConfig_'+ch+'.py','wt').write(string % vd)
-    os.system('crab submit -c crab/crabConfig_'+ch+'.py')
+    #os.system('crab submit -c crab/crabConfig_'+ch+'.py')
