@@ -369,7 +369,7 @@ void CU_ttH_EDA::Set_up_BTagCalibration_Readers()
 	const std::string base =
 		std::string(getenv("CMSSW_BASE")) +  "/src/Analyzers/ttH_analyzer/data/";
 
-	BTagCalibration calib_csvv2("csvv2", base + "CSVv2_ichep.csv");
+	BTagCalibration calib_csvv2("csvv2", base + "CSVv2Moriond17_2017_1_26_BtoH.csv");
 	
 	BTagCaliReader = new BTagCalibrationReader(
 	    BTagEntry::OP_RESHAPING, // operating point
