@@ -82,7 +82,7 @@ options.register("HIPSafeMedimMuon", True,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.bool,
                  "A switch for normal or HIP safe medium muon definions")
-option.register("Is2016H", False,
+options.register("Is2016H", False,
                 VarParsing.VarParsing.multiplicity.singleton,
                 VarParsing.VarParsing.varType.bool,
                 "If the processed dataset is 2016H or not")
@@ -187,7 +187,7 @@ if options.reHLT:
     process.ttHtaus.HLT_config_tag = cms.string("HLT2")
     process.ttHtaus.filter_config_tag = cms.string("HLT2")
 # for 2016H data only
-if option.Is2016H:
+if options.Is2016H:
     process.ttHtaus.HLT_electron_muon_triggers = cms.vstring(
         ['HLT_Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL_DZ_v',
          'HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ_v'])
