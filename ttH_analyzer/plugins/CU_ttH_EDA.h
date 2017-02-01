@@ -200,6 +200,9 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	bool Check_triggers_iterator(const vector<string> &,
 								 edm::Handle<edm::TriggerResults>);
 
+	std::vector<pat::Jet> GetCorrectedJets(const std::vector<pat::Jet>&, JetCorrectionUncertainty*, const std::string);
+	std::vector<pat::Tau> GetCorrectedTaus(const std::vector<pat::Tau>&, float, const std::string);
+	
 	void printDecayChain(const reco::Candidate &p, int &index, int mother_index,
 						 bool details);
 	int HiggsDaughterPdgId(const std::vector<reco::GenParticle>&);
@@ -319,6 +322,9 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	/// Selection helper
 	MiniAODHelper miniAODhelper;
 
+	// tauES
+	std::string TESType;  // "tauESUp" or "tauESDown" or  "NA"
+	
 	//JEC
 	std::string JECType;
 	// sysType::sysType defined in MiniAODHelper.h

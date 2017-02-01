@@ -58,6 +58,10 @@ options.register('TurnOffHLTCut', False,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.bool,
                  "Turn off HLT path check in event selection")
+options.register('TauESType', 'NA',
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 "Tau energy scale: NA, tauESUp, tauESDown")
 options.register('JECType', 'NA',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
@@ -74,7 +78,7 @@ options.register('GridMode', True,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.bool,
                  "run on grid or interactively")
-options.register("doJERSmearing", True,
+options.register("doJERSmearing", False,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.bool,
                  "apply jet energy smearing for MC or not")
@@ -172,6 +176,7 @@ process.ttHtaus.doLumiScale = cms.bool(options.doLumiScale)
 process.ttHtaus.sampleName = cms.string(options.SampleName)
 process.ttHtaus.sample_xs = cms.double(options.CrossSection)
 process.ttHtaus.int_lumi = cms.double(options.IntLumi)
+process.ttHtaus.TauESType = cms.string(options.TauESType)
 process.ttHtaus.JECType = cms.string(options.JECType)
 process.ttHtaus.using_real_data = cms.bool(options.isData)
 process.ttHtaus.selection_region = cms.string(options.SelectionRegion)

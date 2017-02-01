@@ -701,7 +701,53 @@ int CU_ttH_EDA::partition2DBDT(double ttbar, double ttV)
 	return 0;
 }
 
+std::vector<pat::Jet> CU_ttH_EDA::GetCorrectedJets(const std::vector<pat::Jet>& input_jets, JetCorrectionUncertainty* jecUnc, const std::string JECType)
+{
+	float shift = 0.;
+
+	if (JECType=="JESUp")
+		shift = 1.;
+	else if (JECType=="JESDown")
+		shift = -1.;
+	else
+		return input_jets;
+
+	std::vector<pat::Jet> output_jets = input_jets;
 	
+	for (auto & jet : output_jets) {
+		jecUnc->setJetEta(jet.eta());
+		jecUnc->setJetPt(jet.pt()); // here you must use the CORRECTED jet pt
+		float unc = jecUnc->getUncertainty(true);
+	    float jes = 1 + shift*unc;
+		jet.scaleEnergy(jes);
+	}
+
+	return output_jets;
+}
+
+std::vector<pat::Tau> CU_ttH_EDA::GetCorrectedTaus(const std::vector<pat::Tau>& input_taus, float tauES_Unc, const std::string TESType)
+{
+	float shift = 0.;
+
+	if (TESType=="tauESUp")
+		shift = 1.;
+	else if (TESType=="tauESDown")
+		shift = -1.;
+	else
+		return input_taus;
+
+	std::vector<pat::Tau> output_taus = input_taus;
+
+	for (auto & tau : output_taus) {
+		auto corrP4 = tau.p4();
+		corrP4 *= 1 + shift*tauES_Unc;
+		tau.setP4(corrP4);
+	}
+
+	return output_taus;
+}
+
+
 /*
              bin 1       bin 2       bin 3       bin 4      bin 5       bin 6
 2lss(ttbar) (-1.0,-0.2] (-1.0,-0.2] (-0.2,0.3]  (-0.2,0.3] (0.3,1.0]   (0.3,1.0]

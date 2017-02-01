@@ -56,6 +56,8 @@ CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig):
 	trigger_on_HLT_ee (iConfig.getParameter<std::vector<string>>("HLT_electron_electron_triggers")),
 	trigger_on_HLT_emu (iConfig.getParameter<std::vector<string>>("HLT_electron_muon_triggers")),
 	trigger_on_HLT_mumu (iConfig.getParameter<std::vector<string>>("HLT_muon_muon_triggers")),
+	// tauES
+	TESType (iConfig.getParameter<string>("TauESType")),
 	// JEC
 	JECType (iConfig.getParameter<string>("JECType")),
 	//jet_corrector (iConfig.getParameter<string>("jet_corrector")),
@@ -248,7 +250,8 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	edm::ESHandle<JetCorrectorParametersCollection> JetCorParColl;
 	iSetup.get<JetCorrectionsRecord>().get("AK4PF",JetCorParColl);
 	const JetCorrectorParameters & JetCorPar = (*JetCorParColl)["Uncertainty"];
-	miniAODhelper.SetJetCorrectorUncertainty(JetCorPar);
+	JetCorrectionUncertainty *jecUnc = new JetCorrectionUncertainty(JetCorPar);
+	//miniAODhelper.SetJetCorrectorUncertainty(JetCorPar);
 
 	
 	if (not isdata) {
@@ -378,7 +381,11 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	  Taus
 	*/
 	if (debug) std::cout << "taus" << std::endl;
-	for (const auto& tau : *(handle.taus)) {
+	
+	float tauES_unc = 0.03;
+	std::vector<pat::Tau> taus_corrected = GetCorrectedTaus(*(handle.taus), tauES_unc, TESType);
+	
+	for (const auto& tau : taus_corrected) {
 		if (tau.userFloat("idPreselection")>0.5 and
 			tau.pt() > 20. and abs(tau.eta()) < 2.3)
 			local.tau_preselected.push_back(tau);  // for cleaning
@@ -454,10 +461,10 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		local.jets_raw = *(handle.jets);
 	}
 	else {
-		local.jets_raw =
-			miniAODhelper.GetCorrectedJets(*(handle.jets), iEvent, iSetup,
+		local.jets_raw = GetCorrectedJets(*(handle.jets), jecUnc, JECType);		
+			/*	miniAODhelper.GetCorrectedJets(*(handle.jets), iEvent, iSetup,
 										   handle.genJets, JECTypes[JECType],
-										   true, doJERsmear);
+										   true, doJERsmear);*/
 	}
 	
 	// overlap removal by dR
