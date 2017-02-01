@@ -16,6 +16,15 @@ void makeSyncTree(TString input_file="/uscms/home/ztao/nobackup/output_sync.root
 
 	// turn off extra branches
 	old_tree->SetBranchStatus("event_weight",0);
+	old_tree->SetBranchStatus("HLT_Ele27_WPTight_Gsf", 0);
+	old_tree->SetBranchStatus("HLT_IsoMu24", 0);
+	old_tree->SetBranchStatus("HLT_IsoTkMu24", 0);
+	old_tree->SetBranchStatus("HLT_IsoMu22_eta2p1", 0);
+	old_tree->SetBranchStatus("HLT_IsoTkMu22_eta2p1", 0);
+	old_tree->SetBranchStatus("HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ", 0);
+	old_tree->SetBranchStatus("HLT_Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL", 0);
+	old_tree->SetBranchStatus("HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL", 0);
+	old_tree->SetBranchStatus("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ", 0);
 	old_tree->SetBranchStatus("MC_weight_scale_muF0p5", 0);
 	old_tree->SetBranchStatus("MC_weight_scale_muF2", 0);
 	old_tree->SetBranchStatus("MC_weight_scale_muR0p5", 0);
