@@ -359,6 +359,8 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	TH1I *h_nProcessed;
 	TH1D *h_SumGenWeight;
 	TH1D *h_SumGenWeightxPU;
+	TH1D *h_GenWeightProcessed;  // cross check
+	TH1D *h_GenWeightxPUProcessed;  // cross check
 	
 	//TH2D *h_MVA_ttV_vs_ttbar[3][2];
 	//TH1D *h_MVA_shape[3][2];

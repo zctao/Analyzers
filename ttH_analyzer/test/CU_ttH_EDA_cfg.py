@@ -208,8 +208,10 @@ process.TFileService = cms.Service("TFileService",
 )
 
 #process.SimpleMemoryCheck = cms.Service("SimpleMemoryCheck",
-#                                        ignoreTotal = cms.untracked.int32(1)
+#                                        ignoreTotal = cms.untracked.int32(1),
+#                                        oncePerEventMode=cms.untracked.bool(True)
 #                                        )
+#process.Tracer = cms.Service('Tracer')
 
 #Path
 if options.isData:

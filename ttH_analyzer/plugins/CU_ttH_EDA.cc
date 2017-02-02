@@ -298,6 +298,9 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		genWeightSum += local.mc_weight;
 		//h_SumGenWeight->Fill(1, genWeight/abs(genWeight));
 		genWeightxPUSum += local.mc_weight * local.pu_weight;
+
+		h_GenWeightProcessed->Fill(local.mc_weight);
+		h_GenWeightxPUProcessed->Fill(1,local.mc_weight * local.pu_weight);
 	}
 
 	if (trigger_stats) {
@@ -466,6 +469,8 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 										   handle.genJets, JECTypes[JECType],
 										   true, doJERsmear);*/
 	}
+
+	delete jecUnc;
 	
 	// overlap removal by dR
 	std::vector<pat::Jet> jets_no_mu = removeOverlapdR(local.jets_raw, local.mu_fakeable, 0.4);
