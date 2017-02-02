@@ -72,34 +72,49 @@ channels = [#'ttH', 'ttH_jesup', 'ttH_jesdown', 'ttH_tesup', 'ttH_tesdown',
             #'tZq', 'tZq_jesup', 'tZq_jesdown', 'tZq_tesup', 'tZq_tesdown',
             #'flips_data_dimu_2016b','flips_data_dimu_2016c','flips_data_dimu_2016d',
             #'flips_data_dimu_2016e','flips_data_dimu_2016f','flips_data_dimu_2016g',
+            #'flips_data_dimu_2016h_v2', 'flips_data_dimu_2016h_v3',
             #'flips_data_mu_2016b','flips_data_mu_2016c','flips_data_mu_2016d',
             #'flips_data_mu_2016e','flips_data_mu_2016f','flips_data_mu_2016g',
+            #'flips_data_mu_2016h_v2', 'flips_data_mu_2016h_v3',
             #'flips_data_mueg_2016b','flips_data_mueg_2016c','flips_data_mueg_2016d',
             #'flips_data_mueg_2016e','flips_data_mueg_2016f','flips_data_mueg_2016g',
+            #'flips_data_mueg_2016h_v2', 'flips_data_mueg_2016h_v3',
             #'flips_data_e_2016b','flips_data_e_2016c','flips_data_e_2016d',
             #'flips_data_e_2016e','flips_data_e_2016f','flips_data_e_2016g',
+            #'flips_data_e_2016h_v2', 'flips_data_e_2016h_v3',
             #'flips_data_dieg_2016b','flips_data_dieg_2016c','flips_data_dieg_2016d',
             #'flips_data_dieg_2016e','flips_data_dieg_2016f','flips_data_dieg_2016g',
+            #'flips_data_dieg_2016h_v2', 'flips_data_dieg_2016h_v3',
             #'fakes_data_dimu_2016b','fakes_data_dimu_2016c','fakes_data_dimu_2016d',
             #'fakes_data_dimu_2016e','fakes_data_dimu_2016f','fakes_data_dimu_2016g',
+            #'fakes_data_dimu_2016h_v2', 'fakes_data_dimu_2016h_v3',
             #'fakes_data_mu_2016b','fakes_data_mu_2016c','fakes_data_mu_2016d',
             #'fakes_data_mu_2016e','fakes_data_mu_2016f','fakes_data_mu_2016g',
+            #'fakes_data_mu_2016h_v2', 'fakes_data_mu_2016h_v3',
             #'fakes_data_mueg_2016b','fakes_data_mueg_2016c','fakes_data_mueg_2016d',
             #'fakes_data_mueg_2016e','fakes_data_mueg_2016f','fakes_data_mueg_2016g',
+            #'fakes_data_mueg_2016h_v2', 'fakes_data_mueg_2016h_v3',
             #'fakes_data_e_2016b','fakes_data_e_2016c','fakes_data_e_2016d',
             #'fakes_data_e_2016e','fakes_data_e_2016f','fakes_data_e_2016g',
+            #'fakes_data_e_2016h_v2', 'fakes_data_e_2016h_v3',
             #'fakes_data_dieg_2016b','fakes_data_dieg_2016c','fakes_data_dieg_2016d',
             #'fakes_data_dieg_2016e','fakes_data_dieg_2016f','fakes_data_dieg_2016g',
+            #'fakes_data_dieg_2016h_v2', 'fakes_data_dieg_2016h_v3',
             #'data_obs_dimu_2016b', 'data_obs_dimu_2016c', 'data_obs_dimu_2016d',
             #'data_obs_dimu_2016e', 'data_obs_dimu_2016f', 'data_obs_dimu_2016g',
+            #'data_obs_dimu_2016h_v2', 'data_obs_dimu_2016h_v3',
             #'data_obs_mu_2016b', 'data_obs_mu_2016c', 'data_obs_mu_2016d',
             #'data_obs_mu_2016e', 'data_obs_mu_2016f', 'data_obs_mu_2016g',
+            #'data_obs_mu_2016h_v2', 'data_obs_mu_2016h_v3',
             #'data_obs_mueg_2016b', 'data_obs_mueg_2016c', 'data_obs_mueg_2016d',
             #'data_obs_mueg_2016e', 'data_obs_mueg_2016f', 'data_obs_mueg_2016g',
+            #'data_obs_mueg_2016h_v2', 'data_obs_mueg_2016h_v3',
             #'data_obs_e_2016b', 'data_obs_e_2016c', 'data_obs_e_2016d',
             #'data_obs_e_2016e', 'data_obs_e_2016f', 'data_obs_e_2016g',
+            #'data_obs_e_2016h_v2', 'data_obs_e_2016h_v3',
             #'data_obs_dieg_2016b', 'data_obs_dieg_2016c', 'data_obs_dieg_2016d',
             #'data_obs_dieg_2016e', 'data_obs_dieg_2016f', 'data_obs_dieg_2016g',
+            #'data_obs_dieg_2016h_v2', 'data_obs_dieg_2016h_v3',
             ]
 
 def remove_prefix(text, prefix):
@@ -109,7 +124,7 @@ for ch in channels:
     with open("../data/SampleList_Moriond17.txt") as f:
         for line in f:
             if not 'data' in ch:
-                if line.strip()==ch.strip("_jesup") or line.strip()==ch.strip("_jesdown" or line.strip()==ch.strip("_tesup") or line.strip()==ch.strip("_tesdown"):
+                if line.strip()==ch.strip("_jesup") or line.strip()==ch.strip("_jesdown") or line.strip()==ch.strip("_tesup") or line.strip()==ch.strip("_tesdown"):
                     sample = f.next().strip()
                     pset = f.next().strip()
                     if '_jesup' in ch:
@@ -135,7 +150,7 @@ for ch in channels:
                     sample = f.next().strip()
                     run = f.next().strip()
                     perjob = f.next().strip()
-                    pset="['isData=True','SampleName=','SelectionRegion=','TurnOffHLTCut=True', 'HIPSafeMediumMuon=True']"
+                    pset="['isData=True','SampleName=','SelectionRegion=','TurnOffHLTCut=True', 'HIPSafeMediumMuon=True', 'Is2016H=False']"
                     if 'fakes_' in ch:
                         pset=pset.replace("SampleName=","SampleName=fakes_data")
                         pset=pset.replace("SelectionRegion=",
@@ -154,6 +169,8 @@ for ch in channels:
 
                     if '_2016g' in ch or '_2016h' in ch:
                         pset=pset.replace("HIPSafeMediumMuon=True","HIPSafeMediumMuon=False")
+                    if '_2016h' in ch:
+                        pset=pset.replace("Is2016H=False","Is2016H=True")
                         
                     break
                          

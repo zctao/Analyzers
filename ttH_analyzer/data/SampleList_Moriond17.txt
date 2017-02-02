@@ -206,6 +206,14 @@ _e_2016g
 '/SingleElectron/Run2016G-23Sep2016-v1/MINIAOD'
 '278820-280385'
 100
+_e_2016h_v2
+'/SingleElectron/Run2016H-PromptReco-v2/MINIAOD'
+'281207-284035'
+100
+_e_2016h_v3
+'/SingleElectron/Run2016H-PromptReco-v3/MINIAOD'
+'284036-284044'
+100
 --------------------------
 ## SingleMuon
 _mu_2016b
@@ -231,6 +239,14 @@ _mu_2016f
 _mu_2016g
 '/SingleMuon/Run2016G-23Sep2016-v1/MINIAOD'
 '278820-280385'
+100
+_mu_2016h_v2
+'/SingleMuon/Run2016H-PromptReco-v2/MINIAOD'
+'281207-284035'
+100
+_mu_2016h_v3
+'/SingleMuon/Run2016H-PromptReco-v3/MINIAOD'
+'284036-284044'
 100
 --------------------------
 ## DoubleEG
@@ -258,6 +274,14 @@ _dieg_2016g
 '/DoubleEG/Run2016G-23Sep2016-v1/MINIAOD'
 '278820-280385'
 100
+_dieg_2016h_v2
+'/DoubleEG/Run2016H-PromptReco-v2/MINIAOD'
+'281207-284035'
+100
+_dieg_2016h_v3
+'/DoubleEG/Run2016H-PromptReco-v3/MINIAOD'
+'284036-284044'
+100
 --------------------------
 ## DoubleMuon
 _dimu_2016b
@@ -284,6 +308,14 @@ _dimu_2016g
 '/DoubleMuon/Run2016G-23Sep2016-v1/MINIAOD'
 '278820-280385'
 100
+_dimu_2016h_v2
+'/DoubleMuon/Run2016H-PromptReco-v2/MINIAOD'
+'281207-284035'
+100
+_dimu_2016h_v3
+'/DoubleMuon/Run2016H-PromptReco-v3/MINIAOD'
+'284036-284044'
+100
 --------------------------
 ## MuonEG
 _mueg_2016b
@@ -309,6 +341,14 @@ _mueg_2016f
 _mueg_2016g
 '/MuonEG/Run2016G-23Sep2016-v1/MINIAOD'
 '278820-280385'
+100
+_mueg_2016h_v2
+'/MuonEG/Run2016H-PromptReco-v2/MINIAOD'
+'281207-284035'
+100
+_mueg_2016h_v3
+'/MuonEG/Run2016H-PromptReco-v3/MINIAOD'
+'284036-284044'
 100
 --------------------------
 ### JSON
