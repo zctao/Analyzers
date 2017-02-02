@@ -26,7 +26,7 @@ Analysis package:
 MiniAODHelper:
 
 	git clone https://github.com/cms-ttH/MiniAOD.git
-	(currently use branch CMSSW_8_0_8)
+	(currently use branch CMSSW_8_0_24_v1_sync)
 
 LeptonID package shared with ND ttH-Multilepton group:
 
