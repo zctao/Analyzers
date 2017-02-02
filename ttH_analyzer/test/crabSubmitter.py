@@ -27,49 +27,56 @@ config.Data.outLFNDirBase = '/store/user/ztao/ttH_80X'
 config.Site.storageSite = 'T3_US_FNALLPC'
 '''
 
-channels = [#'ttH', 'ttH_jesup', 'ttH_jesdown', 'ttH_tesup', 'ttH_tesdown',
-            #'TTW', 'TTW_ext',
-            #'TTW_jesup', 'TTW_ext_jesup', 'TTW_jesdown', 'TTW_ext_jesdown',
-            #'TTW_tesup', 'TTW_ext_tesup', 'TTW_tesdown', 'TTW_ext_tesdown',
-            #'TTZ', 'TTZ_jesup', 'TTZ_jesdown', 'TTZ_tesup', 'TTZ_tesdown'
-            #'WZ', 'WZ_jesup', 'WZ_jesdown', 'WZ_tesup', 'WZ_tesdown',
-            #'ZZ', 'ZZ_jesup', 'ZZ_jesdown', 'ZZ_tesup', 'ZZ_tesdown',
-            #'WW', 'WW_jesup', 'WW_jesdown', 'WW_tesup', 'WW_tesdown',
-            #'WJets','WJets_jesup','WJets_jesdown','WJets_tesup','WJets_tesdown',
-            #'WG', 'WG_jesup', 'WG_jesdown', 'WG_tesup', 'WG_tesdown',
-            #'ZG', 'ZG_jesup', 'ZG_jesdown', 'ZG_tesup', 'ZG_tesdown',
-            #'DYJets_M10to50', 'DYJets_M10to50_jesup', 'DYJets_M10to50_jesdown',
-            #'DYJets_M10to50_tesup', 'DYJets_M10to50_tesdown',
-            #'DYJets_M50', 'DYJets_M50_jesup', 'DYJets_M50_jesdown',
-            #'DYJets_M50_tesup', 'DYJets_M50_tesdown',
-            #'WWds', 'WWds_jesup', 'WWds_jesdown', 'WWds_tesup', 'WWds_tesdown',
-            #'WpWp', 'WpWp_jesup', 'WpWp_jesdown', 'WpWp_tesup', 'WpWp_tesdown',
-            #'WZZ', 'WZZ_jesup', 'WZZ_jesdown', 'WZZ_tesup', 'WZZ_tesdown',
-            #'WWZ', 'WWZ_jesup', 'WWZ_jesdown', 'WWZ_tesup', 'WWZ_tesdown',
-            #'WWW', 'WWW_jesup', 'WWW_jesdown', 'WWW_tesup', 'WWW_tesdown',
-            #'ZZZ', 'ZZZ_jesup', 'ZZZ_jesdown', 'ZZZ_tesup', 'ZZZ_tesdown',
-            #'TTTT', 'TTTT_jesup', 'TTTT_jesdown', 'TTTT_tesup', 'TTTT_tesdown',
-            #'TTJets_DiLep', 'TTJets_DiLep_jesup', 'TTJets_DiLep_jesdown',
-            #'TTJets_DiLep_tesup', 'TTJets_DiLep_tesdown',
-            #'TTJets_DiLep_ext', 'TTJets_DiLep_ext_jesup', 'TTJets_DiLep_ext_jesdown', 'TTJets_DiLep_ext_tesup', 'TTJets_DiLep_ext_tesdown',
-            #'TTJets_LepT', 'TTJets_LepT_jesup', 'TTJets_LepT_jesdown',
-            #'TTJets_LepT_tesup', 'TTJets_LepT_tesdown',
-            #'TTJets_LepT_ext', 'TTJets_LepT_ext_jesup', 'TTJets_LepT_ext_jesdown', 'TTJets_LepT_ext_tesup', 'TTJets_LepT_ext_tesdown',
-            #'TTJets_LepTbar', 'TTJets_LepTbar_jesup', 'TTJets_LepTbar_jesdown',
-            #'TTJets_LepTbar_tesup', 'TTJets_LepTbar_tesdown',
-            #'TTJets_LepTbar_ext', 'TTJets_LepTbar_ext_jesup', 'TTJets_LepTbar_ext_jesdown', 'TTJets_LepTbar_ext_tesup', 'TTJets_LepTbar_ext_tesdown',
-            #'TTGJets', 'TTGJets_jesup', 'TTGJets_jesdown',
-            #'TTGJets_tesup', 'TTGJets_tesdown',
-            #'TTGJets_ext', 'TTGJets_ext_jesup', 'TTGJets_ext_jesdown',
-            #'TTGJets_ext_tesup', 'TTGJets_ext_tesdown',
-            #'ST_sLep', 'ST_sLep_jesup', 'ST_sLep_jesdown',
-            #'ST_sLep_tesup', 'ST_sLep_tesdown',
-            #'ST_tT', 'ST_tT_jesup', 'ST_tT_jesdown', 'ST_tT_tesup', 'ST_tT_tesdown',
-            #'ST_tTbar', 'ST_tTbar_jesup', 'ST_tTbar_jesdown', 'ST_tTbar_tesup', 'ST_tTbar_tesdown',
-            #'ST_tWT', 'ST_tWT_jesup', 'ST_tWT_jesdown', 'ST_tWT_tesup', 'ST_tWT_tesdown',
-            #'ST_tWTbar', 'ST_tWTbar_jesup', 'ST_tWTbar_jesdown', 'ST_tWTbar_tesup', 'ST_tWTbar_tesdown',
-            #'TGJets', 'TGJets_jesup', 'TGJets_jesdown', 'TGJets_tesup', 'TGJets_tesdown',
-            #'tZq', 'tZq_jesup', 'tZq_jesdown', 'tZq_tesup', 'tZq_tesdown',
+channels = [#'ttH','ttH_jesup','ttH_jesdown','ttH_tesup','ttH_tesdown',
+            #'TTW', 'TTW_jesup','TTW_jesdown','TTW_tesup','TTW_tesdown',
+            #'TTW_ext','TTW_ext_jesup','TTW_ext_jesdown','TTW_ext_tesup','TTW_ext_tesdown',
+            #'TTZ','TTZ_jesup','TTZ_jesdown','TTZ_tesup','TTZ_tesdown',
+            #'TTGJets','TTGJets_jesup','TTGJets_jesdown','TTGJets_tesup','TTGJets_tesdown',
+            #'TTGJets_ext','TTGJets_ext_jesup','TTGJets_ext_jesdown','TTGJets_ext_tesup','TTGJets_ext_tesdown',
+            #'TGJets','TGJets_jesup','TGJets_jesdown','TGJets_tesup','TGJets_tesdown',
+            #'WG','WG_jesup','WG_jesdown','WG_tesup','WG_tesdown',
+            #'ZG','ZG_jesup','ZG_jesdown','ZG_tesup','ZG_tesdown',
+            #'WZ','WZ_jesup','WZ_jesdown','WZ_tesup','WZ_tesdown',
+            #'ZZ','ZZ_jesup','ZZ_jesdown','ZZ_tesup','ZZ_tesdown',
+            #'WW','WW_jesup','WW_jesdown','WW_tesup','WW_tesdown',
+            #'WWds','WWds_jesup','WWds_jesdown','WWds_tesup','WWds_tesdown',
+            #'WpWp','WpWp_jesup','WpWp_jesdown','WpWp_tesup','WpWp_tesdown',
+            #'WZZ','WZZ_jesup','WZZ_jesdown','WZZ_tesup','WZZ_tesdown',
+            #'WWZ','WWZ_jesup','WWZ_jesdown','WWZ_tesup','WWZ_tesdown',
+            #'WWW','WWW_jesup','WWW_jesdown','WWW_tesup','WWW_tesdown',
+            #'ZZZ','ZZZ_jesup','ZZZ_jesdown','ZZZ_tesup','ZZZ_tesdown',
+            #'tZq','tZq_jesup','tZq_jesdown','tZq_tesup','tZq_tesdown',
+            #'TTTT','TTTT_jesup','TTTT_jesdown','TTTT_tesup','TTTT_tesdown',
+            #
+            #'TTJets_DiLep',
+            #'TTJets_DiLep_jesup','TTJets_DiLep_jesdown','TTJets_DiLep_tesup','TTJets_DiLep_tesdown',
+            #'TTJets_DiLep_ext',
+            #'TTJets_DiLep_ext_jesup','TTJets_DiLep_ext_jesdown','TTJets_DiLep_ext_tesup','TTJets_DiLep_ext_tesdown',
+            #'TTJets_LepT',
+            #'TTJets_LepT_jesup','TTJets_LepT_jesdown','TTJets_LepT_tesup','TTJets_LepT_tesdown',
+            #'TTJets_LepT_ext',
+            #'TTJets_LepT_ext_jesup','TTJets_LepT_ext_jesdown','TTJets_LepT_ext_tesup','TTJets_LepT_ext_tesdown',
+            #'TTJets_LepTbar',
+            #'TTJets_LepTbar_jesup','TTJets_LepTbar_jesdown','TTJets_LepTbar_tesup','TTJets_LepTbar_tesdown',
+            #'TTJets_LepTbar_ext',
+            #'TTJets_LepTbar_ext_jesup','TTJets_LepTbar_ext_jesdown','TTJets_LepTbar_ext_tesup','TTJets_LepTbar_ext_tesdown',
+            #'ST_sLep',
+            #'ST_sLep_jesup','ST_sLep_jesdown','ST_sLep_tesup', 'ST_sLep_tesdown',
+            #'ST_tT',
+            #'ST_tT_jesup','ST_tT_jesdown','ST_tT_tesup','ST_tT_tesdown',
+            #'ST_tTbar',
+            #'ST_tTbar_jesup','ST_tTbar_jesdown','ST_tTbar_tesup','ST_tTbar_tesdown',
+            #'ST_tWT',
+            #'ST_tWT_jesup','ST_tWT_jesdown','ST_tWT_tesup','ST_tWT_tesdown',
+            #'ST_tWTbar',
+            #'ST_tWTbar_jesup','ST_tWTbar_jesdown','ST_tWTbar_tesup','ST_tWTbar_tesdown',
+            #'WJets',
+            #'WJets_jesup','WJets_jesdown','WJets_tesup','WJets_tesdown',
+            #'DYJets_M10to50',
+            #'DYJets_M10to50_jesup','DYJets_M10to50_jesdown','DYJets_M10to50_tesup','DYJets_M10to50_tesdown',
+            #'DYJets_M50',
+            #'DYJets_M50_jesup','DYJets_M50_jesdown','DYJets_M50_tesup','DYJets_M50_tesdown',
+            #
             #'flips_data_dimu_2016b','flips_data_dimu_2016c','flips_data_dimu_2016d',
             #'flips_data_dimu_2016e','flips_data_dimu_2016f','flips_data_dimu_2016g',
             #'flips_data_dimu_2016h_v2', 'flips_data_dimu_2016h_v3',
@@ -120,11 +127,20 @@ channels = [#'ttH', 'ttH_jesup', 'ttH_jesdown', 'ttH_tesup', 'ttH_tesdown',
 def remove_prefix(text, prefix):
     return text[text.startswith(prefix) and len(prefix):]
 
+sample=""
+pset=""
+
 for ch in channels:
+    
+    del sample
+    del pset
+
+    print ch
+    
     with open("../data/SampleList_Moriond17.txt") as f:
         for line in f:
             if not 'data' in ch:
-                if line.strip()==ch.strip("_jesup") or line.strip()==ch.strip("_jesdown") or line.strip()==ch.strip("_tesup") or line.strip()==ch.strip("_tesdown"):
+                if line.strip()==ch.replace("_jesup","") or line.strip()==ch.replace("_jesdown","") or line.strip()==ch.replace("_tesup","") or line.strip()==ch.replace("_tesdown",""):
                     sample = f.next().strip()
                     pset = f.next().strip()
                     if '_jesup' in ch:
