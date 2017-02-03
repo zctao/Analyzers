@@ -239,8 +239,7 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	float readTF(TF1*, float);
 	
 	// Electron Charge misId
-	float getEleChargeMisIDProb(const miniLepton&, bool);
-	float getEleChargeMisIDProb(const miniLepton&);
+	float getEleChargeMisIDProb(const miniLepton&, int);
 	
 	// Lepton fake rate
 	float getFakeRate(const miniLepton&);

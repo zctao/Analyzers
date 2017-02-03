@@ -708,11 +708,14 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 			// charge flip background (data driven)
 			if (selection_type == Control_2los1tau) {
 				float P1_misCharge =
-					//getEleChargeMisIDProb(local.leptons_fakeable[0],true);
-					getEleChargeMisIDProb(local.leptons_fakeable[0]);
+					getEleChargeMisIDProb(local.leptons_fakeable[0],
+										  local.tau_selected[0].charge());
 				float P2_misCharge =
-					//getEleChargeMisIDProb(local.leptons_fakeable[1],true);
-					getEleChargeMisIDProb(local.leptons_fakeable[1]);
+					getEleChargeMisIDProb(local.leptons_fakeable[1],
+										  local.tau_selected[0].charge());
+
+				// only one of the above two can be non-zero
+				assert(P1_misCharge*P2_misCharge==0.);
 				
 				local.weight = P1_misCharge + P2_misCharge;
 			}

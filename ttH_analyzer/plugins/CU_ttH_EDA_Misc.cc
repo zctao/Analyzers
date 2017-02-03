@@ -433,16 +433,29 @@ bool CU_ttH_EDA::pass_event_sel_2l(CU_ttH_EDA_event_vars &local,
 	///
 	//////////////////////////	
 	/// Lepton charge
-	bool passLepCharge = false;
 	// same sign
-	if (local.leptons_fakeable[0].charge() *
-		local.leptons_fakeable[1].charge() > 0)
-		passLepCharge = true;
+	bool passLepCharge = (local.leptons_fakeable[0].charge() *
+					 local.leptons_fakeable[1].charge()) > 0;
+	bool passTauCharge = true;
+	// for signal region, opposite sign between tau and either lepton
+	// = local.leptons_fakeable[0].charge() * local.tau_selected[0].charge() < 0;
+	// To save computing time, additional requirement on tau charge applied after ntuple production for either signal region and control region
 
-	if (selection_region == Control_2los1tau)
-		passLepCharge = not passLepCharge;
+	if (selection_region == Control_2los1tau) {
+		passLepCharge = not passLepCharge;  // two leptons are opposite signs
 
-	if (not passLepCharge) {
+		// + the lepton that has the same sign as tau has to be a electron
+		// (and the charge flip rate is only applied to this electron)
+		int tauCharge = local.tau_selected[0].charge();
+		if (local.leptons_fakeable[0].charge() == tauCharge)
+			passTauCharge = local.leptons_fakeable[0].Type()==LeptonType::kele;
+		else if (local.leptons_fakeable[1].charge() == tauCharge)
+			passTauCharge = local.leptons_fakeable[1].Type()==LeptonType::kele;
+		else
+			passTauCharge = false;	
+	}
+
+	if (not (passLepCharge and passTauCharge)) {
 		if (debug) {
 			std::cout << "FAIL lepton charge requirement" << std::endl;
 		}
@@ -956,8 +969,7 @@ double CU_ttH_EDA::getJetCSVWeight(pat::Jet & jet, std::string sys)
 	return weight_jet;
 }
 
-
-float CU_ttH_EDA::getEleChargeMisIDProb(const miniLepton& lepton, bool isdata)
+float CU_ttH_EDA::getEleChargeMisIDProb(const miniLepton& lepton, int tauCharge)
 {
 	// muon
 	if (lepton.Type() == LeptonType::kmu) return 0.;
@@ -965,58 +977,9 @@ float CU_ttH_EDA::getEleChargeMisIDProb(const miniLepton& lepton, bool isdata)
 	// electron
 	assert(lepton.Type() == LeptonType::kele);
 
-	if (isdata) {
-		if (abs(lepton.eta()) < 1.479) {
-			if (lepton.pt() >= 10 and lepton.pt() < 25)
-				return 0.000337;
-			else if (lepton.pt() < 50)
-				return 0.000259;
-			else
-				return 0.000403;
-		}
-		else if (abs(lepton.eta()) < 2.5) {
-			if (lepton.pt() >= 10 and lepton.pt() < 25)
-				return 0.001476;
-			else if (lepton.pt() < 50)
-				return 0.002599;
-			else
-				return 0.003963;
-		}
-
-		return 0.;
-	}
-	else {
-		if (abs(lepton.eta()) < 1.479) {
-			if (lepton.pt() >= 10 and lepton.pt() < 25)
-				return 0.000608;
-			else if (lepton.pt() < 50)
-				return 0.000296;
-			else
-				return 0.000177;
-		}
-		else if (abs(lepton.eta()) < 2.5) {
-			if (lepton.pt() >= 10 and lepton.pt() < 25)
-				return 0.001047;
-			else if (lepton.pt() < 50)
-				return 0.002376;
-			else
-				return 0.003101;
-		}
-
-		return 0.;
-	}
-
-	return 0.;
-	
-}
-
-float CU_ttH_EDA::getEleChargeMisIDProb(const miniLepton& lepton)
-{
-	// muon
-	if (lepton.Type() == LeptonType::kmu) return 0.;
-
-	// electron
-	assert(lepton.Type() == LeptonType::kele);
+	// only apply the charge flip rate to the electron that is same sign as tau
+	// due to the tau charge requirement in signal region
+	if (lepton.charge() * tauCharge < 0) return 0;
 
 	return read2DHist(h_chargeMisId, lepton.pt(), abs(lepton.eta()));
 }
