@@ -315,12 +315,16 @@ void fillHistoFromTreeMC(map<TString, TH1D*>& hists, TTree* tree)
 	int isGenMatched;
 	int HiggsDecayType;
 
-	int lepCategory;
+	int lepCategory;  // 0: mumu; 1: ee; 2: emu
 	int btagCategory;
 
 	int matchHLTPath;
 
 	int ibin;
+
+	int mu0_charge;
+	int ele0_charge;
+	int tau0_charge;
 
 	tree->SetBranchAddress("run", &run);
 	tree->SetBranchAddress("ls", &ls);
@@ -360,6 +364,9 @@ void fillHistoFromTreeMC(map<TString, TH1D*>& hists, TTree* tree)
 	tree->SetBranchAddress("btagCategory", &btagCategory);
 	tree->SetBranchAddress("matchHLTPath", &matchHLTPath);
 	tree->SetBranchAddress("ibin", &ibin);
+	tree->SetBranchAddress("mu0_charge", &mu0_charge);
+	tree->SetBranchAddress("ele0_charge", &ele0_charge);
+	tree->SetBranchAddress("tau0_charge", &tau0_charge);
 
 	// Loop over events in the TTree
 	int nEntries = tree->GetEntries();
@@ -367,7 +374,11 @@ void fillHistoFromTreeMC(map<TString, TH1D*>& hists, TTree* tree)
 	for (int i = 0; i < nEntries; ++i) {
 		tree->GetEntry(i);
 
+		// additional selections
 		if (not matchHLTPath) continue;
+		// assume the two leptons are same sign
+		if (not passTauCharge((lepCategory?ele0_charge:mu0_charge), tau0_charge))
+			continue;
 		
 		// Update weights here if needed
 
@@ -450,6 +461,10 @@ void fillHistoFromTreeData(TH1D* h, TTree* tree, vector<vector<int>>& eventList)
 	float mva_ttV;
 	int ibin;
 	int matchHLTPath;
+	int lepCategory;
+	int mu0_charge;
+	int ele0_charge;
+	int tau0_charge;
 
 	tree->SetBranchAddress("nEvent", &event);
 	tree->SetBranchAddress("ls", &ls);
@@ -459,6 +474,10 @@ void fillHistoFromTreeData(TH1D* h, TTree* tree, vector<vector<int>>& eventList)
 	tree->SetBranchAddress("MVA_2lss_ttV", &mva_ttV);
 	tree->SetBranchAddress("ibin", &ibin);
 	tree->SetBranchAddress("matchHLTPath", &matchHLTPath);
+	tree->SetBranchAddress("lepCategory", &lepCategory);
+	tree->SetBranchAddress("mu0_charge", &mu0_charge);
+	tree->SetBranchAddress("ele0_charge", &ele0_charge);
+	tree->SetBranchAddress("tau0_charge", &tau0_charge);
 
 	int nEntries = tree->GetEntries();
 

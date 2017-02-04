@@ -49,8 +49,8 @@ const std::map<TString,std::vector<TString>> SamplesInChannel =
 TString batch = "jan2017/";
 TString eos_dir = "/eos/uscms/store/user/ztao/ttH_80X/";
 const std::map<TString, TString> dir_map =
-	{//{"ttH", eos_dir+"ttHToNonbb_M125_TuneCUETP8M2_ttHtranche3_13TeV-powheg-pythia8/"+batch},
-	 {"ttH", eos_dir+"ttHJetToNonbb_M125_13TeV_amcatnloFXFX_madspin_pythia8_mWCutfix/"+batch},
+	{{"ttH", eos_dir+"ttHToNonbb_M125_TuneCUETP8M2_ttHtranche3_13TeV-powheg-pythia8/"+batch},
+//{"ttH", eos_dir+"ttHJetToNonbb_M125_13TeV_amcatnloFXFX_madspin_pythia8_mWCutfix/"+batch},
 	 {"TTW", eos_dir+"TTWJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-madspin-pythia8/"+batch},
 	 {"TTZ", eos_dir+"TTZToLLNuNu_M-10_TuneCUETP8M1_13TeV-amcatnlo-pythia8/"+batch},
 	 {"TTGJets", eos_dir+"TTGJets_TuneCUETP8M1_13TeV-amcatnloFXFX-madspin-pythia8/"+batch},
