@@ -44,12 +44,15 @@ void HistoStackDrawer(std::map<TString, TH1D*> histoMap)
 	}
 
 	// plotting
+	TString pname = hs->GetName();
+
 	hs->Draw("HIST");
+	hs->GetXaxis()->SetTitle(pname);
+	gPad->Modified();
+	
 	h_obs->Draw("same");
 	l->Draw("same");
 
-	TString pname = hs->GetName();
-	
 	c.SaveAs(pname+".pdf");
 }
 
