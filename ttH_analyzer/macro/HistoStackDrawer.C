@@ -46,6 +46,9 @@ void HistoStackDrawer(std::map<TString, TH1D*> histoMap)
 	// plotting
 	TString pname = hs->GetName();
 
+	float ymax = max(hs->GetMaximum(),h_obs->GetMaximum());
+	hs->SetMaximum(ymax*1.2);
+	
 	hs->Draw("HIST");
 	hs->GetXaxis()->SetTitle(pname);
 	gPad->Modified();
