@@ -233,9 +233,9 @@ float SFHelper::Get_LeptonIDSF(const miniLepton& lepton)
 {
 	assert(not _isdata);
 	
-	float sf = 1.;
 	assert(lepton.passLooseSel());
 
+	float sf = 1.;
 	sf *= Get_LeptonSF_loose(lepton);
 	// SF fakeable to loose is currently assumed to be 1.
 	if (lepton.passTightSel())
@@ -243,33 +243,53 @@ float SFHelper::Get_LeptonIDSF(const miniLepton& lepton)
 
 	return sf;
 }
+float SFHelper::Get_LeptonIDSF(float lepPt, float lepEta, bool isEle, bool isMu,
+							   bool isTight)
+{
+	assert(not _isdata);
+	
+	float sf = 1.;
+	sf *= Get_LeptonSF_loose(lepPt, lepEta, isEle, isMu);
+	// SF fakeable to loose is currently assumed to be 1.
+	if (isTight)
+		sf *= Get_LeptonSF_tight_vs_loose(lepPt, lepEta, isEle, isMu);
+
+	return sf;
+}
 
 float SFHelper::Get_LeptonSF_loose(const miniLepton& lepton)
 {
+	return Get_LeptonSF_loose(lepton.pt(), lepton.eta(),
+							  lepton.Type()==LeptonType::kele,
+							  lepton.Type()==LeptonType::kmu);
+}
+float SFHelper::Get_LeptonSF_loose(float lepPt, float lepEta,
+								   bool isEle, bool isMu)
+{
 	float sf =1.;
 
-	if (lepton.Type()==LeptonType::kmu) {
-		if (abs(lepton.eta())<1.2) {
-			sf *= evalTGraph(h_recoToLoose_leptonSF_mu1_b, lepton.pt());
+	if (isMu) {
+		if (abs(lepEta)<1.2) {
+			sf *= evalTGraph(h_recoToLoose_leptonSF_mu1_b, lepPt);
 		}
 		else {
-			sf *= evalTGraph(h_recoToLoose_leptonSF_mu1_e, lepton.pt());
+			sf *= evalTGraph(h_recoToLoose_leptonSF_mu1_e, lepPt);
 		}
 		
 		sf *= read2DHist(h_recoToLoose_leptonSF_mu2,
-						 lepton.pt(), abs(lepton.eta()));
+						 lepPt, abs(lepEta));
 		
-		sf *= evalTGraph(h_recoToLoose_leptonSF_mu3, lepton.eta());
+		sf *= evalTGraph(h_recoToLoose_leptonSF_mu3, lepEta);
 	}
-	else if (lepton.Type()==LeptonType::kele) {
+	else if (isEle) {
 		sf *= read2DHist(h_recoToLoose_leptonSF_el1,
-						 lepton.pt(), abs(lepton.eta()));
+						 lepPt, abs(lepEta));
 		sf *= read2DHist(h_recoToLoose_leptonSF_el2,
-						 lepton.pt(), abs(lepton.eta()));
+						 lepPt, abs(lepEta));
 		sf *= read2DHist(h_recoToLoose_leptonSF_el3,
-						 lepton.pt(), abs(lepton.eta()));
+						 lepPt, abs(lepEta));
 		// !! different pt eta xaxis
-		sf *= read2DHist(h_recoToLoose_leptonSF_gsf, lepton.eta(), lepton.pt());
+		sf *= read2DHist(h_recoToLoose_leptonSF_gsf, lepEta, lepPt);
 	}
 
 	return sf;
@@ -277,28 +297,35 @@ float SFHelper::Get_LeptonSF_loose(const miniLepton& lepton)
 
 float SFHelper::Get_LeptonSF_tight_vs_loose(const miniLepton& lepton)
 {
-	float sf = 1.;
-	
 	assert(lepton.passTightSel());
 
+	return Get_LeptonSF_tight_vs_loose(lepton.pt(), lepton.eta(),
+									   lepton.Type()==LeptonType::kele,
+									   lepton.Type()==LeptonType::kmu);
+}
+float SFHelper::Get_LeptonSF_tight_vs_loose(float lepPt, float lepEta,
+											bool isEle, bool isMu)
+{
+	float sf = 1.;
+	
 	if (_analysis == Analyze_2lss1tau) {
-		if (lepton.Type()==LeptonType::kmu) {
+		if (isMu) {
 			sf = read2DHist(h_looseToTight_leptonSF_mu_2lss,
-							lepton.pt(), abs(lepton.eta()));
+							lepPt, abs(lepEta));
 		}
-		else if (lepton.Type()==LeptonType::kele) {
+		else if (isEle) {
 			sf = read2DHist(h_looseToTight_leptonSF_el_2lss,
-							lepton.pt(), abs(lepton.eta()));
+							lepPt, abs(lepEta));
 		}
 	}
 	else if (_analysis == Analyze_3l) {
-		if (lepton.Type()==LeptonType::kmu) {
+		if (isMu) {
 			sf = read2DHist(h_looseToTight_leptonSF_mu_3l,
-							lepton.pt(), abs(lepton.eta()));
+							lepPt, abs(lepEta));
 		}
-		else if (lepton.Type()==LeptonType::kele) {
+		else if (isEle) {
 			sf = read2DHist(h_looseToTight_leptonSF_el_3l,
-							lepton.pt(), abs(lepton.eta()));
+							lepPt, abs(lepEta));
 		}
 	}
 
@@ -391,49 +418,65 @@ float SFHelper::Get_PUWeight(int nPU)
 
 float SFHelper::Get_TauIDSF(const pat::Tau& tau, bool isGenMatched)
 {
+	return Get_TauIDSF(tau.pt(), tau.eta(), isGenMatched);
+}
+float SFHelper::Get_TauIDSF(float tauPt, float tauEta, bool isGenMatched)
+{
 	assert(not _isdata);
 
 	// tau ID efficiency data/MC scale factor
 	float tauEff_sf = 0.9;
 	// tau ID fake rate data/MC scale factor
-	float tauFR_sf = tau.eta() < 1.497 ?
-	    readTF(f_fakerate_tau_mvaM_etaL_ratio, tau.pt()) :
-		readTF(f_fakerate_tau_mvaM_etaH_ratio, tau.pt());
+	float tauFR_sf = tauEta < 1.497 ?
+	    readTF(f_fakerate_tau_mvaM_etaL_ratio, tauPt) :
+		readTF(f_fakerate_tau_mvaM_etaH_ratio, tauPt);
 
 	return (isGenMatched ? tauEff_sf : tauFR_sf);
 }
 
-float SFHelper::Get_MCWeight()
+/*float SFHelper::Get_MCWeight()
 {
 	return 0.;
-}
+	}*/
 
 float SFHelper::Get_FakeRate(const miniLepton& lepton)
 {
+	bool isEle = lepton.Type() == LeptonType::kele;
+	bool isMu = lepton.Type() == LeptonType::kmu;
+
+	return Get_FakeRate(lepton.conePt(), lepton.eta(), isEle, isMu);
+}
+float SFHelper::Get_FakeRate(float lepConePt, float lepEta,
+							 bool isEle, bool isMuon)
+{
 	float fakerate = 0;
 	
-	if (lepton.Type() == LeptonType::kele)
-		fakerate = read2DHist(h_fakerate_el, lepton.conePt(), lepton.eta());
-	else if (lepton.Type() == LeptonType::kmu)
-		fakerate = read2DHist(h_fakerate_mu, lepton.conePt(), lepton.eta());
+	if (isEle)
+		fakerate = read2DHist(h_fakerate_el, lepConePt, lepEta);
+	else if (isMuon)
+		fakerate = read2DHist(h_fakerate_mu, lepConePt, lepEta);
 	
-	if (lepton.conePt() < 10.) return 0.;
+	if (lepConePt < 10.) return 0.;
 	
 	return fakerate;
 }
 
 float SFHelper::Get_FakeRate(const pat::Tau& tau)
 {
+	return Get_FakeRate(tau.pt(),tau.eta());
+}
+float SFHelper::Get_FakeRate(float tauPt, float tauEta)
+{
 	float fr_mc = 0;
 	float ratio = 0;
 
-	if (abs(tau.eta()) < 1.479) {
-		fr_mc = readTGraph(g_fakerate_tau_mvaM_etaL_mc, tau.pt());
-		ratio = readTF(f_fakerate_tau_mvaM_etaL_ratio, tau.pt());
+	if (abs(tauEta) < 1.479) {
+		fr_mc = readTGraph(g_fakerate_tau_mvaM_etaL_mc, tauPt);
+		ratio = readTF(f_fakerate_tau_mvaM_etaL_ratio, tauPt);
 	}
 	else {
-		fr_mc = readTGraph(g_fakerate_tau_mvaM_etaH_mc, tau.pt());
-		ratio = readTF(f_fakerate_tau_mvaM_etaH_ratio, tau.pt());
+		fr_mc = readTGraph(g_fakerate_tau_mvaM_etaH_mc, tauPt);
+		ratio = readTF(f_fakerate_tau_mvaM_etaH_ratio, tauPt);
 	}
 	
 	return fr_mc * ratio;
@@ -452,11 +495,17 @@ float SFHelper::Get_EleChargeMisIDProb(const miniLepton& lepton, int tauCharge)
 	// electron
 	assert(lepton.Type() == LeptonType::kele);
 
+	return Get_EleChargeMisIDProb(lepton.pt(), lepton.eta(),
+								  lepton.charge(), tauCharge);
+}
+float SFHelper::Get_EleChargeMisIDProb(float elePt, float eleEta,
+									   int eleCharge, int tauCharge)
+{	
 	// only apply the charge flip rate to the electron that is same sign as tau
 	// due to the tau charge requirement in signal region
-	if (lepton.charge() * tauCharge < 0) return 0;
+	if (eleCharge * tauCharge < 0) return 0;
 
-	return read2DHist(h_chargeMisId, lepton.pt(), abs(lepton.eta()));
+	return read2DHist(h_chargeMisId, elePt, abs(eleEta));
 }
 
 float SFHelper::read2DHist(TH2* h2d, float x, float y)

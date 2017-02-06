@@ -28,14 +28,19 @@ class SFHelper
 	// member functions
 	float Get_HLTSF(int);
 	float Get_LeptonIDSF(const miniLepton&);
+	float Get_LeptonIDSF(float,float,bool,bool,bool);
 	float Get_EvtCSVWeight(std::vector<pat::Jet> &, const std::string &);
 	float Get_PUWeight(int);
 	float Get_TauIDSF(const pat::Tau&, bool);
-	float Get_MCWeight();
+	float Get_TauIDSF(float,float,bool);
+	//float Get_MCWeight();
 	float Get_FakeRate(const miniLepton&);
+	float Get_FakeRate(float,float,bool,bool); // for ele or mu
 	float Get_FakeRate(const pat::Tau&);
+	float Get_FakeRate(float,float);  // for tau
 	//float Get_ChargeFlipWeight();
 	float Get_EleChargeMisIDProb(const miniLepton&, int);
+	float Get_EleChargeMisIDProb(float,float,int,int);
 
 	// utilities
 	float read2DHist(TH2*, float, float);
@@ -126,7 +131,9 @@ class SFHelper
 	void Delete_BTagCalibration_Readers();
 
 	float Get_LeptonSF_loose(const miniLepton&);
+	float Get_LeptonSF_loose(float,float,bool,bool);
 	float Get_LeptonSF_tight_vs_loose(const miniLepton&);
+	float Get_LeptonSF_tight_vs_loose(float,float,bool,bool);
 	float Get_JetCSVWeight(pat::Jet&, std::string);
 
 };
