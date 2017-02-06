@@ -94,24 +94,8 @@ CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig):
 
 	Set_up_Tree();
 
-	if (not isdata) {
-		Set_up_BTagCalibration_Readers();
-		//Set_up_CSV_rootFile();
-		
-		Set_up_LeptonSF_Lut();
-
-		Set_up_PUWeight_hist();
-
-		Set_up_TauSF_Lut();
-	}
-
-	if (selection_type == Control_1lfakeable) {
-		Set_up_FakeRate_Lut();
-	}
-
-	if (selection_type == Control_2los1tau) {
-		Set_up_ChargeMisID_Lut();
-	}
+	sf_helper = new SFHelper(analysis_type, selection_type, isdata);
+	
 }
 
 /// Destructor
@@ -121,61 +105,7 @@ CU_ttH_EDA::~CU_ttH_EDA()
 	// do anything here that needs to be done at desctruction time
 	// (e.g. close files, deallocate resources etc.)
 
-	if (not isdata) {
-		delete BTagCaliReader;
-		//f_CSVwgt_HF->Close();
-		//f_CSVwgt_LF->Close();
-		
-		//delete f_CSVwgt_HF;
-		//delete f_CSVwgt_LF;
-
-		file_puweight->Close();
-		delete file_puweight;
-		
-		file_recoToLoose_leptonSF_mu1_b->Close();
-		file_recoToLoose_leptonSF_mu1_e->Close();
-		file_recoToLoose_leptonSF_mu2->Close();
-		file_recoToLoose_leptonSF_mu3->Close();
-
-		file_recoToLoose_leptonSF_el->Close();
-		file_recoToLoose_leptonSF_gsf->Close();
-		
-		delete file_recoToLoose_leptonSF_mu1_b;
-		delete file_recoToLoose_leptonSF_mu1_e;
-		delete file_recoToLoose_leptonSF_mu2;
-		delete file_recoToLoose_leptonSF_mu3;
-		
-		delete file_recoToLoose_leptonSF_el;
-		delete file_recoToLoose_leptonSF_gsf;
-		
-		if (analysis_type == Analyze_2lss1tau) {
-			file_looseToTight_leptonSF_mu_2lss->Close();
-			file_looseToTight_leptonSF_el_2lss->Close();
-			
-			delete file_looseToTight_leptonSF_mu_2lss;
-			delete file_looseToTight_leptonSF_el_2lss;
-		}
-		if (analysis_type == Analyze_3l) {
-			file_looseToTight_leptonSF_mu_3l->Close();
-			file_looseToTight_leptonSF_el_3l->Close();
-			
-			delete file_looseToTight_leptonSF_mu_3l;
-			delete file_looseToTight_leptonSF_el_3l;
-		}
-
-		file_fr_tau->Close();		
-		delete file_fr_tau;
-	}
-
-	if (selection_type == Control_1lfakeable) {		
-		file_fr_lep->Close();		
-		delete file_fr_lep;
-	}
-
-	if (selection_type == Control_2los1tau) {
-		file_eleMisCharge->Close();
-		delete file_eleMisCharge;
-	}
+	delete sf_helper;
 }
 
 // ------------ method called for each event  ------------
@@ -272,7 +202,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 			}
 		}
 
-		local.pu_weight = getPUWeight(local.npuTrue);
+		local.pu_weight = sf_helper->Get_PUWeight(local.npuTrue);
 		
 		// MC weights
 		double genWeight = handle.event_gen_info.product()->weight();
@@ -370,7 +300,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 			local.e_fakeable.push_back(ele);
 			local.leptons_fakeable.push_back(lepton);
 		
-			if (lepton.passTightSel()) {				
+			if (lepton.passTightSel()) {
 				local.e_tight.push_back(ele);
 				local.leptons_tight.push_back(lepton);
 			}
@@ -628,14 +558,17 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 			// Weights and scale factors
 			if (not isdata) {
 				/// CSV weight
-				local.csv_weight = getEvtCSVWeight(local.jets_selected, "NA");
-				//local.csv_weight = getEvtCSVWeight(local.jets_selected, csv_iSys["NA"]);
+				local.csv_weight =
+					sf_helper->Get_EvtCSVWeight(local.jets_selected, "NA");
+				
 				/// HLT sf
-				local.hlt_sf = getLepHLTSF(ilep);
+				local.hlt_sf = sf_helper->Get_HLTSF(ilep);
 				
 				// LeptonSF
-				local.lepIDEff_sf *= getLeptonSF(local.leptons_fakeable[0]);
-				local.lepIDEff_sf *= getLeptonSF(local.leptons_fakeable[1]);
+				local.lepIDEff_sf *=
+					sf_helper->Get_LeptonIDSF(local.leptons_fakeable[0]);
+				local.lepIDEff_sf *=
+					sf_helper->Get_LeptonIDSF(local.leptons_fakeable[1]);
 				
 			}
 			
@@ -660,8 +593,8 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 				//assert(local.n_taus_pre >= 1);
 
 				// two leading leptons
-				float f1 = getFakeRate(local.leptons_fakeable[0]);
-				float f2 = getFakeRate(local.leptons_fakeable[1]);
+				float f1 = sf_helper->Get_FakeRate(local.leptons_fakeable[0]);
+				float f2 = sf_helper->Get_FakeRate(local.leptons_fakeable[1]);
 				
 				float F1 = local.leptons_fakeable[0].passTightSel() ?
 					-1. : f1/(1.-f1);
@@ -707,12 +640,10 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 			//////////////////////////
 			// charge flip background (data driven)
 			if (selection_type == Control_2los1tau) {
-				float P1_misCharge =
-					getEleChargeMisIDProb(local.leptons_fakeable[0],
-										  local.tau_selected[0].charge());
-				float P2_misCharge =
-					getEleChargeMisIDProb(local.leptons_fakeable[1],
-										  local.tau_selected[0].charge());
+				float P1_misCharge = sf_helper->Get_EleChargeMisIDProb(
+				    local.leptons_fakeable[0], local.tau_selected[0].charge());
+				float P2_misCharge = sf_helper->Get_EleChargeMisIDProb(
+					local.leptons_fakeable[1], local.tau_selected[0].charge());
 
 				// only one of the above two can be non-zero
 				assert(P1_misCharge*P2_misCharge==0.);
@@ -721,51 +652,6 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 			}
 
 			local.ibin = partition2DBDT(mva_ttbar, mva_ttV);
-			
-			/*// Fill histograms
-			// 2D hist
-			h_MVA_ttV_vs_ttbar[ilep][ibtag]
-				->Fill(mva_ttbar, mva_ttV, local.weight);
-			
-			// 1D shape
-			int bin = partition2DBDT(mva_ttbar, mva_ttV);
-			
-			h_MVA_shape[ilep][ibtag]
-				->Fill(bin, local.weight);
-			*/
-				
-			/*// systematics
-			if (!isdata and doSystematics and selection_type == Signal_2lss1tau) {
-
-				// CSV reweight
-				for (int isys = 0; isys < 16; ++isys) {
-					double csv_weight_sys =
-						getEvtCSVWeight(local.jets_selected, sysList[isys]);
-						//getEvtCSVWeight(local.jets_selected, csv_iSys[sysList[isys]]);
-					double evt_weight_sys =
-						local.weight / local.csv_weight * csv_weight_sys;
-
-					// 2D
-					//h_MVA_ttV_vs_ttbar_sys[ilep][ibtag][isys]
-					//	->Fill(mva_ttbar, mva_ttV,evt_weight_sys);
-					// 1D shape
-					h_MVA_shape_csv_sys[ilep][ibtag][isys]
-						->Fill(bin, evt_weight_sys);
-				}
-
-				// theoretical uncertainty from renormalization and
-				// factorization scale
-				h_MVA_shape_thu_sys[ilep][ibtag][0]->
-					Fill(bin,local.mc_weight_scale_muF0p5);
-				h_MVA_shape_thu_sys[ilep][ibtag][1]->
-					Fill(bin,local.mc_weight_scale_muF2);
-				h_MVA_shape_thu_sys[ilep][ibtag][2]->
-					Fill(bin,local.mc_weight_scale_muR0p5);
-				h_MVA_shape_thu_sys[ilep][ibtag][3]->
-					Fill(bin,local.mc_weight_scale_muR2);
-			}
-			*/
-			
 		}
 
 		// Write Ntuple
@@ -791,37 +677,37 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 			// systematics
 			if (not isdata and doSystematics) {
 				evtNtuple.btagSF_weight_LFUp =
-					getEvtCSVWeight(local.jets_selected, "LFUp");
+					sf_helper->Get_EvtCSVWeight(local.jets_selected,"LFUp");
 				evtNtuple.btagSF_weight_LFDown =
-					getEvtCSVWeight(local.jets_selected, "LFDown");
+					sf_helper->Get_EvtCSVWeight(local.jets_selected,"LFDown");
 				evtNtuple.btagSF_weight_HFUp =
-					getEvtCSVWeight(local.jets_selected, "HFUp");
+					sf_helper->Get_EvtCSVWeight(local.jets_selected,"HFUp");
 				evtNtuple.btagSF_weight_HFDown =
-					getEvtCSVWeight(local.jets_selected, "HFDown");
+					sf_helper->Get_EvtCSVWeight(local.jets_selected,"HFDown");
 				evtNtuple.btagSF_weight_HFStats1Up =
-					getEvtCSVWeight(local.jets_selected, "HFStats1Up");
+					sf_helper->Get_EvtCSVWeight(local.jets_selected,"HFStats1Up");
 				evtNtuple.btagSF_weight_HFStats1Down =
-					getEvtCSVWeight(local.jets_selected, "HFStats1Down");
+					sf_helper->Get_EvtCSVWeight(local.jets_selected,"HFStats1Down");
 				evtNtuple.btagSF_weight_HFStats2Up =
-					getEvtCSVWeight(local.jets_selected, "HFStats2Up");
+					sf_helper->Get_EvtCSVWeight(local.jets_selected,"HFStats2Up");
 				evtNtuple.btagSF_weight_HFStats2Down =
-					getEvtCSVWeight(local.jets_selected, "HFStats2Down");
+					sf_helper->Get_EvtCSVWeight(local.jets_selected,"HFStats2Down");
 				evtNtuple.btagSF_weight_LFStats1Up =
-					getEvtCSVWeight(local.jets_selected, "LFStats1Up");
+					sf_helper->Get_EvtCSVWeight(local.jets_selected,"LFStats1Up");
 				evtNtuple.btagSF_weight_LFStats1Down =
-					getEvtCSVWeight(local.jets_selected, "LFStats1Down");
+					sf_helper->Get_EvtCSVWeight(local.jets_selected,"LFStats1Down");
 				evtNtuple.btagSF_weight_LFStats2Up =
-					getEvtCSVWeight(local.jets_selected, "LFStats2Up");
+					sf_helper->Get_EvtCSVWeight(local.jets_selected,"LFStats2Up");
 				evtNtuple.btagSF_weight_LFStats2Down =
-					getEvtCSVWeight(local.jets_selected, "LFStats2Down");
+					sf_helper->Get_EvtCSVWeight(local.jets_selected,"LFStats2Down");
 				evtNtuple.btagSF_weight_cErr1Up =
-					getEvtCSVWeight(local.jets_selected, "cErr1Up");
+					sf_helper->Get_EvtCSVWeight(local.jets_selected,"cErr1Up");
 				evtNtuple.btagSF_weight_cErr1Down =
-					getEvtCSVWeight(local.jets_selected, "cErr1Down");
+					sf_helper->Get_EvtCSVWeight(local.jets_selected,"cErr1Down");
 				evtNtuple.btagSF_weight_cErr2Up =
-					getEvtCSVWeight(local.jets_selected, "cErr2Up");
+					sf_helper->Get_EvtCSVWeight(local.jets_selected,"cErr2Up");
 				evtNtuple.btagSF_weight_cErr2Down =
-					getEvtCSVWeight(local.jets_selected, "cErr2Down");
+					sf_helper->Get_EvtCSVWeight(local.jets_selected,"cErr2Down");
 			}
 			
 			eventTree->Fill();
@@ -849,8 +735,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 			else {
 				/// CSV weight
 				local.csv_weight =
-					//getEvtCSVWeight(local.jets_selected, csv_iSys["NA"]);
-				    getEvtCSVWeight(local.jets_selected, "NA");
+					sf_helper->Get_EvtCSVWeight(local.jets_selected, "NA");
 
 				/// HLT sf: (1) +/- 0.06
 				local.hlt_sf = 1.0;
@@ -898,22 +783,7 @@ void CU_ttH_EDA::endJob() {
 		//std::cout << "Total number of samples: " << event_count << std::endl;
 		
 		if (not isdata and doLumiScale) {
-			/*
-			// Rescale histograms for MC
-			h_MVA_ttV_vs_ttbar -> Scale(int_lumi * sample_xs / event_count);
-			h_MVA_shape -> Scale(int_lumi * sample_xs / event_count);
-
 			
-			if (setup_sysHist) {
-				for (auto h : h_MVA_ttV_vs_ttbar_sys) {
-					h -> Scale(int_lumi * sample_xs / event_count);
-				}
-				
-				for (auto h : h_MVA_shape_sys) {
-					h -> Scale(int_lumi * sample_xs / event_count);
-				}
-			}
-			*/
 		}
 
 	}

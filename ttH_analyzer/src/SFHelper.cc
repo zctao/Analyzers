@@ -1,3 +1,6 @@
+#ifndef SFHelper_cc
+#define SFHelper_cc
+
 #include "Analyzers/ttH_analyzer/interface/SFHelper.h"
 
 // constructor
@@ -506,3 +509,5 @@ float SFHelper::readTF(TF1* f, float x)
 	//					);
 	return f->Eval(x);
 }
+
+#endif

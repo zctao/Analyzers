@@ -98,6 +98,7 @@
 #include "Analyzers/ttH_analyzer/interface/CU_ttH_EDA_Ntuple.h"
 #include "Analyzers/ttH_analyzer/interface/kinMVA_ttbar_2lss.h"
 #include "Analyzers/ttH_analyzer/interface/kinMVA_ttV_2lss.h"
+#include "Analyzers/ttH_analyzer/interface/SFHelper.h"
 
 /// Configuration reader
 #include "yaml-cpp/yaml.h"
@@ -143,14 +144,6 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	void Set_up_tokens(const edm::ParameterSet &);
 	void Set_up_Tree();
 	void Set_up_selection_region(const string &);
-	void Set_up_BTagCalibration_Readers();
-	void Set_up_CSV_rootFile();
-	void fillCSVhistos(TFile*, TFile*);
-	void Set_up_LeptonSF_Lut();
-	void Set_up_FakeRate_Lut();
-	void Set_up_TauSF_Lut();
-	void Set_up_ChargeMisID_Lut();
-	void Set_up_PUWeight_hist();
 
 	int Set_up_Run_histograms_triggers(); // at beginRun(), after
 										  // Set_up_name_vectors()
@@ -204,34 +197,6 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	// MVA
 	int partition2DBDT(double, double);
 
-	// csv reweighting
-	//double getEvtCSVWeight(std::vector<pat::Jet> &, int); // use root file
-	double getEvtCSVWeight(std::vector<pat::Jet> &, const std::string &); // use csv file
-	double getJetCSVWeight(pat::Jet &, std::string /*pass by copy*/);
-
-	float read2DHist(TH2*, float, float);
-	float readTGraph(TGraphAsymmErrors*, float);
-	float evalTGraph(TGraphAsymmErrors*, float);
-	float readTF(TF1*, float);
-	
-	// Electron Charge misId
-	float getEleChargeMisIDProb(const miniLepton&, int);
-	
-	// Lepton fake rate
-	float getFakeRate(const miniLepton&);
-	float getFakeRate(const pat::Tau&);
-
-	// HLT scale factor
-	float getLepHLTSF(int);
-	
-	// lepton scale factor
-	float getLeptonSF(const miniLepton&);
-	float getLeptonSF_loose(const miniLepton&);
-	float getLeptonSF_tight_vs_loose(const miniLepton&);
-
-	// PU weight
-	float getPUWeight(int);
-	
 	/*
 	* Variable section
 	*/
@@ -324,6 +289,9 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	std::string selection_region;
     Selection_types selection_type;
 
+	// scale factor helper class
+	SFHelper *sf_helper;
+
 	// debug flag
 	bool debug;
 	
@@ -336,13 +304,6 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	TH1D *h_SumGenWeightxPU;
 	TH1D *h_GenWeightProcessed;  // cross check
 	TH1D *h_GenWeightxPUProcessed;  // cross check
-	
-	//TH2D *h_MVA_ttV_vs_ttbar[3][2];
-	//TH1D *h_MVA_shape[3][2];
-	//TH2D *h_MVA_ttV_vs_ttbar_sys[3][2][16];
-	//TH1D *h_MVA_shape_csv_sys[3][2][16];
-	//TH1D *h_MVA_shape_thu_sys[3][2][4];
-	//bool setup_sysHist = false;
 
 	// for WZ control region
 	//TH1D *h_mTWl;  // mT of the lepton from W
@@ -351,55 +312,6 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	//TH1D *h_lep_charge;
 	//TH1D *h_mZ;
 
-	// Fake lepton rate lookup histograms
-	TFile *file_fr_lep;
-	TH2F *h_fakerate_el;
-	TH2F *h_fakerate_mu;
-	// jet to tau fake rate
-	TFile* file_fr_tau;
-	TGraphAsymmErrors *g_fakerate_tau_mvaM_etaL_mc;
-	TGraphAsymmErrors *g_fakerate_tau_mvaM_etaH_mc;
-	//TGraphAsymmErrors *g_fakerate_tau_mvaT_etaL_mc;
-	//TGraphAsymmErrors *g_fakerate_tau_mvaT_etaH_mc;
-	TF1 *f_fakerate_tau_mvaM_etaL_ratio;
-	TF1 *f_fakerate_tau_mvaM_etaH_ratio;
-	//TF1 *f_fakerate_tau_mvaT_etaL_ratio;
-	//TF1 *f_fakerate_tau_mvaT_etaH_ratio;
-
-	// Electron Charge MisID lookup histogram
-	TFile *file_eleMisCharge;
-	TH2F *h_chargeMisId;
-	
-	// Lepton ID scale factor lookup tables
-	// Input files
-	TFile* file_recoToLoose_leptonSF_mu1_b;
-	TFile* file_recoToLoose_leptonSF_mu1_e;
-	TFile* file_recoToLoose_leptonSF_mu2;
-	TFile* file_recoToLoose_leptonSF_mu3;
-	TFile* file_recoToLoose_leptonSF_el;
-	TFile* file_recoToLoose_leptonSF_gsf;
-	TFile* file_looseToTight_leptonSF_mu_2lss;
-	TFile* file_looseToTight_leptonSF_el_2lss;
-	TFile* file_looseToTight_leptonSF_mu_3l;
-	TFile* file_looseToTight_leptonSF_el_3l;
-	
-	TGraphAsymmErrors *h_recoToLoose_leptonSF_mu1_b;
-	TGraphAsymmErrors *h_recoToLoose_leptonSF_mu1_e;
-	TH2F *h_recoToLoose_leptonSF_mu2;
-	TGraphAsymmErrors *h_recoToLoose_leptonSF_mu3;
-	TH2F *h_recoToLoose_leptonSF_el1;
-	TH2F *h_recoToLoose_leptonSF_el2;
-	TH2F *h_recoToLoose_leptonSF_el3;
-	TH2F *h_recoToLoose_leptonSF_gsf;
-	TH2F *h_looseToTight_leptonSF_mu_2lss;
-	TH2F *h_looseToTight_leptonSF_el_2lss;
-	TH2F *h_looseToTight_leptonSF_mu_3l;
-	TH2F *h_looseToTight_leptonSF_el_3l;
-
-	// PU weight
-	TFile* file_puweight;
-	TH1F *h_puweight;
-	
 	// tree and ntuple
 	TTree *eventTree;
 	CU_ttH_EDA_Ntuple evtNtuple;
@@ -413,27 +325,6 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 		 "HFStats1Up","HFStats1Down","HFStats2Up","HFStats2Down",
 		 "LFStats1Up","LFStats1Down","LFStats2Up","LFStats2Down",
 		 "cErr1Up","cErr1Down","cErr2Up","cErr2Down"};
-
-	//std::map<std::string, BTagCalibrationReader*> BTagCaliReaders;
-	BTagCalibrationReader* BTagCaliReader;
-	/*
-	// or read SF from root file
-	TFile* f_CSVwgt_HF;
-	TFile* f_CSVwgt_LF;
-	TH1D* h_csv_wgt_hf[9][5];
-	TH1D* c_csv_wgt_hf[9][5];
-	TH1D* h_csv_wgt_lf[9][4][3];
-	
-	// CSV reweight iSys map
-	std::map<std::string, int> csv_iSys
-		= {{"JESUp",7}, {"JESDown",8}, {"LFUp",9}, {"LFDown",10}, {"HFUp",11},
-		   {"HFDown",12}, {"HFStats1Up",13}, {"HFStats1Down",14},
-		   {"HFStats2Up",15}, {"HFStats2Down",16}, {"LFStats1Up",17},
-		   {"LFStats1Down",18}, {"LFStats2Up",19}, {"LFStats2Down",20},
-		   {"cErr1Up",21},{"cErr1Down",22},{"cErr2Up",23},{"cErr2Down",24},
-		   {"NA",0}};
-	*/
-	
 };
 
 template <typename T1, typename T2>
