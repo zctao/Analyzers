@@ -93,6 +93,7 @@
 /// structs for holding multiple edm::Handle and EDGetTokenT
 #include "CU_ttH_EDA_Handles.h"
 
+#include "Analyzers/ttH_analyzer/interface/Types_enum.h"
 #include "Analyzers/ttH_analyzer/interface/miniLepton.h"
 #include "Analyzers/ttH_analyzer/interface/CU_ttH_EDA_Ntuple.h"
 #include "Analyzers/ttH_analyzer/interface/kinMVA_ttbar_2lss.h"
@@ -100,31 +101,6 @@
 
 /// Configuration reader
 #include "yaml-cpp/yaml.h"
-
-/*
- *
- * enum for analysis type.
- * Purpose: allows faster in-function comparisons
- *
- */
-
-enum analysis_types {
-	Analyze_lepton_jet,
-	Analyze_dilepton,
-	Analyze_1l2tau,
-	Analyze_2lss1tau,
-	Analyze_3l
-};
-
-// enum for event selection region
-enum Selection_types {
-	Signal_2lss1tau,
-	Signal_1l2tau,
-	Signal_3l,
-	Control_2los1tau,
-	Control_1lfakeable,
-	Control_WZ
-};
 
  /*
  *
