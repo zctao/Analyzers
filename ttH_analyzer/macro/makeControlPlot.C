@@ -46,14 +46,14 @@ void makeControlPlot(vector<TString> channels =
 
 			// Scale histograms here
 			if (not isdata) {
-				TH1D* h_SumGenWeight = (TH1D*)f->Get("ttHtaus/h_SumGenWeight");
-				//TH1D* h_SumGenWeightxPU = (TH1D*)f->Get("ttHtaus/h_SumGenWeightxPU");
-				float nSum = h_SumGenWeight->GetBinContent(1);
-				//float nSum = h_SumGenWeightxPU->GetBinContent(1);
+				//TH1D* h_SumGenWeight = (TH1D*)f->Get("ttHtaus/h_SumGenWeight");
+				TH1D* h_SumGenWeightxPU = (TH1D*)f->Get("ttHtaus/h_SumGenWeightxPU");
+				//float nSum = h_SumGenWeight->GetBinContent(1);
+				float nSum = h_SumGenWeightxPU->GetBinContent(1);
 				float XS = xsection::xsection[string(sample)];
 
 				for (auto & h : hists) {
-					h->Sumw2();
+					//h->Sumw2();
 					h->Scale(LUMI * XS / nSum);
 				}
 			}
@@ -64,7 +64,7 @@ void makeControlPlot(vector<TString> channels =
 				if (first)
 					vhists.push_back(h);
 				else {
-					assert(vhists.at(ih)->GetName()==h->GetName());
+					assert(string(vhists.at(ih)->GetName())==string(h->GetName()));
 					vhists.at(ih++)->Add(h);
 				}
 			}

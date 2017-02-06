@@ -7,6 +7,8 @@
 #include "TH1.h"
 #include "TLorentzVector.h"
 
+#include "DataFormats/Math/interface/deltaR.h"
+
 #include "eventSelector.h"
 
 #include <vector>
@@ -30,6 +32,7 @@ vector<TH1D*> TreeAnalyzer(TTree* tree, //TString selection,
 	// 0: mumu; 1: ee; 2: emu
 	TTreeReaderValue<int>   rv_btagCategory(reader, "btagCategory");
 	// 0: loose; 1: medium (>=2 medium btags)
+	TTreeReaderValue<int>   rv_njet(reader, "n_presel_jet");
 	TTreeReaderValue<float> rv_MT_met_lep0(reader, "MT_met_lep0");
 	TTreeReaderValue<float> rv_mindr_lep0_jet(reader, "mindr_lep0_jet");
 	TTreeReaderValue<float> rv_mindr_lep1_jet(reader, "mindr_lep1_jet");
@@ -100,10 +103,46 @@ vector<TH1D*> TreeAnalyzer(TTree* tree, //TString selection,
 	TTreeReaderValue<float> rv_met(reader, "PFMET");
 	TTreeReaderValue<float> rv_mht(reader, "MHT");
 
+	//////////////////////////////
 	// define histograms here
-	TH1D* h_mass_2l_tau_leadbjet = new TH1D("massLepsTauBjet","",40,0,600);
-	TH1D* h_taupt = new TH1D("taupt","",18,20.,200.);
-		
+	TH1D* h_mass_2l_tau_leadbjet = new TH1D("massLepsTauBjet","",15,0,750);
+
+	TH1D* h_njet = new TH1D("njet","",10,2.,12.);
+	TH1D* h_mindr_lep1_jet = new TH1D("mindr_lep1_jet","",12,0.4,4.0);
+	TH1D* h_mindr_lep2_jet = new TH1D("mindr_lep2_jet","",12,0.4,4.0);
+	TH1D* h_avg_dr_jet = new TH1D("avg_dr_jet","",10,0.,4.0);
+	TH1D* h_max_lep_eta = new TH1D("max_lep_eta","",10,0,4.0);
+	TH1D* h_met = new TH1D("met","",10,0.,500.);
+	TH1D* h_mT_met_lep1 = new TH1D("mT_met_lep1","",10., 0., 500.);
+	TH1D* h_mht = new TH1D("mht","",10,0.,500.);
+	TH1D* h_dr_leps = new TH1D("dr_leps","",10,0.,4.0);
+	TH1D* h_tau_pt = new TH1D("tau_pt","",11,20.,130.);
+	TH1D* h_dr_lep1_tau = new TH1D("dr_lep1_tau","",10,0.,4.0);
+	TH1D* h_lep1_pt = new TH1D("lep1_pt","",11,25.,300.);
+	TH1D* h_lep2_pt = new TH1D("lep2_pt","",10,10.,210.);
+	TH1D* h_mTauTauVis1 = new TH1D("mTauTauVis1","",15,0.,300.);
+	TH1D* h_mTauTauVis2 = new TH1D("mTauTauVis2","",15,0.,300.);
+	
+	h_mass_2l_tau_leadbjet -> Sumw2();
+	
+	h_njet -> Sumw2();
+	h_mindr_lep1_jet -> Sumw2();
+	h_mindr_lep2_jet -> Sumw2();
+	h_avg_dr_jet -> Sumw2();
+	h_max_lep_eta -> Sumw2();
+	h_met -> Sumw2();
+	h_mT_met_lep1 -> Sumw2();
+	h_mht -> Sumw2();
+	h_dr_leps -> Sumw2();
+	h_tau_pt -> Sumw2();
+	h_dr_lep1_tau -> Sumw2();
+	h_lep1_pt -> Sumw2();
+	h_lep2_pt -> Sumw2();
+	h_mTauTauVis1 -> Sumw2();
+	h_mTauTauVis2 -> Sumw2();
+
+	//////////////////////////////
+	
 	// event loop
 	while (reader.Next()) {
 
@@ -168,16 +207,54 @@ vector<TH1D*> TreeAnalyzer(TTree* tree, //TString selection,
 		int mu0_charge = *rv_mu0_charge;
 		int tau0_charge = *rv_tau0_charge;
 		
-		if (!passTauCharge((lepCategory?ele0_charge:mu0_charge),tau0_charge,"control")) continue;
+		if (!passTauCharge((lepCategory?ele0_charge:mu0_charge),tau0_charge,"control"))
+			continue;
+		//////////////////////////////
 		
-		h_taupt -> Fill(*rv_tau0_pt, weight);
+		h_njet -> Fill(*rv_njet, weight);
+		h_mindr_lep1_jet -> Fill(*rv_mindr_lep0_jet, weight);
+		h_mindr_lep2_jet -> Fill(*rv_mindr_lep1_jet, weight);
+		h_avg_dr_jet -> Fill(*rv_avg_dr_jet, weight);	
+		h_met -> Fill(*rv_met, weight);
+		h_mT_met_lep1 -> Fill(*rv_MT_met_lep0, weight);
+		h_mht -> Fill(*rv_mht, weight);
+		h_tau_pt -> Fill(*rv_tau0_pt, weight);
+		h_lep1_pt -> Fill(lep0.Pt(), weight);
+		h_lep2_pt -> Fill(lep1.Pt(), weight);
+
+		float max_lep_eta = max(abs(lep0.Eta()),abs(lep1.Eta()));
+		h_max_lep_eta -> Fill(max_lep_eta, weight);
+		
+		float dr_leps =
+			reco::deltaR(lep0.Eta(),lep0.Phi(),lep1.Eta(),lep1.Phi());
+		float dr_lep1_tau =
+			reco::deltaR(lep0.Eta(),lep0.Phi(),tau.Eta(),tau.Phi());	
+		h_dr_leps -> Fill(dr_leps, weight);
+		h_dr_lep1_tau -> Fill(dr_lep1_tau, weight);
+		
+		h_mTauTauVis1 -> Fill( (lep0+tau).M(), weight);
+		h_mTauTauVis2 -> Fill( (lep1+tau).M(), weight);
 		
 	} // end of event loop
 
 	// push_back histograms into output vector
 	out_hists.push_back(h_mass_2l_tau_leadbjet);
-	
-	out_hists.push_back(h_taupt);
+
+	out_hists.push_back(h_njet);
+	out_hists.push_back(h_mindr_lep1_jet);
+	out_hists.push_back(h_mindr_lep2_jet);
+	out_hists.push_back(h_avg_dr_jet);
+	out_hists.push_back(h_max_lep_eta);
+	out_hists.push_back(h_met);
+	out_hists.push_back(h_mT_met_lep1);
+	out_hists.push_back(h_mht);
+	out_hists.push_back(h_dr_leps);
+	out_hists.push_back(h_tau_pt);
+	out_hists.push_back(h_dr_lep1_tau);
+	out_hists.push_back(h_lep1_pt);
+	out_hists.push_back(h_lep2_pt);
+	out_hists.push_back(h_mTauTauVis1);
+	out_hists.push_back(h_mTauTauVis2);
 
 	return out_hists;
 }
