@@ -25,7 +25,7 @@ void makeControlPlot(vector<TString> channels =
 		vector<TH1D*> vhists;
 
 		bool isdata = channel.Contains("data");
-		vector<vector<int>> eventList;
+		vector<vector<unsigned long long>> eventList;
 		
 		bool first = true;	
 		auto samples = SamplesInChannel.at(channel);

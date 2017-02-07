@@ -233,7 +233,7 @@ vector<TH1D*> getShapesData(TString channel, vector<TString> samples)
 {
 	vector<TH1D*> shapes;
 
-	vector<vector<int>> eventList; // (run, lumisection, event)
+	vector<vector<unsigned long long>> eventList; // (run, lumisection, event)
 
 	TH1D* h = new TH1D("x_"+channel, "", 7, 0.5, 7.5);
 	h->Sumw2();
@@ -277,7 +277,7 @@ void fillHistoFromTreeMC(map<TString, TH1D*>& hists, TTree* tree)
 	
 	int run;
 	int ls;
-	int event;
+	unsigned long long event;
 	
 	float mva_ttbar;
 	float mva_ttV;
@@ -450,12 +450,12 @@ void fillHistoFromTreeMC(map<TString, TH1D*>& hists, TTree* tree)
 	return;
 }
 
-void fillHistoFromTreeData(TH1D* h, TTree* tree, vector<vector<int>>& eventList)
+void fillHistoFromTreeData(TH1D* h, TTree* tree, vector<vector<unsigned long long>>& eventList)
 {
 	int run;
 	int ls;
-	int event;
-	// FIXME: should be unsigned long long;
+	unsigned long long event;
+	
 	float event_weight;
 	float mva_ttbar;
 	float mva_ttV;
@@ -486,7 +486,9 @@ void fillHistoFromTreeData(TH1D* h, TTree* tree, vector<vector<int>>& eventList)
 
 		if (not matchHLTPath) continue;
 		
-		vector<int> eventid = {run, ls, event};
+		vector<unsigned long long> eventid = {static_cast<unsigned long long>(run), 
+											  static_cast<unsigned long long>(ls), 
+											  event};
 		//assert(run >= 0 and ls >= 0 and event >= 0);
 
 		bool alreadyIncluded =

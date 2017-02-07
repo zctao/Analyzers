@@ -15,7 +15,7 @@
 #include <algorithm>
 
 vector<TH1D*> TreeAnalyzer(TTree* tree, //TString selection,
-						   bool isdata, vector<vector<int>>& eventList)
+						   bool isdata, vector<vector<unsigned long long>>& eventList)
 {
 	std::vector<TH1D*> out_hists;
 	
@@ -23,7 +23,7 @@ vector<TH1D*> TreeAnalyzer(TTree* tree, //TString selection,
 
 	TTreeReaderValue<int>   rv_run(reader, "run");
 	TTreeReaderValue<int>   rv_ls(reader, "ls");
-	TTreeReaderValue<int>   rv_nEvent(reader, "nEvent");
+	TTreeReaderValue<unsigned long long>   rv_nEvent(reader, "nEvent");
 	TTreeReaderValue<float> rv_event_weight(reader, "event_weight");
 	TTreeReaderValue<int>   rv_matchHLTPath(reader, "matchHLTPath");
 	TTreeReaderValue<int>   rv_isGenMatched(reader, "isGenMatched");
@@ -151,7 +151,9 @@ vector<TH1D*> TreeAnalyzer(TTree* tree, //TString selection,
 
 		// for data sample only
 		if (isdata) {
-			std::vector<int>  eventid = {*rv_run, *rv_ls, *rv_nEvent};
+			std::vector<unsigned long long>  eventid = {static_cast<unsigned long long>(*rv_run), 
+														static_cast<unsigned long long>(*rv_ls), 
+														*rv_nEvent};
 			bool alreadyIncluded = find(eventList.begin(), eventList.end(),
 										eventid) != eventList.end();
 			if (alreadyIncluded)
