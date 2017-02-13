@@ -12,7 +12,8 @@
 
 using namespace std;
 
-const float LUMI = 12.9 * 1000; // 1/pb
+//const float LUMI = 12.9 * 1000; // 1/pb
+const float LUMI = 36.773 * 1000; // 1/pb
 
 void makeControlPlot(vector<TString> channels =
 		{"ttH", "TTW", "TTZ", "EWK", "Rares", "fakes_data", "data_obs"})
@@ -46,18 +47,24 @@ void makeControlPlot(vector<TString> channels =
 
 			// Scale histograms here
 			if (not isdata) {
-				//TH1D* h_SumGenWeight = (TH1D*)f->Get("ttHtaus/h_SumGenWeight");
-				TH1D* h_SumGenWeightxPU = (TH1D*)f->Get("ttHtaus/h_SumGenWeightxPU");
-				//float nSum = h_SumGenWeight->GetBinContent(1);
-				float nSum = h_SumGenWeightxPU->GetBinContent(1);
+				TH1D* h_SumGenWeight = (TH1D*)f->Get("ttHtaus/h_SumGenWeight");
+				//TH1D* h_SumGenWeightxPU = (TH1D*)f->Get("ttHtaus/h_SumGenWeightxPU");
+				float nSum = h_SumGenWeight->GetBinContent(1);
+				//float nSum = h_SumGenWeightxPU->GetBinContent(1);
 				float XS = xsection::xsection[string(sample)];
 
 				for (auto & h : hists) {
-					//h->Sumw2();
 					h->Scale(LUMI * XS / nSum);
 				}
 			}
 
+			// print out sample yields and number of entries
+			assert(hists.size()>0 and string(hists.at(0)->GetName())==string("tau_pt"));
+			int nentries = hists.at(0)->GetEntries();
+			float yields = hists.at(0)->Integral();
+			std::cout << sample << "  yields: " << yields << " nEntries: "
+					  << nentries << std::endl;
+			
 			// Add histograms to the channel collection
 			int ih = 0;
 			for (auto & h : hists) {
@@ -73,6 +80,16 @@ void makeControlPlot(vector<TString> channels =
 		} // end of sample loop
 
 		histsCollection[channel] = vhists;
+
+		// print out channel yields and number of entries
+		assert(vhists.size()>0 and string(vhists.at(0)->GetName())==string("tau_pt"));
+		int chNentries = vhists.at(0)->GetEntries();
+		float chYields = vhists.at(0)->Integral();
+		std::cout << "- - - - - - - - - - - - - - - - - - - - " << std::endl;
+		std::cout << channel << "  yields:" << chYields << " nEntries: "
+				  << chNentries << std::endl;
+		std::cout << "----------------------------------------" << std::endl;
+		
 	} // end of channel loop
 
 	// write and plot histograms
