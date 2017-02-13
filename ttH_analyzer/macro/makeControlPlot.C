@@ -9,6 +9,7 @@
 #include "Misc_Constants.h"
 #include "Cross_Sections.h"
 #include "TreeAnalyzer.h"
+#include "Analyzers/ttH_analyzer/interface/Types_enum.h"
 
 using namespace std;
 
@@ -28,6 +29,14 @@ void makeControlPlot(vector<TString> channels =
 		bool isdata = channel.Contains("data");
 		vector<vector<unsigned long long>> eventList;
 		
+		// analysis and selection type
+		analysis_types AnaType = analysis_types::Analyze_2lss1tau;
+		Selection_types SelType = Selection_types::Signal_2lss1tau;
+		if (channel.Contains("fakes"))
+			SelType = Selection_types::Control_1lfakeable;
+		if (channel.Contains("flips"))
+			SelType = Selection_types::Control_2los1tau;
+		
 		bool first = true;	
 		auto samples = SamplesInChannel.at(channel);
 		for (auto & sample : samples) {
@@ -43,7 +52,8 @@ void makeControlPlot(vector<TString> channels =
 			// get tree
 			TTree* tree = (TTree*) f->Get("ttHtaus/eventTree");
 			
-			vector<TH1D*> hists = TreeAnalyzer(tree, isdata, eventList);
+			vector<TH1D*> hists =
+				TreeAnalyzer(tree, isdata, eventList, AnaType, SelType);
 
 			// Scale histograms here
 			if (not isdata) {

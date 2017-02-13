@@ -9,22 +9,27 @@
 
 #include "DataFormats/Math/interface/deltaR.h"
 
+#include "Analyzers/ttH_analyzer/interface/Types_enum.h"
+//#include "Analyzers/ttH_analyzer/interface/SFHelper.h"
 #include "eventSelector.h"
 
 #include <vector>
 #include <algorithm>
 
-vector<TH1D*> TreeAnalyzer(TTree* tree, //TString selection,
-						   bool isdata, vector<vector<unsigned long long>>& eventList)
+vector<TH1D*> TreeAnalyzer(TTree* tree, bool isdata,
+						   vector<vector<unsigned long long>>& eventList,
+						   analysis_types AnaType, Selection_types SelType)
 {
 	std::vector<TH1D*> out_hists;
 	
 	TTreeReader reader(tree);
 
+	// SF Helper
+	//SFHelper *sf_helper = new SFHelper(AnaType, SelType, isdata);
+
 	TTreeReaderValue<int>   rv_run(reader, "run");
 	TTreeReaderValue<int>   rv_ls(reader, "ls");
 	TTreeReaderValue<unsigned long long>   rv_nEvent(reader, "nEvent");
-	TTreeReaderValue<float> rv_event_weight(reader, "event_weight");
 	TTreeReaderValue<int>   rv_matchHLTPath(reader, "matchHLTPath");
 	TTreeReaderValue<int>   rv_isGenMatched(reader, "isGenMatched");
 	TTreeReaderValue<int>   rv_HiggsDecayType(reader, "HiggsDecayType");
@@ -102,6 +107,14 @@ vector<TH1D*> TreeAnalyzer(TTree* tree, //TString selection,
 	TTreeReaderValue<float> rv_jet3_CSV(reader, "jet3_CSV");
 	TTreeReaderValue<float> rv_met(reader, "PFMET");
 	TTreeReaderValue<float> rv_mht(reader, "MHT");
+	TTreeReaderValue<float> rv_npuTrue(reader, "npuTrue");
+	TTreeReaderValue<float> rv_event_weight(reader, "event_weight");
+	TTreeReaderValue<float> rv_PU_weight(reader, "PU_weight");
+	TTreeReaderValue<float> rv_MC_weight(reader, "MC_weight");
+	TTreeReaderValue<float> rv_bTagSF_weight(reader, "bTagSF_weight");
+	TTreeReaderValue<float> rv_leptonSF_weight(reader, "leptonSF_weight");
+	TTreeReaderValue<float> rv_tauSF_weight(reader, "tauSF_weight");
+	TTreeReaderValue<float> rv_triggerSF_weight(reader, "triggerSF_weight");
 
 	//////////////////////////////
 	// define histograms here
@@ -153,9 +166,10 @@ vector<TH1D*> TreeAnalyzer(TTree* tree, //TString selection,
 
 		// for data sample only
 		if (isdata) {
-			std::vector<unsigned long long>  eventid = {static_cast<unsigned long long>(*rv_run), 
-														static_cast<unsigned long long>(*rv_ls), 
-														*rv_nEvent};
+			std::vector<unsigned long long>
+				eventid = {static_cast<unsigned long long>(*rv_run), 
+						   static_cast<unsigned long long>(*rv_ls), 
+						   *rv_nEvent};
 			bool alreadyIncluded = find(eventList.begin(), eventList.end(),
 										eventid) != eventList.end();
 			if (alreadyIncluded)
@@ -166,8 +180,27 @@ vector<TH1D*> TreeAnalyzer(TTree* tree, //TString selection,
 		
 		float weight = *rv_event_weight;
 
+		//////////////////////////////////////////
 		// update weights here if needed
+		if (not isdata) {
+			// update
+			float w_pu = 1.;//sf_helper->Get_PUWeight(*rv_npuTrue);
+			float w_tausf = *rv_tauSF_weight;
+			//sf_helper->Get_TauIDSF(*rv_tau0_pt,*rv_tau0_eta,*rv_isGenMatched);
 
+			// no need to update for now
+			float w_lepsf = *rv_leptonSF_weight;
+			float w_hlt = *rv_triggerSF_weight;
+
+			// non trivil to update on ntuple level
+			// better to get them right in Analyzer
+			float w_mc = *rv_MC_weight;
+			float w_btag = *rv_bTagSF_weight;
+
+			weight = w_btag * w_mc * w_hlt * w_lepsf * w_tausf * w_pu;
+		}
+		//////////////////////////////////////////
+	
 		// before any additional selections
 		TLorentzVector lep0, lep1, tau, bjet;
 
@@ -248,7 +281,7 @@ vector<TH1D*> TreeAnalyzer(TTree* tree, //TString selection,
 		h_mTauTauVis2 -> Fill( (lep1+tau).M(), weight);
 		
 	} // end of event loop
-
+	
 	// push_back histograms into output vector
 	out_hists.push_back(h_tau_pt);
 	out_hists.push_back(h_njet);
