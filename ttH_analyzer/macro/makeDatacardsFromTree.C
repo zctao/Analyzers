@@ -18,15 +18,18 @@
 #include "Cross_Sections.h"
 #include "Misc_Constants.h"
 
+#include "eventSelector.h"
+
 using namespace std;
 
-const float LUMI = 12.9 * 1000.;  // 1/pb
+//const float LUMI = 12.9 * 1000.;  // 1/pb
+const float LUMI = 36.773 * 1000; // 1/pb
 
 vector<TH1D*> getShapesMC(TString, vector<TString>);
 vector<TH1D*> getShapesData(TString, vector<TString>);
 map<TString, TH1D*> setupHistoMap(map<TString, TH1D*>&, TString, bool, TString);
 void fillHistoFromTreeMC(map<TString, TH1D*>&, TTree*);
-void fillHistoFromTreeData(TH1D*, TTree*, vector<vector<int>>&);
+void fillHistoFromTreeData(TH1D*, TTree*, vector<vector<unsigned long long>>&);
 void updateHistoName(pair<const TString, TH1D*>&, TString);
 vector<TH1D*> getClosureTestShapes(TH1D*);
 
@@ -34,7 +37,7 @@ vector<TH1D*> getClosureTestShapes(TH1D*);
 // "", "_gentau", "_faketau", "_"+syts, "_gentau"+"_"+syst, "_faketau"+"_"+syst,
 // "_JESUp", "_JESDown"; jesup jesdown on seperate loop
 
-void makeDatacardsFromTree(TString outfile_suffix = "12_9")
+void makeDatacardsFromTree(TString outfile_suffix = "2016b-h")
 {
 	vector<TString> channels =
 		{"ttH", "TTW", "TTZ", "EWK", "Rares",
@@ -131,6 +134,11 @@ vector<TH1D*> getShapesMC( TString channel, vector<TString> samples)
 	for (const TString & sample : samples) {
 		
 		cout << sample << "\t";
+
+		// set up histograms
+		map<TString,TH1D*> hists = setupHistoMap(sample, true, "");
+		map<TString,TH1D*> hists_jesup = setupHistoMap(sample, false, "_JESUp");
+		map<TString,TH1D*> hists_jesdown = setupHistoMap(sample, false, "_JESDown");
 		
 		// open files
 		TFile* f_central =
@@ -140,27 +148,31 @@ vector<TH1D*> getShapesMC( TString channel, vector<TString> samples)
 		TFile* f_jesdown =
 			new TFile(dir_map.at(sample)+"output_"+sample+"_jesdown.root");
 
-		// Check if files are open
-		if (not f_central->IsOpen())
-			cout << "CANNOT open file " << "output_" << sample << ".root";
-		if (not f_jesup->IsOpen())
-			cout << "CANNOT open file " << "output_" << sample << "_jesup.root";
-		if (not f_jesdown->IsOpen())
-			cout << "CANNOT open file " << "output_" << sample << "_jesdown.root";
-
-		// get trees
-		TTree* tree_central = (TTree*) f_central->Get("ttHtaus/eventTree");
-		TTree* tree_jesup = (TTree*) f_jesup->Get("ttHtaus/eventTree");
-		TTree* tree_jesdown = (TTree*) f_jesdown->Get("ttHtaus/eventTree");
-
-		// set up histograms
-		map<TString,TH1D*> hists = setupHistoMap(sample, true, "");
-		map<TString,TH1D*> hists_jesup = setupHistoMap(sample, false, "_JESUp");
-		map<TString,TH1D*> hists_jesdown = setupHistoMap(sample, false, "_JESDown");
-
-		fillHistoFromTreeMC(hists, tree_central);
-		fillHistoFromTreeMC(hists_jesup, tree_jesup);
-		fillHistoFromTreeMC(hists_jesdown, tree_jesdown);
+		// check if file is open
+		TTree* tree_central;
+		if (f_central->IsOpen()) {
+			// get trees
+			TTree* tree_central = (TTree*) f_central->Get("ttHtaus/eventTree");
+			fillHistoFromTreeMC(hists, tree_central);
+		}
+		else
+			cout << "CANNOT open file " << "output_" << sample << ".root" << endl;
+		
+		if (f_jesup->IsOpen()) {
+			// get trees
+			TTree* tree_jesup = (TTree*) f_jesup->Get("ttHtaus/eventTree");
+			fillHistoFromTreeMC(hists_jesup, tree_jesup);
+		}
+		else
+			cout << "CANNOT open file " << "output_" << sample << "_jesup.root" << endl;
+		
+		if (f_jesdown->IsOpen()) {
+			// get trees
+			TTree* tree_jesdown = (TTree*) f_jesdown->Get("ttHtaus/eventTree");
+			fillHistoFromTreeMC(hists_jesdown, tree_jesdown);
+		}
+		else
+			cout << "CANNOT open file " << "output_" << sample << "_jesdown.root" << endl;
 		
 		// append maps
 		hists.insert(hists_jesup.begin(), hists_jesup.end());
@@ -483,15 +495,17 @@ void fillHistoFromTreeData(TH1D* h, TTree* tree, vector<vector<unsigned long lon
 
 	for (int i = 0; i < nEntries; ++i) {
 		tree->GetEntry(i);
-
+			
 		if (not matchHLTPath) continue;
+		// additional selections
+		// assume the two leptons are same sign
+		if (not passTauCharge((lepCategory?ele0_charge:mu0_charge), tau0_charge))
+			continue;
 		
-		vector<unsigned long long> eventid = {static_cast<unsigned long long>(run), 
-											  static_cast<unsigned long long>(ls), 
-											  event};
+			vector<unsigned long long> eventid = {static_cast<unsigned long long>(run), static_cast<unsigned long long>(ls), event};
 		//assert(run >= 0 and ls >= 0 and event >= 0);
-
-		bool alreadyIncluded =
+		
+		bool alreadyIncluded = 
 			find(eventList.begin(), eventList.end(), eventid) != eventList.end();
 
 		if (not alreadyIncluded) {
@@ -554,9 +568,9 @@ vector<TH1D*> getClosureTestShapes(TH1D* h_nominal)
 	
 	// open file
 	TString era_clos;
-	if (LUMI == 12.9 * 1000)
+	if (data_lumi == "12_9fb/")
 		era_clos = "12.9fb";
-	else if (LUMI == 36.8 * 1000)
+	else if (data_lumi == "36_8fb/")
 		era_clos = "36.8fb";
 	else {
 		cerr << "Closure test file is not available!" << endl;

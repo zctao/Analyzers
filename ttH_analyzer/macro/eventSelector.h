@@ -5,8 +5,10 @@
 
 #include <iostream>
 
-bool passTauCharge(int lepCharge, int tauCharge, TString region="signal")
+bool passTauCharge(int lepCharge, int tauCharge, TString region="signal", bool off = false)
 {
+	if (off) return true;
+	
 	if (region=="signal") {
 		return lepCharge + tauCharge == 0;
 	}

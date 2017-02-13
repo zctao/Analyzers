@@ -209,11 +209,11 @@ _e_2016g
 _e_2016h_v2
 '/SingleElectron/Run2016H-PromptReco-v2/MINIAOD'
 '281207-284035'
-300
+200
 _e_2016h_v3
 '/SingleElectron/Run2016H-PromptReco-v3/MINIAOD'
 '284036-284044'
-300
+200
 --------------------------
 ## SingleMuon
 _mu_2016b
@@ -243,11 +243,11 @@ _mu_2016g
 _mu_2016h_v2
 '/SingleMuon/Run2016H-PromptReco-v2/MINIAOD'
 '281207-284035'
-300
+200
 _mu_2016h_v3
 '/SingleMuon/Run2016H-PromptReco-v3/MINIAOD'
 '284036-284044'
-300
+200
 --------------------------
 ## DoubleEG
 _dieg_2016b
@@ -277,11 +277,11 @@ _dieg_2016g
 _dieg_2016h_v2
 '/DoubleEG/Run2016H-PromptReco-v2/MINIAOD'
 '281207-284035'
-300
+200
 _dieg_2016h_v3
 '/DoubleEG/Run2016H-PromptReco-v3/MINIAOD'
 '284036-284044'
-300
+200
 --------------------------
 ## DoubleMuon
 _dimu_2016b
@@ -311,11 +311,11 @@ _dimu_2016g
 _dimu_2016h_v2
 '/DoubleMuon/Run2016H-PromptReco-v2/MINIAOD'
 '281207-284035'
-300
+200
 _dimu_2016h_v3
 '/DoubleMuon/Run2016H-PromptReco-v3/MINIAOD'
 '284036-284044'
-300
+200
 --------------------------
 ## MuonEG
 _mueg_2016b
@@ -345,11 +345,11 @@ _mueg_2016g
 _mueg_2016h_v2
 '/MuonEG/Run2016H-PromptReco-v2/MINIAOD'
 '281207-284035'
-300
+200
 _mueg_2016h_v3
 '/MuonEG/Run2016H-PromptReco-v3/MINIAOD'
 '284036-284044'
-300
+200
 --------------------------
 ### JSON
 'https://cms-service-dqm.web.cern.ch/cms-service-dqm/CAF/certification/Collisions16/13TeV/ReReco/Final/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt'

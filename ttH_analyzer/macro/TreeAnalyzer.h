@@ -105,8 +105,9 @@ vector<TH1D*> TreeAnalyzer(TTree* tree, //TString selection,
 
 	//////////////////////////////
 	// define histograms here
-	TH1D* h_mass_2l_tau_leadbjet = new TH1D("massLepsTauBjet","",15,0,750);
-
+	//TH1D* h_mass_2l_tau_leadbjet = new TH1D("massLepsTauBjet","",15,0,750);
+	TH1D* h_sum_charges = new TH1D("sum_charges","",7,-3.5,3.5);
+	
 	TH1D* h_njet = new TH1D("njet","",10,2.,12.);
 	TH1D* h_mindr_lep1_jet = new TH1D("mindr_lep1_jet","",12,0.4,4.0);
 	TH1D* h_mindr_lep2_jet = new TH1D("mindr_lep2_jet","",12,0.4,4.0);
@@ -123,7 +124,8 @@ vector<TH1D*> TreeAnalyzer(TTree* tree, //TString selection,
 	TH1D* h_mTauTauVis1 = new TH1D("mTauTauVis1","",15,0.,300.);
 	TH1D* h_mTauTauVis2 = new TH1D("mTauTauVis2","",15,0.,300.);
 	
-	h_mass_2l_tau_leadbjet -> Sumw2();
+	//h_mass_2l_tau_leadbjet -> Sumw2();
+	h_sum_charges -> Sumw2();
 	
 	h_njet -> Sumw2();
 	h_mindr_lep1_jet -> Sumw2();
@@ -164,6 +166,8 @@ vector<TH1D*> TreeAnalyzer(TTree* tree, //TString selection,
 		
 		float weight = *rv_event_weight;
 
+		// update weights here if needed
+
 		// before any additional selections
 		TLorentzVector lep0, lep1, tau, bjet;
 
@@ -199,17 +203,23 @@ vector<TH1D*> TreeAnalyzer(TTree* tree, //TString selection,
 		else if (*rv_jet3_CSV > 0.5426)
 			bjet.SetPtEtaPhiE(*rv_jet3_pt,*rv_jet3_eta,*rv_jet3_phi,*rv_jet3_E);
 
-		h_mass_2l_tau_leadbjet -> Fill((lep0+lep1+tau+bjet).M(),weight);
+		//h_mass_2l_tau_leadbjet -> Fill((lep0+lep1+tau+bjet).M(),weight);
 
-		//////////////////////////////
-		// additional selections
-		// Tau charge requirement
+		// lepton charges
 		int lepCategory = *rv_lepCategory;
 		int ele0_charge = *rv_ele0_charge;
 		int mu0_charge = *rv_mu0_charge;
 		int tau0_charge = *rv_tau0_charge;
+
+		// assume two leptons are same sign
+		int lepCharge = lepCategory?ele0_charge:mu0_charge;
+		h_sum_charges -> Fill( 2*lepCharge + tau0_charge, weight);
 		
-		if (!passTauCharge((lepCategory?ele0_charge:mu0_charge),tau0_charge,"control"))
+		//////////////////////////////
+		// additional selections
+		// Tau charge requirement
+		
+		if (!passTauCharge(lepCharge,tau0_charge,"control"))
 			continue;
 		//////////////////////////////
 		
@@ -240,8 +250,7 @@ vector<TH1D*> TreeAnalyzer(TTree* tree, //TString selection,
 	} // end of event loop
 
 	// push_back histograms into output vector
-	out_hists.push_back(h_mass_2l_tau_leadbjet);
-
+	out_hists.push_back(h_tau_pt);
 	out_hists.push_back(h_njet);
 	out_hists.push_back(h_mindr_lep1_jet);
 	out_hists.push_back(h_mindr_lep2_jet);
@@ -251,12 +260,14 @@ vector<TH1D*> TreeAnalyzer(TTree* tree, //TString selection,
 	out_hists.push_back(h_mT_met_lep1);
 	out_hists.push_back(h_mht);
 	out_hists.push_back(h_dr_leps);
-	out_hists.push_back(h_tau_pt);
 	out_hists.push_back(h_dr_lep1_tau);
 	out_hists.push_back(h_lep1_pt);
 	out_hists.push_back(h_lep2_pt);
 	out_hists.push_back(h_mTauTauVis1);
 	out_hists.push_back(h_mTauTauVis2);
+
+	//out_hists.push_back(h_mass_2l_tau_leadbjet);
+	out_hists.push_back(h_sum_charges);
 
 	return out_hists;
 }
