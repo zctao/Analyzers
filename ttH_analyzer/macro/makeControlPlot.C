@@ -1,3 +1,4 @@
+#include "TROOT.h"
 #include "TFile.h"
 #include "TTree.h"
 #include "TString.h"
@@ -6,12 +7,11 @@
 #include <vector>
 #include <map>
 
+#include "Analyzers/ttH_analyzer/interface/Types_enum.h"
+
 #include "Misc_Constants.h"
 #include "Cross_Sections.h"
 #include "TreeAnalyzer.h"
-#include "Analyzers/ttH_analyzer/interface/Types_enum.h"
-
-using namespace std;
 
 //const float LUMI = 12.9 * 1000; // 1/pb
 const float LUMI = 36.773 * 1000; // 1/pb
@@ -19,6 +19,9 @@ const float LUMI = 36.773 * 1000; // 1/pb
 void makeControlPlot(vector<TString> channels =
 		{"ttH", "TTW", "TTZ", "EWK", "Rares", "fakes_data", "data_obs"})
 {
+	using namespace std;
+
+	gROOT->ProcessLine(".L ../src/NtupleSFHelper.cc+");
 
 	map<TString, vector<TH1D*>> histsCollection;
 	
@@ -28,9 +31,9 @@ void makeControlPlot(vector<TString> channels =
 
 		bool isdata = channel.Contains("data");
 		vector<vector<unsigned long long>> eventList;
-		
+
 		// analysis and selection type
-		analysis_types AnaType = analysis_types::Analyze_2lss1tau;
+		Analysis_types AnaType = Analysis_types::Analyze_2lss1tau;
 		Selection_types SelType = Selection_types::Signal_2lss1tau;
 		if (channel.Contains("fakes"))
 			SelType = Selection_types::Control_1lfakeable;

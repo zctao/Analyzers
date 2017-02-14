@@ -5,7 +5,7 @@
  * enum for analysis type.
  */
 
-enum analysis_types {
+enum Analysis_types {
 	Analyze_lepton_jet,
 	Analyze_dilepton,
 	Analyze_1l2tau,
