@@ -3,13 +3,15 @@
 .fuse_*
 *#*#
 *.root
+!ttH_analyzer/data/*.root
+!ttH_analyzer/data/*/*.root
 crabConfig*.py
 ttH_analyzer/test/crab/
 crab.log
 
 *.pdf
-*_C.d
-*_C.so
+*.d
+*.so
 *.pcm
 
 *.txt

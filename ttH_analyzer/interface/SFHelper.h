@@ -85,25 +85,26 @@ class SFHelper
 	TH1F *h_puweight;
 	
 	// Lepton ID scale factor lookup tables
-	TFile* file_recoToLoose_leptonSF_mu1_b;
-	TFile* file_recoToLoose_leptonSF_mu1_e;
+	TFile* file_recoToLoose_leptonSF_mu1;
 	TFile* file_recoToLoose_leptonSF_mu2;
 	TFile* file_recoToLoose_leptonSF_mu3;
+	TFile* file_recoToLoose_leptonSF_mu4;
+	TH2F *h_recoToLoose_leptonSF_mu1;
+	TH2F *h_recoToLoose_leptonSF_mu2;
+	TH2F *h_recoToLoose_leptonSF_mu3;
+	TGraphAsymmErrors *h_recoToLoose_leptonSF_mu4;
+	
 	TFile* file_recoToLoose_leptonSF_el;
 	TFile* file_recoToLoose_leptonSF_gsf;
-	TFile* file_looseToTight_leptonSF_mu_2lss;
-	TFile* file_looseToTight_leptonSF_el_2lss;
-	TFile* file_looseToTight_leptonSF_mu_3l;
-	TFile* file_looseToTight_leptonSF_el_3l;
-
-	TGraphAsymmErrors *h_recoToLoose_leptonSF_mu1_b;
-	TGraphAsymmErrors *h_recoToLoose_leptonSF_mu1_e;
-	TH2F *h_recoToLoose_leptonSF_mu2;
-	TGraphAsymmErrors *h_recoToLoose_leptonSF_mu3;
 	TH2F *h_recoToLoose_leptonSF_el1;
 	TH2F *h_recoToLoose_leptonSF_el2;
 	TH2F *h_recoToLoose_leptonSF_el3;
 	TH2F *h_recoToLoose_leptonSF_gsf;
+	
+	TFile* file_looseToTight_leptonSF_mu_2lss;
+	TFile* file_looseToTight_leptonSF_el_2lss;
+	TFile* file_looseToTight_leptonSF_mu_3l;
+	TFile* file_looseToTight_leptonSF_el_3l;
 	TH2F *h_looseToTight_leptonSF_mu_2lss;
 	TH2F *h_looseToTight_leptonSF_el_2lss;
 	TH2F *h_looseToTight_leptonSF_mu_3l;
