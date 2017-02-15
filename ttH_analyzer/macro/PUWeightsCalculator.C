@@ -41,6 +41,9 @@ void PUWeightsCalculator(TString fname_data_pu = "../data/MyDataPileupHistogram.
 	delete f_data;
 
 	// normalize
+	double mc_scale = 1./ h_mc_pileup -> Integral();
+	h_mc_pileup->Scale(mc_scale);
+
 	double data_scale = 1./ h_data_pileup -> Integral();
 	h_data_pileup->Scale(data_scale);
 
@@ -49,7 +52,7 @@ void PUWeightsCalculator(TString fname_data_pu = "../data/MyDataPileupHistogram.
 	int nbins = h_mc_pileup -> GetNbinsX();
 	assert(h_data_pileup->GetNbinsX()==nbins);
 
-	TH1D* h_ratio_data_mc = new TH1D("h_ratio_data_MC","",nbins,0,nbins);
+	TH1D* h_ratio_data_mc = new TH1D("h_ratio_data_mc","",nbins,0,nbins);
 
 	for (int i = 0; i < nbins; ++i) {
 		double puData = h_data_pileup->GetBinContent(i);
@@ -58,7 +61,8 @@ void PUWeightsCalculator(TString fname_data_pu = "../data/MyDataPileupHistogram.
 
 		h_ratio_data_mc -> SetBinContent(i, weight);
 	}
-		
+	
+	
 	h_mc_pileup -> Write();
 	h_data_pileup -> Write();
 	h_ratio_data_mc -> Write();
