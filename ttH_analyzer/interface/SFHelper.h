@@ -24,7 +24,7 @@ class SFHelper
 {
  public:
 	// constructor and destructor
-	SFHelper(analysis_types, Selection_types, bool);
+	SFHelper(Analysis_types, Selection_types, bool);
 	~SFHelper();
 
 	// member functions
@@ -56,7 +56,7 @@ class SFHelper
  private:
 
 	bool _isdata;
-	analysis_types _analysis;
+	Analysis_types _analysis;
 	Selection_types _selection;
 
 	//float _hlt_sf;      // trigger scale factor

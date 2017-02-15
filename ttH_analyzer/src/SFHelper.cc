@@ -4,7 +4,7 @@
 #include "Analyzers/ttH_analyzer/interface/SFHelper.h"
 
 // constructor
-SFHelper::SFHelper(analysis_types analysis, Selection_types selection, bool isdata)
+SFHelper::SFHelper(Analysis_types analysis, Selection_types selection, bool isdata)
 {
 	_analysis = analysis;
 	_selection = selection;

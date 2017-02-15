@@ -18,7 +18,7 @@
 
 vector<TH1D*> TreeAnalyzer(TTree* tree, bool isdata,
 						   vector<vector<unsigned long long>>& eventList,
-						   analysis_types AnaType, Selection_types SelType)
+						   Analysis_types AnaType, Selection_types SelType)
 {
 	std::vector<TH1D*> out_hists;
 	
