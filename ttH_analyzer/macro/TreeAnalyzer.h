@@ -9,8 +9,8 @@
 
 #include "DataFormats/Math/interface/deltaR.h"
 
-#include "Analyzers/ttH_analyzer/interface/NtupleSFHelper.h"
 #include "Analyzers/ttH_analyzer/interface/Types_enum.h"
+//#include "Analyzers/ttH_analyzer/interface/SFHelper.h"
 #include "eventSelector.h"
 
 #include <vector>
@@ -18,15 +18,14 @@
 
 vector<TH1D*> TreeAnalyzer(TTree* tree, bool isdata,
 						   vector<vector<unsigned long long>>& eventList,
-						   Analysis_types AnaType,
-						   Selection_types SelType)
+						   analysis_types AnaType, Selection_types SelType)
 {
 	std::vector<TH1D*> out_hists;
 	
 	TTreeReader reader(tree);
 
 	// SF Helper
-	NtupleSFHelper* sf_helper = new NtupleSFHelper(AnaType, SelType, isdata);
+	//SFHelper *sf_helper = new SFHelper(AnaType, SelType, isdata);
 
 	TTreeReaderValue<int>   rv_run(reader, "run");
 	TTreeReaderValue<int>   rv_ls(reader, "ls");
@@ -183,12 +182,11 @@ vector<TH1D*> TreeAnalyzer(TTree* tree, bool isdata,
 
 		//////////////////////////////////////////
 		// update weights here if needed
-		
 		if (not isdata) {
 			// update
-			float w_pu = sf_helper->Get_PUWeight(*rv_npuTrue);
-			float w_tausf =
-				sf_helper->Get_TauIDSF(*rv_tau0_pt,*rv_tau0_eta,*rv_isGenMatched);
+			float w_pu = 1.;//sf_helper->Get_PUWeight(*rv_npuTrue);
+			float w_tausf = *rv_tauSF_weight;
+			//sf_helper->Get_TauIDSF(*rv_tau0_pt,*rv_tau0_eta,*rv_isGenMatched);
 
 			// no need to update for now
 			float w_lepsf = *rv_leptonSF_weight;
@@ -201,7 +199,6 @@ vector<TH1D*> TreeAnalyzer(TTree* tree, bool isdata,
 
 			weight = w_btag * w_mc * w_hlt * w_lepsf * w_tausf * w_pu;
 		}
-		
 		//////////////////////////////////////////
 	
 		// before any additional selections
