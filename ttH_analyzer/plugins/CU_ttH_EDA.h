@@ -202,7 +202,7 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	*/
 
 	// Analysis type
-	Analysis_types analysis_type;
+	analysis_types analysis_type;
 	std::string config_analysis_type;
 	
 	// flag for sync ntuple
