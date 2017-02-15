@@ -1,14 +1,15 @@
 #ifndef SFHelper_h
 #define SFHelper_h
 
+#if !defined(__ACLIC__) && !defined(__ROOTCLING__)
 #include "DataFormats/PatCandidates/interface/Tau.h"
 #include "DataFormats/PatCandidates/interface/Jet.h"
-/// BTag Calibration
 #include "CondFormats/BTauObjects/interface/BTagCalibration.h"
 #include "CondTools/BTau/interface/BTagCalibrationReader.h"
+#include "Analyzers/ttH_analyzer/interface/miniLepton.h"
+#endif
 
 #include "Analyzers/ttH_analyzer/interface/Types_enum.h"
-#include "Analyzers/ttH_analyzer/interface/miniLepton.h"
 // Root
 #include "TFile.h"
 #include "TH1.h"
@@ -17,6 +18,7 @@
 #include "TGraphAsymmErrors.h"
 
 #include <iostream>
+#include <assert.h>
 
 class SFHelper
 {
@@ -27,21 +29,24 @@ class SFHelper
 
 	// member functions
 	float Get_HLTSF(int);
-	float Get_LeptonIDSF(const miniLepton&);
-	float Get_LeptonIDSF(float,float,bool,bool,bool);
-	float Get_EvtCSVWeight(std::vector<pat::Jet> &, const std::string &);
-	float Get_PUWeight(int);
-	float Get_TauIDSF(const pat::Tau&, bool);
+	float Get_LeptonIDSF(float,float,bool,bool,bool);	
+	float Get_PUWeight(int);	
 	float Get_TauIDSF(float,float,bool);
 	//float Get_MCWeight();
-	float Get_FakeRate(const miniLepton&);
 	float Get_FakeRate(float,float,bool,bool); // for ele or mu
-	float Get_FakeRate(const pat::Tau&);
 	float Get_FakeRate(float,float);  // for tau
 	//float Get_ChargeFlipWeight();
-	float Get_EleChargeMisIDProb(const miniLepton&, int);
 	float Get_EleChargeMisIDProb(float,float,int,int);
-
+	
+#if !defined(__ACLIC__) && !defined(__ROOTCLING__)
+	float Get_LeptonIDSF(const miniLepton&);
+	float Get_EvtCSVWeight(std::vector<pat::Jet> &, const std::string &);
+	float Get_TauIDSF(const pat::Tau&, bool);
+	float Get_FakeRate(const miniLepton&);
+	float Get_FakeRate(const pat::Tau&);
+	float Get_EleChargeMisIDProb(const miniLepton&, int);
+#endif
+		
 	// utilities
 	float read2DHist(TH2*, float, float);
 	float evalTGraph(TGraphAsymmErrors*, float);
@@ -107,35 +112,40 @@ class SFHelper
 	// Electron Charge MisID
 	TFile *file_eleMisCharge;
 	TH2F *h_chargeMisId;
-
+	
 	// CSV
+#if !defined(__ACLIC__) && !defined(__ROOTCLING__)
 	BTagCalibrationReader* BTagCaliReader;
 	//std::string Btag_sysList[16] =
 	//	{"LFUp","LFDown","HFUp","HFDown",
 	//	 "HFStats1Up","HFStats1Down","HFStats2Up","HFStats2Down",
 	//	 "LFStats1Up","LFStats1Down","LFStats2Up","LFStats2Down",
 	//	 "cErr1Up","cErr1Down","cErr2Up","cErr2Down"};
-
+	void Set_up_BTagCalibration_Readers();
+	void Delete_BTagCalibration_Readers();
+#endif
+	
 	void Set_up_FakeRate_Lut();
 	void Set_up_TauSF_Lut();
 	void Set_up_ChargeMisID_Lut();
 	void Set_up_PUWeight_hist();
 	void Set_up_LeptonSF_Lut();
-	void Set_up_BTagCalibration_Readers();
 
 	void Delete_FakeRate_Lut();
 	void Delete_TauSF_Lut();
 	void Delete_ChargeMisID_Lut();
 	void Delete_PUWeight_hist();
 	void Delete_LeptonSF_Lut();
-	void Delete_BTagCalibration_Readers();
 
-	float Get_LeptonSF_loose(const miniLepton&);
+
 	float Get_LeptonSF_loose(float,float,bool,bool);
-	float Get_LeptonSF_tight_vs_loose(const miniLepton&);
 	float Get_LeptonSF_tight_vs_loose(float,float,bool,bool);
+#if !defined(__ACLIC__) && !defined(__ROOTCLING__)
+	float Get_LeptonSF_loose(const miniLepton&);
+	float Get_LeptonSF_tight_vs_loose(const miniLepton&);
 	float Get_JetCSVWeight(pat::Jet&, std::string);
-
+#endif
+	
 };
 
 #endif
