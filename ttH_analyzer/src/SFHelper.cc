@@ -14,7 +14,9 @@ SFHelper::SFHelper(analysis_types analysis, Selection_types selection, bool isda
 		Set_up_TauSF_Lut();
 		Set_up_PUWeight_hist();
 		Set_up_LeptonSF_Lut();
-		Set_up_BTagCalibration_Readers();		
+#if !defined(__ACLIC__) && !defined(__ROOTCLING__)
+		Set_up_BTagCalibration_Readers();
+#endif
 	}
 
 	if (_selection == Control_1lfakeable) {
@@ -32,7 +34,9 @@ SFHelper::~SFHelper()
 		Delete_TauSF_Lut();
 		Delete_PUWeight_hist();
 		Delete_LeptonSF_Lut();
+#if !defined(__ACLIC__) && !defined(__ROOTCLING__)
 		Delete_BTagCalibration_Readers();
+#endif
 	}
 
 	if (_selection == Control_1lfakeable) {
@@ -44,6 +48,7 @@ SFHelper::~SFHelper()
 	}
 }
 
+#if !defined(__ACLIC__) && !defined(__ROOTCLING__)
 void SFHelper::Set_up_BTagCalibration_Readers()
 {
 	const std::string base =
@@ -64,6 +69,7 @@ void SFHelper::Set_up_BTagCalibration_Readers()
 	BTagCaliReader->load(calib_csvv2,BTagEntry::FLAV_C,"iterativefit");
 	BTagCaliReader->load(calib_csvv2,BTagEntry::FLAV_UDSG,"iterativefit");
 }
+#endif
 
 void SFHelper::Set_up_TauSF_Lut()
 {
@@ -209,11 +215,12 @@ void SFHelper::Delete_LeptonSF_Lut()
 	}
 }
 
+#if !defined(__ACLIC__) && !defined(__ROOTCLING__)
 void SFHelper::Delete_BTagCalibration_Readers()
 {
 	delete BTagCaliReader;
 }
-
+#endif
 float SFHelper::Get_HLTSF(int lepCategory)
 {
 	// lepCategory: 0=mumu; 1=ee; 2=emu
@@ -229,6 +236,7 @@ float SFHelper::Get_HLTSF(int lepCategory)
 	return 0.;
 }
 
+#if !defined(__ACLIC__) && !defined(__ROOTCLING__)
 float SFHelper::Get_LeptonIDSF(const miniLepton& lepton)
 {
 	assert(not _isdata);
@@ -243,6 +251,7 @@ float SFHelper::Get_LeptonIDSF(const miniLepton& lepton)
 
 	return sf;
 }
+#endif
 float SFHelper::Get_LeptonIDSF(float lepPt, float lepEta, bool isEle, bool isMu,
 							   bool isTight)
 {
@@ -256,13 +265,14 @@ float SFHelper::Get_LeptonIDSF(float lepPt, float lepEta, bool isEle, bool isMu,
 
 	return sf;
 }
-
+#if !defined(__ACLIC__) && !defined(__ROOTCLING__)
 float SFHelper::Get_LeptonSF_loose(const miniLepton& lepton)
 {
 	return Get_LeptonSF_loose(lepton.pt(), lepton.eta(),
 							  lepton.Type()==LeptonType::kele,
 							  lepton.Type()==LeptonType::kmu);
 }
+#endif
 float SFHelper::Get_LeptonSF_loose(float lepPt, float lepEta,
 								   bool isEle, bool isMu)
 {
@@ -295,6 +305,7 @@ float SFHelper::Get_LeptonSF_loose(float lepPt, float lepEta,
 	return sf;
 }
 
+#if !defined(__ACLIC__) && !defined(__ROOTCLING__)
 float SFHelper::Get_LeptonSF_tight_vs_loose(const miniLepton& lepton)
 {
 	assert(lepton.passTightSel());
@@ -303,6 +314,7 @@ float SFHelper::Get_LeptonSF_tight_vs_loose(const miniLepton& lepton)
 									   lepton.Type()==LeptonType::kele,
 									   lepton.Type()==LeptonType::kmu);
 }
+#endif
 float SFHelper::Get_LeptonSF_tight_vs_loose(float lepPt, float lepEta,
 											bool isEle, bool isMu)
 {
@@ -332,6 +344,7 @@ float SFHelper::Get_LeptonSF_tight_vs_loose(float lepPt, float lepEta,
 	return sf;
 }
 
+#if !defined(__ACLIC__) && !defined(__ROOTCLING__)
 float SFHelper::Get_EvtCSVWeight(std::vector<pat::Jet>& jets,
 								 const std::string& sys)
 {
@@ -407,6 +420,7 @@ float SFHelper::Get_JetCSVWeight(pat::Jet& jet, std::string sys/*pass by copy*/)
 
 	return weight_jet;
 }
+#endif
 
 float SFHelper::Get_PUWeight(int nPU)
 {
@@ -416,10 +430,12 @@ float SFHelper::Get_PUWeight(int nPU)
 	return h_puweight->GetBinContent(xbin);
 }
 
+#if !defined(__ACLIC__) && !defined(__ROOTCLING__)
 float SFHelper::Get_TauIDSF(const pat::Tau& tau, bool isGenMatched)
 {
 	return Get_TauIDSF(tau.pt(), tau.eta(), isGenMatched);
 }
+#endif
 float SFHelper::Get_TauIDSF(float tauPt, float tauEta, bool isGenMatched)
 {
 	assert(not _isdata);
@@ -439,6 +455,7 @@ float SFHelper::Get_TauIDSF(float tauPt, float tauEta, bool isGenMatched)
 	return 0.;
 	}*/
 
+#if !defined(__ACLIC__) && !defined(__ROOTCLING__)
 float SFHelper::Get_FakeRate(const miniLepton& lepton)
 {
 	bool isEle = lepton.Type() == LeptonType::kele;
@@ -446,6 +463,7 @@ float SFHelper::Get_FakeRate(const miniLepton& lepton)
 
 	return Get_FakeRate(lepton.conePt(), lepton.eta(), isEle, isMu);
 }
+#endif
 float SFHelper::Get_FakeRate(float lepConePt, float lepEta,
 							 bool isEle, bool isMuon)
 {
@@ -461,10 +479,12 @@ float SFHelper::Get_FakeRate(float lepConePt, float lepEta,
 	return fakerate;
 }
 
+#if !defined(__ACLIC__) && !defined(__ROOTCLING__)
 float SFHelper::Get_FakeRate(const pat::Tau& tau)
 {
 	return Get_FakeRate(tau.pt(),tau.eta());
 }
+#endif
 float SFHelper::Get_FakeRate(float tauPt, float tauEta)
 {
 	float fr_mc = 0;
@@ -487,6 +507,7 @@ float SFHelper::Get_FakeRate(float tauPt, float tauEta)
 
 }*/
 
+#if !defined(__ACLIC__) && !defined(__ROOTCLING__)
 float SFHelper::Get_EleChargeMisIDProb(const miniLepton& lepton, int tauCharge)
 {
 	// muon
@@ -498,6 +519,7 @@ float SFHelper::Get_EleChargeMisIDProb(const miniLepton& lepton, int tauCharge)
 	return Get_EleChargeMisIDProb(lepton.pt(), lepton.eta(),
 								  lepton.charge(), tauCharge);
 }
+#endif
 float SFHelper::Get_EleChargeMisIDProb(float elePt, float eleEta,
 									   int eleCharge, int tauCharge)
 {	
