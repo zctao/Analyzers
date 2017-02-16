@@ -135,12 +135,12 @@ vector<TH1D*> TreeAnalyzer(TTree* tree, bool isdata,
 	TH1D* h_mht = new TH1D("mht","",10,0.,500.);
 	TH1D* h_dr_leps = new TH1D("dr_leps","",10,0.,4.0);
 	TH1D* h_tau_pt = new TH1D("tau_pt","",11,20.,130.);
-	TH1D* h_tau_eta = new TH1D("tau_eta","", 7, 0.,2.8);
+	TH1D* h_tau_eta = new TH1D("tau_eta","", 8,-2.4,2.4);
 	TH1D* h_dr_lep1_tau = new TH1D("dr_lep1_tau","",10,0.,4.0);
 	TH1D* h_lep1_pt = new TH1D("lep1_pt","",11,25.,300.);
-	TH1D* h_lep1_eta = new TH1D("lep1_eta","",7,0.,2.8);
+	TH1D* h_lep1_eta = new TH1D("lep1_eta","",8,-2.4,2.4);
 	TH1D* h_lep2_pt = new TH1D("lep2_pt","",10,10.,210.);
-	TH1D* h_lep2_eta = new TH1D("lep2_eta","",7,0.,2.8);
+	TH1D* h_lep2_eta = new TH1D("lep2_eta","",8,-2.4,2.4);
 	TH1D* h_mTauTauVis1 = new TH1D("mTauTauVis1","",15,0.,300.);
 	TH1D* h_mTauTauVis2 = new TH1D("mTauTauVis2","",15,0.,300.);
 	

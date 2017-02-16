@@ -73,6 +73,7 @@ void HistoStackDrawer(TString);
 
 std::map<TString, TString> properTitle = {
 	{"tau_pt","#tau_{h} p_{T} [GeV]"},
+	{"tau_eta","#tau_{h} #eta"},
 	{"njet", "N(jet, p_{T}>25 GeV)"},
 	{"mindr_lep1_jet","mindr_lep1_jet"},
 	{"mindr_lep2_jet","mindr_lep2_jet"},
@@ -84,7 +85,9 @@ std::map<TString, TString> properTitle = {
 	{"dr_leps","dR(l_{1},l_{2})"},
 	{"dr_lep1_tau","dR(l_{ldg},#tau)"},
 	{"lep1_pt","Leading lepton p_{T} [GeV]"},
+	{"lep1_eta","Leading lepton #eta"},
 	{"lep2_pt","Subleading lepton p_{T} [GeV]"},
+	{"lep2_eta", "Subleading lepton #eta"},
 	{"mTauTauVis1","m^{vis}_{#tau l_{1}}"},
 	{"mTauTauVis2","m^{vis}_{#tau l_{2}}"},
 	{"sum_charges","Sum of charge"}
