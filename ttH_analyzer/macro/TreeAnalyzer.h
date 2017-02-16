@@ -51,6 +51,7 @@ vector<TH1D*> TreeAnalyzer(TTree* tree, bool isdata,
 	TTreeReaderValue<float> rv_mu0_E(reader, "mu0_E");
 	TTreeReaderValue<float> rv_mu0_dxy(reader, "mu0_dxy");
 	TTreeReaderValue<float> rv_mu0_dz(reader, "mu0_dz");
+	TTreeReaderValue<int>   rv_mu0_ismvasel(reader, "mu0_ismvasel");
 	TTreeReaderValue<int>   rv_mu0_charge(reader, "mu0_charge");
 	TTreeReaderValue<float> rv_mu1_pt(reader, "mu1_pt");
 	TTreeReaderValue<float> rv_mu1_conept(reader, "mu1_conept");
@@ -59,6 +60,7 @@ vector<TH1D*> TreeAnalyzer(TTree* tree, bool isdata,
 	TTreeReaderValue<float> rv_mu1_E(reader, "mu1_E");
 	TTreeReaderValue<float> rv_mu1_dxy(reader, "mu1_dxy");
 	TTreeReaderValue<float> rv_mu1_dz(reader, "mu1_dz");
+	TTreeReaderValue<int>   rv_mu1_ismvasel(reader, "mu1_ismvasel");
 	TTreeReaderValue<int>   rv_mu1_charge(reader, "mu1_charge");
 	TTreeReaderValue<float> rv_ele0_pt(reader, "ele0_pt");
 	TTreeReaderValue<float> rv_ele0_conept(reader, "ele0_conept");
@@ -67,6 +69,7 @@ vector<TH1D*> TreeAnalyzer(TTree* tree, bool isdata,
 	TTreeReaderValue<float> rv_ele0_E(reader, "ele0_E");
 	TTreeReaderValue<float> rv_ele0_dxy(reader, "ele0_dxy");
 	TTreeReaderValue<float> rv_ele0_dz(reader, "ele0_dz");
+	TTreeReaderValue<int>   rv_ele0_ismvasel(reader, "ele0_ismvasel");
 	TTreeReaderValue<int>   rv_ele0_charge(reader, "ele0_charge");
 	TTreeReaderValue<float> rv_ele1_pt(reader, "ele1_pt");
 	TTreeReaderValue<float> rv_ele1_conept(reader, "ele1_conept");
@@ -75,6 +78,7 @@ vector<TH1D*> TreeAnalyzer(TTree* tree, bool isdata,
 	TTreeReaderValue<float> rv_ele1_E(reader, "ele1_E");
 	TTreeReaderValue<float> rv_ele1_dxy(reader, "ele1_dxy");
 	TTreeReaderValue<float> rv_ele1_dz(reader, "ele1_dz");
+	TTreeReaderValue<int>   rv_ele1_ismvasel(reader, "ele1_ismvasel");
 	TTreeReaderValue<int>   rv_ele1_charge(reader, "ele1_charge");
 	TTreeReaderValue<float> rv_tau0_pt(reader, "tau0_pt");
 	TTreeReaderValue<float> rv_tau0_eta(reader, "tau0_eta");
@@ -177,9 +181,58 @@ vector<TH1D*> TreeAnalyzer(TTree* tree, bool isdata,
 			else
 				eventList.push_back(eventid);  // update event list				
 		}
-		
-		float weight = *rv_event_weight;
 
+		// lepton flavor category
+		int lepCategory = *rv_lepCategory;
+		
+		// before any additional selections
+		TLorentzVector lep0, lep1;
+		int lep0_id = 0;
+		int lep1_id = 0;
+		bool lep0_istight = false;
+		bool lep1_istight = false;
+
+		if (lepCategory == 0) {// mumu
+		    lep0.SetPtEtaPhiE(*rv_mu0_pt,*rv_mu0_eta,*rv_mu0_phi,*rv_mu0_E);
+			lep1.SetPtEtaPhiE(*rv_mu1_pt,*rv_mu1_eta,*rv_mu1_phi,*rv_mu1_E);
+			lep0_id = 13;
+			lep1_id = 13;
+			lep0_istight = *rv_mu0_ismvasel;
+			lep1_istight = *rv_mu1_ismvasel;
+		}
+		else if (lepCategory == 1) {// ee
+			lep0.SetPtEtaPhiE(*rv_ele0_pt,*rv_ele0_eta,*rv_ele0_phi,*rv_ele0_E);
+			lep1.SetPtEtaPhiE(*rv_ele1_pt,*rv_ele1_eta,*rv_ele1_phi,*rv_ele1_E);
+			lep0_id = 11;
+			lep1_id = 11;
+			lep0_istight = *rv_ele0_ismvasel;
+			lep1_istight = *rv_ele1_ismvasel;
+		}
+		else if (lepCategory == 2) {// emu
+			if (*rv_ele0_pt > *rv_mu0_pt) {
+				lep0.SetPtEtaPhiE(*rv_ele0_pt,*rv_ele0_eta,*rv_ele0_phi,*rv_ele0_E);
+				lep1.SetPtEtaPhiE(*rv_mu0_pt,*rv_mu0_eta,*rv_mu0_phi,*rv_mu0_E);
+				lep0_id = 11;
+				lep1_id = 13;
+				lep0_istight = *rv_ele0_ismvasel;
+				lep1_istight = *rv_mu0_ismvasel;
+			}
+			else {
+				lep0.SetPtEtaPhiE(*rv_mu0_pt,*rv_mu0_eta,*rv_mu0_phi,*rv_mu0_E);
+				lep1.SetPtEtaPhiE(*rv_ele0_pt,*rv_ele0_eta,*rv_ele0_phi,*rv_ele0_E);
+				lep0_id = 13;
+				lep1_id = 11;
+				lep0_istight = *rv_mu0_ismvasel;
+				lep1_istight = *rv_ele0_ismvasel;
+			}
+		}
+		else
+			assert(0);
+
+		TLorentzVector tau;
+		tau.SetPtEtaPhiE(*rv_tau0_pt,*rv_tau0_eta,*rv_tau0_phi,*rv_tau0_E);
+
+		float weight = *rv_event_weight;
 		//////////////////////////////////////////
 		// update weights here if needed
 		if (not isdata) {
@@ -188,11 +241,16 @@ vector<TH1D*> TreeAnalyzer(TTree* tree, bool isdata,
 			float w_tausf = //*rv_tauSF_weight;
 				sf_helper->Get_TauIDSF(*rv_tau0_pt,*rv_tau0_eta,*rv_isGenMatched);
 
-			// no need to update for now
-			float w_lepsf = *rv_leptonSF_weight;
-			float w_hlt = *rv_triggerSF_weight;
+			float w_lepsf = //*rv_leptonSF_weight;
+				sf_helper->Get_LeptonIDSF(lep0.Pt(),lep0.Eta(),(lep0_id==11),
+										(lep1_id==13), lep0_istight);
+			w_lepsf *=
+				sf_helper->Get_LeptonIDSF(lep1.Pt(),lep1.Eta(),(lep1_id==11),
+										  (lep1_id==13), lep1_istight);
+			
+			float w_hlt = sf_helper->Get_HLTSF(lepCategory);
 
-			// non trivil to update on ntuple level
+			// non trivil to update with current ntuple
 			// better to get them right in Analyzer
 			float w_mc = *rv_MC_weight;
 			float w_btag = *rv_bTagSF_weight;
@@ -200,46 +258,10 @@ vector<TH1D*> TreeAnalyzer(TTree* tree, bool isdata,
 			weight = w_btag * w_mc * w_hlt * w_lepsf * w_tausf * w_pu;
 		}
 		//////////////////////////////////////////
-	
-		// before any additional selections
-		TLorentzVector lep0, lep1, tau, bjet;
-
-		if (*rv_lepCategory == 0) {// mumu
-		    lep0.SetPtEtaPhiE(*rv_mu0_pt,*rv_mu0_eta,*rv_mu0_phi,*rv_mu0_E);
-			lep1.SetPtEtaPhiE(*rv_mu1_pt,*rv_mu1_eta,*rv_mu1_phi,*rv_mu1_E);
-		}
-		else if (*rv_lepCategory == 1) {// ee
-			lep0.SetPtEtaPhiE(*rv_ele0_pt,*rv_ele0_eta,*rv_ele0_phi,*rv_ele0_E);
-			lep1.SetPtEtaPhiE(*rv_ele1_pt,*rv_ele1_eta,*rv_ele1_phi,*rv_ele1_E);
-		}
-		else if (*rv_lepCategory == 2) {// emu
-			if (*rv_ele0_pt > *rv_mu0_pt) {
-				lep0.SetPtEtaPhiE(*rv_ele0_pt,*rv_ele0_eta,*rv_ele0_phi,*rv_ele0_E);
-				lep1.SetPtEtaPhiE(*rv_mu0_pt,*rv_mu0_eta,*rv_mu0_phi,*rv_mu0_E);
-			}
-			else {
-				lep0.SetPtEtaPhiE(*rv_mu0_pt,*rv_mu0_eta,*rv_mu0_phi,*rv_mu0_E);
-				lep1.SetPtEtaPhiE(*rv_ele0_pt,*rv_ele0_eta,*rv_ele0_phi,*rv_ele0_E);
-			}
-		}
-		else
-			assert(0);
-
-		tau.SetPtEtaPhiE(*rv_tau0_pt,*rv_tau0_eta,*rv_tau0_phi,*rv_tau0_E);
-
-		if (*rv_jet0_CSV > 0.5426)
-			bjet.SetPtEtaPhiE(*rv_jet0_pt,*rv_jet0_eta,*rv_jet0_phi,*rv_jet0_E);
-		else if (*rv_jet1_CSV > 0.5426)
-			bjet.SetPtEtaPhiE(*rv_jet1_pt,*rv_jet1_eta,*rv_jet1_phi,*rv_jet1_E);
-		else if (*rv_jet2_CSV > 0.5426)
-			bjet.SetPtEtaPhiE(*rv_jet2_pt,*rv_jet2_eta,*rv_jet2_phi,*rv_jet2_E);
-		else if (*rv_jet3_CSV > 0.5426)
-			bjet.SetPtEtaPhiE(*rv_jet3_pt,*rv_jet3_eta,*rv_jet3_phi,*rv_jet3_E);
-
+		
 		//h_mass_2l_tau_leadbjet -> Fill((lep0+lep1+tau+bjet).M(),weight);
 
 		// lepton charges
-		int lepCategory = *rv_lepCategory;
 		int ele0_charge = *rv_ele0_charge;
 		int mu0_charge = *rv_mu0_charge;
 		int tau0_charge = *rv_tau0_charge;

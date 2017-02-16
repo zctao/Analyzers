@@ -73,9 +73,13 @@ void makeControlPlot(vector<TString> channels =
 			// print out sample yields and number of entries
 			assert(hists.size()>0 and string(hists.at(0)->GetName())==string("tau_pt"));
 			int nentries = hists.at(0)->GetEntries();
-			float yields = hists.at(0)->Integral();
-			std::cout << sample << "  yields: " << yields << " nEntries: "
-					  << nentries << std::endl;
+			int nbins = hists.at(0)->GetNbinsX();
+			double error = 0.;
+			double yields = hists.at(0)->IntegralAndError(1,nbins,error);
+			assert(yields == hists.at(0)->Integral());
+			
+			std::cout << sample << "  yields: " << yields << " +/- " << error
+					  << "  nEntries: " << nentries << std::endl;
 			
 			// Add histograms to the channel collection
 			int ih = 0;
@@ -96,10 +100,12 @@ void makeControlPlot(vector<TString> channels =
 		// print out channel yields and number of entries
 		assert(vhists.size()>0 and string(vhists.at(0)->GetName())==string("tau_pt"));
 		int chNentries = vhists.at(0)->GetEntries();
-		float chYields = vhists.at(0)->Integral();
+		int chNbins = vhists.at(0)->GetNbinsX();
+		double chError = 0.;
+		double chYields = vhists.at(0)->IntegralAndError(1,chNbins,chError);
 		std::cout << "- - - - - - - - - - - - - - - - - - - - " << std::endl;
-		std::cout << channel << "  yields:" << chYields << " nEntries: "
-				  << chNentries << std::endl;
+		std::cout << channel << "  yields:" << chYields << " +/- " << chError
+				  << "  nEntries: " << chNentries << std::endl;
 		std::cout << "----------------------------------------" << std::endl;
 		
 	} // end of channel loop
