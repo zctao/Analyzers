@@ -88,8 +88,8 @@ std::map<TString, TString> properTitle = {
 	{"lep1_eta","Leading lepton #eta"},
 	{"lep2_pt","Subleading lepton p_{T} [GeV]"},
 	{"lep2_eta", "Subleading lepton #eta"},
-	{"mTauTauVis1","m^{vis}_{#tau l_{1}}"},
-	{"mTauTauVis2","m^{vis}_{#tau l_{2}}"},
+	{"mTauTauVis1","m^{vis}_{#tau,l_{1}}"},
+	{"mTauTauVis2","m^{vis}_{#tau,l_{2}}"},
 	{"sum_charges","Sum of charge"}
 };
 

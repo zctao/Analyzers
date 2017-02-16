@@ -40,6 +40,14 @@ void HistoStackDrawer(std::map<TString, TH1D*> histoMap)
 		hs->Add(hm.second);
 		l->AddEntry(hm.second, channel, "f");
 	}
+
+	TH1D* h_tot = (TH1D*)(hs->GetStack()->Last())->Clone();
+	double mc_err = 0.;
+	int nbins_mc = h_tot->GetNbinsX();
+	double mc_yields =  h_tot->IntegralAndError(1,nbins_mc,mc_err);
+	std::cout << "predicted yields : " << mc_yields << " +/- "
+			  << mc_err << std::endl;
+	std::cout << "observed yields : " << h_obs->Integral() << std::endl;
 	
 	// plotting
 	//gROOT->LoadMacro("tdrstyle.C");
@@ -78,14 +86,13 @@ void HistoStackDrawer(std::map<TString, TH1D*> histoMap)
 	c->cd();
 
 	// lower pad
-	TPad* pad2 = new TPad("pad2", "pad2", 0, 0.05, 1, 0.3);
+	TPad* pad2 = new TPad("pad2", "pad2", 0, 0.01, 1, 0.3);
 	pad2->SetTopMargin(0);
-	pad2->SetBottomMargin(0.2);
+	pad2->SetBottomMargin(0.25);
 	pad2->Draw();
 	pad2->cd();
 
 	// define the ratio plot
-	TH1D* h_tot = (TH1D*)(hs->GetStack()->Last())->Clone();
 	TH1D* h_ratio = (TH1D*)h_obs->Clone();
 	TH1D* h_err = (TH1D*)h_tot->Clone();
 	h_ratio->Divide(h_tot);
@@ -131,7 +138,7 @@ void HistoStackDrawer(std::map<TString, TH1D*> histoMap)
 	TString pname = hs->GetName();
 	h_ratio->GetXaxis()->SetTitle(properTitle[pname]);
 	h_ratio->GetXaxis()->SetTitleSize(0.1);
-	//h_ratio->GetXaxis()->SetTitleOffset(4.0);
+	//h_ratio->GetXaxis()->SetTitleOffset(0.5);
 	h_ratio->GetXaxis()->SetNdivisions(510);
 	h_ratio->GetXaxis()->SetLabelSize(0.1);
 	
