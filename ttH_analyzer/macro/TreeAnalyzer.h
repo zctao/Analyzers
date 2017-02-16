@@ -135,9 +135,12 @@ vector<TH1D*> TreeAnalyzer(TTree* tree, bool isdata,
 	TH1D* h_mht = new TH1D("mht","",10,0.,500.);
 	TH1D* h_dr_leps = new TH1D("dr_leps","",10,0.,4.0);
 	TH1D* h_tau_pt = new TH1D("tau_pt","",11,20.,130.);
+	TH1D* h_tau_eta = new TH1D("tau_eta","", 7, 0.,2.8);
 	TH1D* h_dr_lep1_tau = new TH1D("dr_lep1_tau","",10,0.,4.0);
 	TH1D* h_lep1_pt = new TH1D("lep1_pt","",11,25.,300.);
+	TH1D* h_lep1_eta = new TH1D("lep1_eta","",7,0.,2.8);
 	TH1D* h_lep2_pt = new TH1D("lep2_pt","",10,10.,210.);
+	TH1D* h_lep2_eta = new TH1D("lep2_eta","",7,0.,2.8);
 	TH1D* h_mTauTauVis1 = new TH1D("mTauTauVis1","",15,0.,300.);
 	TH1D* h_mTauTauVis2 = new TH1D("mTauTauVis2","",15,0.,300.);
 	
@@ -154,9 +157,12 @@ vector<TH1D*> TreeAnalyzer(TTree* tree, bool isdata,
 	h_mht -> Sumw2();
 	h_dr_leps -> Sumw2();
 	h_tau_pt -> Sumw2();
+	h_tau_eta -> Sumw2();
 	h_dr_lep1_tau -> Sumw2();
 	h_lep1_pt -> Sumw2();
+	h_lep1_eta -> Sumw2();
 	h_lep2_pt -> Sumw2();
+	h_lep2_eta -> Sumw2();
 	h_mTauTauVis1 -> Sumw2();
 	h_mTauTauVis2 -> Sumw2();
 
@@ -286,8 +292,11 @@ vector<TH1D*> TreeAnalyzer(TTree* tree, bool isdata,
 		h_mT_met_lep1 -> Fill(*rv_MT_met_lep0, weight);
 		h_mht -> Fill(*rv_mht, weight);
 		h_tau_pt -> Fill(*rv_tau0_pt, weight);
+		h_tau_eta -> Fill(*rv_tau0_eta, weight);
 		h_lep1_pt -> Fill(lep0.Pt(), weight);
+		h_lep1_eta -> Fill(lep0.Eta(), weight);
 		h_lep2_pt -> Fill(lep1.Pt(), weight);
+		h_lep2_eta -> Fill(lep1.Eta(), weight);
 
 		float max_lep_eta = max(abs(lep0.Eta()),abs(lep1.Eta()));
 		h_max_lep_eta -> Fill(max_lep_eta, weight);
@@ -306,6 +315,7 @@ vector<TH1D*> TreeAnalyzer(TTree* tree, bool isdata,
 	
 	// push_back histograms into output vector
 	out_hists.push_back(h_tau_pt);
+	out_hists.push_back(h_tau_eta);
 	out_hists.push_back(h_njet);
 	out_hists.push_back(h_mindr_lep1_jet);
 	out_hists.push_back(h_mindr_lep2_jet);
@@ -317,7 +327,9 @@ vector<TH1D*> TreeAnalyzer(TTree* tree, bool isdata,
 	out_hists.push_back(h_dr_leps);
 	out_hists.push_back(h_dr_lep1_tau);
 	out_hists.push_back(h_lep1_pt);
+	out_hists.push_back(h_lep1_eta);
 	out_hists.push_back(h_lep2_pt);
+	out_hists.push_back(h_lep2_eta);
 	out_hists.push_back(h_mTauTauVis1);
 	out_hists.push_back(h_mTauTauVis2);
 
