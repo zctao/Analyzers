@@ -281,15 +281,15 @@ float SFHelper::Get_LeptonSF_loose(float lepPt, float lepEta,
 	float sf =1.;
 
 	if (isMu) {
-		sf *= read2DHist(h_recoToLoose_leptonSF_mu1, lepPt, abs(lepEta));		
-		sf *= read2DHist(h_recoToLoose_leptonSF_mu2, lepPt, abs(lepEta));
-		sf *= read2DHist(h_recoToLoose_leptonSF_mu3, lepPt, abs(lepEta));		
+		sf *= read2DHist(h_recoToLoose_leptonSF_mu1, lepPt, std::abs(lepEta));		
+		sf *= read2DHist(h_recoToLoose_leptonSF_mu2, lepPt, std::abs(lepEta));
+		sf *= read2DHist(h_recoToLoose_leptonSF_mu3, lepPt, std::abs(lepEta));		
 		sf *= evalTGraph(h_recoToLoose_leptonSF_mu4, lepEta);
 	}
 	else if (isEle) {
-		sf *= read2DHist(h_recoToLoose_leptonSF_el1, lepPt, lepEta);
-		sf *= read2DHist(h_recoToLoose_leptonSF_el2, lepPt, lepEta);
-		sf *= read2DHist(h_recoToLoose_leptonSF_el3, lepPt, lepEta);
+		sf *= read2DHist(h_recoToLoose_leptonSF_el1, lepPt, std::abs(lepEta));
+		sf *= read2DHist(h_recoToLoose_leptonSF_el2, lepPt, std::abs(lepEta));
+		sf *= read2DHist(h_recoToLoose_leptonSF_el3, lepPt, std::abs(lepEta));
 		// !! different pt eta xaxis
 		sf *= read2DHist(h_recoToLoose_leptonSF_gsf, lepEta, lepPt);
 	}
@@ -315,21 +315,21 @@ float SFHelper::Get_LeptonSF_tight_vs_loose(float lepPt, float lepEta,
 	if (_analysis == Analyze_2lss1tau) {
 		if (isMu) {
 			sf = read2DHist(h_looseToTight_leptonSF_mu_2lss,
-							lepPt, abs(lepEta));
+							lepPt, std::abs(lepEta));
 		}
 		else if (isEle) {
 			sf = read2DHist(h_looseToTight_leptonSF_el_2lss,
-							lepPt, abs(lepEta));
+							lepPt, std::abs(lepEta));
 		}
 	}
 	else if (_analysis == Analyze_3l) {
 		if (isMu) {
 			sf = read2DHist(h_looseToTight_leptonSF_mu_3l,
-							lepPt, abs(lepEta));
+							lepPt, std::abs(lepEta));
 		}
 		else if (isEle) {
 			sf = read2DHist(h_looseToTight_leptonSF_el_3l,
-							lepPt, abs(lepEta));
+							lepPt, std::abs(lepEta));
 		}
 	}
 
@@ -360,9 +360,9 @@ float SFHelper::Get_JetCSVWeight(pat::Jet& jet, std::string sys/*pass by copy*/)
 	int flavor = jet.hadronFlavour();
 	
 	BTagEntry::JetFlavor jf = BTagEntry::FLAV_UDSG;	
-	if ( abs(flavor) == 5 )
+	if ( std::abs(flavor) == 5 )
 		jf = BTagEntry::FLAV_B;
-	else if ( abs(flavor) == 4 )
+	else if ( std::abs(flavor) == 4 )
 		jf = BTagEntry::FLAV_C;
 
 	double weight_jet = 1.;
@@ -406,7 +406,7 @@ float SFHelper::Get_JetCSVWeight(pat::Jet& jet, std::string sys/*pass by copy*/)
 	else
 		sys = "central";
 
-	weight_jet = BTagCaliReader->eval_auto_bounds(sys, jf, abs(eta), pt, csv);
+	weight_jet = BTagCaliReader->eval_auto_bounds(sys, jf, std::abs(eta), pt, csv);
 	
 	if (sys == "central") assert(weight_jet > 0.);
 
@@ -462,9 +462,9 @@ float SFHelper::Get_FakeRate(float lepConePt, float lepEta,
 	float fakerate = 0;
 	
 	if (isEle)
-		fakerate = read2DHist(h_fakerate_el, lepConePt, abs(lepEta));
+		fakerate = read2DHist(h_fakerate_el, lepConePt, std::abs(lepEta));
 	else if (isMuon)
-		fakerate = read2DHist(h_fakerate_mu, lepConePt, abs(lepEta));
+		fakerate = read2DHist(h_fakerate_mu, lepConePt, std::abs(lepEta));
 	
 	if (lepConePt < 10.) return 0.;
 	
@@ -482,7 +482,7 @@ float SFHelper::Get_FakeRate(float tauPt, float tauEta)
 	float fr_mc = 0;
 	float ratio = 0;
 
-	if (abs(tauEta) < 1.479) {
+	if (std::abs(tauEta) < 1.479) {
 		fr_mc = readTGraph(g_fakerate_tau_mvaM_etaL_mc, tauPt);
 		ratio = readTF(f_fakerate_tau_mvaM_etaL_ratio, tauPt);
 	}
@@ -507,7 +507,7 @@ float SFHelper::Get_EleChargeMisIDProb(const miniLepton& lepton, int tauCharge)
 	
 	// electron
 	assert(lepton.Type() == LeptonType::kele);
-
+	
 	return Get_EleChargeMisIDProb(lepton.pt(), lepton.eta(),
 								  lepton.charge(), tauCharge);
 }
@@ -518,8 +518,8 @@ float SFHelper::Get_EleChargeMisIDProb(float elePt, float eleEta,
 	// only apply the charge flip rate to the electron that is same sign as tau
 	// due to the tau charge requirement in signal region
 	if (eleCharge * tauCharge < 0) return 0;
-
-	return read2DHist(h_chargeMisId, elePt, abs(eleEta));
+	
+	return read2DHist(h_chargeMisId, elePt, std::abs(eleEta));
 }
 
 float SFHelper::read2DHist(TH2* h2d, float x, float y)
@@ -532,7 +532,7 @@ float SFHelper::read2DHist(TH2* h2d, float x, float y)
 	
 	TAxis* yaxis = h2d->GetYaxis();
 	int nbiny = yaxis->GetNbins();
-	int ybin = yaxis->FindBin(abs(y));
+	int ybin = yaxis->FindBin(y);
     if (ybin < 1) ybin = 1;
 	if (ybin > nbiny) ybin = nbiny;
 	

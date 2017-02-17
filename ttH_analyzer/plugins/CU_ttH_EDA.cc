@@ -649,6 +649,21 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 
 				// only one of the above two can be non-zero
 				assert(P1_misCharge*P2_misCharge==0.);
+
+				if (debug) {
+					std::cout << "tau charge : "
+							  << local.tau_selected[0].charge() << std::endl;
+					std::cout << "lep1 pt conept eta : "
+							  << local.leptons_fakeable[0].pt() << " "
+							  << local.leptons_fakeable[0].conePt() << " "
+							  << local.leptons_fakeable[0].eta() << std::endl;
+					std::cout << "p1_mischarge : " << P1_misCharge << std::endl;
+					std::cout << "lep2 pt conept eta : "
+							  << local.leptons_fakeable[1].pt() << " "
+							  << local.leptons_fakeable[1].conePt() << " "
+							  << local.leptons_fakeable[1].eta() << std::endl;
+					std::cout << "p2_mischarge : " << P2_misCharge << std::endl;
+				}
 				
 				local.weight = P1_misCharge + P2_misCharge;
 			}
