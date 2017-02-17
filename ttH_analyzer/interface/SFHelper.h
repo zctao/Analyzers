@@ -35,6 +35,7 @@ class SFHelper
 	//float Get_MCWeight();
 	float Get_FakeRate(float,float,bool,bool); // for ele or mu
 	float Get_FakeRate(float,float);  // for tau
+	float Get_FR_weight(float,float,bool,bool,bool,float,float,bool,bool,bool);
 	//float Get_ChargeFlipWeight();
 	float Get_EleChargeMisIDProb(float,float,int,int);
 	
@@ -44,6 +45,7 @@ class SFHelper
 	float Get_TauIDSF(const pat::Tau&, bool);
 	float Get_FakeRate(const miniLepton&);
 	float Get_FakeRate(const pat::Tau&);
+	float Get_FR_weight(const miniLepton&, const miniLepton&);
 	float Get_EleChargeMisIDProb(const miniLepton&, int);
 #endif
 		

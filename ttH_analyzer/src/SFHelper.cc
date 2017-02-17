@@ -455,7 +455,23 @@ float SFHelper::Get_FakeRate(const miniLepton& lepton)
 
 	return Get_FakeRate(lepton.conePt(), lepton.eta(), isEle, isMu);
 }
+
+float SFHelper::Get_FR_weight(const miniLepton& lep1, const miniLepton& lep2)
+{
+	bool lep1IsEle = lep1.Type() == LeptonType::kele;
+	bool lep1IsMu = lep1.Type() == LeptonType::kmu;
+	bool lep2IsEle = lep2.Type() == LeptonType::kele;
+	bool lep2IsMu = lep2.Type() == LeptonType::kmu;
+
+	return Get_FR_weight(
+						 lep1.conePt(),lep1.eta(),lep1IsEle,lep1IsMu,
+						 lep1.passTightSel(),
+						 lep2.conePt(),lep2.eta(),lep2IsEle,lep2IsMu,
+						 lep2.passTightSel()
+						 );
+}
 #endif
+
 float SFHelper::Get_FakeRate(float lepConePt, float lepEta,
 							 bool isEle, bool isMuon)
 {
@@ -469,6 +485,19 @@ float SFHelper::Get_FakeRate(float lepConePt, float lepEta,
 	if (lepConePt < 10.) return 0.;
 	
 	return fakerate;
+}
+
+float SFHelper::Get_FR_weight(float lep1ConePt, float lep1Eta, bool lep1IsEle,
+							  bool lep1IsMu, bool lep1IsTight,
+							  float lep2ConePt, float lep2Eta, bool lep2IsEle,
+							  bool lep2IsMu, bool lep2IsTight)
+{
+	float f1 = Get_FakeRate(lep1ConePt, lep1Eta, lep1IsEle, lep1IsMu);
+	float f2 = Get_FakeRate(lep2ConePt, lep2Eta, lep2IsEle, lep2IsMu);
+	float F1 = lep1IsTight ? -1. : f1/(1.-f1);
+	float F2 = lep2IsTight ? -1. : f2/(1.-f2);
+
+	return (-1. * F1 * F2);
 }
 
 #if !defined(__ACLIC__) && !defined(__ROOTCLING__)
