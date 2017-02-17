@@ -193,6 +193,8 @@ vector<TH1D*> TreeAnalyzer(TTree* tree, bool isdata,
 		
 		// before any additional selections
 		TLorentzVector lep0, lep1;
+		float lep0_conept = *rv_lep0_conept;
+		float lep1_conept = *rv_lep1_conept;
 		int lep0_id = 0;
 		int lep1_id = 0;
 		bool lep0_istight = false;
@@ -241,7 +243,7 @@ vector<TH1D*> TreeAnalyzer(TTree* tree, bool isdata,
 		float weight = *rv_event_weight;
 		//////////////////////////////////////////
 		// update weights here if needed
-		if (not isdata) {
+		if (not isdata) {  // mc sample
 			// update
 			float w_pu = sf_helper->Get_PUWeight(*rv_npuTrue);
 			float w_tausf = //*rv_tauSF_weight;
@@ -262,6 +264,27 @@ vector<TH1D*> TreeAnalyzer(TTree* tree, bool isdata,
 			float w_btag = *rv_bTagSF_weight;
 
 			weight = w_btag * w_mc * w_hlt * w_lepsf * w_tausf * w_pu;
+		}
+		else { // data sample
+			if (SelType==Control_1lfakeable) {
+				weight = sf_helper->Get_FR_weight(
+					lep0_conept, lep0.Eta(),lep0_id==11,lep0_id==13,lep0_istight,
+					lep1_conept, lep1.Eta(),lep1_id==11,lep1_id==13,lep1_istight);
+				//assert(*rv_event_weight==weight);
+			}
+			else if (SelType==Control_2los1tau) {
+				float p1 = sf_helper->Get_EleChargeMisIDProb(
+				    *rv_ele0_pt,*rv_ele0_eta,*rv_ele0_charge,*rv_tau0_charge);
+				float p2 = sf_helper->Get_EleChargeMisIDProb(
+				    *rv_ele1_pt,*rv_ele1_eta,*rv_ele1_charge,*rv_tau0_charge);
+				
+				if (lepCategory == 0) // mumu
+					weight = 0.;
+				else if (lepCategory == 1) // ee
+					weight = p1 + p2;
+				else if (lepCategory == 2) // emu
+					weight = p1;
+			}
 		}
 		//////////////////////////////////////////
 		
