@@ -635,6 +635,8 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 				}
 				*/
 				local.weight = -1. * F1 * F2;
+				if (debug)
+					std::cout << "FR_weight : " << local.weight << std::endl;
 			}
 
 			//////////////////////////

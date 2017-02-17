@@ -462,9 +462,9 @@ float SFHelper::Get_FakeRate(float lepConePt, float lepEta,
 	float fakerate = 0;
 	
 	if (isEle)
-		fakerate = read2DHist(h_fakerate_el, lepConePt, lepEta);
+		fakerate = read2DHist(h_fakerate_el, lepConePt, abs(lepEta));
 	else if (isMuon)
-		fakerate = read2DHist(h_fakerate_mu, lepConePt, lepEta);
+		fakerate = read2DHist(h_fakerate_mu, lepConePt, abs(lepEta));
 	
 	if (lepConePt < 10.) return 0.;
 	
