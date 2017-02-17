@@ -3,6 +3,7 @@
 
 #include <map>
 #include <algorithm>
+#include <vector>
 
 #include "TTree.h"
 #include "TClass.h"
@@ -304,6 +305,13 @@ class CU_ttH_EDA_Ntuple //: public TClass
 	float jet3_phi;
 	float jet3_E;
 	float jet3_CSV;
+	// vectors of jets
+	std::vector<float> jets_pt;
+	std::vector<float> jets_eta;
+	std::vector<float> jets_phi;
+	std::vector<float> jets_E;
+	std::vector<float> jets_csv;
+	std::vector<int> jets_flavor;
 	// MET
 	float PFMET;
 	float PFMETphi;

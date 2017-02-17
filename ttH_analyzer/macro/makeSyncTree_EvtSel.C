@@ -79,6 +79,12 @@ void makeSyncTree_EvtSel(
 		tree->SetBranchStatus("ele1_mcMatchType", 0);
 		tree->SetBranchStatus("tau0_mcMatchType", 0);
 		tree->SetBranchStatus("tau1_mcMatchType", 0);
+		tree->SetBranchStatus("jets_pt", 0);
+		tree->SetBranchStatus("jets_eta", 0);
+		tree->SetBranchStatus("jets_phi", 0);
+		tree->SetBranchStatus("jets_E", 0);
+		tree->SetBranchStatus("jets_csv", 0);
+		tree->SetBranchStatus("jets_flavor", 0);
 	}
 	
 	// create new tree and output file

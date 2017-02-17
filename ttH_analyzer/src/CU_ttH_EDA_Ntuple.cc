@@ -335,6 +335,15 @@ void CU_ttH_EDA_Ntuple::fill_ntuple_jets(const std::vector<pat::Jet>& jets)
 		jet3_E = jets[3].energy();
 		jet3_CSV = jets[3].bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
 	}
+
+	for (const auto & j : jets) {
+		jets_pt.push_back(j.pt());
+		jets_eta.push_back(j.eta());
+		jets_phi.push_back(j.phi());
+		jets_E.push_back(j.energy());
+		jets_csv.push_back(j.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags"));
+		jets_flavor.push_back(j.hadronFlavour());
+	}
 }
 
 void CU_ttH_EDA_Ntuple::initialize()
@@ -597,6 +606,13 @@ void CU_ttH_EDA_Ntuple::initialize()
 	jet3_phi = -9999.;
 	jet3_E = -9999.;
 	jet3_CSV = -9999.;
+
+	jets_pt.clear();
+	jets_eta.clear();
+	jets_phi.clear();
+	jets_E.clear();
+	jets_csv.clear();
+	jets_flavor.clear();
 	// MET
 	PFMET = -9999.;
 	PFMETphi = -9999.;
@@ -856,6 +872,14 @@ void CU_ttH_EDA_Ntuple::set_up_branches(TTree *tree)
 	tree->Branch("jet3_phi", &jet3_phi);
 	tree->Branch("jet3_E", &jet3_E);
 	tree->Branch("jet3_CSV", &jet3_CSV);
+	
+	tree->Branch("jets_pt", &jets_pt);
+	tree->Branch("jets_eta", &jets_eta);
+	tree->Branch("jets_phi", &jets_phi);
+	tree->Branch("jets_E", &jets_E);
+	tree->Branch("jets_csv", &jets_csv);
+	tree->Branch("jets_flavor", &jets_flavor);
+	
 	// MET
 	tree->Branch("PFMET", &PFMET);
 	tree->Branch("PFMETphi", &PFMETphi);
