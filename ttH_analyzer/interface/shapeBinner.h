@@ -28,6 +28,7 @@ class shapeBinner
 	std::vector<TH1*> getHistograms(TFile*);	
 	void renameHistograms();
 	std::vector<double> computeBinEdges(TH1*, TH1*, TH1*);
+	std::vector<double> makeUniformBins(int, double, double);
 	void rebinHistograms();
 	std::vector<double> printBinEdges();
 

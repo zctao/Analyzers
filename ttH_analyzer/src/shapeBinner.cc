@@ -107,6 +107,17 @@ double shapeBinner::addBinErrors(double binError1, double binError2)
 	return TMath::Sqrt(binError1*binError1 + binError2*binError2);
 }
 
+std::vector<double> shapeBinner::makeUniformBins(int nbins, double xlow, double xup)
+{
+	std::vector<double> binEdges;
+
+	for (int i = 0; i <= nbins; ++i) {
+		binEdges.push_back(xlow + i*(xup-xlow)/nbins);
+	}
+
+	return binEdges;
+}
+
 void shapeBinner::rebinHistograms()
 {
 	std::cout << "fine_datacards size : " << _fine_datacards.size() << std::endl;
@@ -139,29 +150,51 @@ void shapeBinner::rebinHistograms()
 	std::cout << "start computing bin edges" << std::endl;
     _binEdges = computeBinEdges(h_signal, h_bkg_irreducible, h_bkg_reducible);
 
-	std::cout << "number of bins : " << _binEdges.size()-1 << std::endl;
+	int nbins = _binEdges.size()-1;
+	std::cout << "number of bins : " << nbins << std::endl;
 	
 	delete h_signal;
 	delete h_bkg_reducible;
 	delete h_bkg_irreducible;
 	
 	// rebin all shapes with the new bin edges and output to root file
-	TString out_name = "rebinned_datacards";
+	TString outname = "rebinned_datacards";
 
 	ostringstream param1;
 	ostringstream param2;
 	param1 << _relErrThreshold_bkg1;
 	param2 << _relErrThreshold_bkg2;
-	out_name += ("_"buffer1.str() + "_"+buffer2.str()+".root");
 
-	TFile *output = new TFile(out_name, "recreate");
+	outname += ("_"+TString::Itoa(nbins,10)+"bins_"+param1.str()+"_"+param2.str()+".root");
+
+	TFile *output = new TFile(outname, "recreate");
 	
-	int nbins = _binEdges.size()-1;
 	for (auto h : _fine_datacards) {
 		TString hname = h->GetName();
 		TH1* h_rebin = h->Rebin(nbins, hname, &_binEdges[0]);
 		makeBinContentsPositive(h_rebin,0);
 		h_rebin->Write();
+	}
+	std::cout << "Output file : " << outname << std::endl;
+	
+	output->Close();
+	
+	if (_makeUniformBins) {
+		TString outname_u = "rebinned_datacards_uniform_"+TString::Itoa(nbins,10)+"bins.root";
+		TFile *output_u = new TFile(outname_u,"recreate");
+		
+		std::vector<double> binEdgesUniform =
+			makeUniformBins(nbins,_binEdges.at(0),_binEdges.back());
+
+		for (auto h : _fine_datacards) {
+			TString hname = h->GetName();
+			TH1* h_rebin_u = h->Rebin(nbins, hname, &binEdgesUniform[0]);
+			makeBinContentsPositive(h_rebin_u,0);
+			h_rebin_u->Write();
+		}
+		std::cout << "Output file : " << outname_u << std::endl;
+		
+		output_u->Close();
 	}
 	
 	return;
