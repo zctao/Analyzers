@@ -152,15 +152,100 @@ void shapeBinner::rebinHistograms()
 	for (auto h : _fine_datacards) {
 		TString hname = h->GetName();
 		TH1* h_rebin = h->Rebin(nbins, hname, &_binEdges[0]);
+		makeBinContentsPositive(h_rebin,0);
 		h_rebin->Write();
 	}
 
 	return;
 }
 
-std::vector<double> shapeBinner::showBinEdges()
+std::vector<double> shapeBinner::printBinEdges()
 {
 	return _binEdges;
+}
+
+// functions for removing negative bins from C. Veelken
+double shapeBinner::compIntegral(TH1* histogram, bool includeUnderflowBin, bool includeOverflowBin)
+{
+	double sumBinContent = 0.;
+	int numBins = histogram->GetNbinsX();
+	int firstBin = ( includeUnderflowBin ) ? 0 : 1;
+	int lastBin = ( includeOverflowBin  ) ? (numBins + 1) : numBins;
+	
+	for ( int iBin = firstBin; iBin <= lastBin; ++iBin ) {
+		sumBinContent += histogram->GetBinContent(iBin);
+	}
+	
+	return sumBinContent;
+}
+
+void shapeBinner::makeBinContentsPositive(TH1* histogram, int verbosity)
+
+{
+	if ( verbosity ) {
+		std::cout << "<makeBinContentsPositive>:" << std::endl;
+		std::cout << " integral(" << histogram->GetName() << ") = " << histogram->Integral() << std::endl;
+	}
+	
+	double integral_original = compIntegral(histogram, true, true);
+	
+	if ( integral_original < 0. ) integral_original = 0.;
+	
+	if ( verbosity ) {
+		std::cout << " integral_original = " << integral_original << std::endl;
+	}
+	
+	int numBins = histogram->GetNbinsX();
+	
+	for ( int iBin = 0; iBin <= (numBins + 1); ++iBin ) {
+		double binContent_original = histogram->GetBinContent(iBin);
+		double binError2_original = square(histogram->GetBinError(iBin));
+		
+		if ( binContent_original < 0. ) {
+			double binContent_modified = 0.;
+			double binError2_modified = binError2_original + square(binContent_original - binContent_modified);
+			
+			assert(binError2_modified >= 0.);
+			
+			if ( verbosity ) {
+				std::cout << "bin #" << iBin << " (x =  " << histogram->GetBinCenter(iBin) << "): binContent = " << binContent_original << " +/- " << TMath::Sqrt(binError2_original) << " --> setting it to binContent = " << binContent_modified << " +/- " << TMath::Sqrt(binError2_modified) << std::endl;
+			}
+
+			histogram->SetBinContent(iBin, binContent_modified);
+			histogram->SetBinError(iBin, TMath::Sqrt(binError2_modified));
+		}
+	}
+
+	double integral_modified = compIntegral(histogram, true, true);
+	
+	if ( integral_modified < 0. ) integral_modified = 0.;
+	
+	if ( verbosity ) {
+		std::cout << " integral_modified = " << integral_modified << std::endl;
+	}
+	
+	if ( integral_modified > 0. ) {
+		double sf = integral_original/integral_modified;
+		
+		if ( verbosity ) {
+			std::cout << "--> scaling histogram by factor = " << sf << std::endl;
+		}
+		
+		histogram->Scale(sf);
+	} else {
+		for ( int iBin = 0; iBin <= (numBins + 1); ++iBin ) {
+			histogram->SetBinContent(iBin, 0.);
+		}
+	}
+
+	if ( verbosity ) {
+		std::cout << " integral(" << histogram->GetName() << ") = " << histogram->Integral() << std::endl;
+	}
+}
+
+double shapeBinner::square(double x)
+{
+	return x*x;
 }
 
 #endif

@@ -28,11 +28,16 @@ class shapeBinner
 	void renameHistograms();
 	std::vector<double> computeBinEdges(TH1*, TH1*, TH1*);
 	void rebinHistograms();
-	std::vector<double> showBinEdges();
+	std::vector<double> printBinEdges();
+
+	// functions for removing negative bins from C. Veelken
+	double compIntegral(TH1*, bool, bool);
+	void makeBinContentsPositive(TH1*, int);
 	
  protected:
 
 	double addBinErrors(double, double);
+	double square(double);
 	
  private:
 
