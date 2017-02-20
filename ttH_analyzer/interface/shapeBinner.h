@@ -13,6 +13,7 @@
 
 #include <vector>
 #include <iostream>
+#include <sstream>
 #include <algorithm>
 
 class shapeBinner
@@ -20,7 +21,7 @@ class shapeBinner
  public:
 
 	// constructor and destructor
-	shapeBinner(float, float, TString);
+	shapeBinner(float, float, TString, bool extraBinningUniform=false);
 	~shapeBinner();
 
 	// member function
@@ -41,14 +42,16 @@ class shapeBinner
 	
  private:
 
+	std::vector<TH1*> _fine_datacards;
+	TFile* _inputfile;
+	
 	float _relErrThreshold_bkg1;
 	float _relErrThreshold_bkg2;
 
 	std::vector<double> _binEdges;
-	std::vector<TH1*> _fine_datacards;
-	
-	TFile* _inputfile;
-	
+	std::vector<double> _purities;
+
+	bool _makeUniformBins;
 };
 
 #endif

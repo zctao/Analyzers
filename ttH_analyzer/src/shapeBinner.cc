@@ -4,14 +4,14 @@
 //#include "Analyzers/ttH_analyzer/interface/shapeBinner.h"
 #include "../interface/shapeBinner.h"
 
-shapeBinner::shapeBinner(float relErr_bkg1, float relErr_bkg2, TString filename)
+shapeBinner::shapeBinner(float relErr_bkg1, float relErr_bkg2, TString filename, bool extraBinningUniform)
 {
 	_relErrThreshold_bkg1 = relErr_bkg1;
 	_relErrThreshold_bkg2 = relErr_bkg2;
 
 	TFile* _inputfile = new TFile(filename, "read");
 	_fine_datacards = getHistograms(_inputfile);
-	
+	_makeUniformBins = extraBinningUniform;
 }
 
 shapeBinner::~shapeBinner()
@@ -146,7 +146,15 @@ void shapeBinner::rebinHistograms()
 	delete h_bkg_irreducible;
 	
 	// rebin all shapes with the new bin edges and output to root file
-	TFile *output = new TFile("rebinned_datacards.root", "recreate");
+	TString out_name = "rebinned_datacards";
+
+	ostringstream param1;
+	ostringstream param2;
+	param1 << _relErrThreshold_bkg1;
+	param2 << _relErrThreshold_bkg2;
+	out_name += ("_"buffer1.str() + "_"+buffer2.str()+".root");
+
+	TFile *output = new TFile(out_name, "recreate");
 	
 	int nbins = _binEdges.size()-1;
 	for (auto h : _fine_datacards) {
@@ -155,7 +163,7 @@ void shapeBinner::rebinHistograms()
 		makeBinContentsPositive(h_rebin,0);
 		h_rebin->Write();
 	}
-
+	
 	return;
 }
 
