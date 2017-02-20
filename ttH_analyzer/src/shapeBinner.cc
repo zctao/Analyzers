@@ -12,6 +12,8 @@ shapeBinner::shapeBinner(float relErr_bkg1, float relErr_bkg2, TString filename,
 	TFile* _inputfile = new TFile(filename, "read");
 	_fine_datacards = getHistograms(_inputfile);
 	_makeUniformBins = extraBinningUniform;
+
+	_purities.clear();
 }
 
 shapeBinner::~shapeBinner()
@@ -57,6 +59,7 @@ std::vector<double> shapeBinner::computeBinEdges(TH1* h_sig, TH1* h_bkg1, TH1* h
 	h_sig->GetXaxis()->GetLowEdge(&binEdges_orig[0]);
 
 	std::vector<double> binEdges_rebinned;
+	std::vector<double> purites_rebinned;
 
 	double binError_sig = 0., binContent_sig = 0.;
 	double binError_bkg1 = 0., binContent_bkg1 = 0.;
@@ -80,7 +83,12 @@ std::vector<double> shapeBinner::computeBinEdges(TH1* h_sig, TH1* h_bkg1, TH1* h
 		if (goodBkg1 and goodBkg2) {
 			
 			binEdges_rebinned.push_back(lowedge);  // reversed order
+
+			// purity
+			_purities.push_back(binContent_sig / 
+								(binContent_bkg1+binContent_bkg2));
 			
+			// reset
 			binError_sig = 0.;
 			binError_bkg1 = 0.;
 			binError_bkg2 = 0.;
@@ -90,11 +98,15 @@ std::vector<double> shapeBinner::computeBinEdges(TH1* h_sig, TH1* h_bkg1, TH1* h
 		}
 	}
 
-	if (binEdges_orig.at(0)!=binEdges_rebinned.back())
+	if (binEdges_orig.at(0)!=binEdges_rebinned.back()) {
 		binEdges_rebinned.push_back(binEdges_orig.at(0));
+		_purities.push_back(binContent_sig / 
+							(binContent_bkg1+binContent_bkg2));
+	}
 	
 	std::reverse(binEdges_rebinned.begin(),binEdges_rebinned.end());
-
+	std::reverse(_purities.begin(),_purities.end());
+	
 	// add the upper edge
 	double upedge = h_sig->GetXaxis()->GetBinUpEdge(nbins);
 	binEdges_rebinned.push_back(upedge);
@@ -136,7 +148,8 @@ void shapeBinner::rebinHistograms()
 		if (hname.Contains("ttH")) {
 			hs_signal.Add(h);
 		}
-		else if (hname.Contains("TTW") or hname.Contains("TTZ")) {
+		else if (hname.Contains("TTW") or hname.Contains("TTZ") or
+				 hname.Contains("Rares") or hname.Contains("EWK")) {
 			hs_bkg_irreducible.Add(h);
 		}
 		else if (hname.Contains("fakes")) {
@@ -198,11 +211,6 @@ void shapeBinner::rebinHistograms()
 	}
 	
 	return;
-}
-
-std::vector<double> shapeBinner::printBinEdges()
-{
-	return _binEdges;
 }
 
 // functions for removing negative bins from C. Veelken
@@ -287,6 +295,16 @@ void shapeBinner::makeBinContentsPositive(TH1* histogram, int verbosity)
 double shapeBinner::square(double x)
 {
 	return x*x;
+}
+
+std::vector<double> shapeBinner::getBinEdges()
+{
+	return _binEdges;
+}
+
+std::vector<double> shapeBinner::getPurities()
+{
+	return _purities;
 }
 
 #endif

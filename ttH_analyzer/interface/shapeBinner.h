@@ -30,7 +30,8 @@ class shapeBinner
 	std::vector<double> computeBinEdges(TH1*, TH1*, TH1*);
 	std::vector<double> makeUniformBins(int, double, double);
 	void rebinHistograms();
-	std::vector<double> printBinEdges();
+	std::vector<double> getBinEdges();
+	std::vector<double> getPurities();
 
 	// functions for removing negative bins from C. Veelken
 	double compIntegral(TH1*, bool, bool);
