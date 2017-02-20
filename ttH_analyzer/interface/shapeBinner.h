@@ -32,7 +32,8 @@ class shapeBinner
 	void rebinHistograms();
 	std::vector<double> getBinEdges();
 	std::vector<double> getPurities();
-
+	std::vector<float> getSignificance();
+	
 	// functions for removing negative bins from C. Veelken
 	double compIntegral(TH1*, bool, bool);
 	void makeBinContentsPositive(TH1*, int);
@@ -41,6 +42,7 @@ class shapeBinner
 
 	double addBinErrors(double, double);
 	double square(double);
+	void computeSignificance(float,float);
 	
  private:
 
@@ -54,6 +56,12 @@ class shapeBinner
 	std::vector<double> _purities;
 
 	bool _makeUniformBins;
+
+	std::vector<float> _pvalue;
+	std::vector<float> _punzi;
+	std::vector<float> _approxpunzi;
+	std::vector<float> _SoverSqrtB;
+	std::vector<float> _SoverSqrtSplusB;
 };
 
 #endif

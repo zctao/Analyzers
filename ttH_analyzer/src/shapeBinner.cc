@@ -77,16 +77,23 @@ std::vector<double> shapeBinner::computeBinEdges(TH1* h_sig, TH1* h_bkg1, TH1* h
 		binError_bkg1 = addBinErrors(binError_bkg1, h_bkg1->GetBinError(ibin));
 		binError_bkg2 = addBinErrors(binError_bkg2, h_bkg2->GetBinError(ibin));
 
-		bool goodBkg1 = binError_bkg1 < binContent_bkg1 * _relErrThreshold_bkg1;
-		bool goodBkg2 = binError_bkg2 < binContent_bkg2 * _relErrThreshold_bkg2;
+		bool goodBkg1 =
+			(binError_bkg1 < binContent_bkg1 * _relErrThreshold_bkg1) and
+			(binContent_bkg1 > 0);
+		bool goodBkg2 =
+			(binError_bkg2 < binContent_bkg2 * _relErrThreshold_bkg2) and
+			(binContent_bkg2 > 0);
+		bool goodSig = binContent_sig > 0;
 		
-		if (goodBkg1 and goodBkg2) {
+		if (goodBkg1 and goodBkg2 and goodSig) {
 			
 			binEdges_rebinned.push_back(lowedge);  // reversed order
 
 			// purity
 			_purities.push_back(binContent_sig / 
 								(binContent_bkg1+binContent_bkg2));
+			// significance
+			computeSignificance(binContent_sig, binContent_bkg1+binContent_bkg2);
 			
 			// reset
 			binError_sig = 0.;
@@ -106,6 +113,9 @@ std::vector<double> shapeBinner::computeBinEdges(TH1* h_sig, TH1* h_bkg1, TH1* h
 	
 	std::reverse(binEdges_rebinned.begin(),binEdges_rebinned.end());
 	std::reverse(_purities.begin(),_purities.end());
+	std::reverse(_pvalue.begin(),_pvalue.end());
+	std::reverse(_SoverSqrtB.begin(),_SoverSqrtB.end());
+	std::reverse(_SoverSqrtSplusB.begin(),_SoverSqrtSplusB.end());
 	
 	// add the upper edge
 	double upedge = h_sig->GetXaxis()->GetBinUpEdge(nbins);
@@ -213,6 +223,33 @@ void shapeBinner::rebinHistograms()
 	return;
 }
 
+void shapeBinner::computeSignificance(float s, float b)
+{
+	_pvalue.push_back(TMath::Poisson(s+b,b));
+	_SoverSqrtB.push_back(s/TMath::Sqrt(b));
+	_SoverSqrtSplusB.push_back(s/TMath::Sqrt(s+b));
+}
+
+double shapeBinner::square(double x)
+{
+	return x*x;
+}
+
+std::vector<double> shapeBinner::getBinEdges()
+{
+	return _binEdges;
+}
+
+std::vector<double> shapeBinner::getPurities()
+{
+	return _purities;
+}
+
+std::vector<float> shapeBinner::getSignificance()
+{
+	return _pvalue;
+}
+
 // functions for removing negative bins from C. Veelken
 double shapeBinner::compIntegral(TH1* histogram, bool includeUnderflowBin, bool includeOverflowBin)
 {
@@ -290,21 +327,6 @@ void shapeBinner::makeBinContentsPositive(TH1* histogram, int verbosity)
 	if ( verbosity ) {
 		std::cout << " integral(" << histogram->GetName() << ") = " << histogram->Integral() << std::endl;
 	}
-}
-
-double shapeBinner::square(double x)
-{
-	return x*x;
-}
-
-std::vector<double> shapeBinner::getBinEdges()
-{
-	return _binEdges;
-}
-
-std::vector<double> shapeBinner::getPurities()
-{
-	return _purities;
 }
 
 #endif
