@@ -194,7 +194,10 @@ void shapeBinner::rebinHistograms()
 	
 	for (auto h : _fine_datacards) {
 		TString hname = h->GetName();
-		TH1* h_rebin = h->Rebin(nbins, hname, &_binEdges[0]);
+		
+		//TH1* h_rebin = h->Rebin(nbins, hname, &_binEdges[0]);
+		TH1* h_rebin = getRebinnedHistogram1d(h, _binEdges);
+		
 		makeBinContentsPositive(h_rebin,0);
 		h_rebin->Write();
 	}
@@ -248,6 +251,41 @@ std::vector<double> shapeBinner::getPurities()
 std::vector<float> shapeBinner::getSignificance()
 {
 	return _pvalue;
+}
+
+TH1* shapeBinner::getRebinnedHistogram1d(const TH1* histoOriginal,
+										 std::vector<double> binEdges_rebinned)
+{
+	int asize = binEdges_rebinned.size();
+	const TArrayD BinEdges(asize, &binEdges_rebinned[0]);
+
+	return getRebinnedHistogram1d(histoOriginal, BinEdges);
+}
+
+TH1* shapeBinner::getRebinnedHistogram1d(const TH1* histoOriginal,
+										 const TArrayD& binEdges_rebinned)
+{
+	std::string histoRebinnedName = std::string(histoOriginal->GetName());//.append("_rebinned");
+	TH1* histoRebinned = new TH1D(histoRebinnedName.data(),
+								  histoOriginal->GetTitle(), 
+								  binEdges_rebinned.GetSize() - 1,
+								  binEdges_rebinned.GetArray());
+	histoRebinned->Sumw2();
+	const TAxis* axis_original = histoOriginal->GetXaxis();
+	int numBins_original = axis_original->GetNbins();
+	for ( int idxBin = 1; idxBin <= numBins_original; ++idxBin ) {
+		double binContent_original = histoOriginal->GetBinContent(idxBin);
+		double binError_original = histoOriginal->GetBinError(idxBin);
+		double binCenter_original = axis_original->GetBinCenter(idxBin);
+		int binIndex_rebinned = histoRebinned->FindBin(binCenter_original);
+		double binContent_rebinned = histoRebinned->GetBinContent(binIndex_rebinned);
+		binContent_rebinned += binContent_original;
+		histoRebinned->SetBinContent(binIndex_rebinned, binContent_rebinned);   
+		double binError_rebinned = histoRebinned->GetBinError(binIndex_rebinned);
+		binError_rebinned = TMath::Sqrt(binError_rebinned*binError_rebinned + binError_original*binError_original);
+		histoRebinned->SetBinError(binIndex_rebinned, binError_rebinned);
+	}
+	return histoRebinned;
 }
 
 // functions for removing negative bins from C. Veelken

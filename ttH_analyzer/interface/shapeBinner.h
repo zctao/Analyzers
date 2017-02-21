@@ -10,6 +10,7 @@
 #include "TKey.h"
 #include "TClass.h"
 #include "TMath.h"
+#include "TArrayD.h"
 
 #include <vector>
 #include <iostream>
@@ -33,6 +34,9 @@ class shapeBinner
 	std::vector<double> getBinEdges();
 	std::vector<double> getPurities();
 	std::vector<float> getSignificance();
+
+	TH1* getRebinnedHistogram1d(const TH1*, std::vector<double>);
+	TH1* getRebinnedHistogram1d(const TH1*, const TArrayD&);
 	
 	// functions for removing negative bins from C. Veelken
 	double compIntegral(TH1*, bool, bool);
