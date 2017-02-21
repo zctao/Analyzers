@@ -4,21 +4,47 @@
 //#include "Analyzers/ttH_analyzer/interface/shapeBinner.h"
 #include "../interface/shapeBinner.h"
 
-shapeBinner::shapeBinner(float relErr_bkg1, float relErr_bkg2, TString filename, bool extraBinningUniform)
+shapeBinner::shapeBinner(float relErr_bkg1, float relErr_bkg2, TFile* inputfile, bool uniform, int nbins)
+{
+	_relErrThreshold_bkg1 = relErr_bkg1;
+	_relErrThreshold_bkg2 = relErr_bkg2;
+	
+	_fine_datacards = getHistograms(inputfile);
+	_makeUniformBins = uniform;
+	_nbins = nbins;
+}
+
+shapeBinner::shapeBinner(float relErr_bkg1, float relErr_bkg2, TString filename, bool uniform, int nbins)
 {
 	_relErrThreshold_bkg1 = relErr_bkg1;
 	_relErrThreshold_bkg2 = relErr_bkg2;
 
 	TFile* _inputfile = new TFile(filename, "read");
 	_fine_datacards = getHistograms(_inputfile);
-	_makeUniformBins = extraBinningUniform;
-
-	_purities.clear();
+	
+	_makeUniformBins = uniform;
+	_nbins = nbins;
+	
 }
 
 shapeBinner::~shapeBinner()
 {
-	delete _inputfile;
+	if (_inputfile)
+		delete _inputfile;
+}
+
+template<typename T>
+std::ostream &operator<< (ostream& out, const std::vector<T>& v)
+{
+	out << "{ ";
+	size_t last = v.size() - 1;
+	for (size_t i = 0; i < v.size(); ++i) {
+		out << v[i];
+		if (i != last)
+			out << ", ";
+	}
+	out << " }";
+	return out;
 }
 
 std::vector<TH1*> shapeBinner::getHistograms(TFile* f)
@@ -42,11 +68,6 @@ std::vector<TH1*> shapeBinner::getHistograms(TFile* f)
 	}
 
 	return results;
-}
-
-void shapeBinner::renameHistograms()
-{
-
 }
 
 std::vector<double> shapeBinner::computeBinEdges(TH1* h_sig, TH1* h_bkg1, TH1* h_bkg2)
@@ -88,12 +109,13 @@ std::vector<double> shapeBinner::computeBinEdges(TH1* h_sig, TH1* h_bkg1, TH1* h
 		if (goodBkg1 and goodBkg2 and goodSig) {
 			
 			binEdges_rebinned.push_back(lowedge);  // reversed order
-
+			/*
 			// purity
 			_purities.push_back(binContent_sig / 
 								(binContent_bkg1+binContent_bkg2));
 			// significance
 			computeSignificance(binContent_sig, binContent_bkg1+binContent_bkg2);
+			*/
 			
 			// reset
 			binError_sig = 0.;
@@ -107,16 +129,10 @@ std::vector<double> shapeBinner::computeBinEdges(TH1* h_sig, TH1* h_bkg1, TH1* h
 
 	if (binEdges_orig.at(0)!=binEdges_rebinned.back()) {
 		binEdges_rebinned.push_back(binEdges_orig.at(0));
-		_purities.push_back(binContent_sig / 
-							(binContent_bkg1+binContent_bkg2));
 	}
 	
 	std::reverse(binEdges_rebinned.begin(),binEdges_rebinned.end());
-	std::reverse(_purities.begin(),_purities.end());
-	std::reverse(_pvalue.begin(),_pvalue.end());
-	std::reverse(_SoverSqrtB.begin(),_SoverSqrtB.end());
-	std::reverse(_SoverSqrtSplusB.begin(),_SoverSqrtSplusB.end());
-	
+		
 	// add the upper edge
 	double upedge = h_sig->GetXaxis()->GetBinUpEdge(nbins);
 	binEdges_rebinned.push_back(upedge);
@@ -140,15 +156,17 @@ std::vector<double> shapeBinner::makeUniformBins(int nbins, double xlow, double 
 	return binEdges;
 }
 
-void shapeBinner::rebinHistograms()
+void shapeBinner::rebinHistograms(int verbosity)
 {
-	std::cout << "fine_datacards size : " << _fine_datacards.size() << std::endl;
+	if (verbosity)
+		std::cout << "fine_datacards size : " << _fine_datacards.size()
+				  << std::endl;
 	
 	// Get signal, reducible and irreducible histograms
 	
 	THStack hs_signal("sig","");
-	THStack hs_bkg_irreducible("bkg_irr","");	
-	TH1 *h_bkg_reducible;
+	THStack hs_bkg_irreducible("bkg_irr","");
+	THStack hs_bkg_reducible("bkg_red","");
 
 	for (auto h : _fine_datacards) {
 		TString hname = h->GetName();
@@ -163,67 +181,117 @@ void shapeBinner::rebinHistograms()
 			hs_bkg_irreducible.Add(h);
 		}
 		else if (hname.Contains("fakes")) {
-			h_bkg_reducible = (TH1*)h->Clone();
+			hs_bkg_reducible.Add(h);
 		}
 	}
 
 	TH1* h_signal = (TH1*)(hs_signal.GetStack()->Last())->Clone();
 	TH1* h_bkg_irreducible = (TH1*)(hs_bkg_irreducible.GetStack()->Last())->Clone();
+	TH1 *h_bkg_reducible = (TH1*)(hs_bkg_reducible.GetStack()->Last())->Clone();
 
-	std::cout << "start computing bin edges" << std::endl;
-    _binEdges = computeBinEdges(h_signal, h_bkg_irreducible, h_bkg_reducible);
+	if (verbosity)
+		std::cout << "start computing bin edges" << std::endl;
 
-	int nbins = _binEdges.size()-1;
-	std::cout << "number of bins : " << nbins << std::endl;
+	if (not _makeUniformBins) {
+		_binEdges = computeBinEdges(h_signal, h_bkg_irreducible, h_bkg_reducible);
+		_nbins = _binEdges.size()-1;
+	}
+	else {
+		double xlow = h_signal->GetXaxis()->GetXmin();
+		double xhigh = h_signal->GetXaxis()->GetXmax();
+		//std::cout << xlow << " " << xhigh << std::endl;
+		assert(_nbins>0 and _makeUniformBins);
+		_binEdges = makeUniformBins(_nbins, xlow, xhigh);
+	}
+
+	if (verbosity)
+		std::cout << "number of bins : " << _nbins << std::endl;
+
+	TH1* h_sig_rebin = h_signal->Rebin(_nbins, "", &_binEdges[0]);
+	TH1* h_bkg1_rebin = h_bkg_irreducible->Rebin(_nbins, "", &_binEdges[0]);
+	TH1* h_bkg2_rebin = h_bkg_reducible->Rebin(_nbins, "", &_binEdges[0]);
+	analyzeBins(h_sig_rebin, h_bkg1_rebin, h_bkg2_rebin);
 	
 	delete h_signal;
 	delete h_bkg_reducible;
 	delete h_bkg_irreducible;
+	delete h_sig_rebin;
+	delete h_bkg1_rebin;
+	delete h_bkg2_rebin;
 	
 	// rebin all shapes with the new bin edges and output to root file
-	TString outname = "rebinned_datacards";
+	TString outname = "rebinned_datacards_"+TString::Itoa(_nbins,10)+"bins_";
 
-	ostringstream param1;
-	ostringstream param2;
-	param1 << _relErrThreshold_bkg1;
-	param2 << _relErrThreshold_bkg2;
-
-	outname += ("_"+TString::Itoa(nbins,10)+"bins_"+param1.str()+"_"+param2.str()+".root");
+	if (not _makeUniformBins) {
+		ostringstream param1;
+		ostringstream param2;
+		param1 << _relErrThreshold_bkg1;
+		param2 << _relErrThreshold_bkg2;
+		
+		outname += param1.str()+"_"+param2.str()+".root";
+	}
+	else {
+		outname += "uniform.root";
+	}
 
 	TFile *output = new TFile(outname, "recreate");
 	
 	for (auto h : _fine_datacards) {
 		TString hname = h->GetName();
 		
-		//TH1* h_rebin = h->Rebin(nbins, hname, &_binEdges[0]);
-		TH1* h_rebin = getRebinnedHistogram1d(h, _binEdges);
+		TH1* h_rebin = h->Rebin(_nbins, hname, &_binEdges[0]);
+		//TH1* h_rebin = getRebinnedHistogram1d(h, _binEdges);
 		
 		makeBinContentsPositive(h_rebin,0);
 		h_rebin->Write();
 	}
-	std::cout << "Output file : " << outname << std::endl;
+	
+	if (verbosity)
+		std::cout << "Output file : " << outname << std::endl;
 	
 	output->Close();
 	
-	if (_makeUniformBins) {
-		TString outname_u = "rebinned_datacards_uniform_"+TString::Itoa(nbins,10)+"bins.root";
-		TFile *output_u = new TFile(outname_u,"recreate");
-		
-		std::vector<double> binEdgesUniform =
-			makeUniformBins(nbins,_binEdges.at(0),_binEdges.back());
-
-		for (auto h : _fine_datacards) {
-			TString hname = h->GetName();
-			TH1* h_rebin_u = h->Rebin(nbins, hname, &binEdgesUniform[0]);
-			makeBinContentsPositive(h_rebin_u,0);
-			h_rebin_u->Write();
-		}
-		std::cout << "Output file : " << outname_u << std::endl;
-		
-		output_u->Close();
-	}
-	
 	return;
+}
+
+void shapeBinner::analyzeBins(TH1* h_sig, TH1* h_bkg1, TH1* h_bkg2)
+{
+	_purities.clear();
+	_relErrors_sig.clear();
+	_relErrors_bkg1.clear();
+	_relErrors_bkg2.clear();
+	_pvalue.clear();
+	
+	int nbins = h_sig->GetNbinsX();
+	assert(nbins == h_bkg1->GetNbinsX() and nbins == h_bkg2->GetNbinsX());
+
+	for (int ibin = 1; ibin <= nbins; ++ibin) {
+		double binContent_sig  = h_sig  -> GetBinContent(ibin);
+		double binContent_bkg1 = h_bkg1 -> GetBinContent(ibin);
+		double binContent_bkg2 = h_bkg2 -> GetBinContent(ibin);
+		double binError_sig  = h_sig  -> GetBinError(ibin);
+		double binError_bkg1 = h_bkg1 -> GetBinError(ibin);
+		double binError_bkg2 = h_bkg2 -> GetBinError(ibin);
+
+		// signal purity
+		double binContent_sum = binContent_sig+binContent_bkg1+binContent_bkg2;
+		_purities.push_back(binContent_sig / binContent_sum);
+
+		// relative errors
+		double relerr_sig =
+			(binContent_sig > 0) ? (binError_sig/binContent_sig) : 0;
+		double relerr_bkg1 =
+			(binContent_bkg1 > 0) ? (binError_bkg1/binContent_bkg1) : 0;
+		double relerr_bkg2 =
+			(binContent_bkg2 > 0) ? (binError_bkg2/binContent_bkg2) : 0;
+		
+		_relErrors_sig.push_back(relerr_sig);
+		_relErrors_bkg1.push_back(relerr_bkg1);
+		_relErrors_bkg2.push_back(relerr_bkg2);
+
+		// significance
+		computeSignificance(binContent_sig, binContent_bkg1 + binContent_bkg2);
+	}
 }
 
 void shapeBinner::computeSignificance(float s, float b)
@@ -248,9 +316,59 @@ std::vector<double> shapeBinner::getPurities()
 	return _purities;
 }
 
+std::vector<double> shapeBinner::getRelativeErrors(int ch)
+{
+	switch(ch) {
+	case 0:  // signal
+		return _relErrors_sig;
+		break;
+	case 1:  // irreducible background
+		return _relErrors_bkg1;
+		break;
+	case 2:  // reducible background
+		return _relErrors_bkg2;
+		break;
+	default:
+		std::cerr << "getRelativeErrors: Not valid option!" << std::endl;
+		std::vector<double> empty;
+		return empty;
+	}
+}
+
 std::vector<float> shapeBinner::getSignificance()
 {
 	return _pvalue;
+}
+
+void shapeBinner::printResultsAll()
+{
+	using std::cout;
+	using std::endl;
+
+	if (not _makeUniformBins) {
+		ostringstream param1;
+		ostringstream param2;
+		param1 << _relErrThreshold_bkg1;
+		param2 << _relErrThreshold_bkg2;
+		cout << "## " << param1.str() << " " << param2.str() << " => " << _nbins
+			 << " bins" << endl;
+	}
+	else
+		cout << "uniform " << _nbins << " bins" << endl;
+	
+	cout << "Bin edges ";
+	cout << _binEdges << endl;
+
+	cout << "Signal purities ";
+	cout << _purities << endl;
+	
+	cout << "Relative errors " << endl;
+	cout << "Signal ";
+	cout << _relErrors_sig << endl;
+	cout << "Irreducible background ";
+	cout << _relErrors_bkg1 << endl;
+	cout << "Reducible background ";
+	cout << _relErrors_bkg2 << endl;
 }
 
 TH1* shapeBinner::getRebinnedHistogram1d(const TH1* histoOriginal,
