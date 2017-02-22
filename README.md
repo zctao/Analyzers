@@ -4,16 +4,15 @@
 
 Setup CMSSW environment and get Analyzer repository:
 
-	 cmsrel CMSSW_8_0_25
-     cd CMSSW_8_0_25/src/
-     cmsenv
-     git cms-init
-
-     git clone https://github.com/zctao/Analyzers.git
+	cmsrel CMSSW_8_0_26_patch1
+    cd CMSSW_8_0_26_patch1/src/
+    cmsenv
+    git cms-init
 
 For MET Correction:
 	
-	git cms-merge-topic cms-met:METRecipe_8020
+	git cms-merge-topic cms-met:METRecipe_8020 -u
+	git cms-merge-topic cms-met:METRecipe_80X_part2 -u
 
 Electron MVA ID:
 
@@ -31,11 +30,6 @@ MiniAODHelper:
 LeptonID package shared with ND ttH-Multilepton group:
 
 	git clone https://github.com/cms-ttH/ttH-LeptonID.git ttH/LeptonID
-
-Fix needed for a possible bug in current version of CMSSW:
-
-	git cms-addpkg CommonTools/Utils
-	sed -i 's|Math/include|Math/interface|' CommonTools/Utils/interface/normalizedPhi.h
 
 Compile:
 
