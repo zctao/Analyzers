@@ -1,3 +1,5 @@
+#if defined(__ROOTCLING__) || defined(__ACLIC__)
+
 #ifndef shapeBinner_h
 #define shapeBinner_h
 
@@ -83,4 +85,5 @@ class shapeBinner
 	std::vector<float> _SoverSqrtSplusB;
 };
 
+#endif
 #endif

@@ -1,3 +1,5 @@
+#if defined(__ROOTCLING__) || defined(__ACLIC__)
+
 #ifndef shapeBinner_cc
 #define shapeBinner_cc
 
@@ -485,4 +487,5 @@ void shapeBinner::makeBinContentsPositive(TH1* histogram, int verbosity)
 	}
 }
 
+#endif
 #endif
