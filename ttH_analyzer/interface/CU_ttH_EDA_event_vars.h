@@ -112,6 +112,11 @@ struct CU_ttH_EDA_event_vars {
 	/// Other quantities
 	pat::MET pfMET;
 	pat::MET MET_corrected;
+	float METSignificance;
+	float METCov00;
+	float METCov01;
+	float METCov11;
+
 	float dimuon_mass;
 	float dielectron_mass;
 	float dilepton_mass;

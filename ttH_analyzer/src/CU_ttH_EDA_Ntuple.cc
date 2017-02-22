@@ -81,6 +81,11 @@ void CU_ttH_EDA_Ntuple::write_ntuple(const CU_ttH_EDA_event_vars &local)
 	PFMETphi = local.pfMET.phi();
 	MHT = local.MHT;
 	metLD = local.metLD;
+	METSignificance = local.METSignificance;
+	METCov00 = local.METCov00;
+	METCov01 = local.METCov01;
+	METCov10 = METCov01;
+	METCov11 = local.METCov11;
 
 	// lep conePt
 	if (local.leptons_fakeable.size() > 0) {
@@ -616,6 +621,10 @@ void CU_ttH_EDA_Ntuple::initialize()
 	// MET
 	PFMET = -9999.;
 	PFMETphi = -9999.;
+	METCov00 = -9999.;
+	METCov01 = -9999.;
+	METCov10 = -9999.;
+	METCov11 = -9999.;
 	MHT = -9999.;
 	metLD = -9999.;
 }
@@ -883,6 +892,11 @@ void CU_ttH_EDA_Ntuple::set_up_branches(TTree *tree)
 	// MET
 	tree->Branch("PFMET", &PFMET);
 	tree->Branch("PFMETphi", &PFMETphi);
+	tree->Branch("METSignificance", &METSignificance);
+	tree->Branch("METCov00", &METCov00);
+	tree->Branch("METCov01", &METCov01);
+	tree->Branch("METCov10", &METCov10);
+	tree->Branch("METCov11", &METCov11);
 	tree->Branch("MHT", &MHT);
 	tree->Branch("metLD", &metLD);
 }

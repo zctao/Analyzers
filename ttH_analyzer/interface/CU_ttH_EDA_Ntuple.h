@@ -317,6 +317,11 @@ class CU_ttH_EDA_Ntuple //: public TClass
 	float PFMETphi;
 	float MHT;
 	float metLD;
+	float METSignificance;
+	float METCov00;
+	float METCov10;
+	float METCov01;
+	float METCov11;
 	
 	//ClassDef(CU_ttH_EDA_Ntuple,1);
 	

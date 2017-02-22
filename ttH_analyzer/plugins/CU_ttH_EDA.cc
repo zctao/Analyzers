@@ -469,6 +469,10 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	*/
 	// TODO: need to propagate JEC and uncertainties to MET
 	local.pfMET = handle.METs->front();
+	local.METSignificance = (handle.METs->front()).metSignificance();
+	local.METCov00 = (handle.METs->front()).getSignificanceMatrix()(0,0);
+	local.METCov01 = (handle.METs->front()).getSignificanceMatrix()(0,1);
+	local.METCov11 = (handle.METs->front()).getSignificanceMatrix()(1,1);
 	// MHT
 	float mht = getMHT(local);
 	float met = local.pfMET.pt();
