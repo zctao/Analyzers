@@ -61,6 +61,8 @@ ttHtaus =  cms.EDAnalyzer('CU_ttH_EDA',
             "Flag_goodVertices",
             "Flag_eeBadScFilter",
             "Flag_globalTightHalo2016Filter",
+            "Flag_muonBadTrackFilter",
+            "Flag_chargedHadronTrackResolutionFilter",
             #"Flag_badMuons",
             #"Flag_duplicateMuons"
         ]),

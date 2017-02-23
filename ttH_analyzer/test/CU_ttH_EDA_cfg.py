@@ -134,19 +134,57 @@ process.source = cms.Source("PoolSource",
 ### JEC
 from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
 
+JECLevel = cms.vstring(['L1FastJet', 'L2Relative', 'L3Absolute'])
+if options.isData:
+    JECLevel.append('L2L3Residual')
+
 updateJetCollection(
     process,
     jetSource = cms.InputTag('slimmedJets'),
     labelName = 'UpdatedJEC',
-    jetCorrections = ('AK4PFchs', cms.vstring(['L1FastJet', 'L2Relative', 'L3Absolute','L2L3Residual']), 'None')
+    jetCorrections = ('AK4PFchs', JECLevel, 'None')
 )
 
-### MET Uncertainty
+### MET Correction and Uncertainty
 from RecoMET.METProducers.METSignificanceParams_cfi import METSignificanceParams_Data
 from PhysicsTools.PatUtils.tools.runMETCorrectionsAndUncertainties import runMetCorAndUncFromMiniAOD
-runMetCorAndUncFromMiniAOD(process,
-                           isData=options.isData,
-                           )
+
+# re-miniAOD dataset slimmedMETs already included mu correction. Only update JEC
+if options.isData: 
+    runMetCorAndUncFromMiniAOD(process, isData=options.isData,)
+else:
+# re-correct MET based on bad muons on the fly for MC
+    from PhysicsTools.PatUtils.tools.muonRecoMitigation import muonRecoMitigation
+    
+    muonRecoMitigation(
+        process = process,
+        pfCandCollection = "packedPFCandidates", #input PF Candidate Collection
+        runOnMiniAOD = True, #To determine if you are running on AOD or MiniAOD
+        selection="",
+        muonCollection="", 
+        cleanCollName="cleanMuonsPFCandidates",
+        cleaningScheme="computeAllApplyClone", 
+        postfix=""
+    )
+    
+    process.badGlobalMuonTaggerMAOD.taggingMode = cms.bool(True)
+    process.cloneGlobalMuonTaggerMAOD.taggingMode = cms.bool(True)
+    
+    runMetCorAndUncFromMiniAOD(process,
+                               isData=False,
+                               pfCandColl="cleanMuonsPFCandidates",
+                               recoMetFromPFCs=True,
+                               postfix=""#"MuClean"
+    )
+    
+    process.mucorMET = cms.Sequence(
+        process.badGlobalMuonTaggerMAOD *
+        process.cloneGlobalMuonTaggerMAOD *
+        #process.badMuons * # If you are using cleaning mode "all", uncomment this line
+        process.cleanMuonsPFCandidates *
+        process.fullPatMetSequence#MuClean
+    )
+
 
 ### load the analysis
 # electron MVA developed by the EGamma POG
@@ -189,9 +227,11 @@ process.ttHtaus.csv_loose_wp = cms.double(0.5426)
 process.ttHtaus.csv_medium_wp = cms.double(0.8484)
 process.ttHtaus.csv_tight_wp = cms.double(0.9535)
 if options.isData:
-    process.ttHtaus.filter_config_tag = cms.string("RECO")
-else:
-    process.ttHtaus.filter_config_tag = cms.string("PAT")
+    process.ttHtaus.MET_filters.append("Flag_badMuons")
+    process.ttHtaus.MET_filters.append("Flag_duplicateMuons")
+#    process.ttHtaus.filter_config_tag = cms.string("PAT")
+#else:
+#    process.ttHtaus.filter_config_tag = cms.string("PAT")
 # for reHLT
 if options.reHLT:
     process.ttHtaus.HLT_config_tag = cms.string("HLT2")
@@ -235,7 +275,8 @@ if options.isData:
 else:
     process.p = cms.Path(
         process.patJetCorrFactorsUpdatedJEC * process.updatedPatJetsUpdatedJEC *
-        process.fullPatMetSequence *
+        #process.fullPatMetSequence *
+        process.mucorMET  *
         process.electronMVAValueMapProducer *
         process.ttHLeptons *
         process.ttHtaus
