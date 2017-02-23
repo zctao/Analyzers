@@ -170,6 +170,28 @@ int CU_ttH_EDA::Check_filters(edm::Handle<edm::TriggerResults> filterResults)
 	return 0;
 }
 
+unsigned int CU_ttH_EDA::getTriggerBits(edm::Handle<edm::TriggerResults> triggerResults, std::vector<std::string>& names, HLTConfigProvider& config)
+{
+	unsigned int bits = 0;
+	unsigned int iname = 0;
+
+	for (const auto & n : names) {
+		unsigned int index = config.triggerIndex(n);
+
+		if (index >= triggerResults->size()) {
+			std::cerr << "Failed to find " << n << std::endl;
+			continue;
+		}
+
+		if (triggerResults->accept(index))
+			bits |= 1<< iname;
+
+		++iname;
+	}
+
+	return bits;
+}
+
 int CU_ttH_EDA::Check_vertices_set_MAODhelper(
 	edm::Handle<reco::VertexCollection> vertices)
 {

@@ -23,7 +23,7 @@ ttHtaus =  cms.EDAnalyzer('CU_ttH_EDA',
         print_HLT_event_path = cms.bool(False),
         turn_off_HLT_cut = cms.bool(False),
         HLT_config_tag = cms.string('HLT'),
-        filter_config_tag = cms.string('HLT'),
+        filter_config_tag = cms.string('PAT'),
         collect_trigger_stats = cms.bool(False),
         ## Single lepton triggers:
         HLT_electron_triggers = cms.vstring([
@@ -46,6 +46,23 @@ ttHtaus =  cms.EDAnalyzer('CU_ttH_EDA',
         HLT_muon_muon_triggers = cms.vstring([
             #'HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v',
             'HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v'
+        ]),
+        ## Extra
+        HLT_extra_triggers = cms.vstring([
+ 
+        ]),
+                          
+        # Filter
+        ## MET filter
+        MET_filters = cms.vstring([
+            "Flag_HBHENoiseFilter",
+            "Flag_HBHENoiseIsoFilter",
+            "Flag_EcalDeadCellTriggerPrimitiveFilter",
+            "Flag_goodVertices",
+            "Flag_eeBadScFilter",
+            "Flag_globalTightHalo2016Filter",
+            #"Flag_badMuons",
+            #"Flag_duplicateMuons"
         ]),
                           
         using_real_data = cms.bool(False),

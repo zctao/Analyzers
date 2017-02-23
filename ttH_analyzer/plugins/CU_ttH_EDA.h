@@ -169,6 +169,8 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	bool Check_triggers_iterator(const vector<string> &,
 								 edm::Handle<edm::TriggerResults>);
 
+	unsigned int getTriggerBits(edm::Handle<edm::TriggerResults>, std::vector<std::string>&, HLTConfigProvider&);	
+	
 	std::vector<pat::Jet> GetCorrectedJets(const std::vector<pat::Jet>&, JetCorrectionUncertainty*, const std::string);
 	std::vector<pat::Tau> GetCorrectedTaus(const std::vector<pat::Tau>&, float, const std::string);
 	
@@ -236,8 +238,6 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	// Used for trigger statistics, filled via run (trigger_stats = true)
 	std::string hltTag;
 	std::string filterTag;
-
-	bool trigger_stats;
 	
 	// counters (trigger_stats = true)
 	std::map<std::string, unsigned long> n_trigger_fired; // HLT
@@ -249,12 +249,15 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	std::vector<std::string> filter_names;
 	std::vector<std::string> filter_names_no_ver;
 
+	bool trigger_stats;
+	
 	// triggers of interest. Provided by config
 	std::vector<std::string> trigger_on_HLT_e;	// single electron trigger
 	std::vector<std::string> trigger_on_HLT_mu;   // single muon trigger
 	std::vector<std::string> trigger_on_HLT_ee;   // dielectron tigger
 	std::vector<std::string> trigger_on_HLT_emu;  // electron+muon trigger
 	std::vector<std::string> trigger_on_HLT_mumu; // dimuon trigger
+	std::vector<std::string> trigger_on_HLT_extra;  // 
 
 	/// Output file is opened/closed through CMS py config
 	edm::Service<TFileService> fs_;
@@ -303,7 +306,6 @@ class CU_ttH_EDA : public edm::EDAnalyzer
 	TH1D *h_SumGenWeight;
 	TH1D *h_SumGenWeightxPU;
 	TH1D *h_GenWeightProcessed;  // cross check
-	TH1D *h_GenWeightxPUProcessed;  // cross check
 
 	// for WZ control region
 	//TH1D *h_mTWl;  // mT of the lepton from W

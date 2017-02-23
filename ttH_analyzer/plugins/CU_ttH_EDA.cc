@@ -49,6 +49,8 @@ CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig):
 	hltcut_off (iConfig.getParameter<bool>("turn_off_HLT_cut")),
 	hltTag (iConfig.getParameter<string>("HLT_config_tag")),
 	filterTag (iConfig.getParameter<string>("filter_config_tag")),
+	// Filters
+	filter_names (iConfig.getParameter<std::vector<string>>("MET_filters")),
 	// Triggers
 	trigger_stats (iConfig.getParameter<bool>("collect_trigger_stats")),
 	trigger_on_HLT_e (iConfig.getParameter<std::vector<string>>("HLT_electron_triggers")),
@@ -56,6 +58,7 @@ CU_ttH_EDA::CU_ttH_EDA(const edm::ParameterSet &iConfig):
 	trigger_on_HLT_ee (iConfig.getParameter<std::vector<string>>("HLT_electron_electron_triggers")),
 	trigger_on_HLT_emu (iConfig.getParameter<std::vector<string>>("HLT_electron_muon_triggers")),
 	trigger_on_HLT_mumu (iConfig.getParameter<std::vector<string>>("HLT_muon_muon_triggers")),
+	trigger_on_HLT_extra (iConfig.getParameter<std::vector<string>>("HLT_extra_triggers")),
 	// tauES
 	TESType (iConfig.getParameter<string>("TauESType")),
 	// JEC
@@ -165,6 +168,17 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	Check_triggers(handle.triggerResults, local);
 	Check_filters(handle.filterResults);
 	
+	std::vector<std::string> triggersAll;
+	triggersAll.insert(triggersAll.end(),trigger_on_HLT_e.begin(),trigger_on_HLT_e.end());
+	triggersAll.insert(triggersAll.end(),trigger_on_HLT_mu.begin(),trigger_on_HLT_mu.end());
+	triggersAll.insert(triggersAll.end(),trigger_on_HLT_ee.begin(),trigger_on_HLT_ee.end());
+	triggersAll.insert(triggersAll.end(),trigger_on_HLT_emu.begin(),trigger_on_HLT_emu.end());
+	triggersAll.insert(triggersAll.end(),trigger_on_HLT_mumu.begin(),trigger_on_HLT_mumu.end());
+	triggersAll.insert(triggersAll.end(),trigger_on_HLT_extra.begin(),trigger_on_HLT_extra.end());
+	
+	local.hltBits = getTriggerBits(handle.triggerResults, triggersAll, hlt_config);
+	local.filterBits = getTriggerBits(handle.filterResults, filter_names, filter_config);
+	
 	Check_vertices_set_MAODhelper(handle.vertices);
 	// 	Check_beam_spot(BS);	// dumb implementation
 
@@ -226,11 +240,9 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		}
 
 		genWeightSum += local.mc_weight;
-		//h_SumGenWeight->Fill(1, genWeight/abs(genWeight));
 		genWeightxPUSum += local.mc_weight * local.pu_weight;
 
 		h_GenWeightProcessed->Fill(local.mc_weight);
-		h_GenWeightxPUProcessed->Fill(1,local.mc_weight * local.pu_weight);
 	}
 
 	if (trigger_stats) {

@@ -48,6 +48,8 @@ void CU_ttH_EDA_Ntuple::write_ntuple(const CU_ttH_EDA_event_vars &local)
 	pass_double_mu = local.pass_double_mu;
 	pass_elemu = local.pass_elemu;
 	matchHLTPath = local.matchHLTPath;
+	triggerBits = local.hltBits;
+	filterBits = local.filterBits;
 
 	ibin = local.ibin;
 
@@ -130,6 +132,7 @@ void CU_ttH_EDA_Ntuple::fill_ntuple_muons(const std::vector<pat::Muon>& muons)
 		mu0_ismvasel = muons[0].userFloat("idMVABased") > 0.5;
 		if (muons[0].hasUserFloat("MCMatchType"))
 			mu0_mcMatchType = muons[0].userFloat("MCMatchType");
+		mu0_isPFMuon = muons[0].isPFMuon();
 	}
 	
 	if (muons.size() > 1 ) {
@@ -164,6 +167,7 @@ void CU_ttH_EDA_Ntuple::fill_ntuple_muons(const std::vector<pat::Muon>& muons)
 		mu1_ismvasel = muons[1].userFloat("idMVABased") > 0.5;
 		if (muons[1].hasUserFloat("MCMatchType"))
 			mu1_mcMatchType = muons[1].userFloat("MCMatchType");
+		mu1_isPFMuon = muons[1].isPFMuon();
 	}
 }
 
@@ -401,16 +405,8 @@ void CU_ttH_EDA_Ntuple::initialize()
 	pass_double_e = -9999;
 	pass_elemu = -9999;
 	matchHLTPath = -9999;
-
-    HLT_Ele27_WPTight_Gsf = -9999;
-	HLT_IsoMu24 = -9999;
-	HLT_IsoTkMu24 = -9999;
-	HLT_IsoMu22_eta2p1 = -9999;
-	HLT_IsoTkMu22_eta2p1 = -9999;
-	HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ = -9999;
-	HLT_Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL = -9999;
-	HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL = -9999;
-	HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ = -9999;
+	triggerBits = 0;
+	filterBits = 0;
 	
 	n_presel_mu = -9999;
 	n_mvasel_mu = -9999;
@@ -458,6 +454,7 @@ void CU_ttH_EDA_Ntuple::initialize()
 	mu0_ismvasel = 0;//-9999;
 	mu0_isfakeablesel = 0;//-9999;
 	mu0_mcMatchType = -9999;
+	mu0_isPFMuon = -9999;
 	mu1_pt = -9999.;
 	mu1_conept = -9999.;
 	mu1_eta = -9999.;
@@ -481,6 +478,7 @@ void CU_ttH_EDA_Ntuple::initialize()
 	mu1_ismvasel = 0;//-9999;
 	mu1_isfakeablesel = 0;//-9999;
 	mu1_mcMatchType = -9999;
+	mu1_isPFMuon = -9999;
 	
 	// electrons
 	ele0_pt = -9999.;
@@ -678,15 +676,8 @@ void CU_ttH_EDA_Ntuple::set_up_branches(TTree *tree)
 	tree->Branch("pass_double_mu", &pass_double_mu);
 	tree->Branch("pass_elemu", &pass_elemu);
 	tree->Branch("matchHLTPath", &matchHLTPath);
-	tree->Branch("HLT_Ele27_WPTight_Gsf", &HLT_Ele27_WPTight_Gsf);
-	tree->Branch("HLT_IsoMu24", &HLT_IsoMu24);
-	tree->Branch("HLT_IsoTkMu24", &HLT_IsoTkMu24);
-	tree->Branch("HLT_IsoMu22_eta2p1", &HLT_IsoMu22_eta2p1);
-	tree->Branch("HLT_IsoTkMu22_eta2p1", &HLT_IsoTkMu22_eta2p1);
-	tree->Branch("HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ", &HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ);
-	tree->Branch("HLT_Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL", &HLT_Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL);
-	tree->Branch("HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL", &HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL);
-	tree->Branch("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ", &HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ);
+	tree->Branch("triggerBits", &triggerBits);
+	tree->Branch("filterBits", &filterBits);
 	tree->Branch("n_presel_mu", &n_presel_mu);
 	tree->Branch("n_mvasel_mu", &n_mvasel_mu);
 	tree->Branch("n_fakeablesel_mu", &n_fakeablesel_mu);
@@ -725,11 +716,12 @@ void CU_ttH_EDA_Ntuple::set_up_branches(TTree *tree)
 	tree->Branch("mu0_dz",                   &mu0_dz);
 	tree->Branch("mu0_segmentCompatibility", &mu0_segmentCompatibility);
 	tree->Branch("mu0_leptonMVA",            &mu0_leptonMVA);
-	tree->Branch("mu0_mediumID", &mu0_mediumID);
-	tree->Branch("mu0_dpt_div_pt", &mu0_dpt_div_pt);
-	tree->Branch("mu0_ismvasel", &mu0_ismvasel);
-	tree->Branch("mu0_isfakeablesel", &mu0_isfakeablesel);
-	tree->Branch("mu0_mcMatchType", &mu0_mcMatchType);
+	tree->Branch("mu0_mediumID",             &mu0_mediumID);
+	tree->Branch("mu0_dpt_div_pt",           &mu0_dpt_div_pt);
+	tree->Branch("mu0_ismvasel",             &mu0_ismvasel);
+	tree->Branch("mu0_isfakeablesel",        &mu0_isfakeablesel);
+	tree->Branch("mu0_mcMatchType",          &mu0_mcMatchType);
+	tree->Branch("mu0_isPFMuon",             &mu0_isPFMuon);
 	tree->Branch("mu1_pt",                   &mu1_pt);
 	tree->Branch("mu1_conept",               &mu1_conept);
 	tree->Branch("mu1_eta",                  &mu1_eta);
@@ -748,11 +740,12 @@ void CU_ttH_EDA_Ntuple::set_up_branches(TTree *tree)
 	tree->Branch("mu1_dz",                   &mu1_dz);
 	tree->Branch("mu1_segmentCompatibility", &mu1_segmentCompatibility);
 	tree->Branch("mu1_leptonMVA",            &mu1_leptonMVA);
-	tree->Branch("mu1_mediumID", &mu1_mediumID);
-	tree->Branch("mu1_dpt_div_pt", &mu1_dpt_div_pt);
-	tree->Branch("mu1_ismvasel", &mu1_ismvasel);
-	tree->Branch("mu1_isfakeablesel", &mu1_isfakeablesel);
-	tree->Branch("mu1_mcMatchType", &mu1_mcMatchType);
+	tree->Branch("mu1_mediumID",             &mu1_mediumID);
+	tree->Branch("mu1_dpt_div_pt",           &mu1_dpt_div_pt);
+	tree->Branch("mu1_ismvasel",             &mu1_ismvasel);
+	tree->Branch("mu1_isfakeablesel",        &mu1_isfakeablesel);
+	tree->Branch("mu1_mcMatchType",          &mu1_mcMatchType);
+	tree->Branch("mu1_isPFMuon",             &mu1_isPFMuon);
 	// electrons
 	tree->Branch("ele0_pt",                   &ele0_pt);
 	tree->Branch("ele0_conept",               &ele0_conept);

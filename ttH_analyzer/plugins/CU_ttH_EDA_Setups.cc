@@ -12,7 +12,6 @@ void CU_ttH_EDA::Set_up_histograms()
 	h_SumGenWeight = fs_->make<TH1D>("h_SumGenWeight","",1,0.5,1.5);
 	h_SumGenWeightxPU = fs_->make<TH1D>("h_SumGenWeightxPU","",1,0.5,1.5);
 	h_GenWeightProcessed = fs_->make<TH1D>("h_GenWeightProcessed","",3,-1.5,1.5);
-	h_GenWeightxPUProcessed = fs_->make<TH1D>("h_GenWeightxPUProcessed","",1,0.5,1.5);
 	
 	// categories
 	TString lep_cat[3] = {"mumu", "ee", "emu"};
@@ -140,7 +139,6 @@ void CU_ttH_EDA::Set_up_tokens(const edm::ParameterSet &config)
 		edm::InputTag(std::string("TriggerResults"), std::string(""), hltTag));
 	token.filterResults = consumes<edm::TriggerResults>(edm::InputTag(
 		std::string("TriggerResults"), std::string(""), filterTag));
-
 	token.vertices = consumes<reco::VertexCollection>(
 	    config.getParameter<edm::InputTag>("pv"));
 	token.sec_vertices = consumes<reco::VertexCompositePtrCandidateCollection>(
