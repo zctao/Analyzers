@@ -102,15 +102,13 @@ options.parseArguments()
 process.load('Configuration.StandardSequences.Services_cff')
 process.load( "Configuration.StandardSequences.FrontierConditions_GlobalTag_cff" )
 
-if options.isData:
-    process.GlobalTag.globaltag = '80X_dataRun2_2016SeptRepro_v7'
-    #process.GlobalTag.globaltag = '80X_dataRun2_2016SeptRepro_v4'
-    #process.GlobalTag.globaltag = '80X_dataRun2_Prompt_ICHEP16JEC_v0'
-else:
-    process.GlobalTag.globaltag = '80X_mcRun2_asymptotic_2016_TrancheIV_v8'
-    #process.GlobalTag.globaltag = '80X_mcRun2_asymptotic_2016_TrancheIV_v6'
-    #process.GlobalTag.globaltag = '80X_mcRun2_asymptotic_2016_miniAODv2_v1'
+MCGT = '80X_mcRun2_asymptotic_2016_TrancheIV_v8'
+DATAGT = '80X_dataRun2_2016SeptRepro_v7'
+if options.Is2016H:
+    DATAGT = '80X_dataRun2_Prompt_v16'
 
+process.GlobalTag.globaltag = DATAGT if options.isData else MCGT
+    
 process.maxEvents = cms.untracked.PSet(
 	input = cms.untracked.int32(options.maxEvents)
 )
@@ -144,10 +142,11 @@ updateJetCollection(
 )
 
 ### MET Uncertainty
-#from PhysicsTools.PatUtils.tools.runMETCorrectionsAndUncertainties import runMetCorAndUncFromMiniAOD
-#runMetCorAndUncFromMiniAOD(process,
-#                           isData=options.isData,
-#                           )
+from RecoMET.METProducers.METSignificanceParams_cfi import METSignificanceParams_Data
+from PhysicsTools.PatUtils.tools.runMETCorrectionsAndUncertainties import runMetCorAndUncFromMiniAOD
+runMetCorAndUncFromMiniAOD(process,
+                           isData=options.isData,
+                           )
 
 ### load the analysis
 # electron MVA developed by the EGamma POG
@@ -169,7 +168,7 @@ process.ttHtaus.input_tags.electrons = cms.InputTag("ttHLeptons")
 process.ttHtaus.input_tags.muons = cms.InputTag("ttHLeptons")
 process.ttHtaus.input_tags.taus = cms.InputTag("ttHLeptons")
 process.ttHtaus.input_tags.jets = cms.InputTag("updatedPatJetsUpdatedJEC")
-#process.ttHtaus.input_tags.mets = cms.InputTag("slimmedMETs","","ttH")
+process.ttHtaus.input_tags.mets = cms.InputTag("slimmedMETs","","ttH")
 process.ttHtaus.input_tags.rho = cms.InputTag("fixedGridRhoFastjetCentralNeutral")
 
 process.ttHtaus.do_systematics = cms.bool(options.doSystematics)
@@ -189,6 +188,10 @@ process.ttHtaus.doJERsmear = cms.bool(options.doJERSmearing)
 process.ttHtaus.csv_loose_wp = cms.double(0.5426)
 process.ttHtaus.csv_medium_wp = cms.double(0.8484)
 process.ttHtaus.csv_tight_wp = cms.double(0.9535)
+if options.isData:
+    process.ttHtaus.filter_config_tag = cms.string("RECO")
+else:
+    process.ttHtaus.filter_config_tag = cms.string("PAT")
 # for reHLT
 if options.reHLT:
     process.ttHtaus.HLT_config_tag = cms.string("HLT2")
@@ -209,6 +212,10 @@ process.TFileService = cms.Service("TFileService",
                                    fileName = cms.string(out_file)
 )
 
+#process.Timing = cms.Service("Timing",
+#                             summaryOnly = cms.untracked.bool(True),
+#                             useJobReport = cms.untracked.bool(True)
+#)
 #process.SimpleMemoryCheck = cms.Service("SimpleMemoryCheck",
 #                                        ignoreTotal = cms.untracked.int32(1),
 #                                        oncePerEventMode=cms.untracked.bool(True)
@@ -220,7 +227,7 @@ if options.isData:
     process.p = cms.Path(
         process.primaryVertexFilter *
         process.patJetCorrFactorsUpdatedJEC * process.updatedPatJetsUpdatedJEC *
-#        process.fullPatMetSequence *
+        process.fullPatMetSequence *
         process.electronMVAValueMapProducer *
         process.ttHLeptons *
         process.ttHtaus
@@ -228,7 +235,7 @@ if options.isData:
 else:
     process.p = cms.Path(
         process.patJetCorrFactorsUpdatedJEC * process.updatedPatJetsUpdatedJEC *
-#        process.fullPatMetSequence *
+        process.fullPatMetSequence *
         process.electronMVAValueMapProducer *
         process.ttHLeptons *
         process.ttHtaus
