@@ -66,6 +66,7 @@ void makeSyncTree_EvtSel(
 		tree->SetBranchStatus("matchHLTPath", 0);
 		tree->SetBranchStatus("triggerBits", 0);
 		tree->SetBranchStatus("filterBits", 0);
+		tree->SetBranchStatus("nBadMuons", 0);
 		tree->SetBranchStatus("mu0_mcMatchType", 0);
 		tree->SetBranchStatus("mu0_isPFMuon", 0);
 		tree->SetBranchStatus("mu1_mcMatchType", 0);

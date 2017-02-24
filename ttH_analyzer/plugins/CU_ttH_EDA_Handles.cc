@@ -35,6 +35,9 @@ void Set_up_handles(const Event &iEvent, edm_Handles &handle, edm_Tokens &token,
 		iEvent.getByToken(token.MC_particles, handle.MC_particles);
 		iEvent.getByToken(token.MC_packed, handle.MC_packed);
 		iEvent.getByToken(token.genJets, handle.genJets);
+
+		iEvent.getByToken(token.badMuons, handle.badMuons);
+		iEvent.getByToken(token.clonedMuons, handle.clonedMuons);
 	}
 }
 

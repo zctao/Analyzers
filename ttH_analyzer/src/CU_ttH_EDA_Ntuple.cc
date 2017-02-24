@@ -51,6 +51,8 @@ void CU_ttH_EDA_Ntuple::write_ntuple(const CU_ttH_EDA_event_vars &local)
 	triggerBits = local.hltBits;
 	filterBits = local.filterBits;
 
+	nBadMuons = local.nBadMuons;
+	
 	ibin = local.ibin;
 
 	// Muons
@@ -407,6 +409,8 @@ void CU_ttH_EDA_Ntuple::initialize()
 	matchHLTPath = -9999;
 	triggerBits = 0;
 	filterBits = 0;
+
+	nBadMuons = -9999;
 	
 	n_presel_mu = -9999;
 	n_mvasel_mu = -9999;
@@ -677,6 +681,7 @@ void CU_ttH_EDA_Ntuple::set_up_branches(TTree *tree)
 	tree->Branch("pass_elemu", &pass_elemu);
 	tree->Branch("matchHLTPath", &matchHLTPath);
 	tree->Branch("triggerBits", &triggerBits);
+	tree->Branch("nBadMuons", &nBadMuons);
 	tree->Branch("filterBits", &filterBits);
 	tree->Branch("n_presel_mu", &n_presel_mu);
 	tree->Branch("n_mvasel_mu", &n_mvasel_mu);

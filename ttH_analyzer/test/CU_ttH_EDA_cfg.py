@@ -230,7 +230,9 @@ if options.isData:
     process.ttHtaus.MET_filters.append("Flag_badMuons")
     process.ttHtaus.MET_filters.append("Flag_duplicateMuons")
 #    process.ttHtaus.filter_config_tag = cms.string("PAT")
-#else:
+else:
+    process.ttHtaus.input_tags.badmu = cms.InputTag("badGlobalMuonTaggerMAOD","bad","ttH")
+    process.ttHtaus.input_tags.clonemu = cms.InputTag("cloneGlobalMuonTaggerMAOD","bad","ttH")
 #    process.ttHtaus.filter_config_tag = cms.string("PAT")
 # for reHLT
 if options.reHLT:

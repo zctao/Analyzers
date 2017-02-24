@@ -171,6 +171,11 @@ void CU_ttH_EDA::Set_up_tokens(const edm::ParameterSet &config)
 	    config.getParameter<edm::InputTag>("packedgen"));
 	token.genJets = consumes<reco::GenJetCollection>(
 	    edm::InputTag(std::string("slimmedGenJets")));
+	
+	token.badMuons = consumes<edm::View<reco::Muon>>(
+		config.getParameter<edm::InputTag>("badmu"));
+	token.clonedMuons = consumes<edm::View<reco::Muon>>(
+		config.getParameter<edm::InputTag>("clonemu"));
 }
 
 void CU_ttH_EDA::Set_up_selection_region(const string & selection_region )

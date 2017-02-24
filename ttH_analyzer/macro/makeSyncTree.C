@@ -52,7 +52,8 @@ void makeSyncTree(TString input_file="/uscms/home/ztao/nobackup/output_sync.root
 	old_tree->SetBranchStatus("pass_elemu", 0);
 	old_tree->SetBranchStatus("matchHLTPath", 0);
 	old_tree->SetBranchStatus("triggerBits", 0);
-	old_tree->SetBranchStatus("filterBits", 0);	
+	old_tree->SetBranchStatus("filterBits", 0);
+	old_tree->SetBranchStatus("nBadMuons", 0);
 	old_tree->SetBranchStatus("mu0_mcMatchType", 0);
 	old_tree->SetBranchStatus("mu0_isPFMuon", 0);
 	old_tree->SetBranchStatus("mu1_mcMatchType", 0);

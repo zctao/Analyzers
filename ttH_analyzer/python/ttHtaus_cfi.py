@@ -96,6 +96,8 @@ ttHtaus =  cms.EDAnalyzer('CU_ttH_EDA',
             pfcand = cms.InputTag("packedPFCandidates"),
             beamspot = cms.InputTag("offlineBeamSpot"),
             packedgen = cms.InputTag("packedGenParticles"),
-            prunedgen = cms.InputTag("prunedGenParticles")
+            prunedgen = cms.InputTag("prunedGenParticles"),
+            badmu = cms.InputTag(""),
+            clonemu = cms.InputTag("")
         )
 )

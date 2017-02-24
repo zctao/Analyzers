@@ -124,7 +124,7 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	/// Create and set up edm:Handles in stack mem.
 	edm_Handles handle;
 	Set_up_handles(iEvent, handle, token, isdata);
-
+	
 	/*
 	// for signal sample, filter Higgs decay mode
 	if (sampleName.Contains("ttH_")) {
@@ -178,6 +178,11 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 	
 	local.hltBits = getTriggerBits(handle.triggerResults, triggersAll, hlt_config);
 	local.filterBits = getTriggerBits(handle.filterResults, filter_names, filter_config);
+
+	if (not isdata) {
+		local.nBadMuons = handle.badMuons->size() + handle.clonedMuons->size();
+	}
+	// bad muon tag for re-miniAOD data already included in filterBits
 	
 	Check_vertices_set_MAODhelper(handle.vertices);
 	// 	Check_beam_spot(BS);	// dumb implementation

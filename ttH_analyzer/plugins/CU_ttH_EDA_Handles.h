@@ -101,6 +101,9 @@ struct edm_Handles {
 
 	Handle<pat::PackedGenParticleCollection> MC_packed;
 	Handle<reco::GenJetCollection> genJets;
+
+	Handle<View<reco::Muon>> badMuons;
+	Handle<View<reco::Muon>> clonedMuons;
 };
 
 struct edm_Tokens {
@@ -131,6 +134,9 @@ struct edm_Tokens {
 	
 	EDGetTokenT<pat::PackedGenParticleCollection> MC_packed;
 	EDGetTokenT<reco::GenJetCollection> genJets;
+
+	EDGetTokenT<View<reco::Muon>> badMuons;
+	EDGetTokenT<View<reco::Muon>> clonedMuons;
 };
 
 /// Set up handles with getByToken from edm::Event

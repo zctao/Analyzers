@@ -86,6 +86,8 @@ struct CU_ttH_EDA_event_vars {
 	unsigned int hltBits;
 	unsigned int filterBits;
 
+	int nBadMuons;
+	
 	/// Particle container vectors
 	std::vector<pat::Electron> e_preselected;
 	std::vector<pat::Electron> e_preselected_sorted;

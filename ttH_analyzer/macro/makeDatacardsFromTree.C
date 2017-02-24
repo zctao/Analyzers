@@ -181,8 +181,8 @@ vector<TH1D*> getShapesMC( TString channel, vector<TString> samples)
 		// scale histograms
 		//TH1D* h_SumGenWeight = (TH1D*)f_central->Get("ttHtaus/h_SumGenWeight");
 		TH1D* h_SumGenWeightxPU = (TH1D*)f_central->Get("ttHtaus/h_SumGenWeightxPU");
-		//float nSum = h_SumGenWeight->GetBinContent(1);
-		float nSum = h_SumGenWeightxPU->GetBinContent(1);
+		float nSum = h_SumGenWeight->GetBinContent(1);
+		//float nSum = h_SumGenWeightxPU->GetBinContent(1);
 		float XS = xsection::xsection[string(sample)];
 
 		int ih = 0;

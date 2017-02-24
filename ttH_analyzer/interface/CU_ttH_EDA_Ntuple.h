@@ -97,6 +97,8 @@ class CU_ttH_EDA_Ntuple //: public TClass
 	// trigger and filter bits
 	unsigned int triggerBits;
 	unsigned int filterBits;
+
+	int nBadMuons;
 	
 	// event level MVA
 	float MVA_2lss_ttV;
