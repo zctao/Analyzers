@@ -17,19 +17,19 @@
 
 #include "Cross_Sections.h"
 #include "Misc_Constants.h"
+#include "Analyzers/ttH_analyzer/interface/Types_enum.h"
+#include "Analyzers/ttH_analyzer/interface/TreeAnalyzer.h"
 
-#include "eventSelector.h"
-
-using namespace std;
+//#include "eventSelector.h"
 
 //const float LUMI = 12.9 * 1000.;  // 1/pb
 const float LUMI = 36.773 * 1000; // 1/pb
 
-vector<TH1D*> getShapesMC(TString, vector<TString>);
+vector<TH1D*> getShapesMC(TString, vector<TString>, bool);
 vector<TH1D*> getShapesData(TString, vector<TString>);
 map<TString, TH1D*> setupHistoMap(map<TString, TH1D*>&, TString, bool, TString);
-void fillHistoFromTreeMC(map<TString, TH1D*>&, TTree*);
-void fillHistoFromTreeData(TH1D*, TTree*, vector<vector<unsigned long long>>&);
+//void fillHistoFromTreeMC(map<TString, TH1D*>&, TTree*);
+//void fillHistoFromTreeData(TH1D*, TTree*, vector<vector<unsigned long long>>&);
 void updateHistoName(pair<const TString, TH1D*>&, TString);
 vector<TH1D*> getClosureTestShapes(TH1D*);
 
@@ -37,8 +37,13 @@ vector<TH1D*> getClosureTestShapes(TH1D*);
 // "", "_gentau", "_faketau", "_"+syts, "_gentau"+"_"+syst, "_faketau"+"_"+syst,
 // "_JESUp", "_JESDown"; jesup jesdown on seperate loop
 
-void makeDatacardsFromTree(TString outfile_suffix = "2016b-h")
+void makeDatacardsFromTree(TString outfile_suffix = "2016b-h", bool addSyst = true)
 {
+	using namespace std;
+	
+	gROOT->ProcessLine(".L ../src/SFHelper.cc+");
+	gROOT->ProcessLine(".L ../src/TreeAnalyzer.cc+");
+	
 	vector<TString> channels =
 		{"ttH", "TTW", "TTZ", "EWK", "Rares",
 		 "fakes_data", "flips_data", "data_obs"
@@ -59,7 +64,7 @@ void makeDatacardsFromTree(TString outfile_suffix = "2016b-h")
 			cout << "sample" << "\t" << "yields" << "\t" << "yields(gentau)"
 				 << "\t" << "yields(faketau)" << endl;
 			cout << "-----------------------------------------" << endl;
-			shapes = getShapesMC(channel, SamplesInChannel.at(channel));
+			shapes = getShapesMC(channel, SamplesInChannel.at(channel), addSyst);
 		}
 
 		datacards.insert(datacards.end(), shapes.begin(), shapes.end());
@@ -77,12 +82,12 @@ void makeDatacardsFromTree(TString outfile_suffix = "2016b-h")
 	return;
 }
 
-map<TString, TH1D*> setupHistoMap(TString sample, bool addSyst, TString jec_suffix)
+map<TString, TH1D*> setupHistoMap(TString sample, bool addSyst, TString suffix)
 {
 	map<TString, TH1D*> hists;
 
-	assert(jec_suffix == "" or jec_suffix == "_JESUp" or
-		   jec_suffix == "_JESDown");
+	assert(suffix == "" or suffix == "_JESUp" or suffix == "_JESDown" or
+		   suffix == "_TESUp" or suffix == "_TESDown");
 	
 	vector<TString> pre_keys;
 
@@ -102,9 +107,9 @@ map<TString, TH1D*> setupHistoMap(TString sample, bool addSyst, TString jec_suff
 
 		vector<TString> keys_sys;
 		
-		keys_sys.push_back("" + jec_suffix);
+		keys_sys.push_back("" + suffix);
 
-		if (addSyst and jec_suffix == "") {  // only for the central one
+		if (addSyst and suffix == "") {  // only for the central one
 			if (sample=="ttH" or sample=="TTW" or sample=="TTZ") {
 				for (auto & thu : ThSysts)
 					keys_sys.push_back("_"+thu);
@@ -124,8 +129,11 @@ map<TString, TH1D*> setupHistoMap(TString sample, bool addSyst, TString jec_suff
 	return hists;
 }
 
-vector<TH1D*> getShapesMC( TString channel, vector<TString> samples)
+vector<TH1D*> getShapesMC( TString channel, vector<TString> samples, bool addSyst)
 {
+	Analysis_types AnaType = Analysis_types::Analyze_2lss1tau;
+	Selection_types SelType = Selection_types::Signal_2lss1tau;
+	
 	vector<TH1D*> shapes;
     float yields[3] = {0., 0., 0.};
 
@@ -136,51 +144,91 @@ vector<TH1D*> getShapesMC( TString channel, vector<TString> samples)
 		cout << sample << "\t";
 
 		// set up histograms
-		map<TString,TH1D*> hists = setupHistoMap(sample, true, "");
-		map<TString,TH1D*> hists_jesup = setupHistoMap(sample, false, "_JESUp");
-		map<TString,TH1D*> hists_jesdown = setupHistoMap(sample, false, "_JESDown");
-		
+		map<TString,TH1D*> hists = setupHistoMap(sample, addSyst, "");
+
 		// open files
 		TFile* f_central =
 			new TFile(dir_map.at(sample)+"output_"+sample+".root");
-		TFile* f_jesup =
-			new TFile(dir_map.at(sample)+"output_"+sample+"_jesup.root");
-		TFile* f_jesdown =
-			new TFile(dir_map.at(sample)+"output_"+sample+"_jesdown.root");
 
 		// check if file is open
-		TTree* tree_central;
 		if (f_central->IsOpen()) {
 			// get trees
 			TTree* tree_central = (TTree*) f_central->Get("ttHtaus/eventTree");
-			fillHistoFromTreeMC(hists, tree_central);
+			//fillHistoFromTreeMC(hists, tree_central);
+			TreeAnalyzer tana(tree_central,AnaType,SelType,false);
+			tana.fill_Datacards_MC(hists);
 		}
 		else
 			cout << "CANNOT open file " << "output_" << sample << ".root" << endl;
 		
-		if (f_jesup->IsOpen()) {
-			// get trees
-			TTree* tree_jesup = (TTree*) f_jesup->Get("ttHtaus/eventTree");
-			fillHistoFromTreeMC(hists_jesup, tree_jesup);
-		}
-		else
-			cout << "CANNOT open file " << "output_" << sample << "_jesup.root" << endl;
+		if (addSyst) {
+			// set up histograms
+			map<TString,TH1D*> hists_jesup = setupHistoMap(sample, false, "_JESUp");
+			map<TString,TH1D*> hists_jesdown = setupHistoMap(sample, false, "_JESDown");
+			map<TString,TH1D*> hists_tesup = setupHistoMap(sample, false, "_TESUp");
+			map<TString,TH1D*> hists_tesdown = setupHistoMap(sample, false, "_TESDown");
+
+			// open files
+			TFile* f_jesup =
+				new TFile(dir_map.at(sample)+"output_"+sample+"_jesup.root");
+			TFile* f_jesdown =
+				new TFile(dir_map.at(sample)+"output_"+sample+"_jesdown.root");
+			TFile* f_tesup =
+				new TFile(dir_map.at(sample)+"output_"+sample+"_tesup.root");
+			TFile* f_tesdown =
+				new TFile(dir_map.at(sample)+"output_"+sample+"_tesdown.root");
+
+			// check if file is open
+			if (f_jesup->IsOpen()) {
+				// get trees
+				TTree* tree_jesup = (TTree*) f_jesup->Get("ttHtaus/eventTree");
+				//fillHistoFromTreeMC(hists_jesup, tree_jesup);
+				TreeAnalyzer tana_jesup(tree_jesup,AnaType,SelType,false);
+				tana_jesup.fill_Datacards_MC(hists_jesup);
+			}
+			else
+				cout << "CANNOT open file " << "output_" << sample << "_jesup.root" << endl;
+			
+			if (f_jesdown->IsOpen()) {
+				// get trees
+				TTree* tree_jesdown = (TTree*) f_jesdown->Get("ttHtaus/eventTree");
+				//fillHistoFromTreeMC(hists_jesdown, tree_jesdown);
+				TreeAnalyzer tana_jesdown(tree_jesdown,AnaType,SelType,false);
+				tana_jesdown.fill_Datacards_MC(hists_jesdown);
+			}
+			else
+				cout << "CANNOT open file " << "output_" << sample << "_jesdown.root" << endl;
+			
+			if (f_tesup->IsOpen()) {
+				// get trees
+				TTree* tree_tesup = (TTree*) f_tesup->Get("ttHtaus/eventTree");
+				//fillHistoFromTreeMC(hists_tesup, tree_tesup);
+				TreeAnalyzer tana_tesup(tree_tesup,AnaType,SelType,false);
+				tana_tesup.fill_Datacards_MC(hists_tesup);
+			}
+			else
+				cout << "CANNOT open file " << "output_" << sample << "_tesup.root" << endl;
+			
+			if (f_tesdown->IsOpen()) {
+				// get trees
+				TTree* tree_tesdown = (TTree*) f_tesdown->Get("ttHtaus/eventTree");
+				//fillHistoFromTreeMC(hists_tesdown, tree_tesdown);
+				TreeAnalyzer tana_tesdown(tree_tesdown,AnaType,SelType,false);
+				tana_tesdown.fill_Datacards_MC(hists_tesdown);
+			}
+			else
+				cout << "CANNOT open file " << "output_" << sample << "_tesdown.root" << endl;
 		
-		if (f_jesdown->IsOpen()) {
-			// get trees
-			TTree* tree_jesdown = (TTree*) f_jesdown->Get("ttHtaus/eventTree");
-			fillHistoFromTreeMC(hists_jesdown, tree_jesdown);
+			// append maps
+			hists.insert(hists_jesup.begin(), hists_jesup.end());
+			hists.insert(hists_jesdown.begin(), hists_jesdown.end());
+			hists.insert(hists_tesup.begin(), hists_tesup.end());
+			hists.insert(hists_tesdown.begin(), hists_tesdown.end());
 		}
-		else
-			cout << "CANNOT open file " << "output_" << sample << "_jesdown.root" << endl;
-		
-		// append maps
-		hists.insert(hists_jesup.begin(), hists_jesup.end());
-		hists.insert(hists_jesdown.begin(), hists_jesdown.end());
 		
 		// scale histograms
-		//TH1D* h_SumGenWeight = (TH1D*)f_central->Get("ttHtaus/h_SumGenWeight");
-		TH1D* h_SumGenWeightxPU = (TH1D*)f_central->Get("ttHtaus/h_SumGenWeightxPU");
+		TH1D* h_SumGenWeight = (TH1D*)f_central->Get("ttHtaus/h_SumGenWeight");
+		//TH1D* h_SumGenWeightxPU = (TH1D*)f_central->Get("ttHtaus/h_SumGenWeightxPU");
 		float nSum = h_SumGenWeight->GetBinContent(1);
 		//float nSum = h_SumGenWeightxPU->GetBinContent(1);
 		float XS = xsection::xsection[string(sample)];
@@ -198,7 +246,7 @@ vector<TH1D*> getShapesMC( TString channel, vector<TString> samples)
 			else {
 				shapes.at(ih++)->Add(h.second);
 			}
-		}		
+		}
 
 		first = false;
 		
@@ -243,8 +291,15 @@ vector<TH1D*> getShapesMC( TString channel, vector<TString> samples)
 
 vector<TH1D*> getShapesData(TString channel, vector<TString> samples)
 {
+	Analysis_types AnaType = Analysis_types::Analyze_2lss1tau;
+	Selection_types SelType = Selection_types::Signal_2lss1tau;
+	
+	if (channel.Contains("fakes"))
+		SelType = Selection_types::Control_1lfakeable;
+	else if (channel.Contains("flips"))
+		SelType = Selection_types::Control_2los1tau;
+	
 	vector<TH1D*> shapes;
-
 	vector<vector<unsigned long long>> eventList; // (run, lumisection, event)
 
 	TH1D* h = new TH1D("x_"+channel, "", 7, 0.5, 7.5);
@@ -259,11 +314,17 @@ vector<TH1D*> getShapesData(TString channel, vector<TString> samples)
 		// open file
 		TFile* f = new TFile(dir_map.at(sample)+"output_"+channel+".root");
 
-		// get trees
-		TTree* tree = (TTree*) f->Get("ttHtaus/eventTree");
-
-		fillHistoFromTreeData(h, tree, eventList);
-		
+		if (f->IsOpen()) {
+			// get trees
+			TTree* tree = (TTree*) f->Get("ttHtaus/eventTree");
+			//fillHistoFromTreeData(h, tree, eventList);
+			TreeAnalyzer tana(tree,AnaType,SelType,true);
+			tana.fill_Datacards_Data(h, eventList);
+		}
+		else {
+			cout << "CANNOT open file " << "output_" << channel
+				 << ".root for sample " << sample << endl;
+		}
 		// close file
 		//f->Close();
 		//delete f;
@@ -282,7 +343,7 @@ vector<TH1D*> getShapesData(TString channel, vector<TString> samples)
 	
 	return shapes;
 }
-
+/*
 void fillHistoFromTreeMC(map<TString, TH1D*>& hists, TTree* tree)
 {
 	assert(hists.size());
@@ -521,7 +582,7 @@ void fillHistoFromTreeData(TH1D* h, TTree* tree, vector<vector<unsigned long lon
 		}	
 	} // end of event loop
 }
-
+*/
 void updateHistoName(pair<const TString, TH1D*>& h, TString channel)
 {
 	TString key = h.first;
@@ -554,6 +615,18 @@ void updateHistoName(pair<const TString, TH1D*>& h, TString channel)
 		return;
 	}
 
+	if (key.EndsWith("TESUp")) {
+		key.ReplaceAll("TESUp", sys_coname+"TESUp");
+		h.second->SetName("x_"+channel+key);
+		return;
+	}
+	
+	if (key.EndsWith("TESDown")) {
+		key.ReplaceAll("TESDown", sys_coname+"TESDown");
+		h.second->SetName("x_"+channel+key);
+		return;
+	}
+	
 	h.second->SetName("x_"+channel+key);
 	return;
 }
