@@ -31,10 +31,10 @@ class TreeAnalyzer
 	~TreeAnalyzer();
 	
 	// member function
-	void fill_Datacards_MC(std::map<TString, TH1D*>&, TTree*);
-	void fill_Datacards_Data(TH1D*, TTree*, vector<vector<unsigned long long>>&);
-	vector<TH1D*> makeHistograms(TTree*, bool, vector<vector<unsigned long long>>&);
-	void dump_Events(TTree*, TString);
+	void fill_Datacards_MC(std::map<TString, TH1D*>&);
+	void fill_Datacards_Data(TH1D*, vector<vector<unsigned long long>>&);
+	vector<TH1D*> makeHistograms(bool, vector<vector<unsigned long long>>&);
+	void dump_Events(TString);
 	
  private:
 

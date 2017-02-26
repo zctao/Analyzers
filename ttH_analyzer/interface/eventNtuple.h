@@ -274,12 +274,12 @@ class eventNtuple
 	float jet3_E;
 	float jet3_CSV;
 	// vectors of jets
-	std::vector<float> jets_pt;
-	std::vector<float> jets_eta;
-	std::vector<float> jets_phi;
-	std::vector<float> jets_E;
-	std::vector<float> jets_csv;
-	std::vector<int> jets_flavor;
+	std::vector<float> *jets_pt = 0;
+	std::vector<float> *jets_eta = 0;
+	std::vector<float> *jets_phi = 0;
+	std::vector<float> *jets_E = 0;
+	std::vector<float> *jets_csv = 0;
+	std::vector<int> *jets_flavor = 0;
 	// MET
 	float PFMET;
 	float PFMETphi;

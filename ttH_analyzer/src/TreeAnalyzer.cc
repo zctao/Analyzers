@@ -27,15 +27,15 @@ TreeAnalyzer::~TreeAnalyzer()
 	delete _sfhelper;
 }
 
-void TreeAnalyzer::fill_Datacards_MC(std::map<TString,TH1D*>& hists, TTree* tree)
+void TreeAnalyzer::fill_Datacards_MC(std::map<TString,TH1D*>& hists)
 {
 	assert(hists.size());
 
-	int nEntries = tree->GetEntries();
+	int nEntries = _tree->GetEntries();
 
 	// loop over events in the tree
 	for (int i = 0; i < nEntries; ++i) {
-		tree->GetEntry(i);
+		_tree->GetEntry(i);
 		
 		if (not passTriggers()) continue;
 		if (not passFilters()) continue;
@@ -116,13 +116,13 @@ void TreeAnalyzer::fill_Datacards_MC(std::map<TString,TH1D*>& hists, TTree* tree
 	return;
 }
 
-void TreeAnalyzer::fill_Datacards_Data(TH1D* h, TTree* tree, vector<vector<unsigned long long>>& eventList)
+void TreeAnalyzer::fill_Datacards_Data(TH1D* h, vector<vector<unsigned long long>>& eventList)
 {
-	int nEntries = tree->GetEntries();
+	int nEntries = _tree->GetEntries();
 
 	// loop over events in the tree
 	for (int i = 0; i < nEntries; ++i) {
-		tree->GetEntry(i);
+		_tree->GetEntry(i);
 
 		if (not passTriggers()) continue;
 		if (not passFilters()) continue;
@@ -153,7 +153,7 @@ void TreeAnalyzer::fill_Datacards_Data(TH1D* h, TTree* tree, vector<vector<unsig
 	}
 }
 
-void TreeAnalyzer::dump_Events(TTree* tree, TString channel)
+void TreeAnalyzer::dump_Events(TString channel)
 {
 	std::ofstream eventDump;
 
@@ -173,11 +173,11 @@ void TreeAnalyzer::dump_Events(TTree* tree, TString channel)
 	eventDump << "\"\"\"\n\n";
 	eventDump << "Events = [\n";
 
-	int nEntries = tree->GetEntries();
+	int nEntries = _tree->GetEntries();
 
 	// loop over events in the tree
 	for (int i = 0; i < nEntries; ++i) {
-		tree->GetEntry(i);
+		_tree->GetEntry(i);
 
 		if (not passTriggers()) continue;
 		if (not passFilters()) continue;
@@ -186,7 +186,7 @@ void TreeAnalyzer::dump_Events(TTree* tree, TString channel)
 
 		if (not passAdditionalSelection()) continue;
 
-		cout << "Event " << i << "passed the selection. ";
+		cout << "Event " << i << " passed the selection. ";
 		cout << "Dumping its contents..." << endl;
 		
 		eventDump << "{\n";
@@ -270,7 +270,7 @@ void TreeAnalyzer::dump_Events(TTree* tree, TString channel)
 	eventDump.close();
 }
 
-vector<TH1D*> TreeAnalyzer::makeHistograms(TTree* tree, bool isdata, vector<vector<unsigned long long>>& eventList)
+vector<TH1D*> TreeAnalyzer::makeHistograms(bool isdata, vector<vector<unsigned long long>>& eventList)
 {
 	vector<TH1D*> out_hists;
 
@@ -334,35 +334,36 @@ void TreeAnalyzer::buildFourVectors()
 	_tau.SetPtEtaPhiE(_ntuple.tau0_pt, _ntuple.tau0_eta, _ntuple.tau0_phi, _ntuple.tau0_E);
 
 	// jets
-	int njets = _ntuple.jets_pt.size();
+	int njets = _ntuple.jets_pt->size();
 	
 	int icsv0 = -1; int icsv1 = -1;
 	float csv0 = -10.; float csv1 = -10.;
 	
 	for (int i = 0; i < njets; ++i) {
-		if (_ntuple.jets_csv[i] > csv0) {
+		if (_ntuple.jets_csv->at(i) > csv0) {
 			csv1 = csv0;
 			icsv1 = icsv0;
-			csv0 = _ntuple.jets_csv[i];
+			csv0 = _ntuple.jets_csv->at(i);
 			icsv0 = i;
 		}
-		else if (_ntuple.jets_csv[i] > csv1) {
-			csv1 = _ntuple.jets_csv[i];
+		else if (_ntuple.jets_csv->at(i) > csv1) {
+			csv1 = _ntuple.jets_csv->at(i);
 			icsv1 = i;
 		}
 	}
 
 	assert(icsv0 > -1 and icsv1 > -1);
-	_bjet0.SetPtEtaPhiE(_ntuple.jets_pt[icsv0],_ntuple.jets_eta[icsv0],
-						_ntuple.jets_phi[icsv0],_ntuple.jets_E[icsv0]);
-	_bjet1.SetPtEtaPhiE(_ntuple.jets_pt[icsv1],_ntuple.jets_eta[icsv1],
-						_ntuple.jets_phi[icsv1],_ntuple.jets_E[icsv1]);
+	_bjet0.SetPtEtaPhiE(_ntuple.jets_pt->at(icsv0),_ntuple.jets_eta->at(icsv0),
+						_ntuple.jets_phi->at(icsv0),_ntuple.jets_E->at(icsv0));
+	_bjet1.SetPtEtaPhiE(_ntuple.jets_pt->at(icsv1),_ntuple.jets_eta->at(icsv1),
+						_ntuple.jets_phi->at(icsv1),_ntuple.jets_E->at(icsv1));
 
+	_untag_jets.clear();
 	for (int i = 0; i < njets; ++i) {
 		if (i == icsv0 or i == icsv1) continue;
 		TLorentzVector jet;
-		jet.SetPtEtaPhiE(_ntuple.jets_pt[i],_ntuple.jets_eta[i],
-						 _ntuple.jets_phi[i],_ntuple.jets_E[i]);
+		jet.SetPtEtaPhiE(_ntuple.jets_pt->at(i),_ntuple.jets_eta->at(i),
+						 _ntuple.jets_phi->at(i),_ntuple.jets_E->at(i));
 		_untag_jets.push_back(jet);
 	}
 	
