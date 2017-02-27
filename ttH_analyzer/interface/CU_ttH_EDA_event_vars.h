@@ -48,7 +48,7 @@ struct CU_ttH_EDA_event_vars {
 	
 	/// Common, run parameters
 	int run_nr;
-	int event_nr;
+	unsigned long long event_nr;
 	int lumisection_nr;
 
 	int ibin;  // bin index in 1D BDT shape template
