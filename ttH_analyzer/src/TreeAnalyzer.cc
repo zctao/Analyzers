@@ -127,6 +127,10 @@ void TreeAnalyzer::fill_Datacards_Data(TH1D* h, vector<vector<unsigned long long
 		if (not passTriggers()) continue;
 		if (not passFilters()) continue;
 
+		buildFourVectors();
+		
+		if (not passAdditionalSelection()) continue;
+		
 		vector<unsigned long long> eventid =
 			{static_cast<unsigned long long>(_ntuple.run),
 			 static_cast<unsigned long long>(_ntuple.ls), _ntuple.nEvent};
@@ -137,10 +141,6 @@ void TreeAnalyzer::fill_Datacards_Data(TH1D* h, vector<vector<unsigned long long
 		if (alreadyIncluded) continue;
 
 		eventList.push_back(eventid);
-
-		buildFourVectors();
-		
-		if (not passAdditionalSelection()) continue;
 		
 		// update bin index
 		int ib = _ntuple.ibin;
@@ -154,6 +154,12 @@ void TreeAnalyzer::fill_Datacards_Data(TH1D* h, vector<vector<unsigned long long
 }
 
 void TreeAnalyzer::dump_Events(TString channel)
+{
+	vector<vector<unsigned long long>> dummy;
+	dump_Events(channel, dummy);
+}
+
+void TreeAnalyzer::dump_Events(TString channel, vector<vector<unsigned long long>>& eventList)
 {
 	std::ofstream eventDump;
 
@@ -185,6 +191,19 @@ void TreeAnalyzer::dump_Events(TString channel)
 		buildFourVectors();
 
 		if (not passAdditionalSelection()) continue;
+		
+		if (_isdata) {
+			vector<unsigned long long> eventid =
+				{static_cast<unsigned long long>(_ntuple.run),
+				 static_cast<unsigned long long>(_ntuple.ls), _ntuple.nEvent};
+			
+			bool alreadyIncluded =
+				find(eventList.begin(), eventList.end(), eventid) != eventList.end();
+			
+			if (alreadyIncluded) continue;
+			
+			eventList.push_back(eventid);
+		}
 
 		cout << "Event " << i << " passed the selection. ";
 		cout << "Dumping its contents..." << endl;

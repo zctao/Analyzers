@@ -36,6 +36,7 @@ class TreeAnalyzer
 	void fill_Datacards_Data(TH1D*, vector<vector<unsigned long long>>&);
 	vector<TH1D*> makeHistograms(bool, vector<vector<unsigned long long>>&);
 	void dump_Events(TString);
+	void dump_Events(TString, vector<vector<unsigned long long>>&);
 	
  private:
 
