@@ -289,7 +289,7 @@ void TreeAnalyzer::dump_Events(TString channel, vector<vector<unsigned long long
 	eventDump.close();
 }
 
-vector<TH1D*> TreeAnalyzer::makeHistograms(bool isdata, vector<vector<unsigned long long>>& eventList)
+vector<TH1D*> TreeAnalyzer::makeHistograms(bool control, bool isdata, vector<vector<unsigned long long>>& eventList)
 {
 	vector<TH1D*> out_hists;
 
@@ -372,7 +372,6 @@ vector<TH1D*> TreeAnalyzer::makeHistograms(bool isdata, vector<vector<unsigned l
 		h_sum_charges ->
 			Fill(_leps_charge[0]+_leps_charge[1]+_ntuple.tau0_charge,_event_weight);
 		// additional selections
-		bool control = true;
 		if (not passAdditionalSelection(control)) continue;
 
 		h_njet -> Fill(_ntuple.n_presel_jet, _event_weight);

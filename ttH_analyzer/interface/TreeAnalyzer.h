@@ -34,7 +34,7 @@ class TreeAnalyzer
 	// member function
 	void fill_Datacards_MC(std::map<TString, TH1D*>&);
 	void fill_Datacards_Data(TH1D*, vector<vector<unsigned long long>>&);
-	vector<TH1D*> makeHistograms(bool, vector<vector<unsigned long long>>&);
+	vector<TH1D*> makeHistograms(bool, bool, vector<vector<unsigned long long>>&);
 	void dump_Events(TString);
 	void dump_Events(TString, vector<vector<unsigned long long>>&);
 	
