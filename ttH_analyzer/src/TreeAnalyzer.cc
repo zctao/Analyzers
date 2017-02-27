@@ -274,6 +274,139 @@ vector<TH1D*> TreeAnalyzer::makeHistograms(bool isdata, vector<vector<unsigned l
 {
 	vector<TH1D*> out_hists;
 
+	//////////////////////////////
+	// define histograms here
+	//TH1D* h_mass_2l_tau_leadbjet = new TH1D("massLepsTauBjet","",15,0,750);
+	TH1D* h_sum_charges = new TH1D("sum_charges","",7,-3.5,3.5);
+	
+	TH1D* h_njet = new TH1D("njet","",10,2.,12.);
+	TH1D* h_mindr_lep1_jet = new TH1D("mindr_lep1_jet","",12,0.4,4.0);
+	TH1D* h_mindr_lep2_jet = new TH1D("mindr_lep2_jet","",12,0.4,4.0);
+	TH1D* h_avg_dr_jet = new TH1D("avg_dr_jet","",10,0.,4.0);
+	TH1D* h_max_lep_eta = new TH1D("max_lep_eta","",10,0,4.0);
+	TH1D* h_met = new TH1D("met","",10,0.,500.);
+	TH1D* h_mT_met_lep1 = new TH1D("mT_met_lep1","",10., 0., 500.);
+	TH1D* h_mht = new TH1D("mht","",10,0.,500.);
+	TH1D* h_dr_leps = new TH1D("dr_leps","",10,0.,4.0);
+	TH1D* h_tau_pt = new TH1D("tau_pt","",11,20.,130.);
+	TH1D* h_tau_eta = new TH1D("tau_eta","", 8,-2.4,2.4);
+	TH1D* h_dr_lep1_tau = new TH1D("dr_lep1_tau","",10,0.,4.0);
+	TH1D* h_lep1_pt = new TH1D("lep1_pt","",11,25.,300.);
+	TH1D* h_lep1_eta = new TH1D("lep1_eta","",8,-2.4,2.4);
+	TH1D* h_lep2_pt = new TH1D("lep2_pt","",10,10.,210.);
+	TH1D* h_lep2_eta = new TH1D("lep2_eta","",8,-2.4,2.4);
+	TH1D* h_mTauTauVis1 = new TH1D("mTauTauVis1","",15,0.,300.);
+	TH1D* h_mTauTauVis2 = new TH1D("mTauTauVis2","",15,0.,300.);
+
+	//h_mass_2l_tau_leadbjet -> Sumw2();
+	h_sum_charges -> Sumw2();
+	
+	h_njet -> Sumw2();
+	h_mindr_lep1_jet -> Sumw2();
+	h_mindr_lep2_jet -> Sumw2();
+	h_avg_dr_jet -> Sumw2();
+	h_max_lep_eta -> Sumw2();
+	h_met -> Sumw2();
+	h_mT_met_lep1 -> Sumw2();
+	h_mht -> Sumw2();
+	h_dr_leps -> Sumw2();
+	h_tau_pt -> Sumw2();
+	h_tau_eta -> Sumw2();
+	h_dr_lep1_tau -> Sumw2();
+	h_lep1_pt -> Sumw2();
+	h_lep1_eta -> Sumw2();
+	h_lep2_pt -> Sumw2();
+	h_lep2_eta -> Sumw2();
+	h_mTauTauVis1 -> Sumw2();
+	h_mTauTauVis2 -> Sumw2();
+
+	//////////////////////////////
+
+	int nEntries = _tree->GetEntries();
+
+	// loop over events in the tree
+	for (int i = 0; i < nEntries; ++i) {
+		_tree->GetEntry(i);
+
+		if (not passTriggers()) continue;
+		if (not passFilters()) continue;
+		
+		if (_isdata) {
+			vector<unsigned long long> eventid =
+				{static_cast<unsigned long long>(_ntuple.run),
+				 static_cast<unsigned long long>(_ntuple.ls), _ntuple.nEvent};
+			
+			bool alreadyIncluded =
+				find(eventList.begin(), eventList.end(), eventid) != eventList.end();
+			if (alreadyIncluded)
+				continue;
+			else
+				eventList.push_back(eventid);
+		}
+		
+		// update weights here
+		updateWeights();
+
+		buildFourVectors();
+
+		// before additional selection
+		h_sum_charges ->
+			Fill(_leps_charge[0]+_leps_charge[1]+_ntuple.tau0_charge,_event_weight);
+		// additional selections
+		bool control = true;
+		if (not passAdditionalSelection(control)) continue;
+
+		h_njet -> Fill(_ntuple.n_presel_jet, _event_weight);
+		h_mindr_lep1_jet -> Fill(_ntuple.mindr_lep0_jet, _event_weight);
+		h_mindr_lep2_jet -> Fill(_ntuple.mindr_lep1_jet, _event_weight);
+		h_avg_dr_jet -> Fill(_ntuple.avg_dr_jet, _event_weight);	
+		h_met -> Fill(_ntuple.PFMET, _event_weight);
+		h_mT_met_lep1 -> Fill(_ntuple.MT_met_lep0, _event_weight);
+		h_mht -> Fill(_ntuple.MHT, _event_weight);
+		h_tau_pt -> Fill(_ntuple.tau0_pt, _event_weight);
+		h_tau_eta -> Fill(_ntuple.tau0_eta, _event_weight);
+		h_lep1_pt -> Fill(_lep0.Pt(), _event_weight);
+		h_lep1_eta -> Fill(_lep0.Eta(), _event_weight);
+		h_lep2_pt -> Fill(_lep1.Pt(), _event_weight);
+		h_lep2_eta -> Fill(_lep1.Eta(), _event_weight);
+
+		float max_lep_eta = max(std::abs(_lep0.Eta()),std::abs(_lep1.Eta()));
+		h_max_lep_eta -> Fill(max_lep_eta, _event_weight);
+
+		float dr_leps =
+			reco::deltaR(_lep0.Eta(),_lep0.Phi(),_lep1.Eta(),_lep1.Phi());
+		float dr_lep1_tau =
+			reco::deltaR(_lep0.Eta(),_lep0.Phi(),_tau.Eta(),_tau.Phi());	
+		h_dr_leps -> Fill(dr_leps, _event_weight);
+		h_dr_lep1_tau -> Fill(dr_lep1_tau, _event_weight);
+
+		h_mTauTauVis1 -> Fill( (_lep0+_tau).M(), _event_weight);
+		h_mTauTauVis2 -> Fill( (_lep1+_tau).M(), _event_weight);
+	} // end of event loop
+
+	// push_back histograms into output vector
+	out_hists.push_back(h_tau_pt);
+	out_hists.push_back(h_tau_eta);
+	out_hists.push_back(h_njet);
+	out_hists.push_back(h_mindr_lep1_jet);
+	out_hists.push_back(h_mindr_lep2_jet);
+	out_hists.push_back(h_avg_dr_jet);
+	out_hists.push_back(h_max_lep_eta);
+	out_hists.push_back(h_met);
+	out_hists.push_back(h_mT_met_lep1);
+	out_hists.push_back(h_mht);
+	out_hists.push_back(h_dr_leps);
+	out_hists.push_back(h_dr_lep1_tau);
+	out_hists.push_back(h_lep1_pt);
+	out_hists.push_back(h_lep1_eta);
+	out_hists.push_back(h_lep2_pt);
+	out_hists.push_back(h_lep2_eta);
+	out_hists.push_back(h_mTauTauVis1);
+	out_hists.push_back(h_mTauTauVis2);
+
+	//out_hists.push_back(h_mass_2l_tau_leadbjet);
+	out_hists.push_back(h_sum_charges);
+	
 	return out_hists;
 }
 

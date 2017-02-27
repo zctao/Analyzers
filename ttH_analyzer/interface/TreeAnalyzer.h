@@ -10,6 +10,7 @@
 #include "TLorentzVector.h"
 #include "TString.h"
 
+#include "DataFormats/Math/interface/deltaR.h"
 #include "Analyzers/ttH_analyzer/interface/Types_enum.h"
 #include "Analyzers/ttH_analyzer/interface/SFHelper.h"
 #include "Analyzers/ttH_analyzer/interface/eventNtuple.h"
