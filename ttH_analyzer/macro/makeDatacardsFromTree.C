@@ -157,6 +157,7 @@ vector<TH1D*> getShapesMC( TString channel, vector<TString> samples, bool addSys
 			//fillHistoFromTreeMC(hists, tree_central);
 			TreeAnalyzer tana(tree_central,AnaType,SelType,false);
 			tana.fill_Datacards_MC(hists);
+			tana.dump_Events(sample);
 		}
 		else
 			cout << "CANNOT open file " << "output_" << sample << ".root" << endl;
@@ -301,6 +302,7 @@ vector<TH1D*> getShapesData(TString channel, vector<TString> samples)
 	
 	vector<TH1D*> shapes;
 	vector<vector<unsigned long long>> eventList; // (run, lumisection, event)
+	vector<vector<unsigned long long>> eventList_dump;
 
 	TH1D* h = new TH1D("x_"+channel, "", 7, 0.5, 7.5);
 	h->Sumw2();
@@ -320,6 +322,7 @@ vector<TH1D*> getShapesData(TString channel, vector<TString> samples)
 			//fillHistoFromTreeData(h, tree, eventList);
 			TreeAnalyzer tana(tree,AnaType,SelType,true);
 			tana.fill_Datacards_Data(h, eventList);
+			tana.dump_Events(channel+"_"+sample, eventList_dump);
 		}
 		else {
 			cout << "CANNOT open file " << "output_" << channel
