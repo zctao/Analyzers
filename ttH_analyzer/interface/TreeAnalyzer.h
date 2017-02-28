@@ -28,7 +28,7 @@ class TreeAnalyzer
  public:
 	
 	// constructor and destructor
-	TreeAnalyzer(TTree*, Analysis_types, Selection_types, bool);
+	TreeAnalyzer(TTree*, Analysis_types, Selection_types, bool, bool verbose=false);
 	~TreeAnalyzer();
 	
 	// member function
@@ -54,6 +54,7 @@ class TreeAnalyzer
 	Analysis_types _AnaType;
 	Selection_types _SelType;
 	bool _isdata;
+	bool _verbose;
 
 	eventNtuple _ntuple;
 	// updated weights and scale factors

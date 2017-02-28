@@ -6,12 +6,13 @@
 #include "Analyzers/ttH_analyzer/interface/TreeAnalyzer.h"
 
 TreeAnalyzer::TreeAnalyzer(TTree* tree, Analysis_types analysis,
-						   Selection_types selection, bool isdata)
+						   Selection_types selection, bool isdata, bool verbose)
 {
 	_tree = tree;
 	_AnaType = analysis;
 	_SelType = selection;
 	_isdata = isdata;
+	_verbose = verbose;
 
 	// SFHelper for updating scale factors
 	_sfhelper = new SFHelper(_AnaType, _SelType, _isdata);
@@ -43,6 +44,11 @@ void TreeAnalyzer::fill_Datacards_MC(std::map<TString,TH1D*>& hists)
 		buildFourVectors();
 
 		if (not passAdditionalSelection()) continue;
+
+		if (_verbose) {
+			cout << "PASSED: event " << _ntuple.run << ":" << _ntuple.ls << ":"
+				 << _ntuple.nEvent << endl;
+		}
 		
 		// update bin index
 		int ib = _ntuple.ibin;
@@ -139,8 +145,13 @@ void TreeAnalyzer::fill_Datacards_Data(TH1D* h, vector<vector<unsigned long long
 			find(eventList.begin(), eventList.end(), eventid) != eventList.end();
 
 		if (alreadyIncluded) continue;
-
+		
 		eventList.push_back(eventid);
+
+		if (_verbose) {
+			cout << "PASSED: event " << _ntuple.run << ":" << _ntuple.ls << ":"
+				 << _ntuple.nEvent << endl;
+		}
 		
 		// update bin index
 		int ib = _ntuple.ibin;
@@ -205,8 +216,8 @@ void TreeAnalyzer::dump_Events(TString channel, vector<vector<unsigned long long
 			eventList.push_back(eventid);
 		}
 
-		cout << "Event " << i << " passed the selection. ";
-		cout << "Dumping its contents..." << endl;
+		//cout << "Event " << i << " passed the selection. ";
+		//cout << "Dumping its contents..." << endl;
 		
 		eventDump << "{\n";
 		// leptons
@@ -374,6 +385,11 @@ vector<TH1D*> TreeAnalyzer::makeHistograms(bool control, bool isdata, vector<vec
 		// additional selections
 		if (not passAdditionalSelection(control)) continue;
 
+		if (_verbose) {
+			cout << "PASSED: event " << _ntuple.run << ":" << _ntuple.ls << ":"
+				 << _ntuple.nEvent << endl;
+		}
+		
 		h_njet -> Fill(_ntuple.n_presel_jet, _event_weight);
 		h_mindr_lep1_jet -> Fill(_ntuple.mindr_lep0_jet, _event_weight);
 		h_mindr_lep2_jet -> Fill(_ntuple.mindr_lep1_jet, _event_weight);
@@ -610,7 +626,15 @@ bool TreeAnalyzer::passTriggers()
 	// check trigger bits if necessary
 	// _ntuple.triggerBits
 
-	return _ntuple.matchHLTPath;
+	bool pass = _ntuple.matchHLTPath;
+	
+	if (_verbose and !pass) {
+		cout << "event " << _ntuple.run << ":" << _ntuple.ls << ":"
+			 << _ntuple.nEvent << " FAILED to match HLT path" << endl;
+		cout << "Trigger bits: " << _ntuple.triggerBits << endl;
+	}
+	
+	return pass;
 }
 
 bool TreeAnalyzer::passFilters()
@@ -620,15 +644,16 @@ bool TreeAnalyzer::passFilters()
 	// python/ttHtaus_cfi.py
 
 	// event tagged as bad muons are corrected rather than removing
+
+	bool pass = _isdata ? (_ntuple.filterBits & 63) : (_ntuple.filterBits & 47);
 	
-	if (_isdata) {
-		return _ntuple.filterBits & 63;
-	}
-	else {
-		return _ntuple.filterBits & 47;
+	if (_verbose and !pass) {
+		cout << "event " << _ntuple.run << ":" << _ntuple.ls << ":"
+			 << _ntuple.nEvent << "FAILED to pass filters" << endl;
+		cout << "Filter bits: " << _ntuple.filterBits << endl;
 	}
 
-	return false;
+	return pass;
 }
 
 bool TreeAnalyzer::passAdditionalSelection(bool controlRegion)
@@ -646,6 +671,13 @@ bool TreeAnalyzer::passAdditionalSelection(bool controlRegion)
 	if (controlRegion)
 		passSel = !passSel;
 
+	if (_verbose and !passSel) {
+		cout << "event " << _ntuple.run << ":" << _ntuple.ls << ":"
+			 << _ntuple.nEvent << "FAILED tau charge requirement" << endl;
+		cout << "lepton charge: " << _leps_charge[0] << " ";
+		cout << "tau charge: " << _ntuple.tau0_charge << endl;
+	}
+	
 	return passSel;
 }
 
