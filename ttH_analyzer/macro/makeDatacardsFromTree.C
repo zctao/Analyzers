@@ -37,7 +37,8 @@ vector<TH1D*> getClosureTestShapes(TH1D*);
 // "", "_gentau", "_faketau", "_"+syts, "_gentau"+"_"+syst, "_faketau"+"_"+syst,
 // "_JESUp", "_JESDown"; jesup jesdown on seperate loop
 
-void makeDatacardsFromTree(TString outfile_suffix = "2016b-h", bool addSyst = true, bool verbose=false)
+void makeDatacardsFromTree(TString outfile_suffix = "2016b-h", bool addSyst = true, int verbosity=0)
+// 0=unverbose; 1=show passed events; 2=show failed events;
 {
 	using namespace std;
 	
@@ -60,13 +61,13 @@ void makeDatacardsFromTree(TString outfile_suffix = "2016b-h", bool addSyst = tr
 		
 		if (channel.Contains("data"))
 			shapes = getShapesData(channel, SamplesInChannel.at(channel),
-								   verbose);
+								   verbosity);
 		else {
 			cout << "sample" << "\t" << "yields" << "\t" << "yields(gentau)"
 				 << "\t" << "yields(faketau)" << endl;
 			cout << "-----------------------------------------" << endl;
 			shapes = getShapesMC(channel, SamplesInChannel.at(channel),
-								 addSyst, verbose);
+								 addSyst, verbosity);
 		}
 
 		datacards.insert(datacards.end(), shapes.begin(), shapes.end());
@@ -132,7 +133,7 @@ map<TString, TH1D*> setupHistoMap(TString sample, bool addSyst, TString suffix)
 }
 
 vector<TH1D*> getShapesMC( TString channel, vector<TString> samples, bool addSyst,
-						   bool verbose)
+						   int verbosity)
 {
 	Analysis_types AnaType = Analysis_types::Analyze_2lss1tau;
 	Selection_types SelType = Selection_types::Signal_2lss1tau;
@@ -158,7 +159,7 @@ vector<TH1D*> getShapesMC( TString channel, vector<TString> samples, bool addSys
 			// get trees
 			TTree* tree_central = (TTree*) f_central->Get("ttHtaus/eventTree");
 			//fillHistoFromTreeMC(hists, tree_central);
-			TreeAnalyzer tana(tree_central,AnaType,SelType,false,verbose);
+			TreeAnalyzer tana(tree_central,AnaType,SelType,false,verbosity);
 			tana.fill_Datacards_MC(hists);
 			tana.dump_Events(sample);
 		}
@@ -187,7 +188,7 @@ vector<TH1D*> getShapesMC( TString channel, vector<TString> samples, bool addSys
 				// get trees
 				TTree* tree_jesup = (TTree*) f_jesup->Get("ttHtaus/eventTree");
 				//fillHistoFromTreeMC(hists_jesup, tree_jesup);
-				TreeAnalyzer tana_jesup(tree_jesup,AnaType,SelType,false,verbose);
+				TreeAnalyzer tana_jesup(tree_jesup,AnaType,SelType,false,verbosity);
 				tana_jesup.fill_Datacards_MC(hists_jesup);
 			}
 			else
@@ -197,7 +198,7 @@ vector<TH1D*> getShapesMC( TString channel, vector<TString> samples, bool addSys
 				// get trees
 				TTree* tree_jesdown = (TTree*) f_jesdown->Get("ttHtaus/eventTree");
 				//fillHistoFromTreeMC(hists_jesdown, tree_jesdown);
-				TreeAnalyzer tana_jesdown(tree_jesdown,AnaType,SelType,false,verbose);
+				TreeAnalyzer tana_jesdown(tree_jesdown,AnaType,SelType,false,verbosity);
 				tana_jesdown.fill_Datacards_MC(hists_jesdown);
 			}
 			else
@@ -207,7 +208,7 @@ vector<TH1D*> getShapesMC( TString channel, vector<TString> samples, bool addSys
 				// get trees
 				TTree* tree_tesup = (TTree*) f_tesup->Get("ttHtaus/eventTree");
 				//fillHistoFromTreeMC(hists_tesup, tree_tesup);
-				TreeAnalyzer tana_tesup(tree_tesup,AnaType,SelType,false,verbose);
+				TreeAnalyzer tana_tesup(tree_tesup,AnaType,SelType,false,verbosity);
 				tana_tesup.fill_Datacards_MC(hists_tesup);
 			}
 			else
@@ -217,7 +218,7 @@ vector<TH1D*> getShapesMC( TString channel, vector<TString> samples, bool addSys
 				// get trees
 				TTree* tree_tesdown = (TTree*) f_tesdown->Get("ttHtaus/eventTree");
 				//fillHistoFromTreeMC(hists_tesdown, tree_tesdown);
-				TreeAnalyzer tana_tesdown(tree_tesdown,AnaType,SelType,false,verbose);
+				TreeAnalyzer tana_tesdown(tree_tesdown,AnaType,SelType,false,verbosity);
 				tana_tesdown.fill_Datacards_MC(hists_tesdown);
 			}
 			else
@@ -296,7 +297,7 @@ vector<TH1D*> getShapesMC( TString channel, vector<TString> samples, bool addSys
 }
 
 vector<TH1D*> getShapesData(TString channel, vector<TString> samples,
-							bool verbose)
+							int verbosity)
 {
 	Analysis_types AnaType = Analysis_types::Analyze_2lss1tau;
 	Selection_types SelType = Selection_types::Signal_2lss1tau;
@@ -326,7 +327,7 @@ vector<TH1D*> getShapesData(TString channel, vector<TString> samples,
 			// get trees
 			TTree* tree = (TTree*) f->Get("ttHtaus/eventTree");
 			//fillHistoFromTreeData(h, tree, eventList);
-			TreeAnalyzer tana(tree,AnaType,SelType,true,verbose);
+			TreeAnalyzer tana(tree,AnaType,SelType,true,verbosity);
 			tana.fill_Datacards_Data(h, eventList);
 			tana.dump_Events(channel+"_"+sample, eventList_dump);
 		}

@@ -6,13 +6,13 @@
 #include "Analyzers/ttH_analyzer/interface/TreeAnalyzer.h"
 
 TreeAnalyzer::TreeAnalyzer(TTree* tree, Analysis_types analysis,
-						   Selection_types selection, bool isdata, bool verbose)
+						   Selection_types selection, bool isdata, int verbosity)
 {
 	_tree = tree;
 	_AnaType = analysis;
 	_SelType = selection;
 	_isdata = isdata;
-	_verbose = verbose;
+	_verbosity = verbosity;
 
 	// SFHelper for updating scale factors
 	_sfhelper = new SFHelper(_AnaType, _SelType, _isdata);
@@ -45,7 +45,7 @@ void TreeAnalyzer::fill_Datacards_MC(std::map<TString,TH1D*>& hists)
 
 		if (not passAdditionalSelection()) continue;
 
-		if (_verbose) {
+		if (_verbosity==1) {
 			cout << "PASSED: event " << _ntuple.run << ":" << _ntuple.ls << ":"
 				 << _ntuple.nEvent << endl;
 		}
@@ -148,7 +148,7 @@ void TreeAnalyzer::fill_Datacards_Data(TH1D* h, vector<vector<unsigned long long
 		
 		eventList.push_back(eventid);
 
-		if (_verbose) {
+		if (_verbosity==1) {
 			cout << "PASSED: event " << _ntuple.run << ":" << _ntuple.ls << ":"
 				 << _ntuple.nEvent << endl;
 		}
@@ -385,7 +385,7 @@ vector<TH1D*> TreeAnalyzer::makeHistograms(bool control, vector<vector<unsigned 
 		// additional selections
 		if (not passAdditionalSelection(control)) continue;
 
-		if (_verbose) {
+		if (_verbosity==1) {
 			cout << "PASSED: event " << _ntuple.run << ":" << _ntuple.ls << ":"
 				 << _ntuple.nEvent << endl;
 		}
@@ -628,7 +628,7 @@ bool TreeAnalyzer::passTriggers()
 
 	bool pass = _ntuple.matchHLTPath;
 	
-	if (_verbose and !pass) {
+	if (_verbosity==2 and !pass) {
 		cout << "event " << _ntuple.run << ":" << _ntuple.ls << ":"
 			 << _ntuple.nEvent << " FAILED to match HLT path" << endl;
 		cout << "Trigger bits: " << _ntuple.triggerBits << endl;
@@ -647,7 +647,7 @@ bool TreeAnalyzer::passFilters()
 
 	bool pass = _isdata ? (_ntuple.filterBits & 63) : (_ntuple.filterBits & 47);
 	
-	if (_verbose and !pass) {
+	if (_verbosity==2 and !pass) {
 		cout << "event " << _ntuple.run << ":" << _ntuple.ls << ":"
 			 << _ntuple.nEvent << "FAILED to pass filters" << endl;
 		cout << "Filter bits: " << _ntuple.filterBits << endl;
@@ -671,7 +671,7 @@ bool TreeAnalyzer::passAdditionalSelection(bool controlRegion)
 	if (controlRegion)
 		passSel = !passSel;
 
-	if (_verbose and !passSel) {
+	if (_verbosity==2 and !passSel) {
 		cout << "event " << _ntuple.run << ":" << _ntuple.ls << ":"
 			 << _ntuple.nEvent << "FAILED tau charge requirement" << endl;
 		cout << "lepton charge: " << _leps_charge[0] << " ";

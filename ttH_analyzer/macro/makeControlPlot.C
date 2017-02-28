@@ -18,7 +18,7 @@ const float LUMI = 36.773 * 1000; // 1/pb
 
 void makeControlPlot(vector<TString> channels =
 		{"ttH", "TTW", "TTZ", "EWK", "Rares", "fakes_data", "data_obs"},
-					 bool verbose=false)
+					 int verbosity=0)
 {
 	using namespace std;
 
@@ -62,7 +62,7 @@ void makeControlPlot(vector<TString> channels =
 			// get tree
 			TTree* tree = (TTree*) f->Get("ttHtaus/eventTree");
 
-			TreeAnalyzer tana(tree, AnaType, SelType, isdata, verbose);		
+			TreeAnalyzer tana(tree, AnaType, SelType, isdata, verbosity);		
 			vector<TH1D*> hists =
 				tana.makeHistograms(true, eventList); // 'true' for control region
 				//TreeAnalyzer(tree, isdata, eventList, AnaType, SelType);

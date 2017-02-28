@@ -28,7 +28,7 @@ class TreeAnalyzer
  public:
 	
 	// constructor and destructor
-	TreeAnalyzer(TTree*, Analysis_types, Selection_types, bool, bool verbose=false);
+	TreeAnalyzer(TTree*, Analysis_types, Selection_types, bool, int verbosity=0);
 	~TreeAnalyzer();
 	
 	// member function
@@ -54,7 +54,7 @@ class TreeAnalyzer
 	Analysis_types _AnaType;
 	Selection_types _SelType;
 	bool _isdata;
-	bool _verbose;
+	int _verbosity;  // 0=unverbose; 1=show passed events; 2=show failed events;
 
 	eventNtuple _ntuple;
 	// updated weights and scale factors
