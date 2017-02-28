@@ -456,6 +456,8 @@ void TreeAnalyzer::buildFourVectors()
 		_leps_istight[1] = _ntuple.mu1_ismvasel;
 		_leps_charge[0] = _ntuple.mu0_charge;
 		_leps_charge[1] = _ntuple.mu1_charge;
+		_leps_conept[0] = _ntuple.mu0_conept;
+		_leps_conept[1] = _ntuple.mu1_conept;
 		_leps_id[0] = -13*_leps_charge[0]; _leps_id[1] = -13*_leps_charge[1];
 	}
 	else if (_ntuple.lepCategory == 1) {// ee
@@ -467,6 +469,8 @@ void TreeAnalyzer::buildFourVectors()
 		_leps_istight[1] = _ntuple.ele1_ismvasel;
 		_leps_charge[0] = _ntuple.ele0_charge;
 		_leps_charge[1] = _ntuple.ele1_charge;
+		_leps_conept[0] = _ntuple.ele0_conept;
+		_leps_conept[1] = _ntuple.ele1_conept;
 		_leps_id[0] = -11*_leps_charge[0]; _leps_id[1] = -11*_leps_charge[1];
 	}
 	else if (_ntuple.lepCategory == 2) {// emu
@@ -479,6 +483,8 @@ void TreeAnalyzer::buildFourVectors()
 			_leps_istight[1] = _ntuple.mu0_ismvasel;
 			_leps_charge[0] = _ntuple.ele0_charge;
 			_leps_charge[1] = _ntuple.mu0_charge;
+			_leps_conept[0] = _ntuple.ele0_conept;
+			_leps_conept[1] = _ntuple.mu0_conept;
 			_leps_id[0] = -11*_leps_charge[0]; _leps_id[1] = -13*_leps_charge[1];
 		}
 		else {
@@ -490,13 +496,12 @@ void TreeAnalyzer::buildFourVectors()
 			_leps_istight[1] = _ntuple.ele0_ismvasel;
 			_leps_charge[0] = _ntuple.mu0_charge;
 			_leps_charge[1] = _ntuple.ele0_charge;
+			_leps_conept[0] = _ntuple.mu0_conept;
+			_leps_conept[1] = _ntuple.ele0_conept;
 			_leps_id[0] = -13*_leps_charge[0]; _leps_id[1] = -11*_leps_charge[1];
 		}
 	}
-
-	_leps_conept[0] = _ntuple.lep0_conept;
-	_leps_conept[1] = _ntuple.lep1_conept;
-
+	
 	// tau
 	_tau.SetPtEtaPhiE(_ntuple.tau0_pt, _ntuple.tau0_eta, _ntuple.tau0_phi, _ntuple.tau0_E);
 

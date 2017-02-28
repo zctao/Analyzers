@@ -19,6 +19,7 @@ const float LUMI = 36.773 * 1000; // 1/pb
 void makeControlPlot(vector<TString> channels =
 		{"ttH", "TTW", "TTZ", "EWK", "Rares", "fakes_data", "data_obs"},
 					 int verbosity=0)
+// 0=unverbose; 1=show passed events; 2=show failed events;
 {
 	using namespace std;
 

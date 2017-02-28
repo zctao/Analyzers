@@ -342,6 +342,14 @@ void eventNtuple::set_branch_address(TTree* tree)
 	tree->SetBranchAddress("nBadMuons", &nBadMuons);	
 	tree->SetBranchAddress("MVA_2lss_ttbar", &MVA_2lss_ttbar);
 	tree->SetBranchAddress("MVA_2lss_ttV", &MVA_2lss_ttbar);
+	tree->SetBranchAddress("MT_met_lep0", &MT_met_lep0);
+	tree->SetBranchAddress("n_jet25_recl", &n_jet25_recl);
+	tree->SetBranchAddress("mindr_lep0_jet", &mindr_lep0_jet);
+	tree->SetBranchAddress("mindr_lep1_jet", &mindr_lep1_jet);
+	tree->SetBranchAddress("lep0_conept", &lep0_conept);
+	tree->SetBranchAddress("lep1_conept", &lep1_conept);
+	tree->SetBranchAddress("avg_dr_jet", &avg_dr_jet);
+	tree->SetBranchAddress("max_lep_eta", &max_lep_eta);
 	tree->SetBranchAddress("ibin", &ibin);
 	tree->SetBranchAddress("n_presel_mu", &n_presel_mu);
 	tree->SetBranchAddress("n_mvasel_mu", &n_mvasel_mu);
