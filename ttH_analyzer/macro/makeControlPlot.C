@@ -22,6 +22,8 @@ void makeControlPlot(vector<TString> channels =
 {
 	using namespace std;
 
+	TH1::AddDirectory(0);
+	
 	gROOT->ProcessLine(".L ../src/SFHelper.cc+");
 	gROOT->ProcessLine(".L ../src/TreeAnalyzer.cc+");
 	
@@ -114,7 +116,7 @@ void makeControlPlot(vector<TString> channels =
 		double chError = 0.;
 		double chYields = vhists.at(0)->IntegralAndError(1,chNbins,chError);
 		std::cout << "- - - - - - - - - - - - - - - - - - - - " << std::endl;
-		std::cout << channel << "  yields:" << chYields << " +/- " << chError
+		std::cout << channel << "  yields: " << chYields << " +/- " << chError
 				  << "  nEntries: " << chNentries << std::endl;
 		std::cout << "----------------------------------------" << std::endl;
 		

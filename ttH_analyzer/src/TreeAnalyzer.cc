@@ -504,7 +504,7 @@ void TreeAnalyzer::buildFourVectors()
 	int njets = _ntuple.jets_pt->size();
 	
 	int icsv0 = -1; int icsv1 = -1;
-	float csv0 = -10.; float csv1 = -10.;
+	float csv0 = -10.1; float csv1 = -10.1;
 	
 	for (int i = 0; i < njets; ++i) {
 		if (_ntuple.jets_csv->at(i) > csv0) {
