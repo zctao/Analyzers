@@ -14,7 +14,7 @@ namespace xsection{  // unit: pb
 		 {"ZG",131},             // ZGTo2LG
 		 {"WW",10.5},            // WWTo2L2Nu
 		 {"WpWp",0.0371},        // WpWpJJ
-		 {"WZ",4.10},            // WZTo3LNu
+		 {"WZ",4.43},            // WZTo3LNu
 		 {"ZZ",1.26},            // ZZTo4L
 		 {"WWW",0.209},          // WWW_4F
 		 {"WWZ",0.165},          // WWZ
@@ -33,7 +33,7 @@ namespace xsection{  // unit: pb
 		 {"ST_tTbar",70.7},      // ST_t-channel_antitop_4f
 		 {"ST_tWT",35.6},        // ST_tW_top_5f
 		 {"ST_tWTbar",35.6},     // ST_tW_antitop_5f
-		 //{"WWds",} // WW_DoubleScattering
+		 {"WWds",0.173} // WW_DoubleScattering
 		};
 }
 
