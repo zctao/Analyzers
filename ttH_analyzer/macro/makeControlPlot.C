@@ -9,18 +9,21 @@
 
 #include "Misc_Constants.h"
 #include "Cross_Sections.h"
-#include "TreeAnalyzer.h"
+//#include "TreeAnalyzer.h"
 #include "Analyzers/ttH_analyzer/interface/Types_enum.h"
+#include "Analyzers/ttH_analyzer/interface/TreeAnalyzer.h"
 
 //const float LUMI = 12.9 * 1000; // 1/pb
 const float LUMI = 36.773 * 1000; // 1/pb
 
 void makeControlPlot(vector<TString> channels =
-		{"ttH", "TTW", "TTZ", "EWK", "Rares", "fakes_data", "data_obs"})
+		{"ttH", "TTW", "TTZ", "EWK", "Rares", "fakes_data", "data_obs"},
+					 bool verbose=false)
 {
 	using namespace std;
 
 	gROOT->ProcessLine(".L ../src/SFHelper.cc+");
+	gROOT->ProcessLine(".L ../src/TreeAnalyzer.cc+");
 	
 	map<TString, vector<TH1D*>> histsCollection;
 	
@@ -51,11 +54,18 @@ void makeControlPlot(vector<TString> channels =
 				fname = dir_map.at(sample)+"output_"+sample+".root";
 			
 			TFile* f = TFile::Open(fname);
+			if (not f->IsOpen()) {
+				cout << "CANNOT open file " << fname << endl;
+				continue;
+			}
+			
 			// get tree
 			TTree* tree = (TTree*) f->Get("ttHtaus/eventTree");
-			
+
+			TreeAnalyzer tana(tree, AnaType, SelType, isdata, verbose);		
 			vector<TH1D*> hists =
-				TreeAnalyzer(tree, isdata, eventList, AnaType, SelType);
+				tana.makeHistograms(true, eventList); // 'true' for control region
+				//TreeAnalyzer(tree, isdata, eventList, AnaType, SelType);
 
 			// Scale histograms here
 			if (not isdata) {

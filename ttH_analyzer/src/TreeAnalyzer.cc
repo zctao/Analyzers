@@ -300,7 +300,7 @@ void TreeAnalyzer::dump_Events(TString channel, vector<vector<unsigned long long
 	eventDump.close();
 }
 
-vector<TH1D*> TreeAnalyzer::makeHistograms(bool control, bool isdata, vector<vector<unsigned long long>>& eventList)
+vector<TH1D*> TreeAnalyzer::makeHistograms(bool control, vector<vector<unsigned long long>>& eventList)
 {
 	vector<TH1D*> out_hists;
 

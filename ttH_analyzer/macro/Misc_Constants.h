@@ -46,7 +46,7 @@ const std::map<TString,std::vector<TString>> SamplesInChannel =
 
 /////////////////////////////////////////////
 // Crab job output directories for different samples
-TString batch = "24feb2017/";
+TString batch = "24feb2017/";  // 2016 re-MiniAOD
 //TString data_lumi = "12_9fb/";
 TString data_lumi = "36_8fb/";
 TString eos_dir = "/eos/uscms/store/user/ztao/ttH_80X/";
