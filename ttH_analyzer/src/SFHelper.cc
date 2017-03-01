@@ -497,7 +497,15 @@ float SFHelper::Get_FR_weight(float lep1ConePt, float lep1Eta, bool lep1IsEle,
 	float F1 = lep1IsTight ? -1. : f1/(1.-f1);
 	float F2 = lep2IsTight ? -1. : f2/(1.-f2);
 
-	return (-1. * F1 * F2);
+	float weight = -1. * F1 * F2;
+
+	// ntuple may not store enough number of leptons of same flavor
+	if (lep1IsTight and lep2IsTight) {
+		assert((lep1IsEle and lep2IsEle) or (lep1IsMu and lep2IsMu));
+		weight = 0;
+	}
+	
+	return weight;
 }
 
 #if !defined(__ACLIC__) && !defined(__ROOTCLING__)

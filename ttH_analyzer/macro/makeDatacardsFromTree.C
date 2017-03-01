@@ -25,13 +25,16 @@
 //const float LUMI = 12.9 * 1000.;  // 1/pb
 const float LUMI = 36.773 * 1000; // 1/pb
 
-vector<TH1D*> getShapesMC(TString, vector<TString>, bool, bool);
-vector<TH1D*> getShapesData(TString, vector<TString>, bool);
+vector<TH1D*> getShapesMC(TString, vector<TString>, bool, int);
+vector<TH1D*> getShapesData(TString, vector<TString>, int);
 map<TString, TH1D*> setupHistoMap(map<TString, TH1D*>&, TString, bool, TString);
 //void fillHistoFromTreeMC(map<TString, TH1D*>&, TTree*);
 //void fillHistoFromTreeData(TH1D*, TTree*, vector<vector<unsigned long long>>&);
 void updateHistoName(pair<const TString, TH1D*>&, TString);
 vector<TH1D*> getClosureTestShapes(TH1D*);
+void makeBinContentsPositive(TH1*, int);
+double compIntegral(TH1*, bool, bool);
+double square(double);
 
 // hists map
 // "", "_gentau", "_faketau", "_"+syts, "_gentau"+"_"+syst, "_faketau"+"_"+syst,
@@ -41,6 +44,8 @@ void makeDatacardsFromTree(TString outfile_suffix = "2016b-h", bool addSyst = tr
 // 0=unverbose; 1=show passed events; 2=show failed events;
 {
 	using namespace std;
+
+	TH1::AddDirectory(0);
 	
 	gROOT->ProcessLine(".L ../src/SFHelper.cc+");
 	gROOT->ProcessLine(".L ../src/TreeAnalyzer.cc+");
@@ -134,7 +139,7 @@ map<TString, TH1D*> setupHistoMap(TString sample, bool addSyst, TString suffix)
 
 vector<TH1D*> getShapesMC( TString channel, vector<TString> samples, bool addSyst,
 						   int verbosity)
-{
+{	
 	Analysis_types AnaType = Analysis_types::Analyze_2lss1tau;
 	Selection_types SelType = Selection_types::Signal_2lss1tau;
 	
@@ -161,7 +166,7 @@ vector<TH1D*> getShapesMC( TString channel, vector<TString> samples, bool addSys
 			//fillHistoFromTreeMC(hists, tree_central);
 			TreeAnalyzer tana(tree_central,AnaType,SelType,false,verbosity);
 			tana.fill_Datacards_MC(hists);
-			tana.dump_Events(sample);
+			//tana.dump_Events(sample);
 		}
 		else
 			cout << "CANNOT open file " << "output_" << sample << ".root" << endl;
@@ -243,6 +248,9 @@ vector<TH1D*> getShapesMC( TString channel, vector<TString> samples, bool addSys
 			for (auto & h : hists) {
 				//h.second->Sumw2();
 				h.second->Scale(LUMI * XS / nSum);
+
+				// make bin content positive
+				makeBinContentsPositive(h.second,0);
 				
 				// update histogram names and add to the output histograms
 				if (first) {
@@ -298,7 +306,7 @@ vector<TH1D*> getShapesMC( TString channel, vector<TString> samples, bool addSys
 
 vector<TH1D*> getShapesData(TString channel, vector<TString> samples,
 							int verbosity)
-{
+{	
 	Analysis_types AnaType = Analysis_types::Analyze_2lss1tau;
 	Selection_types SelType = Selection_types::Signal_2lss1tau;
 	
@@ -329,7 +337,7 @@ vector<TH1D*> getShapesData(TString channel, vector<TString> samples,
 			//fillHistoFromTreeData(h, tree, eventList);
 			TreeAnalyzer tana(tree,AnaType,SelType,true,verbosity);
 			tana.fill_Datacards_Data(h, eventList);
-			tana.dump_Events(channel+"_"+sample, eventList_dump);
+			//tana.dump_Events(channel+"_"+sample, eventList_dump);
 		}
 		else {
 			cout << "CANNOT open file " << "output_" << channel
@@ -342,6 +350,9 @@ vector<TH1D*> getShapesData(TString channel, vector<TString> samples,
 	
 	// print out yields
 	cout << channel << "\t" << setw(4) << h->Integral() << endl;
+
+	// make bin content positive
+	makeBinContentsPositive(h,0);
 	
 	shapes.push_back(h);
 
@@ -607,7 +618,14 @@ void updateHistoName(pair<const TString, TH1D*>& h, TString channel)
 
 	for (const TString & thu : ThSysts) {
 		if (key.EndsWith(thu)) {
-			key.ReplaceAll(thu, sys_coname+"thu_shape_"+channel+"_"+thu);
+			
+			TString ch = channel;
+			if (channel.Contains("TTW"))
+				ch = "ttW";
+			if (channel.Contains("TTZ"))
+				ch = "ttZ";
+			
+			key.ReplaceAll(thu, sys_coname+"thu_shape_"+ch+"_"+thu);
 			h.second->SetName("x_"+channel+key);
 			return;
 		}
@@ -626,13 +644,13 @@ void updateHistoName(pair<const TString, TH1D*>& h, TString channel)
 	}
 
 	if (key.EndsWith("TESUp")) {
-		key.ReplaceAll("TESUp", sys_coname+"TESUp");
+		key.ReplaceAll("TESUp", sys_coname+"tauESUp");
 		h.second->SetName("x_"+channel+key);
 		return;
 	}
 	
 	if (key.EndsWith("TESDown")) {
-		key.ReplaceAll("TESDown", sys_coname+"TESDown");
+		key.ReplaceAll("TESDown", sys_coname+"tauESDown");
 		h.second->SetName("x_"+channel+key);
 		return;
 	}
@@ -672,13 +690,13 @@ vector<TH1D*> getClosureTestShapes(TH1D* h_nominal)
 	//h_ttbar_minus_qcd_fr_mu->Sumw2();
 	
 	TH1D* h_clos_e_shape_up =
-		new TH1D("x_fakes_data_"+sys_coname+"Clos_e_shape1Up","", 7, 0.5, 7.5);
+		new TH1D("x_fakes_data_"+sys_coname+"Clos_e_shapeUp","", 7, 0.5, 7.5);
 	TH1D* h_clos_e_shape_down =
-		new TH1D("x_fakes_data_"+sys_coname+"Clos_e_shape1Down","", 7, 0.5, 7.5);
+		new TH1D("x_fakes_data_"+sys_coname+"Clos_e_shapeDown","", 7, 0.5, 7.5);
 	TH1D* h_clos_mu_shape_up =
-		new TH1D("x_fakes_data_"+sys_coname+"Clos_mu_shape1Up","", 7, 0.5, 7.5);
+		new TH1D("x_fakes_data_"+sys_coname+"Clos_m_shapeUp","", 7, 0.5, 7.5);
 	TH1D* h_clos_mu_shape_down =
-		new TH1D("x_fakes_data_"+sys_coname+"Clos_mu_shape1Down","", 7, 0.5, 7.5);
+		new TH1D("x_fakes_data_"+sys_coname+"Clos_m_shapeDown","", 7, 0.5, 7.5);
 
 	h_clos_e_shape_up->Sumw2();
 	h_clos_e_shape_down->Sumw2();
@@ -696,4 +714,87 @@ vector<TH1D*> getClosureTestShapes(TH1D* h_nominal)
 	hists_clos.push_back(h_clos_mu_shape_down);
 
 	return hists_clos;
+}
+
+void makeBinContentsPositive(TH1* histogram, int verbosity)
+
+{
+	if ( verbosity ) {
+		std::cout << "<makeBinContentsPositive>:" << std::endl;
+		std::cout << " integral(" << histogram->GetName() << ") = " << histogram->Integral() << std::endl;
+	}
+	
+	double integral_original = compIntegral(histogram, true, true);
+	
+	if ( integral_original < 0. ) integral_original = 0.;
+	
+	if ( verbosity ) {
+		std::cout << " integral_original = " << integral_original << std::endl;
+	}
+	
+	int numBins = histogram->GetNbinsX();
+	
+	for ( int iBin = 0; iBin <= (numBins + 1); ++iBin ) {
+		double binContent_original = histogram->GetBinContent(iBin);
+		double binError2_original = square(histogram->GetBinError(iBin));
+		
+		if ( binContent_original < 0. ) {
+			double binContent_modified = 0.;
+			double binError2_modified = binError2_original + square(binContent_original - binContent_modified);
+			
+			assert(binError2_modified >= 0.);
+			
+			if ( verbosity ) {
+				std::cout << "bin #" << iBin << " (x =  " << histogram->GetBinCenter(iBin) << "): binContent = " << binContent_original << " +/- " << TMath::Sqrt(binError2_original) << " --> setting it to binContent = " << binContent_modified << " +/- " << TMath::Sqrt(binError2_modified) << std::endl;
+			}
+
+			histogram->SetBinContent(iBin, binContent_modified);
+			histogram->SetBinError(iBin, TMath::Sqrt(binError2_modified));
+		}
+	}
+
+	double integral_modified = compIntegral(histogram, true, true);
+	
+	if ( integral_modified < 0. ) integral_modified = 0.;
+	
+	if ( verbosity ) {
+		std::cout << " integral_modified = " << integral_modified << std::endl;
+	}
+	
+	if ( integral_modified > 0. ) {
+		double sf = integral_original/integral_modified;
+		
+		if ( verbosity ) {
+			std::cout << "--> scaling histogram by factor = " << sf << std::endl;
+		}
+		
+		histogram->Scale(sf);
+	} else {
+		for ( int iBin = 0; iBin <= (numBins + 1); ++iBin ) {
+			histogram->SetBinContent(iBin, 0.);
+		}
+	}
+
+	if ( verbosity ) {
+		std::cout << " integral(" << histogram->GetName() << ") = " << histogram->Integral() << std::endl;
+	}
+}
+
+double compIntegral(TH1* histogram, bool includeUnderflowBin, bool includeOverflowBin)
+{
+	double sumBinContent = 0.;
+	int numBins = histogram->GetNbinsX();
+	int firstBin = ( includeUnderflowBin ) ? 0 : 1;
+	int lastBin = ( includeOverflowBin  ) ? (numBins + 1) : numBins;
+	
+	for ( int iBin = firstBin; iBin <= lastBin; ++iBin ) {
+		sumBinContent += histogram->GetBinContent(iBin);
+	}
+	
+	return sumBinContent;
+}
+
+double square(double x)
+{
+	return x*x;
 }

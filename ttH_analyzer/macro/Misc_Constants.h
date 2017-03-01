@@ -47,6 +47,7 @@ const std::map<TString,std::vector<TString>> SamplesInChannel =
 /////////////////////////////////////////////
 // Crab job output directories for different samples
 TString batch = "24feb2017/";  // 2016 re-MiniAOD
+TString batch2 = "27feb2017/"; // 2016 re-MiniAOD
 //TString data_lumi = "12_9fb/";
 TString data_lumi = "36_8fb/";
 TString eos_dir = "/eos/uscms/store/user/ztao/ttH_80X/";
@@ -82,11 +83,11 @@ const std::map<TString, TString> dir_map =
 		{"ST_tWT",eos_dir+""+batch},
 		{"ST_tWTbar",eos_dir+""+batch},
 		{"WWds", eos_dir+""+batch}, 
-		{"DoubleMuon", "/eos/uscms/store/user/ztao/ttH_80X/DoubleMuon/"+batch+data_lumi},
-		{"SingleMuon", "/eos/uscms/store/user/ztao/ttH_80X/SingleMuon/"+batch+data_lumi},
-		{"DoubleEG", "/eos/uscms/store/user/ztao/ttH_80X/DoubleEG/"+batch+data_lumi},
-		{"SingleElectron", "/eos/uscms/store/user/ztao/ttH_80X/SingleElectron/"+batch+data_lumi},
-		{"MuonEG", "/eos/uscms/store/user/ztao/ttH_80X/MuonEG/"+batch+data_lumi}
+		{"DoubleMuon", "/eos/uscms/store/user/ztao/ttH_80X/DoubleMuon/"+batch2+data_lumi},
+		{"SingleMuon", "/eos/uscms/store/user/ztao/ttH_80X/SingleMuon/"+batch2+data_lumi},
+		{"DoubleEG", "/eos/uscms/store/user/ztao/ttH_80X/DoubleEG/"+batch2+data_lumi},
+		{"SingleElectron", "/eos/uscms/store/user/ztao/ttH_80X/SingleElectron/"+batch2+data_lumi},
+		{"MuonEG", "/eos/uscms/store/user/ztao/ttH_80X/MuonEG/"+batch2+data_lumi}
 	};
 
 #endif

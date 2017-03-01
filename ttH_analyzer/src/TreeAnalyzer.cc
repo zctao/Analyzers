@@ -310,12 +310,12 @@ vector<TH1D*> TreeAnalyzer::makeHistograms(bool control, vector<vector<unsigned 
 	TH1D* h_sum_charges = new TH1D("sum_charges","",7,-3.5,3.5);
 	
 	TH1D* h_njet = new TH1D("njet","",10,2.,12.);
-	TH1D* h_mindr_lep1_jet = new TH1D("mindr_lep1_jet","",12,0.4,4.0);
-	TH1D* h_mindr_lep2_jet = new TH1D("mindr_lep2_jet","",12,0.4,4.0);
-	TH1D* h_avg_dr_jet = new TH1D("avg_dr_jet","",10,0.,4.0);
+	//TH1D* h_mindr_lep1_jet = new TH1D("mindr_lep1_jet","",12,0.4,4.0);
+	//TH1D* h_mindr_lep2_jet = new TH1D("mindr_lep2_jet","",12,0.4,4.0);
+	//TH1D* h_avg_dr_jet = new TH1D("avg_dr_jet","",10,0.,4.0);
 	TH1D* h_max_lep_eta = new TH1D("max_lep_eta","",10,0,4.0);
 	TH1D* h_met = new TH1D("met","",10,0.,500.);
-	TH1D* h_mT_met_lep1 = new TH1D("mT_met_lep1","",10., 0., 500.);
+	//TH1D* h_mT_met_lep1 = new TH1D("mT_met_lep1","",10., 0., 500.);
 	TH1D* h_mht = new TH1D("mht","",10,0.,500.);
 	TH1D* h_dr_leps = new TH1D("dr_leps","",10,0.,4.0);
 	TH1D* h_tau_pt = new TH1D("tau_pt","",11,20.,130.);
@@ -332,12 +332,12 @@ vector<TH1D*> TreeAnalyzer::makeHistograms(bool control, vector<vector<unsigned 
 	h_sum_charges -> Sumw2();
 	
 	h_njet -> Sumw2();
-	h_mindr_lep1_jet -> Sumw2();
-	h_mindr_lep2_jet -> Sumw2();
-	h_avg_dr_jet -> Sumw2();
+	//h_mindr_lep1_jet -> Sumw2();
+	//h_mindr_lep2_jet -> Sumw2();
+	//h_avg_dr_jet -> Sumw2();
 	h_max_lep_eta -> Sumw2();
 	h_met -> Sumw2();
-	h_mT_met_lep1 -> Sumw2();
+	//h_mT_met_lep1 -> Sumw2();
 	h_mht -> Sumw2();
 	h_dr_leps -> Sumw2();
 	h_tau_pt -> Sumw2();
@@ -357,7 +357,7 @@ vector<TH1D*> TreeAnalyzer::makeHistograms(bool control, vector<vector<unsigned 
 	// loop over events in the tree
 	for (int i = 0; i < nEntries; ++i) {
 		_tree->GetEntry(i);
-
+		
 		if (not passTriggers()) continue;
 		if (not passFilters()) continue;
 		
@@ -373,11 +373,12 @@ vector<TH1D*> TreeAnalyzer::makeHistograms(bool control, vector<vector<unsigned 
 			else
 				eventList.push_back(eventid);
 		}
-		
-		// update weights here
-		updateWeights();
 
 		buildFourVectors();
+		
+		// update weights here
+		//updateWeights();
+		_event_weight = _ntuple.event_weight;
 
 		// before additional selection
 		h_sum_charges ->
@@ -391,11 +392,11 @@ vector<TH1D*> TreeAnalyzer::makeHistograms(bool control, vector<vector<unsigned 
 		}
 		
 		h_njet -> Fill(_ntuple.n_presel_jet, _event_weight);
-		h_mindr_lep1_jet -> Fill(_ntuple.mindr_lep0_jet, _event_weight);
-		h_mindr_lep2_jet -> Fill(_ntuple.mindr_lep1_jet, _event_weight);
-		h_avg_dr_jet -> Fill(_ntuple.avg_dr_jet, _event_weight);	
+		//h_mindr_lep1_jet -> Fill(_ntuple.mindr_lep0_jet, _event_weight);
+		//h_mindr_lep2_jet -> Fill(_ntuple.mindr_lep1_jet, _event_weight);
+		//h_avg_dr_jet -> Fill(_ntuple.avg_dr_jet, _event_weight);	
 		h_met -> Fill(_ntuple.PFMET, _event_weight);
-		h_mT_met_lep1 -> Fill(_ntuple.MT_met_lep0, _event_weight);
+		//h_mT_met_lep1 -> Fill(_ntuple.MT_met_lep0, _event_weight);
 		h_mht -> Fill(_ntuple.MHT, _event_weight);
 		h_tau_pt -> Fill(_ntuple.tau0_pt, _event_weight);
 		h_tau_eta -> Fill(_ntuple.tau0_eta, _event_weight);
@@ -422,12 +423,12 @@ vector<TH1D*> TreeAnalyzer::makeHistograms(bool control, vector<vector<unsigned 
 	out_hists.push_back(h_tau_pt);
 	out_hists.push_back(h_tau_eta);
 	out_hists.push_back(h_njet);
-	out_hists.push_back(h_mindr_lep1_jet);
-	out_hists.push_back(h_mindr_lep2_jet);
-	out_hists.push_back(h_avg_dr_jet);
+	//out_hists.push_back(h_mindr_lep1_jet);
+	//out_hists.push_back(h_mindr_lep2_jet);
+	//out_hists.push_back(h_avg_dr_jet);
 	out_hists.push_back(h_max_lep_eta);
 	out_hists.push_back(h_met);
-	out_hists.push_back(h_mT_met_lep1);
+	//out_hists.push_back(h_mT_met_lep1);
 	out_hists.push_back(h_mht);
 	out_hists.push_back(h_dr_leps);
 	out_hists.push_back(h_dr_lep1_tau);
@@ -544,6 +545,8 @@ void TreeAnalyzer::buildFourVectors()
 
 void TreeAnalyzer::updateWeights()
 {
+	assert(_fourvectorsbuilt);
+	
 	if (not _isdata) {
 		// pileup
 		_PU_weight = _sfhelper->Get_PUWeight(_ntuple.npuTrue);
@@ -601,6 +604,7 @@ void TreeAnalyzer::updateWeights()
 		_event_weight = _ntuple.event_weight;
 
 		if (_SelType==Control_1lfakeable) {  // fakes
+			/*
 			_event_weight =
 				_sfhelper->Get_FR_weight(_leps_conept[0], _lep0.Eta(),
 										 abs(_leps_id[0])==11,
@@ -610,6 +614,8 @@ void TreeAnalyzer::updateWeights()
 										 abs(_leps_id[1])==11,
 										 abs(_leps_id[1])==13,
 										 static_cast<bool>(_leps_istight[1]));
+			*/
+			if (_event_weight==-1.) _event_weight = 0.;
 		}
 		else if (_SelType==Control_2los1tau) {  // flips
 			float p1 = _sfhelper->Get_EleChargeMisIDProb(
@@ -665,14 +671,23 @@ bool TreeAnalyzer::passAdditionalSelection(bool controlRegion)
 {
 	assert(_fourvectorsbuilt);
 
-	bool passSel = false;
+	if (_SelType == Selection_types::Control_2los1tau)
+		return true;  // no additional cuts for 2los1tau
 	
-	if (_SelType != Control_2los1tau) { 
-		// lepton charge and tau charge are oppostie sign
-		assert(_leps_charge[0]==_leps_charge[1]);
-		passSel = (_leps_charge[0] + _ntuple.tau0_charge == 0);
+	bool passSel = false;
+	/*
+	if (_leps_charge[0]!=_leps_charge[1]) {
+		cout << "WARNING two leptons opposite sign!" << endl;
+		cout << "event: " << _ntuple.run << ":" << _ntuple.ls << ":"
+			 << _ntuple.nEvent << endl;
+		//return false;
 	}
-
+	*/
+	
+	// lepton charge and tau charge are oppostie sign
+	assert(_leps_charge[0]==_leps_charge[1]);
+	passSel = (_leps_charge[0] + _ntuple.tau0_charge == 0);
+	
 	if (controlRegion)
 		passSel = !passSel;
 
