@@ -17,8 +17,8 @@ case "$sample" in
 	SingleMuon) s="_mu_";;
 esac
 
-eval hadd ./"$batch"/output_data_obs.root crab_data_obs"$s"2016"$datasets"/"$date"_*/*/output_data_obs_*.root
-eval hadd ./"$batch"/output_fakes_data.root crab_fakes_data"$s"2016"$datasets"/"$date"_*/*/output_fakes_data_*.root
-eval hadd ./"$batch"/output_flips_data.root crab_flips_data"$s"2016"$datasets"/"$date"_*/*/output_flips_data_*.root
+eval hadd ./"$batch"/output_data_obs.root crab_data_obs"$s"2016*/"$date"_*/*/output_data_obs_*.root
+eval hadd ./"$batch"/output_fakes_data.root crab_fakes_data"$s"2016*/"$date"_*/*/output_fakes_data_*.root
+eval hadd ./"$batch"/output_flips_data.root crab_flips_data"$s"2016*/"$date"_*/*/output_flips_data_*.root
 
 cd -
