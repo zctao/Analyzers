@@ -60,22 +60,23 @@ void CU_ttH_EDA_Ntuple::write_ntuple(const CU_ttH_EDA_event_vars &local)
 	n_fakeablesel_mu = local.n_muons_fakeable;
 	n_mvasel_mu = local.n_muons_tight;
 
-	fill_ntuple_muons(local.mu_preselected_sorted);
-	//fill_ntuple_muons(local.mu_fakeable);
+	//fill_ntuple_muons(local.mu_preselected_sorted);
+	fill_ntuple_muons(local.mu_fakeable);
 	
 	// Electrons
 	n_presel_ele = local.n_electrons_loose;
 	n_fakeablesel_ele = local.n_electrons_fakeable;
 	n_mvasel_ele = local.n_electrons_tight;
 	
-	fill_ntuple_electrons(local.e_preselected_sorted);
-	//fill_ntuple_electrons(local.e_fakeable);
+	//fill_ntuple_electrons(local.e_preselected_sorted);
+	fill_ntuple_electrons(local.e_fakeable);
 		
 	// Taus
 	n_presel_tau = local.n_taus_pre;
 	n_tau = local.n_taus;
-	fill_ntuple_taus(local.tau_preselected_sorted);
-
+	//fill_ntuple_taus(local.tau_preselected_sorted);
+	fill_ntuple_taus(local.tau_selected);
+	
 	// Jets
 	n_presel_jet = local.n_jets;
 	fill_ntuple_jets(local.jets_selected_sorted);

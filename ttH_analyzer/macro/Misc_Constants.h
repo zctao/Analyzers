@@ -38,7 +38,7 @@ const std::map<TString,std::vector<TString>> SamplesInChannel =
 	  {"TTW", {"TTW"}},
 	  {"TTZ", {"TTZ", "TTGJets"}},
 	  {"EWK", {"WZ", "ZZ", "WW", "WG", "ZG"}},
-	  {"Rares", {"TTTT", "tZq", "WZZ", "WWZ", "WWW", "ZZZ"}},
+	  {"Rares", {"TTTT", "tZq", "WZZ", "WWZ", "WWW", "ZZZ","WpWp"}},
 	  {"fakes_data", DataSamples},
 	  {"flips_data", DataSamples},
 	  {"data_obs", DataSamples}
@@ -47,7 +47,7 @@ const std::map<TString,std::vector<TString>> SamplesInChannel =
 /////////////////////////////////////////////
 // Crab job output directories for different samples
 TString batch = "24feb2017/";  // 2016 re-MiniAOD
-TString batch2 = "27feb2017/"; // 2016 re-MiniAOD
+TString batch2 = "02mar2017/"; // 2016 re-MiniAOD
 //TString data_lumi = "12_9fb/";
 TString data_lumi = "36_8fb/";
 TString eos_dir = "/eos/uscms/store/user/ztao/ttH_80X/";

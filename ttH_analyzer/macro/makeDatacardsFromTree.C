@@ -23,7 +23,7 @@
 //#include "eventSelector.h"
 
 //const float LUMI = 12.9 * 1000.;  // 1/pb
-const float LUMI = 36.773 * 1000; // 1/pb
+const float LUMI = 35.867 * 1000; // 1/pb
 
 vector<TH1D*> getShapesMC(TString, vector<TString>, bool, int);
 vector<TH1D*> getShapesData(TString, vector<TString>, int);
@@ -40,7 +40,7 @@ double square(double);
 // "", "_gentau", "_faketau", "_"+syts, "_gentau"+"_"+syst, "_faketau"+"_"+syst,
 // "_JESUp", "_JESDown"; jesup jesdown on seperate loop
 
-void makeDatacardsFromTree(TString outfile_suffix = "2016b-h", bool addSyst = true, int verbosity=0)
+void makeDatacardsFromTree(TString outfile_suffix = "2016b-h", bool addSyst = false, int verbosity=0)
 // 0=unverbose; 1=show passed events; 2=show failed events;
 {
 	using namespace std;
@@ -238,10 +238,10 @@ vector<TH1D*> getShapesMC( TString channel, vector<TString> samples, bool addSys
 		
 		// scale histograms
 		if (f_central->IsOpen()) {
-			TH1D* h_SumGenWeight = (TH1D*)f_central->Get("ttHtaus/h_SumGenWeight");
-			//TH1D* h_SumGenWeightxPU = (TH1D*)f_central->Get("ttHtaus/h_SumGenWeightxPU");
-			float nSum = h_SumGenWeight->GetBinContent(1);
-			//float nSum = h_SumGenWeightxPU->GetBinContent(1);
+			//TH1D* h_SumGenWeight = (TH1D*)f_central->Get("ttHtaus/h_SumGenWeight");
+			TH1D* h_SumGenWeightxPU = (TH1D*)f_central->Get("ttHtaus/h_SumGenWeightxPU");
+			//float nSum = h_SumGenWeight->GetBinContent(1);
+			float nSum = h_SumGenWeightxPU->GetBinContent(1);
 			float XS = xsection::xsection[string(sample)];
 			
 			int ih = 0;
