@@ -379,28 +379,30 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		std::cout << "************************************" << std::endl;
 		std::cout << "run:ls:event : " << local.run_nr <<":"<<local.lumisection_nr<<":"<<local.event_nr<<std::endl;
 		std::cout << "lepton selection : " << std::endl;
+		std::cout << "n_muon_loose : " <<  local.n_muons_loose << std::endl;
 		std::cout << "n_muon_fakeable : " << local.n_muons_fakeable << std::endl;
 		std::cout << "n_muon_tight : " << local.n_muons_tight << std::endl;
 		std::cout << "fakeable muons : " << std::endl;
 		for (auto & mu : local.mu_fakeable) {
-			std::cout<<"pt eta phi : " << mu.pt()<<" "<<mu.eta()<<" "<<mu.phi()<<std::endl;
+			std::cout<<"pt eta phi charge: " << mu.pt()<<" "<<mu.eta()<<" "<<mu.phi()<<" "<<mu.charge()<<std::endl;
 		}
+		std::cout << "n_electrons_loose : " << local.n_electrons_loose << std::endl;
 		std::cout << "n_electrons_fakeable : " << local.n_electrons_fakeable << std::endl;	
 		std::cout << "n_electrons_tight : " << local.n_electrons_tight << std::endl;
 		std::cout << "fakeable electrons : " << std::endl;
 		for (auto & e : local.e_fakeable) {
-			std::cout<<"pt eta phi : " << e.pt()<<" "<<e.eta()<<" "<<e.phi()<<std::endl;
+			std::cout<<"pt eta phi charge: " << e.pt()<<" "<<e.eta()<<" "<<e.phi()<<" "<<e.charge()<<std::endl;
 		}
 		std::cout << "n_leptons_fakeable : " << local.leptons_fakeable.size() << std::endl;
 		std::cout << "n_leptons_tight : " << local.leptons_tight.size()<<std::endl;
 		for (auto & lep : local.leptons_fakeable) {
-			std::cout << "pt conept eta phi : "<<lep.pt()<<" "<<lep.conePt()<<" "<<lep.eta()<<" "<<lep.phi()<<std::endl;
+			std::cout << "pt conept eta phi charge: "<<lep.pt()<<" "<<lep.conePt()<<" "<<lep.eta()<<" "<<lep.phi()<<" "<<lep.charge()<<std::endl;
 		}
 		std::cout << "n_taus_pre : " << local.n_taus_pre << std::endl;
 		std::cout << "n_taus : " << local.n_taus << std::endl;
 		std::cout << "preselected taus : " << std::endl;
 		for (auto & tau : local.tau_preselected) {
-			std::cout <<"pt eta phi : "<< tau.pt()<<" "<<tau.eta()<<" "<<tau.phi()<<std::endl;
+			std::cout <<"pt eta phi charge: "<< tau.pt()<<" "<<tau.eta()<<" "<<tau.phi()<<" "<<tau.charge()<<std::endl;
 		}
 	}
 	
@@ -531,7 +533,11 @@ void CU_ttH_EDA::analyze(const edm::Event &iEvent,
 		else if (ilep == 2) // emu
 			matchHLT = local.pass_single_e or local.pass_single_mu or
 				local.pass_elemu;
-
+		
+		if (debug) {
+			std::cout << "after event selection " << std::endl;
+			std::cout << "ilep " << ilep << std::endl;
+		}
 		local.lepCategory = ilep;
 		local.btagCategory = ibtag;
 		local.matchHLTPath = matchHLT;

@@ -414,7 +414,8 @@ bool CU_ttH_EDA::pass_event_sel_2l(CU_ttH_EDA_event_vars &local,
 		assert(local.leptons_fakeable[ie].Type() == LeptonType::kele);
 		assert(local.leptons_fakeable[!ie].Type() == LeptonType::kmu);
 	}	
-
+	if (debug) std::cout << "event selecting ilep: " << ilep << std::endl;
+	
 	if (not passMetLD) {
 		if (debug) {
 			std::cout << "FAIL metLD cut" << std::endl;
@@ -457,8 +458,17 @@ bool CU_ttH_EDA::pass_event_sel_2l(CU_ttH_EDA_event_vars &local,
 	/// Lepton charge
 	// same sign
 	bool passLepCharge = (local.leptons_fakeable[0].charge() *
-					 local.leptons_fakeable[1].charge()) > 0;
+						  local.leptons_fakeable[1].charge()) > 0;
+	if (debug) {
+		std::cout << "event selection leps charge: "
+				  << local.leptons_fakeable[0].charge() << " "
+				  << local.leptons_fakeable[1].charge() << std::endl;
+	}
 	bool passTauCharge = true;
+	if (debug) {
+		std::cout << "event selection tau charge: "
+				  << local.tau_selected[0].charge() << std::endl;
+	}
 	// for signal region, opposite sign between tau and either lepton
 	// = local.leptons_fakeable[0].charge() * local.tau_selected[0].charge() < 0;
 	// To save computing time, additional requirement on tau charge applied after ntuple production for either signal region and control region
