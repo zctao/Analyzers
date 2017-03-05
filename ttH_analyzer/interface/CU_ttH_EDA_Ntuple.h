@@ -112,7 +112,9 @@ class CU_ttH_EDA_Ntuple //: public TClass
 	float avg_dr_jet;
 	float max_lep_eta;
 
-	int ibin;  // bin index in 1D BDT shape template 
+	int ibin;  // bin index in 1D BDT shape template
+
+	int lepXtauCharge;
 	
 	int n_presel_mu;
 	int n_mvasel_mu;
