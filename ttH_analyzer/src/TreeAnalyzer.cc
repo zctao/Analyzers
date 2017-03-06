@@ -49,11 +49,16 @@ void TreeAnalyzer::fill_Datacards_MC(std::map<TString,TH1D*>& hists)
 			cout << "PASSED: event " << _ntuple.run << ":" << _ntuple.ls << ":"
 				 << _ntuple.nEvent << endl;
 		}
+
+		//if (abs(_ntuple.HiggsDecayType) == 15)
+		//	cout << _ntuple.run << ":" << _ntuple.ls << ":" << _ntuple.nEvent
+		//		 << endl;
 		
 		// update bin index
 		int ib = _ntuple.ibin;
 		
 		// update weights here
+		getWeights();
 		updateWeights();
 		
 		// Fill the histograms
@@ -114,6 +119,14 @@ void TreeAnalyzer::fill_Datacards_MC(std::map<TString,TH1D*>& hists)
 				w_sf = _MC_weight_scale_muR2 / _MC_weight;
 			else if (key.EndsWith("_y2Down"))
 				w_sf = _MC_weight_scale_muR0p5 / _MC_weight;
+			else if (key.EndsWith("_FRjt_normUp"))
+				w_sf = _tauSF_weight_FRjt_normUp / _tauSF_weight;
+			else if (key.EndsWith("_FRjt_normDown"))
+				w_sf = _tauSF_weight_FRjt_normDown / _tauSF_weight;
+			else if (key.EndsWith("_FRjt_shapeUp"))
+				w_sf = _tauSF_weight_FRjt_shapeUp / _tauSF_weight;
+			else if (key.EndsWith("_FRjt_shapeDown"))
+				w_sf = _tauSF_weight_FRjt_shapeDown / _tauSF_weight;
 
 			hist.second -> Fill(ib, _event_weight * w_sf);
 		} // end of keys loop
@@ -122,7 +135,7 @@ void TreeAnalyzer::fill_Datacards_MC(std::map<TString,TH1D*>& hists)
 	return;
 }
 
-void TreeAnalyzer::fill_Datacards_Data(TH1D* h, vector<vector<unsigned long long>>& eventList)
+void TreeAnalyzer::fill_Datacards_Data(vector<TH1D*>& hists, vector<vector<unsigned long long>>& eventList)
 {
 	int nEntries = _tree->GetEntries();
 
@@ -149,7 +162,8 @@ void TreeAnalyzer::fill_Datacards_Data(TH1D* h, vector<vector<unsigned long long
 		eventList.push_back(eventid);
 
 		if (_verbosity==1) {
-			cout << "PASSED: event " << _ntuple.run << ":" << _ntuple.ls << ":"
+			cout //<< "PASSED: event "
+				 << _ntuple.run << ":" << _ntuple.ls << ":"
 				 << _ntuple.nEvent << endl;
 		}
 		
@@ -157,10 +171,49 @@ void TreeAnalyzer::fill_Datacards_Data(TH1D* h, vector<vector<unsigned long long
 		int ib = _ntuple.ibin;
 		
 		// update weights here
+		getWeights();
 		updateWeights();
 
 		// fill histogram
-		h->Fill(ib, _event_weight);
+		for (auto h : hists) {
+			float w = _event_weight;
+			TString hname = h->GetName();
+			
+			if (hname.EndsWith("FRe_normUp"))
+				w = _fr_weight_FRe_normUp;
+			else if (hname.EndsWith("FRe_normDown"))
+				w = _fr_weight_FRe_normDown;
+			else if (hname.EndsWith("FRe_ptUp"))
+				w = _fr_weight_FRe_ptUp;
+			else if (hname.EndsWith("FRe_ptDown"))
+				w = _fr_weight_FRe_ptDown;
+			else if (hname.EndsWith("FRe_bUp"))
+				w = _fr_weight_FRe_bUp;
+			else if (hname.EndsWith("FRe_bDown"))
+				w = _fr_weight_FRe_bDown;
+			else if (hname.EndsWith("FRe_ecUp"))
+				w = _fr_weight_FRe_ecUp;
+			else if (hname.EndsWith("FRe_ecDown"))
+				w = _fr_weight_FRe_ecDown;
+			else if (hname.EndsWith("FRm_normUp"))
+				w = _fr_weight_FRm_normUp;
+			else if (hname.EndsWith("FRm_normDown"))
+				w = _fr_weight_FRm_normDown;
+			else if (hname.EndsWith("FRm_ptUp"))
+				w = _fr_weight_FRm_ptUp;
+			else if (hname.EndsWith("FRm_ptDown"))
+				w = _fr_weight_FRm_ptDown;
+			else if (hname.EndsWith("FRm_bUp"))
+				w = _fr_weight_FRm_bUp;
+			else if (hname.EndsWith("FRm_bDown"))
+				w = _fr_weight_FRm_bDown;
+			else if (hname.EndsWith("FRm_ecUp"))
+				w = _fr_weight_FRm_ecUp;
+			else if (hname.EndsWith("FRm_ecDown"))
+				w = _fr_weight_FRm_ecDown;
+				
+			h->Fill(ib, w);
+		}
 	}
 }
 
@@ -505,6 +558,7 @@ void TreeAnalyzer::buildFourVectors()
 	
 	// tau
 	_tau.SetPtEtaPhiE(_ntuple.tau0_pt, _ntuple.tau0_eta, _ntuple.tau0_phi, _ntuple.tau0_E);
+	_tau_charge = _ntuple.tau0_charge;
 
 	// jets
 	int njets = _ntuple.jets_pt->size();
@@ -542,7 +596,206 @@ void TreeAnalyzer::buildFourVectors()
 	
 	_fourvectorsbuilt = true;
 }
+/*
+// include fix for ntuples filled with pre_selected leptons
+// check if the leptons at least pass the fakeable selection
+// also additional requirements are needed for eletron isfakeable flag
+void TreeAnalyzer::buildFourVectors()
+{
+	_leps_istight[0] = 0; _leps_istight[1] = 0;
+	_leps_charge[0] = 0; _leps_charge[1] = 0;
+	_leps_conept[0] = 0; _leps_conept[1] = 0;
+	_leps_id[0] = 0; _leps_id[1] = 0;
+	
+	// trust lepCategory saved in the ntuple
+	// 0: mumu; 1: ee; 2: emu
+	// leptons
+	if (_ntuple.lepCategory == 0) { // mumu
+		if (_ntuple.mu0_ismvasel) {
+			_lep0.SetPtEtaPhiE(_ntuple.mu0_pt, _ntuple.mu0_eta, 
+							   _ntuple.mu0_phi, _ntuple.mu0_E);
+			_leps_istight[0] = _ntuple.mu0_ismvasel;
+			_leps_charge[0] = _ntuple.mu0_charge;
+			_leps_conept[0] = _ntuple.mu0_conept;
+			_leps_id[0] = -13*_ntuple.mu0_charge;
 
+			if (_ntuple.mu1_ismvasel) {
+				_lep1.SetPtEtaPhiE(_ntuple.mu1_pt, _ntuple.mu1_eta, 
+								   _ntuple.mu1_phi, _ntuple.mu1_E);
+				_leps_istight[1] = _ntuple.mu1_ismvasel;
+				_leps_charge[1] = _ntuple.mu1_charge;
+				_leps_conept[1] = _ntuple.mu1_conept;
+				_leps_id[1] = -13*_ntuple.mu1_charge;
+			}
+
+		}
+		else {
+			if (_ntuple.mu1_ismvasel) {
+			    _lep0.SetPtEtaPhiE(_ntuple.mu1_pt, _ntuple.mu1_eta, 
+								   _ntuple.mu1_phi, _ntuple.mu1_E);
+				_leps_istight[0] = _ntuple.mu1_ismvasel;
+				_leps_charge[0] = _ntuple.mu1_charge;
+				_leps_conept[0] = _ntuple.mu1_conept;
+				_leps_id[0] = -13*_ntuple.mu1_charge;
+			}
+		}
+	}
+	else if (_ntuple.lepCategory == 1) { // ee
+		if (_ntuple.ele0_ismvasel and _ntuple.ele0_nMissingHits==0 and
+			_ntuple.ele0_passesConversionVeto) {
+			_lep0.SetPtEtaPhiE(_ntuple.ele0_pt, _ntuple.ele0_eta, 
+							   _ntuple.ele0_phi, _ntuple.ele0_E);
+			_leps_istight[0] = _ntuple.ele0_ismvasel;
+			_leps_charge[0] = _ntuple.ele0_charge;
+			_leps_conept[0] = _ntuple.ele0_conept;
+			_leps_id[0] = -11*_ntuple.ele0_charge;
+
+			if (_ntuple.ele1_ismvasel and _ntuple.ele1_nMissingHits==0 and
+			_ntuple.ele1_passesConversionVeto) {
+				_lep1.SetPtEtaPhiE(_ntuple.ele1_pt, _ntuple.ele1_eta, 
+								   _ntuple.ele1_phi, _ntuple.ele1_E);
+				_leps_istight[1] = _ntuple.ele1_ismvasel;
+				_leps_charge[1] = _ntuple.ele1_charge;
+				_leps_conept[1] = _ntuple.ele1_conept;
+				_leps_id[1] = -11*_ntuple.ele1_charge;
+			}
+		}
+		else {
+			if (_ntuple.ele1_ismvasel and _ntuple.ele1_nMissingHits==0 and
+			_ntuple.ele1_passesConversionVeto) {
+				_lep0.SetPtEtaPhiE(_ntuple.ele1_pt, _ntuple.ele1_eta, 
+								   _ntuple.ele1_phi, _ntuple.ele1_E);
+				_leps_istight[0] = _ntuple.ele1_ismvasel;
+				_leps_charge[0] = _ntuple.ele1_charge;
+				_leps_conept[0] = _ntuple.ele1_conept;
+				_leps_id[0] = -11*_ntuple.ele1_charge;
+			}
+		}	
+	}
+	else if (_ntuple.lepCategory == 2) { // emu
+		if (_ntuple.nEvent==410168) cout << "emu" << endl;
+		TLorentzVector mu; 
+		int mu_istight = 0;
+		int mu_charge = 0;
+		float mu_conept = 0;
+		int mu_id = 0;
+		TLorentzVector ele;
+		int ele_istight = 0;
+		int ele_charge = 0;
+		float ele_conept = 0;
+		int ele_id = 0;
+		// muon
+		if (_ntuple.mu0_ismvasel) {
+			if (_ntuple.nEvent==410168) cout << "mu0 is tight" << endl;
+			mu.SetPtEtaPhiE(_ntuple.mu0_pt, _ntuple.mu0_eta, 
+							_ntuple.mu0_phi, _ntuple.mu0_E);
+			mu_istight = _ntuple.mu0_ismvasel;
+			mu_charge = _ntuple.mu0_charge;
+			mu_conept = _ntuple.mu0_conept;
+			mu_id = -13*_ntuple.mu0_charge;
+		}
+		else if (_ntuple.mu1_ismvasel) {
+			if (_ntuple.nEvent==410168) cout << "mu1 is tight" << endl;
+			mu.SetPtEtaPhiE(_ntuple.mu1_pt, _ntuple.mu1_eta, 
+							_ntuple.mu1_phi, _ntuple.mu1_E);
+			mu_istight = _ntuple.mu1_ismvasel;
+			mu_charge = _ntuple.mu1_charge;
+			mu_conept = _ntuple.mu1_conept;
+			mu_id = -13*_ntuple.mu1_charge;
+		}
+		// eletron
+		if (_ntuple.ele0_ismvasel and _ntuple.ele0_nMissingHits==0 and
+			_ntuple.ele0_passesConversionVeto) {
+			if (_ntuple.nEvent==410168) cout << "ele0 is tight" << endl;
+			ele.SetPtEtaPhiE(_ntuple.ele0_pt, _ntuple.ele0_eta, 
+							 _ntuple.ele0_phi, _ntuple.ele0_E);
+			ele_istight = _ntuple.ele0_ismvasel;
+			ele_charge = _ntuple.ele0_charge;
+			ele_conept = _ntuple.ele0_conept;
+			ele_id = -11*_ntuple.ele0_charge;
+		}
+		else if (_ntuple.ele1_ismvasel and _ntuple.ele1_nMissingHits==0 and
+				 _ntuple.ele1_passesConversionVeto) {
+			if (_ntuple.nEvent==410168) cout << "ele1 is tight" << endl;
+			ele.SetPtEtaPhiE(_ntuple.ele1_pt, _ntuple.ele1_eta, 
+							 _ntuple.ele1_phi, _ntuple.ele1_E);
+			ele_istight = _ntuple.ele1_ismvasel;
+			ele_charge = _ntuple.ele1_charge;
+			ele_conept = _ntuple.ele1_conept;
+			ele_id = -11*_ntuple.ele1_charge;
+		}
+		
+		if (ele_conept > mu_conept) {
+			_lep0 = ele;                     _lep1 = mu;
+			_leps_istight[0] = ele_istight;  _leps_istight[1] = mu_istight;
+			_leps_charge[0] = ele_charge;    _leps_charge[1] = mu_charge;
+			_leps_conept[0] = ele_conept;    _leps_conept[1] = mu_conept;
+			_leps_id[0] = ele_id;            _leps_id[1] = mu_id;
+		}
+		else {
+			_lep0 = mu;                     _lep1 = ele;
+			_leps_istight[0] = mu_istight;  _leps_istight[1] = ele_istight;
+			_leps_charge[0] = mu_charge;    _leps_charge[1] = ele_charge;
+			_leps_conept[0] = mu_conept;    _leps_conept[1] = ele_conept;
+			_leps_id[0] = mu_id;            _leps_id[1] = ele_id;
+		}
+	}
+
+	// tau
+	_tau.SetPtEtaPhiE(_ntuple.tau0_pt, _ntuple.tau0_eta, _ntuple.tau0_phi, _ntuple.tau0_E);
+	_tau_charge = _ntuple.tau0_charge;
+	
+	// make sure it passes tight selection
+	if (_ntuple.tau0_byMediumIsolationMVArun2v1DBdR03oldDMwLT > 0.5) {
+		_tau.SetPtEtaPhiE(_ntuple.tau0_pt, _ntuple.tau0_eta, _ntuple.tau0_phi, _ntuple.tau0_E);
+		_tau_charge = _ntuple.tau0_charge;
+	}
+	else if (_ntuple.tau1_byMediumIsolationMVArun2v1DBdR03oldDMwLT > 0.5) {
+		_tau.SetPtEtaPhiE(_ntuple.tau1_pt, _ntuple.tau1_eta, _ntuple.tau1_phi, _ntuple.tau1_E);
+		_tau_charge = _ntuple.tau1_charge;
+	}
+	else {  // well...this shouldn't happen very often, or at all
+		std::cout << "WARNING: No tau saved in ntuple passes tight selection"
+				  << std::endl;
+    }
+	
+	// jets
+	int njets = _ntuple.jets_pt->size();
+	
+	int icsv0 = -1; int icsv1 = -1;
+	float csv0 = -10.1; float csv1 = -10.1;
+	
+	for (int i = 0; i < njets; ++i) {
+		if (_ntuple.jets_csv->at(i) > csv0) {
+			csv1 = csv0;
+			icsv1 = icsv0;
+			csv0 = _ntuple.jets_csv->at(i);
+			icsv0 = i;
+		}
+		else if (_ntuple.jets_csv->at(i) > csv1) {
+			csv1 = _ntuple.jets_csv->at(i);
+			icsv1 = i;
+		}
+	}
+
+	assert(icsv0 > -1 and icsv1 > -1);
+	_bjet0.SetPtEtaPhiE(_ntuple.jets_pt->at(icsv0),_ntuple.jets_eta->at(icsv0),
+						_ntuple.jets_phi->at(icsv0),_ntuple.jets_E->at(icsv0));
+	_bjet1.SetPtEtaPhiE(_ntuple.jets_pt->at(icsv1),_ntuple.jets_eta->at(icsv1),
+						_ntuple.jets_phi->at(icsv1),_ntuple.jets_E->at(icsv1));
+
+	_untag_jets.clear();
+	for (int i = 0; i < njets; ++i) {
+		if (i == icsv0 or i == icsv1) continue;
+		TLorentzVector jet;
+		jet.SetPtEtaPhiE(_ntuple.jets_pt->at(i),_ntuple.jets_eta->at(i),
+						 _ntuple.jets_phi->at(i),_ntuple.jets_E->at(i));
+		_untag_jets.push_back(jet);
+	}
+	
+	_fourvectorsbuilt = true;
+}
+*/
 void TreeAnalyzer::updateWeights()
 {
 	assert(_fourvectorsbuilt);
@@ -557,6 +810,18 @@ void TreeAnalyzer::updateWeights()
 		// tau scale factor
 		_tauSF_weight = _sfhelper->Get_TauIDSF(_ntuple.tau0_pt,_ntuple.tau0_eta,
 											   _ntuple.isGenMatched);
+		_tauSF_weight_FRjt_normUp =
+			_sfhelper->Get_TauIDSF(_ntuple.tau0_pt,_ntuple.tau0_eta,
+								   _ntuple.isGenMatched, "FRjt_normUp");
+		_tauSF_weight_FRjt_normDown =
+			_sfhelper->Get_TauIDSF(_ntuple.tau0_pt,_ntuple.tau0_eta,
+								   _ntuple.isGenMatched, "FRjt_normDown");
+		_tauSF_weight_FRjt_shapeUp =
+			_sfhelper->Get_TauIDSF(_ntuple.tau0_pt,_ntuple.tau0_eta,
+								   _ntuple.isGenMatched, "FRjt_shapeUp");
+		_tauSF_weight_FRjt_shapeDown =
+			_sfhelper->Get_TauIDSF(_ntuple.tau0_pt,_ntuple.tau0_eta,
+								   _ntuple.isGenMatched, "FRjt_shapeDown");
 
 		// lepton ID scale factors
 		_leptonSF_weight =
@@ -604,17 +869,110 @@ void TreeAnalyzer::updateWeights()
 		_event_weight = _ntuple.event_weight;
 
 		if (_SelType==Control_1lfakeable) {  // fakes
-			/*
-			_event_weight =
-				_sfhelper->Get_FR_weight(_leps_conept[0], _lep0.Eta(),
-										 abs(_leps_id[0])==11,
-										 abs(_leps_id[0])==13,
-										 static_cast<bool>(_leps_istight[0]),
-										 _leps_conept[1], _lep1.Eta(),
-										 abs(_leps_id[1])==11,
-										 abs(_leps_id[1])==13,
-										 static_cast<bool>(_leps_istight[1]));
-			*/
+			
+			_event_weight =	_sfhelper->Get_FR_weight(
+			    _leps_conept[0], _lep0.Eta(), abs(_leps_id[0])==11,
+			    abs(_leps_id[0])==13,static_cast<bool>(_leps_istight[0]),
+			    _leps_conept[1], _lep1.Eta(), abs(_leps_id[1])==11,
+			    abs(_leps_id[1])==13, static_cast<bool>(_leps_istight[1]));
+
+			_fr_weight_FRe_normUp = _sfhelper->Get_FR_weight(
+				_leps_conept[0], _lep0.Eta(), abs(_leps_id[0])==11,
+				abs(_leps_id[0])==13,static_cast<bool>(_leps_istight[0]),
+				_leps_conept[1], _lep1.Eta(), abs(_leps_id[1])==11,
+				abs(_leps_id[1])==13, static_cast<bool>(_leps_istight[1]),
+				"FRe_normUp");
+			_fr_weight_FRe_normDown = _sfhelper->Get_FR_weight(
+				_leps_conept[0], _lep0.Eta(), abs(_leps_id[0])==11,
+				abs(_leps_id[0])==13,static_cast<bool>(_leps_istight[0]),
+				_leps_conept[1], _lep1.Eta(), abs(_leps_id[1])==11,
+				abs(_leps_id[1])==13, static_cast<bool>(_leps_istight[1]),
+				"FRe_normDown");
+			_fr_weight_FRe_ptUp = _sfhelper->Get_FR_weight(
+				_leps_conept[0], _lep0.Eta(), abs(_leps_id[0])==11,
+				abs(_leps_id[0])==13,static_cast<bool>(_leps_istight[0]),
+				_leps_conept[1], _lep1.Eta(), abs(_leps_id[1])==11,
+				abs(_leps_id[1])==13, static_cast<bool>(_leps_istight[1]),
+				"FRe_ptUp");
+			_fr_weight_FRe_ptDown = _sfhelper->Get_FR_weight(
+				_leps_conept[0], _lep0.Eta(), abs(_leps_id[0])==11,
+				abs(_leps_id[0])==13,static_cast<bool>(_leps_istight[0]),
+				_leps_conept[1], _lep1.Eta(), abs(_leps_id[1])==11,
+				abs(_leps_id[1])==13, static_cast<bool>(_leps_istight[1]),
+				"FRe_ptDown");			
+			_fr_weight_FRe_bUp = _sfhelper->Get_FR_weight(
+				_leps_conept[0], _lep0.Eta(), abs(_leps_id[0])==11,
+				abs(_leps_id[0])==13,static_cast<bool>(_leps_istight[0]),
+				_leps_conept[1], _lep1.Eta(), abs(_leps_id[1])==11,
+				abs(_leps_id[1])==13, static_cast<bool>(_leps_istight[1]),
+				"FRe_bUp");
+			_fr_weight_FRe_bDown = _sfhelper->Get_FR_weight(
+				_leps_conept[0], _lep0.Eta(), abs(_leps_id[0])==11,
+				abs(_leps_id[0])==13,static_cast<bool>(_leps_istight[0]),
+				_leps_conept[1], _lep1.Eta(), abs(_leps_id[1])==11,
+				abs(_leps_id[1])==13, static_cast<bool>(_leps_istight[1]),
+				"FRe_bDown");
+			_fr_weight_FRe_ecUp = _sfhelper->Get_FR_weight(
+				_leps_conept[0], _lep0.Eta(), abs(_leps_id[0])==11,
+				abs(_leps_id[0])==13,static_cast<bool>(_leps_istight[0]),
+				_leps_conept[1], _lep1.Eta(), abs(_leps_id[1])==11,
+				abs(_leps_id[1])==13, static_cast<bool>(_leps_istight[1]),
+				"FRe_ecUp");
+			_fr_weight_FRe_ecDown = _sfhelper->Get_FR_weight(
+				_leps_conept[0], _lep0.Eta(), abs(_leps_id[0])==11,
+				abs(_leps_id[0])==13,static_cast<bool>(_leps_istight[0]),
+				_leps_conept[1], _lep1.Eta(), abs(_leps_id[1])==11,
+				abs(_leps_id[1])==13, static_cast<bool>(_leps_istight[1]),
+				"FRe_ecDown");
+			_fr_weight_FRm_normUp = _sfhelper->Get_FR_weight(
+				_leps_conept[0], _lep0.Eta(), abs(_leps_id[0])==11,
+				abs(_leps_id[0])==13,static_cast<bool>(_leps_istight[0]),
+				_leps_conept[1], _lep1.Eta(), abs(_leps_id[1])==11,
+				abs(_leps_id[1])==13, static_cast<bool>(_leps_istight[1]),
+				"FRm_normUp");
+			_fr_weight_FRm_normDown = _sfhelper->Get_FR_weight(
+				_leps_conept[0], _lep0.Eta(), abs(_leps_id[0])==11,
+				abs(_leps_id[0])==13,static_cast<bool>(_leps_istight[0]),
+				_leps_conept[1], _lep1.Eta(), abs(_leps_id[1])==11,
+				abs(_leps_id[1])==13, static_cast<bool>(_leps_istight[1]),
+				"FRm_normDown");
+			_fr_weight_FRm_ptUp = _sfhelper->Get_FR_weight(
+				_leps_conept[0], _lep0.Eta(), abs(_leps_id[0])==11,
+				abs(_leps_id[0])==13,static_cast<bool>(_leps_istight[0]),
+				_leps_conept[1], _lep1.Eta(), abs(_leps_id[1])==11,
+				abs(_leps_id[1])==13, static_cast<bool>(_leps_istight[1]),
+				"FRm_ptUp");
+			_fr_weight_FRm_ptDown = _sfhelper->Get_FR_weight(
+				_leps_conept[0], _lep0.Eta(), abs(_leps_id[0])==11,
+				abs(_leps_id[0])==13,static_cast<bool>(_leps_istight[0]),
+				_leps_conept[1], _lep1.Eta(), abs(_leps_id[1])==11,
+				abs(_leps_id[1])==13, static_cast<bool>(_leps_istight[1]),
+				"FRm_ptDown");			
+			_fr_weight_FRm_bUp = _sfhelper->Get_FR_weight(
+				_leps_conept[0], _lep0.Eta(), abs(_leps_id[0])==11,
+				abs(_leps_id[0])==13,static_cast<bool>(_leps_istight[0]),
+				_leps_conept[1], _lep1.Eta(), abs(_leps_id[1])==11,
+				abs(_leps_id[1])==13, static_cast<bool>(_leps_istight[1]),
+				"FRm_bUp");
+			_fr_weight_FRm_bDown = _sfhelper->Get_FR_weight(
+				_leps_conept[0], _lep0.Eta(), abs(_leps_id[0])==11,
+				abs(_leps_id[0])==13,static_cast<bool>(_leps_istight[0]),
+				_leps_conept[1], _lep1.Eta(), abs(_leps_id[1])==11,
+				abs(_leps_id[1])==13, static_cast<bool>(_leps_istight[1]),
+				"FRm_bDown");
+			_fr_weight_FRm_ecUp = _sfhelper->Get_FR_weight(
+				_leps_conept[0], _lep0.Eta(), abs(_leps_id[0])==11,
+				abs(_leps_id[0])==13,static_cast<bool>(_leps_istight[0]),
+				_leps_conept[1], _lep1.Eta(), abs(_leps_id[1])==11,
+				abs(_leps_id[1])==13, static_cast<bool>(_leps_istight[1]),
+				"FRm_ecUp");
+			_fr_weight_FRm_ecDown = _sfhelper->Get_FR_weight(
+				_leps_conept[0], _lep0.Eta(), abs(_leps_id[0])==11,
+				abs(_leps_id[0])==13,static_cast<bool>(_leps_istight[0]),
+				_leps_conept[1], _lep1.Eta(), abs(_leps_id[1])==11,
+				abs(_leps_id[1])==13, static_cast<bool>(_leps_istight[1]),
+				"FRm_ecDown");
+			
 			if (_event_weight==-1.) _event_weight = 0.;
 		}
 		else if (_SelType==Control_2los1tau) {  // flips
@@ -632,12 +990,73 @@ void TreeAnalyzer::updateWeights()
 	}
 }
 
+void TreeAnalyzer::getWeights()
+{
+	if (not _isdata) {
+		_event_weight = _ntuple.event_weight;
+		_PU_weight = _ntuple.PU_weight;
+		_triggerSF_weight = _ntuple.triggerSF_weight;
+		_tauSF_weight = _ntuple.tauSF_weight;
+		//_tauSF_weight_FRjt_normUp = _ntuple.tauSF_weight_FRjt_normUp;
+		//_tauSF_weight_FRjt_normDown = _ntuple.tauSF_weight_FRjt_normDown;
+		//_tauSF_weight_FRjt_shapeUp = _ntuple.tauSF_weight_FRjt_shapeUp;
+		//_tauSF_weight_FRjt_shapeDown = _ntuple.tauSF_weight_FRjt_shapeDown;
+		_leptonSF_weight = _ntuple.leptonSF_weight;
+		_bTagSF_weight = _ntuple.bTagSF_weight;
+		_btagSF_weight_LFUp = _ntuple.btagSF_weight_LFUp;
+		_btagSF_weight_LFDown = _ntuple.btagSF_weight_LFDown;
+		_btagSF_weight_HFUp = _ntuple.btagSF_weight_HFUp;
+		_btagSF_weight_HFDown = _ntuple.btagSF_weight_HFDown;
+		_btagSF_weight_HFStats1Up = _ntuple.btagSF_weight_HFStats1Up;
+		_btagSF_weight_HFStats1Down = _ntuple.btagSF_weight_HFStats1Down;
+		_btagSF_weight_HFStats2Up = _ntuple.btagSF_weight_HFStats2Up;
+		_btagSF_weight_HFStats2Down = _ntuple.btagSF_weight_HFStats2Down;
+		_btagSF_weight_LFStats1Up = _ntuple.btagSF_weight_LFStats1Up;
+		_btagSF_weight_LFStats1Down = _ntuple.btagSF_weight_LFStats1Down;
+		_btagSF_weight_LFStats2Up = _ntuple.btagSF_weight_LFStats2Up;
+		_btagSF_weight_LFStats2Down = _ntuple.btagSF_weight_LFStats2Down;
+		_btagSF_weight_cErr1Up = _ntuple.btagSF_weight_cErr1Up;
+		_btagSF_weight_cErr1Down = _ntuple.btagSF_weight_cErr1Down;
+		_btagSF_weight_cErr2Up = _ntuple.btagSF_weight_cErr2Up;
+		_btagSF_weight_cErr2Down = _ntuple.btagSF_weight_cErr2Down;
+		_MC_weight = _ntuple.MC_weight;
+		_MC_weight_scale_muF0p5 = _ntuple.MC_weight_scale_muF0p5;
+		_MC_weight_scale_muF2 = _ntuple.MC_weight_scale_muF2;
+		_MC_weight_scale_muR0p5 = _ntuple.MC_weight_scale_muR0p5;
+		_MC_weight_scale_muR2 = _ntuple.MC_weight_scale_muR2;
+	}
+	else {
+		_event_weight = _ntuple.event_weight;
+
+		if (_SelType==Control_1lfakeable) {
+			//_fr_weight_FRe_normUp = _ntuple.fr_weight_FRe_normUp;
+			//_fr_weight_FRe_normDown = _ntuple.fr_weight_FRe_normDown;
+			//_fr_weight_FRe_ptUp = _ntuple.fr_weight_FRe_ptUp;
+			//_fr_weight_FRe_ptDown = _ntuple.fr_weight_FRe_ptDown;
+			//_fr_weight_FRe_bUp = _ntuple.fr_weight_FRe_bUp;
+			//_fr_weight_FRe_bDown = _ntuple.fr_weight_FRe_bDown;
+			//_fr_weight_FRe_ecUp = _ntuple.fr_weight_FRe_ecUp;
+			//_fr_weight_FRe_ecDown = _ntuple.fr_weight_FRe_ecDown;
+			//_fr_weight_FRm_normUp = _ntuple.fr_weight_FRm_normUp;
+			//_fr_weight_FRm_normDown = _ntuple.fr_weight_FRm_normDown;
+			//_fr_weight_FRm_ptUp = _ntuple.fr_weight_FRm_ptUp;
+			//_fr_weight_FRm_ptDown = _ntuple.fr_weight_FRm_ptDown;
+			//_fr_weight_FRm_bUp = _ntuple.fr_weight_FRm_bUp;
+			//_fr_weight_FRm_bDown = _ntuple.fr_weight_FRm_bDown;
+			//_fr_weight_FRm_ecUp = _ntuple.fr_weight_FRm_ecUp;
+			//_fr_weight_FRm_ecDown = _ntuple.fr_weight_FRm_ecDown;
+		}
+		
+	}
+}
+
 bool TreeAnalyzer::passTriggers()
 {
 	// check trigger bits if necessary
 	// _ntuple.triggerBits
 
-	bool pass = _ntuple.matchHLTPath;
+	//bool pass = _ntuple.matchHLTPath;
+	bool pass = _ntuple.triggerBits > 0;
 	
 	if (_verbosity==2 and !pass) {
 		cout << "event " << _ntuple.run << ":" << _ntuple.ls << ":"
@@ -666,27 +1085,32 @@ bool TreeAnalyzer::passFilters()
 
 	return pass;
 }
-
+/*
 bool TreeAnalyzer::passAdditionalSelection(bool controlRegion)
 {
 	assert(_fourvectorsbuilt);
-
+	
 	if (_SelType == Selection_types::Control_2los1tau)
 		return true;  // no additional cuts for 2los1tau
 	
 	bool passSel = false;
-	/*
-	if (_leps_charge[0]!=_leps_charge[1]) {
+	
+	if (_leps_charge[0]*_leps_charge[1] < 0) {
 		cout << "WARNING two leptons opposite sign!" << endl;
 		cout << "event: " << _ntuple.run << ":" << _ntuple.ls << ":"
 			 << _ntuple.nEvent << endl;
 		//return false;
 	}
-	*/
+
+	if (_leps_charge[0]==0 and _leps_charge[1]!=0) {
+		cout << "WARNING leading lepton charge is not properly set" << endl;
+		cout << "event: " << _ntuple.run << ":" << _ntuple.ls << ":"
+			 << _ntuple.nEvent << endl;
+	}
 	
-	// lepton charge and tau charge are oppostie sign
-	assert(_leps_charge[0]==_leps_charge[1]);
-	passSel = (_leps_charge[0] + _ntuple.tau0_charge == 0);
+	// lepton charge and tau charge are oppostie sign in signal region
+	//assert(_leps_charge[0]*_leps_charge[1] >= 0);
+	passSel = (_leps_charge[0] * _tau_charge <= 0);
 	
 	if (controlRegion)
 		passSel = !passSel;
@@ -695,10 +1119,93 @@ bool TreeAnalyzer::passAdditionalSelection(bool controlRegion)
 		cout << "event " << _ntuple.run << ":" << _ntuple.ls << ":"
 			 << _ntuple.nEvent << "FAILED tau charge requirement" << endl;
 		cout << "lepton charge: " << _leps_charge[0] << " ";
-		cout << "tau charge: " << _ntuple.tau0_charge << endl;
+		cout << "tau charge: " << _tau_charge << endl;
 	}
 	
 	return passSel;
+}
+*/
+bool TreeAnalyzer::passAdditionalSelection(bool controlRegion)
+{
+	int lepQ = 0;
+	int tauQ = 0;
+	
+	if (_SelType == Selection_types::Control_2los1tau)
+		return _ntuple.nBadMuons < 1;
+		//return true;  // no additional cuts for 2los1tau
+
+	// tau charge
+	if (_ntuple.tau0_byMediumIsolationMVArun2v1DBdR03oldDMwLT > 0.5)
+	    tauQ = _ntuple.tau0_charge;
+	else if (_ntuple.tau1_byMediumIsolationMVArun2v1DBdR03oldDMwLT > 0.5)
+	    tauQ = _ntuple.tau1_charge;
+	else {
+		std::cout << "WARNING: No tau saved in ntuple passes tight selection"
+				  << std::endl;
+	    tauQ = 0;
+	}
+
+	// lepton charge
+	int mu0_passID = _ntuple.mu0_ismvasel;
+	int mu1_passID = _ntuple.mu1_ismvasel;
+	int ele0_passID = _ntuple.ele0_ismvasel;
+	int ele1_passID = _ntuple.ele1_ismvasel;
+
+	//if (_SelType == Selection_types::Control_1lfakeable) {
+	//	mu0_passID = _ntuple.mu0_isfakeablesel;
+	//	mu1_passID = _ntuple.mu1_isfakeablesel;
+	//	ele0_passID = _ntuple.ele0_isfakeablesel;
+	//	ele1_passID = _ntuple.ele1_isfakeablesel;
+	//}
+	
+	// lepton charge
+	if (_ntuple.lepCategory == 0) { //mumu
+		if (mu0_passID)
+			lepQ = _ntuple.mu0_charge;
+		else if (mu1_passID)
+			lepQ = _ntuple.mu1_charge;
+	}
+	else if (_ntuple.lepCategory == 1) { // ee
+		if (ele0_passID and _ntuple.ele0_nMissingHits==0 and
+			_ntuple.ele0_passesConversionVeto)
+			lepQ = _ntuple.ele0_charge;
+		else if (ele1_passID and _ntuple.ele1_nMissingHits==0 and
+				 _ntuple.ele1_passesConversionVeto)
+			lepQ = _ntuple.ele1_charge;
+	}
+	else if (_ntuple.lepCategory == 2) { // emu
+		if (mu0_passID)
+			lepQ = _ntuple.mu0_charge;
+		else if (ele0_passID and _ntuple.ele0_nMissingHits==0 and
+				 _ntuple.ele0_passesConversionVeto)
+			lepQ = _ntuple.ele0_charge;
+		else if (mu1_passID)
+			lepQ = _ntuple.mu1_charge;
+		else if (ele1_passID and _ntuple.ele1_nMissingHits==0 and
+				 _ntuple.ele1_passesConversionVeto)
+			lepQ = _ntuple.ele1_charge;
+	}
+	else
+		cout << "NOOOOOOOOOOOOOOOO" << endl;
+
+	bool passSel = lepQ * tauQ <= 0;
+
+	if (controlRegion)
+		passSel = !passSel;
+
+	if (_SelType == Selection_types::Control_1lfakeable) {
+		passSel = passSel and (_ntuple.nBadMuons < 1);
+	}
+	
+	if (_verbosity==2 and !passSel) {
+		cout << "event " << _ntuple.run << ":" << _ntuple.ls << ":"
+			 << _ntuple.nEvent << "FAILED tau charge requirement" << endl;
+		cout << "lepton charge: " << lepQ << " ";
+		cout << "tau charge: " << tauQ << endl;
+	}
+	
+	return passSel;
+	
 }
 
 #endif

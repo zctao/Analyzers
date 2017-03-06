@@ -33,13 +33,14 @@ class TreeAnalyzer
 	
 	// member function
 	void fill_Datacards_MC(std::map<TString, TH1D*>&);
-	void fill_Datacards_Data(TH1D*, vector<vector<unsigned long long>>&);
+	void fill_Datacards_Data(vector<TH1D*>&, vector<vector<unsigned long long>>&);
 	vector<TH1D*> makeHistograms(bool, vector<vector<unsigned long long>>&);
 	void dump_Events(TString);
 	void dump_Events(TString, vector<vector<unsigned long long>>&);
 	
  private:
 
+	void getWeights();
 	void updateWeights();
     void buildFourVectors();
 	bool checkBits(unsigned int, unsigned int);
@@ -62,6 +63,10 @@ class TreeAnalyzer
 	float _PU_weight;
 	float _triggerSF_weight;
 	float _tauSF_weight;
+	float _tauSF_weight_FRjt_normUp;
+	float _tauSF_weight_FRjt_normDown;
+	float _tauSF_weight_FRjt_shapeUp;
+	float _tauSF_weight_FRjt_shapeDown;
 	float _leptonSF_weight;
 	float _MC_weight;
 	float _MC_weight_scale_muF0p5;
@@ -86,6 +91,23 @@ class TreeAnalyzer
 	float _btagSF_weight_cErr2Up;
 	float _btagSF_weight_cErr2Down;
 
+	float _fr_weight_FRe_normUp;
+	float _fr_weight_FRe_normDown;
+	float _fr_weight_FRe_ptUp;
+	float _fr_weight_FRe_ptDown;
+	float _fr_weight_FRe_bUp;
+	float _fr_weight_FRe_bDown;
+	float _fr_weight_FRe_ecUp;
+	float _fr_weight_FRe_ecDown;
+	float _fr_weight_FRm_normUp;
+	float _fr_weight_FRm_normDown;
+	float _fr_weight_FRm_ptUp;
+	float _fr_weight_FRm_ptDown;
+	float _fr_weight_FRm_bUp;
+	float _fr_weight_FRm_bDown;
+	float _fr_weight_FRm_ecUp;
+	float _fr_weight_FRm_ecDown;
+
 	// 4 vectors
 	TLorentzVector _lep0;
 	TLorentzVector _lep1;
@@ -98,6 +120,8 @@ class TreeAnalyzer
 	int _leps_id[2];
 	int _leps_charge[2];
 	int _leps_istight[2];
+
+	int _tau_charge;
 
 	bool _fourvectorsbuilt;
 };

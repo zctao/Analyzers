@@ -31,21 +31,22 @@ class SFHelper
 	float Get_HLTSF(int);
 	float Get_LeptonIDSF(float,float,bool,bool,bool);	
 	float Get_PUWeight(int);	
-	float Get_TauIDSF(float,float,bool);
+	float Get_TauIDSF(float,float,bool,TString syst="NA");
 	//float Get_MCWeight();
-	float Get_FakeRate(float,float,bool,bool); // for ele or mu
+	float Get_FakeRate(float,float,bool,bool,TString syst="NA"); // for ele or mu
 	float Get_FakeRate(float,float);  // for tau
-	float Get_FR_weight(float,float,bool,bool,bool,float,float,bool,bool,bool);
+	float Get_FR_weight(float,float,bool,bool,bool,float,float,bool,bool,bool,
+						TString syst="NA");
 	//float Get_ChargeFlipWeight();
 	float Get_EleChargeMisIDProb(float,float,int,int);
 	
 #if !defined(__ACLIC__) && !defined(__ROOTCLING__)
 	float Get_LeptonIDSF(const miniLepton&);
 	float Get_EvtCSVWeight(std::vector<pat::Jet> &, const std::string &);
-	float Get_TauIDSF(const pat::Tau&, bool);
-	float Get_FakeRate(const miniLepton&);
+	float Get_TauIDSF(const pat::Tau&, bool, TString syst="NA");
+	float Get_FakeRate(const miniLepton&, TString syst="NA");
 	float Get_FakeRate(const pat::Tau&);
-	float Get_FR_weight(const miniLepton&, const miniLepton&);
+	float Get_FR_weight(const miniLepton&, const miniLepton&, TString syst="NA");
 	float Get_EleChargeMisIDProb(const miniLepton&, int);
 #endif
 		
@@ -74,6 +75,23 @@ class SFHelper
 	TFile *file_fr_lep;
 	TH2F *h_fakerate_el;
 	TH2F *h_fakerate_mu;
+	// systematics
+	TH2F *h_fakerate_el_normUp;
+	TH2F *h_fakerate_el_normDown;
+	TH2F *h_fakerate_el_ptUp;
+	TH2F *h_fakerate_el_ptDown;
+	TH2F *h_fakerate_el_bUp;
+	TH2F *h_fakerate_el_bDown;
+	TH2F *h_fakerate_el_ecUp;
+	TH2F *h_fakerate_el_ecDown;
+	TH2F *h_fakerate_mu_normUp;
+	TH2F *h_fakerate_mu_normDown;
+	TH2F *h_fakerate_mu_ptUp;
+	TH2F *h_fakerate_mu_ptDown;
+	TH2F *h_fakerate_mu_bUp;
+	TH2F *h_fakerate_mu_bDown;
+	TH2F *h_fakerate_mu_ecUp;
+	TH2F *h_fakerate_mu_ecDown;
 
 	// Jet to tau fake rate
 	TFile* file_fr_tau;
@@ -81,6 +99,15 @@ class SFHelper
 	TGraphAsymmErrors *g_fakerate_tau_mvaM_etaH_mc;
 	TF1 *f_fakerate_tau_mvaM_etaL_ratio;
 	TF1 *f_fakerate_tau_mvaM_etaH_ratio;
+	// systematics
+	TF1 *f_fakerate_tau_mvaM_etaL_ratio_normUp;
+	TF1 *f_fakerate_tau_mvaM_etaL_ratio_normDown;
+	TF1 *f_fakerate_tau_mvaM_etaL_ratio_shapeUp;
+	TF1 *f_fakerate_tau_mvaM_etaL_ratio_shapeDown;
+	TF1 *f_fakerate_tau_mvaM_etaH_ratio_normUp;
+	TF1 *f_fakerate_tau_mvaM_etaH_ratio_normDown;
+	TF1 *f_fakerate_tau_mvaM_etaH_ratio_shapeUp;
+	TF1 *f_fakerate_tau_mvaM_etaH_ratio_shapeDown;
 
 	// PU weight
 	TFile* file_puweight;

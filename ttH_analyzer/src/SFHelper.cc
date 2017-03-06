@@ -77,6 +77,16 @@ void SFHelper::Set_up_TauSF_Lut()
 	
 	f_fakerate_tau_mvaM_etaL_ratio = (TF1*) file_fr_tau->Get("jetToTauFakeRate/dR03mvaMedium/absEtaLt1_5/fitFunction_data_div_mc_hadTaus_pt");
 	f_fakerate_tau_mvaM_etaH_ratio = (TF1*) file_fr_tau->Get("jetToTauFakeRate/dR03mvaMedium/absEta1_5to9_9/fitFunction_data_div_mc_hadTaus_pt");
+
+	// systematics
+	f_fakerate_tau_mvaM_etaL_ratio_normUp = (TF1*) file_fr_tau->Get("jetToTauFakeRate/dR03mvaMedium/absEtaLt1_5/fitFunction_data_div_mc_hadTaus_pt_par1Up");
+	f_fakerate_tau_mvaM_etaL_ratio_normDown = (TF1*) file_fr_tau->Get("jetToTauFakeRate/dR03mvaMedium/absEtaLt1_5/fitFunction_data_div_mc_hadTaus_pt_par1Down");
+	f_fakerate_tau_mvaM_etaL_ratio_shapeUp = (TF1*) file_fr_tau->Get("jetToTauFakeRate/dR03mvaMedium/absEtaLt1_5/fitFunction_data_div_mc_hadTaus_pt_par2Up");
+	f_fakerate_tau_mvaM_etaL_ratio_shapeDown = (TF1*) file_fr_tau->Get("jetToTauFakeRate/dR03mvaMedium/absEtaLt1_5/fitFunction_data_div_mc_hadTaus_pt_par2Down");
+	f_fakerate_tau_mvaM_etaH_ratio_normUp = (TF1*) file_fr_tau->Get("jetToTauFakeRate/dR03mvaMedium/absEta1_5to9_9/fitFunction_data_div_mc_hadTaus_pt_par1Up");
+	f_fakerate_tau_mvaM_etaH_ratio_normDown = (TF1*) file_fr_tau->Get("jetToTauFakeRate/dR03mvaMedium/absEta1_5to9_9/fitFunction_data_div_mc_hadTaus_pt_par1Down");
+	f_fakerate_tau_mvaM_etaH_ratio_shapeUp = (TF1*) file_fr_tau->Get("jetToTauFakeRate/dR03mvaMedium/absEta1_5to9_9/fitFunction_data_div_mc_hadTaus_pt_par2Up");
+	f_fakerate_tau_mvaM_etaH_ratio_shapeDown = (TF1*) file_fr_tau->Get("jetToTauFakeRate/dR03mvaMedium/absEta1_5to9_9/fitFunction_data_div_mc_hadTaus_pt_par2Down");
 }
 
 void SFHelper::Set_up_PUWeight_hist()
@@ -94,6 +104,24 @@ void SFHelper::Set_up_FakeRate_Lut()
 	
 	h_fakerate_el = (TH2F*) file_fr_lep->Get("FR_mva075_el_data_comb");
 	h_fakerate_mu = (TH2F*) file_fr_lep->Get("FR_mva075_mu_data_comb");
+
+	// systematics
+	h_fakerate_el_normUp = (TH2F*) file_fr_lep->Get("FR_mva075_el_data_comb_up");
+	h_fakerate_el_normDown = (TH2F*) file_fr_lep->Get("FR_mva075_el_data_comb_down");
+	h_fakerate_el_ptUp = (TH2F*) file_fr_lep->Get("FR_mva075_el_data_comb_pt1");
+	h_fakerate_el_ptDown = (TH2F*) file_fr_lep->Get("FR_mva075_el_data_comb_pt2");
+	h_fakerate_el_bUp = (TH2F*) file_fr_lep->Get("FR_mva075_el_data_comb_b1");
+	h_fakerate_el_bDown = (TH2F*) file_fr_lep->Get("FR_mva075_el_data_comb_b2");
+	h_fakerate_el_ecUp = (TH2F*) file_fr_lep->Get("FR_mva075_el_data_comb_ec1");
+	h_fakerate_el_ecDown = (TH2F*) file_fr_lep->Get("FR_mva075_el_data_comb_ec2");
+	h_fakerate_mu_normUp = (TH2F*) file_fr_lep->Get("FR_mva075_mu_data_comb_up");
+	h_fakerate_mu_normDown = (TH2F*) file_fr_lep->Get("FR_mva075_mu_data_comb_down");
+	h_fakerate_mu_ptUp = (TH2F*) file_fr_lep->Get("FR_mva075_mu_data_comb_pt1");
+	h_fakerate_mu_ptDown = (TH2F*) file_fr_lep->Get("FR_mva075_mu_data_comb_pt2");
+	h_fakerate_mu_bUp = (TH2F*) file_fr_lep->Get("FR_mva075_mu_data_comb_b1");
+	h_fakerate_mu_bDown = (TH2F*) file_fr_lep->Get("FR_mva075_mu_data_comb_b2");
+	h_fakerate_mu_ecUp = (TH2F*) file_fr_lep->Get("FR_mva075_mu_data_comb_ec1");
+	h_fakerate_mu_ecDown = (TH2F*) file_fr_lep->Get("FR_mva075_mu_data_comb_ec2");
 	
 	//taus
 	/*
@@ -423,21 +451,43 @@ float SFHelper::Get_PUWeight(int nPU)
 }
 
 #if !defined(__ACLIC__) && !defined(__ROOTCLING__)
-float SFHelper::Get_TauIDSF(const pat::Tau& tau, bool isGenMatched)
+float SFHelper::Get_TauIDSF(const pat::Tau& tau, bool isGenMatched, TString syst)
 {
-	return Get_TauIDSF(tau.pt(), tau.eta(), isGenMatched);
+	return Get_TauIDSF(tau.pt(), tau.eta(), isGenMatched, syst);
 }
 #endif
-float SFHelper::Get_TauIDSF(float tauPt, float tauEta, bool isGenMatched)
+float SFHelper::Get_TauIDSF(float tauPt, float tauEta, bool isGenMatched, TString syst)
 {
 	assert(not _isdata);
 
 	// tau ID efficiency data/MC scale factor
 	float tauEff_sf = 1.0;
+
 	// tau ID fake rate data/MC scale factor
 	float tauFR_sf = tauEta < 1.497 ?
 	    readTF(f_fakerate_tau_mvaM_etaL_ratio, tauPt) :
 		readTF(f_fakerate_tau_mvaM_etaH_ratio, tauPt);
+
+	if (syst=="FRjt_normUp") {
+		tauFR_sf = tauEta < 1.497 ?
+			readTF(f_fakerate_tau_mvaM_etaL_ratio_normUp, tauPt) :
+			readTF(f_fakerate_tau_mvaM_etaH_ratio_normUp, tauPt);
+	}
+	else if (syst=="FRjt_normDown") {
+		tauFR_sf = tauEta < 1.497 ?
+			readTF(f_fakerate_tau_mvaM_etaL_ratio_normDown, tauPt) :
+			readTF(f_fakerate_tau_mvaM_etaH_ratio_normDown, tauPt);
+	}
+	else if (syst=="FRjt_shapeUp") {
+		tauFR_sf = tauEta < 1.497 ?
+			readTF(f_fakerate_tau_mvaM_etaL_ratio_shapeUp, tauPt) :
+			readTF(f_fakerate_tau_mvaM_etaH_ratio_shapeUp, tauPt);
+	}
+	else if (syst=="FRjt_shapeDown") {
+		tauFR_sf = tauEta < 1.497 ?
+			readTF(f_fakerate_tau_mvaM_etaL_ratio_shapeDown, tauPt) :
+			readTF(f_fakerate_tau_mvaM_etaH_ratio_shapeDown, tauPt);
+	}
 
 	return (isGenMatched ? tauEff_sf : tauFR_sf);
 }
@@ -448,15 +498,16 @@ float SFHelper::Get_TauIDSF(float tauPt, float tauEta, bool isGenMatched)
 	}*/
 
 #if !defined(__ACLIC__) && !defined(__ROOTCLING__)
-float SFHelper::Get_FakeRate(const miniLepton& lepton)
+float SFHelper::Get_FakeRate(const miniLepton& lepton, TString syst)
 {
 	bool isEle = lepton.Type() == LeptonType::kele;
 	bool isMu = lepton.Type() == LeptonType::kmu;
 
-	return Get_FakeRate(lepton.conePt(), lepton.eta(), isEle, isMu);
+	return Get_FakeRate(lepton.conePt(), lepton.eta(), isEle, isMu, syst);
 }
 
-float SFHelper::Get_FR_weight(const miniLepton& lep1, const miniLepton& lep2)
+float SFHelper::Get_FR_weight(const miniLepton& lep1, const miniLepton& lep2,
+							  TString syst)
 {
 	bool lep1IsEle = lep1.Type() == LeptonType::kele;
 	bool lep1IsMu = lep1.Type() == LeptonType::kmu;
@@ -467,17 +518,66 @@ float SFHelper::Get_FR_weight(const miniLepton& lep1, const miniLepton& lep2)
 						 lep1.conePt(),lep1.eta(),lep1IsEle,lep1IsMu,
 						 lep1.passTightSel(),
 						 lep2.conePt(),lep2.eta(),lep2IsEle,lep2IsMu,
-						 lep2.passTightSel()
+						 lep2.passTightSel(),
+						 syst
 						 );
 }
 #endif
 
 float SFHelper::Get_FakeRate(float lepConePt, float lepEta,
-							 bool isEle, bool isMuon)
+							 bool isEle, bool isMuon, TString syst)
 {
 	float fakerate = 0;
-	
-	if (isEle)
+
+	if (syst=="FRe_normUp" and isEle) {
+		fakerate = read2DHist(h_fakerate_el_normUp, lepConePt, std::abs(lepEta));
+	}
+	else if (syst=="FRe_normDown" and isEle) {
+		fakerate = read2DHist(h_fakerate_el_normDown, lepConePt, std::abs(lepEta));
+	}
+	else if (syst=="FRe_ptUp" and isEle) {
+		fakerate = read2DHist(h_fakerate_el_ptUp, lepConePt, std::abs(lepEta));
+	}
+	else if (syst=="FRe_ptDown" and isEle) {
+		fakerate = read2DHist(h_fakerate_el_ptDown, lepConePt, std::abs(lepEta));
+	}
+	else if (syst=="FRe_bUp" and isEle) {
+		fakerate = read2DHist(h_fakerate_el_bUp, lepConePt, std::abs(lepEta));
+	}
+	else if (syst=="FRe_bDown" and isEle) {
+		fakerate = read2DHist(h_fakerate_el_bDown, lepConePt, std::abs(lepEta));
+	}
+	else if (syst=="FRe_ecUp" and isEle) {
+		fakerate = read2DHist(h_fakerate_el_ecUp, lepConePt, std::abs(lepEta));
+	}
+	else if (syst=="FRe_ecDown" and isEle) {
+		fakerate = read2DHist(h_fakerate_el_ecDown, lepConePt, std::abs(lepEta));
+	}
+	else if (syst=="FRm_normUp" and isMuon) {
+		fakerate = read2DHist(h_fakerate_mu_normUp, lepConePt, std::abs(lepEta));
+	}
+	else if (syst=="FRm_normDown" and isMuon) {
+		fakerate = read2DHist(h_fakerate_mu_normDown, lepConePt, std::abs(lepEta));
+	}
+	else if (syst=="FRm_ptUp" and isMuon) {
+		fakerate = read2DHist(h_fakerate_mu_ptUp, lepConePt, std::abs(lepEta));
+	}
+	else if (syst=="FRm_ptDown" and isMuon) {
+		fakerate = read2DHist(h_fakerate_mu_ptDown, lepConePt, std::abs(lepEta));
+	}
+	else if (syst=="FRm_bUp" and isMuon) {
+		fakerate = read2DHist(h_fakerate_mu_bUp, lepConePt, std::abs(lepEta));
+	}
+	else if (syst=="FRm_bDown" and isMuon) {
+		fakerate = read2DHist(h_fakerate_mu_bDown, lepConePt, std::abs(lepEta));
+	}
+	else if (syst=="FRm_ecUp" and isMuon) {
+		fakerate = read2DHist(h_fakerate_mu_ecUp, lepConePt, std::abs(lepEta));
+	}
+	else if (syst=="FRm_ecDown" and isMuon) {
+		fakerate = read2DHist(h_fakerate_mu_ecDown, lepConePt, std::abs(lepEta));
+	}
+	else if (isEle)
 		fakerate = read2DHist(h_fakerate_el, lepConePt, std::abs(lepEta));
 	else if (isMuon)
 		fakerate = read2DHist(h_fakerate_mu, lepConePt, std::abs(lepEta));
@@ -490,16 +590,16 @@ float SFHelper::Get_FakeRate(float lepConePt, float lepEta,
 float SFHelper::Get_FR_weight(float lep1ConePt, float lep1Eta, bool lep1IsEle,
 							  bool lep1IsMu, bool lep1IsTight,
 							  float lep2ConePt, float lep2Eta, bool lep2IsEle,
-							  bool lep2IsMu, bool lep2IsTight)
+							  bool lep2IsMu, bool lep2IsTight,
+							  TString syst)
 {
-	float f1 = Get_FakeRate(lep1ConePt, lep1Eta, lep1IsEle, lep1IsMu);
-	float f2 = Get_FakeRate(lep2ConePt, lep2Eta, lep2IsEle, lep2IsMu);
+	float f1 = Get_FakeRate(lep1ConePt, lep1Eta, lep1IsEle, lep1IsMu, syst);
+	float f2 = Get_FakeRate(lep2ConePt, lep2Eta, lep2IsEle, lep2IsMu, syst);
 	float F1 = lep1IsTight ? -1. : f1/(1.-f1);
 	float F2 = lep2IsTight ? -1. : f2/(1.-f2);
 
 	float weight = -1. * F1 * F2;
 
-	// ntuple may not store enough number of leptons of same flavor
 	if (lep1IsTight and lep2IsTight) {
 		assert((lep1IsEle and lep2IsEle) or (lep1IsMu and lep2IsMu));
 		weight = 0;
