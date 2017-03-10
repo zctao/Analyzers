@@ -26,7 +26,7 @@
 const float LUMI = 35.867 * 1000; // 1/pb
 
 vector<TH1D*> getShapesMC(TString, vector<TString>, bool, int);
-vector<TH1D*> getShapesData(TString, vector<TString>, int);
+vector<TH1D*> getShapesData(TString, vector<TString>, bool, int);
 map<TString, TH1D*> setupHistoMap(map<TString, TH1D*>&, TString, bool, TString);
 //void fillHistoFromTreeMC(map<TString, TH1D*>&, TTree*);
 //void fillHistoFromTreeData(TH1D*, TTree*, vector<vector<unsigned long long>>&);
@@ -40,7 +40,7 @@ double square(double);
 // "", "_gentau", "_faketau", "_"+syts, "_gentau"+"_"+syst, "_faketau"+"_"+syst,
 // "_JESUp", "_JESDown"; jesup jesdown on seperate loop
 
-void makeDatacardsFromTree(TString outfile_suffix = "2016b-h", bool addSyst = false, int verbosity=0)
+void makeDatacardsFromTree(TString outfile_suffix = "2016b-h", bool addSyst = true, int verbosity=0)
 // 0=unverbose; 1=show passed events; 2=show failed events;
 {
 	using namespace std;
@@ -66,7 +66,7 @@ void makeDatacardsFromTree(TString outfile_suffix = "2016b-h", bool addSyst = fa
 		
 		if (channel.Contains("data"))
 			shapes = getShapesData(channel, SamplesInChannel.at(channel),
-								   verbosity);
+								   addSyst, verbosity);
 		else {
 			cout << "sample" << "\t" << "yields" << "\t" << "yields(gentau)"
 				 << "\t" << "yields(faketau)" << endl;
@@ -125,6 +125,11 @@ map<TString, TH1D*> setupHistoMap(TString sample, bool addSyst, TString suffix)
 			
 			for (auto & btagsys : BTagSysts)
 				keys_sys.push_back("_"+btagsys);
+
+			for (auto & frjtsys : FRjtSysts) {
+				if (pre.Contains("_faketau"))
+					keys_sys.push_back("_"+frjtsys);
+			}
 		}
 
 		for (auto & ks : keys_sys) {
@@ -273,6 +278,9 @@ vector<TH1D*> getShapesMC( TString channel, vector<TString> samples, bool addSys
 				cout << setw(4) << hists["_"+mode]->Integral() << "\t";
 				cout << setw(4) << hists["_"+mode+"_gentau"]->Integral() << "\t";
 				cout << setw(4) << hists["_"+mode+"_faketau"]->Integral() << endl;
+				cout << hists["_"+mode]->GetEntries() << "\t";
+				cout << hists["_"+mode+"_gentau"]->GetEntries() << "\t";
+				cout << hists["_"+mode+"_faketau"]->GetEntries() << endl;
 			}
 			cout << "\t";
 		}
@@ -305,7 +313,7 @@ vector<TH1D*> getShapesMC( TString channel, vector<TString> samples, bool addSys
 }
 
 vector<TH1D*> getShapesData(TString channel, vector<TString> samples,
-							int verbosity)
+							bool addSyst, int verbosity)
 {	
 	Analysis_types AnaType = Analysis_types::Analyze_2lss1tau;
 	Selection_types SelType = Selection_types::Signal_2lss1tau;
@@ -319,8 +327,19 @@ vector<TH1D*> getShapesData(TString channel, vector<TString> samples,
 	vector<vector<unsigned long long>> eventList; // (run, lumisection, event)
 	vector<vector<unsigned long long>> eventList_dump;
 
+	vector<TH1D*> hists;
 	TH1D* h = new TH1D("x_"+channel, "", 7, 0.5, 7.5);
 	h->Sumw2();
+	hists.push_back(h);
+
+	if (SelType == Selection_types::Control_1lfakeable and addSyst) {
+		for (const auto & frlsyst : FRlSysts) {
+			TH1D* h_s = new TH1D("x_"+channel+"_"+sys_coname+frlsyst, "",
+								 7, 0.5, 7.5);
+			h_s->Sumw2();
+			hists.push_back(h_s);
+		}
+	}
 
 	int nevents = eventList.size();
 	cout << "eventList size : " << nevents << endl;
@@ -336,7 +355,7 @@ vector<TH1D*> getShapesData(TString channel, vector<TString> samples,
 			TTree* tree = (TTree*) f->Get("ttHtaus/eventTree");
 			//fillHistoFromTreeData(h, tree, eventList);
 			TreeAnalyzer tana(tree,AnaType,SelType,true,verbosity);
-			tana.fill_Datacards_Data(h, eventList);
+			tana.fill_Datacards_Data(hists, eventList);
 			//tana.dump_Events(channel+"_"+sample, eventList_dump);
 		}
 		else {
@@ -349,261 +368,23 @@ vector<TH1D*> getShapesData(TString channel, vector<TString> samples,
 	}
 	
 	// print out yields
-	cout << channel << "\t" << setw(4) << h->Integral() << endl;
+	cout << channel << "\t" << setw(4) << hists.at(0)->Integral() << endl;
 
 	// make bin content positive
-	makeBinContentsPositive(h,0);
-	
-	shapes.push_back(h);
+	for (auto h_ : hists) {
+		makeBinContentsPositive(h_,0);
+		shapes.push_back(h_);
+	}
 
 	// closure test systematics of the lepton fake rate
-	if (channel == "fakes_data") {
+	if (channel == "fakes_data" and addSyst) {
 		vector<TH1D*> hists_clos = getClosureTestShapes(h);
 		shapes.insert(shapes.end(), hists_clos.begin(), hists_clos.end());
 	}
 	
 	return shapes;
 }
-/*
-void fillHistoFromTreeMC(map<TString, TH1D*>& hists, TTree* tree)
-{
-	assert(hists.size());
-	
-	int run;
-	int ls;
-	unsigned long long event;
-	
-	float mva_ttbar;
-	float mva_ttV;
 
-	float event_weight;
-	float pu_weight;
-	float mc_weight;
-	float btagsf_weight;
-	float leptonsf_weight;
-	float tausf_weight;
-	float triggersf_weight;
-
-	float mc_weight_scale_muf0p5;
-	float mc_weight_scale_muf2;
-	float mc_weight_scale_mur0p5;
-	float mc_weight_scale_mur2;
-	
-	float btagsf_weight_lfup;
-	float btagsf_weight_lfdown;
-	float btagsf_weight_hfup;
-	float btagsf_weight_hfdown;
-	float btagsf_weight_hfstats1up;
-	float btagsf_weight_hfstats1down;
-	float btagsf_weight_hfstats2up;
-	float btagsf_weight_hfstats2down;
-	float btagsf_weight_lfstats1up;
-	float btagsf_weight_lfstats1down;
-	float btagsf_weight_lfstats2up;
-	float btagsf_weight_lfstats2down;
-	float btagsf_weight_cerr1up;
-	float btagsf_weight_cerr1down;
-	float btagsf_weight_cerr2up;
-	float btagsf_weight_cerr2down;
-
-	int isGenMatched;
-	int HiggsDecayType;
-
-	int lepCategory;  // 0: mumu; 1: ee; 2: emu
-	int btagCategory;
-
-	int matchHLTPath;
-
-	int ibin;
-
-	int mu0_charge;
-	int ele0_charge;
-	int tau0_charge;
-
-	tree->SetBranchAddress("run", &run);
-	tree->SetBranchAddress("ls", &ls);
-	tree->SetBranchAddress("nEvent", &event);
-	tree->SetBranchAddress("MVA_2lss_ttbar", &mva_ttbar);
-	tree->SetBranchAddress("MVA_2lss_ttV", &mva_ttV);
-	tree->SetBranchAddress("event_weight", &event_weight);
-	tree->SetBranchAddress("PU_weight", &pu_weight);
-	tree->SetBranchAddress("MC_weight", &mc_weight);
-	tree->SetBranchAddress("bTagSF_weight", &btagsf_weight);
-	tree->SetBranchAddress("leptonSF_weight", &leptonsf_weight);
-	tree->SetBranchAddress("tauSF_weight", &tausf_weight);
-	tree->SetBranchAddress("triggerSF_weight", &triggersf_weight);
-	tree->SetBranchAddress("MC_weight_scale_muF0p5", &mc_weight_scale_muf0p5);
-	tree->SetBranchAddress("MC_weight_scale_muF2", &mc_weight_scale_muf2);
-	tree->SetBranchAddress("MC_weight_scale_muR0p5", &mc_weight_scale_mur0p5);
-	tree->SetBranchAddress("MC_weight_scale_muR2", &mc_weight_scale_mur2);
-	tree->SetBranchAddress("btagSF_weight_LFUp", &btagsf_weight_lfup);
-	tree->SetBranchAddress("btagSF_weight_LFDown", &btagsf_weight_lfdown);
-	tree->SetBranchAddress("btagSF_weight_HFUp", &btagsf_weight_hfup);
-	tree->SetBranchAddress("btagSF_weight_HFDown", &btagsf_weight_hfdown);
-	tree->SetBranchAddress("btagSF_weight_HFStats1Up", &btagsf_weight_hfstats1up);
-	tree->SetBranchAddress("btagSF_weight_HFStats1Down", &btagsf_weight_hfstats1down);
-	tree->SetBranchAddress("btagSF_weight_HFStats2Up", &btagsf_weight_hfstats2up);
-	tree->SetBranchAddress("btagSF_weight_HFStats2Down", &btagsf_weight_hfstats2down);
-	tree->SetBranchAddress("btagSF_weight_LFStats1Up", &btagsf_weight_lfstats1up);
-	tree->SetBranchAddress("btagSF_weight_LFStats1Down", &btagsf_weight_lfstats1down);
-	tree->SetBranchAddress("btagSF_weight_LFStats2Up", &btagsf_weight_lfstats2up);
-	tree->SetBranchAddress("btagSF_weight_LFStats2Down", &btagsf_weight_lfstats2down);
-	tree->SetBranchAddress("btagSF_weight_cErr1Up", &btagsf_weight_cerr1up);
-	tree->SetBranchAddress("btagSF_weight_cErr1Down", &btagsf_weight_cerr1down);
-	tree->SetBranchAddress("btagSF_weight_cErr2Up", &btagsf_weight_cerr2up);
-	tree->SetBranchAddress("btagSF_weight_cErr2Down", &btagsf_weight_cerr2down);
-	tree->SetBranchAddress("isGenMatched", &isGenMatched);
-	tree->SetBranchAddress("HiggsDecayType", &HiggsDecayType);
-	tree->SetBranchAddress("lepCategory", &lepCategory);
-	tree->SetBranchAddress("btagCategory", &btagCategory);
-	tree->SetBranchAddress("matchHLTPath", &matchHLTPath);
-	tree->SetBranchAddress("ibin", &ibin);
-	tree->SetBranchAddress("mu0_charge", &mu0_charge);
-	tree->SetBranchAddress("ele0_charge", &ele0_charge);
-	tree->SetBranchAddress("tau0_charge", &tau0_charge);
-
-	// Loop over events in the TTree
-	int nEntries = tree->GetEntries();
-
-	for (int i = 0; i < nEntries; ++i) {
-		tree->GetEntry(i);
-
-		// additional selections
-		if (not matchHLTPath) continue;
-		// assume the two leptons are same sign
-		if (not passTauCharge((lepCategory?ele0_charge:mu0_charge), tau0_charge))
-			continue;
-		
-		// Update weights here if needed
-
-		
-		// Update bin index if needed
-		// ibin = partition2DBDT(mva_ttbar, mva_ttV);
-
-		// Fill the histograms
-		// Assume keys of the histogram map are in the following format:
-		// (_HiggsDecayMode)+(_gentau/_faketau)+(_systSuffix)
-		// empty string "" for the central inclusive one
-		for (auto & hist : hists) {
-			TString key = hist.first;
-			// filters
-			if (key.Contains("_htt") and abs(HiggsDecayType) != 15) continue;
-			if (key.Contains("_hzz") and abs(HiggsDecayType) != 23) continue;
-			if (key.Contains("_hww") and abs(HiggsDecayType) != 24) continue;
-			if (key.Contains("_gentau") and not isGenMatched) continue;
-			if (key.Contains("_faketau") and isGenMatched) continue;
-
-			// decide which weight to use
-			float w_sf = 1;
-			if (key.EndsWith("_LFUp"))
-				w_sf = btagsf_weight_lfup / btagsf_weight;
-			else if (key.EndsWith("_LFDown"))
-				w_sf = btagsf_weight_lfdown / btagsf_weight;
-			else if (key.EndsWith("_HFUp"))
-				w_sf = btagsf_weight_hfup / btagsf_weight;
-			else if (key.EndsWith("_HFDown"))
-				w_sf = btagsf_weight_hfdown / btagsf_weight;
-			else if (key.EndsWith("_HFStats1Up"))
-				w_sf = btagsf_weight_hfstats1up / btagsf_weight;
-			else if (key.EndsWith("_HFStats1Down"))
-				w_sf = btagsf_weight_hfstats1down / btagsf_weight;
-			else if (key.EndsWith("_HFStats2Up"))
-				w_sf = btagsf_weight_hfstats2up / btagsf_weight;
-			else if (key.EndsWith("_HFStats2Down"))
-				w_sf = btagsf_weight_hfstats2down / btagsf_weight;
-			else if (key.EndsWith("_LFStats1Up"))
-				w_sf = btagsf_weight_lfstats1up / btagsf_weight;
-			else if (key.EndsWith("_LFStats1Down"))
-				w_sf = btagsf_weight_lfstats1down / btagsf_weight;
-			else if (key.EndsWith("_LFStats2Up"))
-				w_sf = btagsf_weight_lfstats2up / btagsf_weight;
-			else if (key.EndsWith("_LFStats2Down"))
-				w_sf = btagsf_weight_lfstats2down / btagsf_weight;
-			else if (key.EndsWith("_cErr1Up"))
-				w_sf = btagsf_weight_cerr1up / btagsf_weight;
-			else if (key.EndsWith("_cErr1Down"))
-				w_sf = btagsf_weight_cerr1down / btagsf_weight;
-			else if (key.EndsWith("_cErr2Up"))
-				w_sf = btagsf_weight_cerr2up / btagsf_weight;
-			else if (key.EndsWith("_cErr2Down"))
-				w_sf = btagsf_weight_cerr2down / btagsf_weight;
-			else if (key.EndsWith("_x1Up"))
-				w_sf = mc_weight_scale_muf2 / mc_weight;
-			else if (key.EndsWith("_x1Down"))
-				w_sf = mc_weight_scale_muf0p5 / mc_weight;
-			else if (key.EndsWith("_y1Up"))
-				w_sf = mc_weight_scale_mur2 / mc_weight;
-			else if (key.EndsWith("_y2Down"))
-				w_sf = mc_weight_scale_mur0p5 / mc_weight;
-
-			hist.second -> Fill(ibin, event_weight * w_sf);
-		} // end of keys loop
-		
-	} // end of event loop
-
-	return;
-}
-
-void fillHistoFromTreeData(TH1D* h, TTree* tree, vector<vector<unsigned long long>>& eventList)
-{
-	int run;
-	int ls;
-	unsigned long long event;
-	
-	float event_weight;
-	float mva_ttbar;
-	float mva_ttV;
-	int ibin;
-	int matchHLTPath;
-	int lepCategory;
-	int mu0_charge;
-	int ele0_charge;
-	int tau0_charge;
-
-	tree->SetBranchAddress("nEvent", &event);
-	tree->SetBranchAddress("ls", &ls);
-	tree->SetBranchAddress("run", &run);
-	tree->SetBranchAddress("event_weight", &event_weight);
-	tree->SetBranchAddress("MVA_2lss_ttbar", &mva_ttbar);
-	tree->SetBranchAddress("MVA_2lss_ttV", &mva_ttV);
-	tree->SetBranchAddress("ibin", &ibin);
-	tree->SetBranchAddress("matchHLTPath", &matchHLTPath);
-	tree->SetBranchAddress("lepCategory", &lepCategory);
-	tree->SetBranchAddress("mu0_charge", &mu0_charge);
-	tree->SetBranchAddress("ele0_charge", &ele0_charge);
-	tree->SetBranchAddress("tau0_charge", &tau0_charge);
-
-	int nEntries = tree->GetEntries();
-
-	for (int i = 0; i < nEntries; ++i) {
-		tree->GetEntry(i);
-			
-		if (not matchHLTPath) continue;
-		// additional selections
-		// assume the two leptons are same sign
-		if (not passTauCharge((lepCategory?ele0_charge:mu0_charge), tau0_charge))
-			continue;
-		
-			vector<unsigned long long> eventid = {static_cast<unsigned long long>(run), static_cast<unsigned long long>(ls), event};
-		//assert(run >= 0 and ls >= 0 and event >= 0);
-		
-		bool alreadyIncluded = 
-			find(eventList.begin(), eventList.end(), eventid) != eventList.end();
-
-		if (not alreadyIncluded) {
-
-			eventList.push_back(eventid);
-
-			// update event weight here if needed
-
-			// update bin index here if needed
-
-			// fill histogram
-			h->Fill(ibin, event_weight);
-		}	
-	} // end of event loop
-}
-*/
 void updateHistoName(pair<const TString, TH1D*>& h, TString channel)
 {
 	TString key = h.first;
@@ -628,6 +409,13 @@ void updateHistoName(pair<const TString, TH1D*>& h, TString channel)
 			key.ReplaceAll(thu, sys_coname+"thu_shape_"+ch+"_"+thu);
 			h.second->SetName("x_"+channel+key);
 			return;
+		}
+	}
+
+	for (const TString & frjt : FRjtSysts) {
+		if (key.EndsWith(frjt)) {
+			key.ReplaceAll(frjt, sys_coname+frjt);
+			h.second->SetName("x_"+channel+key);
 		}
 	}
 
