@@ -464,6 +464,20 @@ void eventNtuple::set_branch_address(TTree* tree)
 	tree->SetBranchAddress("tau0_dz", &tau0_dz);
 	tree->SetBranchAddress("tau0_decayMode", &tau0_decayMode);
 	tree->SetBranchAddress("tau0_mcMatchType", &tau0_mcMatchType);
+	tree->SetBranchAddress("tau0_byMediumIsolationMVArun2v1DBdR03oldDMwLT",
+						   &tau0_byMediumIsolationMVArun2v1DBdR03oldDMwLT);
+	tree->SetBranchAddress("tau1_pt", &tau1_pt);
+	tree->SetBranchAddress("tau1_eta", &tau1_eta);
+	tree->SetBranchAddress("tau1_phi", &tau1_phi);
+	tree->SetBranchAddress("tau1_E", &tau1_E);
+	tree->SetBranchAddress("tau1_charge", &tau1_charge);
+	tree->SetBranchAddress("tau1_dxy", &tau1_dxy);
+	tree->SetBranchAddress("tau1_dz", &tau1_dz);
+	tree->SetBranchAddress("tau1_decayMode", &tau1_decayMode);
+	tree->SetBranchAddress("tau1_mcMatchType", &tau1_mcMatchType);
+	tree->SetBranchAddress("tau1_byMediumIsolationMVArun2v1DBdR03oldDMwLT",
+						   &tau1_byMediumIsolationMVArun2v1DBdR03oldDMwLT);
+	
 	// jets
     tree->SetBranchAddress("jets_pt", &jets_pt);
 	tree->SetBranchAddress("jets_eta", &jets_eta);
